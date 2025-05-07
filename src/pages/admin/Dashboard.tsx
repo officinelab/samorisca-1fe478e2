@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -333,15 +334,19 @@ const Dashboard = () => {
   // Aggiorna un prodotto esistente
   const handleUpdateProduct = async (productId: string, productData: Partial<Product>) => {
     try {
+      // Creiamo una copia dei dati del prodotto senza il campo allergens
+      const { allergens, ...productUpdateData } = productData;
+      
+      // Aggiorniamo i dati del prodotto nella tabella products
       const { error } = await supabase
         .from('products')
-        .update(productData)
+        .update(productUpdateData)
         .eq('id', productId);
       
       if (error) throw error;
       
-      // Gestisci gli allergeni se presenti nella modifica
-      if (productData.allergens !== undefined) {
+      // Gestisci gli allergeni separatamente se sono presenti
+      if (allergens !== undefined) {
         // Rimuovi tutte le associazioni esistenti
         const { error: deleteError } = await supabase
           .from('product_allergens')
@@ -350,9 +355,9 @@ const Dashboard = () => {
         
         if (deleteError) throw deleteError;
         
-        // Aggiungi le nuove associazioni
-        if (productData.allergens.length > 0) {
-          const allergenInserts = productData.allergens.map(allergen => ({
+        // Aggiungi le nuove associazioni se ce ne sono
+        if (allergens.length > 0) {
+          const allergenInserts = allergens.map(allergen => ({
             product_id: productId,
             allergen_id: allergen.id,
           }));
