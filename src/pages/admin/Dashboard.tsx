@@ -88,19 +88,19 @@ const Dashboard = () => {
           if (allergensError) throw allergensError;
           
           // Se ci sono allergeni, recupera i dettagli
-          let productAllergensDetails: { id: string; number: number; title: string }[] = [];
+          let productAllergensDetails: Allergen[] = [];
           if (productAllergens && productAllergens.length > 0) {
             const allergenIds = productAllergens.map(pa => pa.allergen_id);
             const { data: allergensDetails, error: detailsError } = await supabase
               .from('allergens')
-              .select('id, number, title')
+              .select('*') // Select all fields to match Allergen interface
               .in('id', allergenIds);
             
             if (detailsError) throw detailsError;
             productAllergensDetails = allergensDetails || [];
           }
           
-          return { ...product, allergens: productAllergensDetails };
+          return { ...product, allergens: productAllergensDetails } as Product;
         })
       );
       
@@ -1101,7 +1101,7 @@ const Dashboard = () => {
                           <div className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
                             <img 
                               src={product.image_url}
-                              alt={product.name}
+                              alt={product.title} // Fix: changed from product.name to product.title
                               className="w-full h-full object-cover"
                             />
                           </div>

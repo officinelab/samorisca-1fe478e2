@@ -37,7 +37,7 @@ export interface Product {
   price_variant_2_value?: number | null;
   created_at?: string;
   updated_at?: string;
-  allergens?: { id: string; number: number; title: string }[];
+  allergens?: Allergen[];
 }
 
 export interface ProductAllergen {

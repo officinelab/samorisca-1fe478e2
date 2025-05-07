@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, ShoppingCart, X, Plus, Minus, Info, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Category as CategoryType, Product as ProductType, Allergen as AllergenType } from "@/types/database";
+import { Allergen, Category as CategoryType, Product as ProductType } from "@/types/database";
 
 // Local interfaces for cart items
 interface CartItem {
@@ -36,7 +36,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 }) => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [products, setProducts] = useState<Record<string, ProductType[]>>({});
-  const [allergens, setAllergens] = useState<AllergenType[]>([]);
+  const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState(previewLanguage);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -175,7 +175,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         {
           id: itemId,
           productId: product.id,
-          name: product.title,
+          name: product.title, // Fix: Use title instead of name
           price: price || 0,
           variantName,
           quantity: 1
@@ -419,8 +419,13 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                                     className="h-6 w-6 rounded-full p-0"
                                     onClick={() => addToCart({ 
                                       id: item.productId,
+                                      title: item.name, // Fix: Use title instead of name
                                       price_standard: item.price,
-                                      name: item.name,
+                                      category_id: "", // Required field for Product type
+                                      description: null,
+                                      image_url: null,
+                                      is_active: true,
+                                      display_order: 0
                                     } as ProductType, item.variantName)}
                                   >
                                     <Plus size={14} />

@@ -11,17 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Allergen } from "@/types/database";
 
-// Tipo per gli allergeni
-interface Allergen {
-  id: string;
-  number: number;
-  title: string;
-  description: string | null;
-  icon_url: string | null;
-  display_order: number;
-}
-
-// Tipo per i dati di form dell'allergene
+// Type for allergern form data
 interface AllergenFormData {
   number?: number;
   title: string;
