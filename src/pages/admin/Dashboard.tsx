@@ -7,13 +7,51 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Edit, Trash2, Save, X, Move, Check } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  PlusCircle, 
+  Edit, 
+  Trash2, 
+  X, 
+  Check, 
+  Search, 
+  Eye,
+  EyeOff,
+  ChevronUp, 
+  ChevronDown,
+  Package,
+  Menu,
+  Settings
+} from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle 
+} from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Category, Product, Allergen } from "@/types/database";
 
 const Dashboard = () => {
@@ -21,54 +59,70 @@ const Dashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isReordering, setIsReordering] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Stati per i pannelli laterali
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Carica le categorie, i prodotti e gli allergeni
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        // Carica le categorie ordinate per display_order
-        const { data: categoriesData, error: categoriesError } = await supabase
-          .from('categories')
-          .select('*')
-          .order('display_order', { ascending: true });
-
-        if (categoriesError) throw categoriesError;
-        console.log("Categorie caricate:", categoriesData);
-        setCategories(categoriesData || []);
-        
-        if (categoriesData && categoriesData.length > 0) {
-          // Seleziona automaticamente la prima categoria
-          setSelectedCategory(categoriesData[0].id);
-          
-          // Carica i prodotti per la prima categoria
-          await loadProducts(categoriesData[0].id);
-        }
-
-        // Carica tutti gli allergeni
-        const { data: allergensData, error: allergensError } = await supabase
-          .from('allergens')
-          .select('*')
-          .order('number', { ascending: true });
-
-        if (allergensError) throw allergensError;
-        setAllergens(allergensData || []);
-
-      } catch (error) {
-        console.error('Errore nel caricamento dei dati:', error);
-        toast.error("Errore nel caricamento dei dati. Riprova più tardi.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
+    loadCategories();
+    loadAllergens();
   }, []);
 
-  // Carica i prodotti per una categoria specifica
+  // Carica le categorie
+  const loadCategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      
+      setCategories(data || []);
+      
+      // Seleziona automaticamente la prima categoria se non è già selezionata
+      if (data && data.length > 0 && !selectedCategory) {
+        setSelectedCategory(data[0].id);
+        loadProducts(data[0].id);
+      } else if (selectedCategory) {
+        loadProducts(selectedCategory);
+      }
+    } catch (error) {
+      console.error('Errore nel caricamento delle categorie:', error);
+      toast.error("Errore nel caricamento delle categorie. Riprova più tardi.");
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  // Carica gli allergeni
+  const loadAllergens = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('allergens')
+        .select('*')
+        .order('number', { ascending: true });
+
+      if (error) throw error;
+      setAllergens(data || []);
+    } catch (error) {
+      console.error('Errore nel caricamento degli allergeni:', error);
+      toast.error("Errore nel caricamento degli allergeni. Riprova più tardi.");
+    }
+  };
+
+  // Carica i prodotti per categoria
   const loadProducts = async (categoryId: string) => {
+    setIsLoadingProducts(true);
     try {
       // Carica i prodotti
       const { data: productsData, error: productsError } = await supabase
@@ -95,7 +149,7 @@ const Dashboard = () => {
             const allergenIds = productAllergens.map(pa => pa.allergen_id);
             const { data: allergensDetails, error: detailsError } = await supabase
               .from('allergens')
-              .select('*') // Select all fields to match Allergen interface
+              .select('*')
               .in('id', allergenIds);
             
             if (detailsError) throw detailsError;
@@ -107,24 +161,25 @@ const Dashboard = () => {
       );
       
       setProducts(productsWithAllergens);
+      // Reimposta il prodotto selezionato quando cambia la categoria
+      setSelectedProduct(null);
     } catch (error) {
       console.error('Errore nel caricamento dei prodotti:', error);
       toast.error("Errore nel caricamento dei prodotti. Riprova più tardi.");
+    } finally {
+      setIsLoadingProducts(false);
     }
   };
 
   // Gestisce la selezione di una categoria
-  const handleCategorySelect = async (categoryId: string) => {
+  const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    await loadProducts(categoryId);
+    loadProducts(categoryId);
   };
 
   // Aggiunge una nuova categoria
   const handleAddCategory = async (categoryData: Partial<Category>) => {
     try {
-      // Log per debugging
-      console.log("Tentativo di aggiunta categoria:", categoryData);
-      
       // Determina il prossimo display_order
       const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
       const nextOrder = maxOrder + 1;
@@ -135,7 +190,6 @@ const Dashboard = () => {
         return;
       }
       
-      // Prepara i dati da inserire
       const categoryToInsert = {
         title: categoryData.title,
         description: categoryData.description || null,
@@ -144,29 +198,24 @@ const Dashboard = () => {
         display_order: nextOrder
       };
       
-      console.log("Dati categoria da inserire:", categoryToInsert);
-      
       const { data, error } = await supabase
         .from('categories')
         .insert([categoryToInsert])
         .select();
       
-      if (error) {
-        console.error("Errore dettagliato nell'aggiunta della categoria:", error);
-        throw error;
-      }
-      
-      console.log("Risposta dall'inserimento categoria:", data);
+      if (error) throw error;
       
       if (data && data.length > 0) {
-        setCategories([...categories, data[0]]);
-        setSelectedCategory(data[0].id);
-        await loadProducts(data[0].id);
+        // Aggiorna lo stato locale
+        await loadCategories();
+        // Se non è selezionata alcuna categoria, seleziona quella appena creata
+        if (!selectedCategory) {
+          setSelectedCategory(data[0].id);
+          loadProducts(data[0].id);
+        }
         toast.success("Categoria aggiunta con successo!");
-      } else {
-        console.error("Nessun dato restituito dopo l'inserimento");
-        toast.error("Errore nell'aggiunta della categoria. Nessun dato restituito.");
-      }
+        setShowCategoryForm(false);
+      } 
     } catch (error: any) {
       console.error('Errore nell\'aggiunta della categoria:', error);
       toast.error(`Errore nell'aggiunta della categoria: ${error.message || 'Riprova più tardi.'}`);
@@ -184,11 +233,11 @@ const Dashboard = () => {
       if (error) throw error;
       
       // Aggiorna lo stato locale
-      setCategories(categories.map(cat => 
-        cat.id === categoryId ? { ...cat, ...categoryData } : cat
-      ));
+      await loadCategories();
       
       toast.success("Categoria aggiornata con successo!");
+      setShowCategoryForm(false);
+      setEditingCategory(null);
     } catch (error) {
       console.error('Errore nell\'aggiornamento della categoria:', error);
       toast.error("Errore nell'aggiornamento della categoria. Riprova più tardi.");
@@ -210,19 +259,7 @@ const Dashboard = () => {
       if (error) throw error;
       
       // Aggiorna lo stato locale
-      const updatedCategories = categories.filter(cat => cat.id !== categoryId);
-      setCategories(updatedCategories);
-      
-      // Se abbiamo eliminato la categoria selezionata, seleziona la prima categoria disponibile
-      if (selectedCategory === categoryId) {
-        const newSelectedCategory = updatedCategories.length > 0 ? updatedCategories[0].id : null;
-        setSelectedCategory(newSelectedCategory);
-        if (newSelectedCategory) {
-          await loadProducts(newSelectedCategory);
-        } else {
-          setProducts([]);
-        }
-      }
+      await loadCategories();
       
       toast.success("Categoria eliminata con successo!");
     } catch (error) {
@@ -231,48 +268,23 @@ const Dashboard = () => {
     }
   };
 
-  // Riordina le categorie
-  const handleReorderCategories = async (reorderedCategories: Category[]) => {
-    try {
-      // Aggiorna l'ordine nel database
-      for (let i = 0; i < reorderedCategories.length; i++) {
-        const { error } = await supabase
-          .from('categories')
-          .update({ display_order: i })
-          .eq('id', reorderedCategories[i].id);
-        
-        if (error) throw error;
-      }
-      
-      // Aggiorna lo stato locale
-      setCategories(reorderedCategories);
-      setIsReordering(false);
-      toast.success("Ordine delle categorie aggiornato con successo!");
-    } catch (error) {
-      console.error('Errore nel riordinamento delle categorie:', error);
-      toast.error("Errore nel riordinamento delle categorie. Riprova più tardi.");
-    }
-  };
-
   // Aggiunge un nuovo prodotto
   const handleAddProduct = async (productData: Partial<Product>) => {
-    if (!selectedCategory) return;
+    if (!selectedCategory) {
+      toast.error("Seleziona prima una categoria");
+      return;
+    }
 
     try {
-      // Log per debugging
-      console.log("Tentativo di aggiunta prodotto:", productData);
-      
-      // Determina il prossimo display_order per i prodotti nella categoria
+      // Determina il prossimo display_order
       const maxOrder = Math.max(...products.map(p => p.display_order), 0);
       const nextOrder = maxOrder + 1;
       
-      // Ensure title is provided (required by the database)
       if (!productData.title) {
         toast.error("Il titolo è obbligatorio");
         return;
       }
       
-      // Prepara i dati da inserire
       const productToInsert = {
         title: productData.title,
         description: productData.description || null,
@@ -288,22 +300,18 @@ const Dashboard = () => {
         price_variant_2_value: productData.price_variant_2_value || null
       };
       
-      console.log("Dati prodotto da inserire:", productToInsert);
-      
       const { data, error } = await supabase
         .from('products')
         .insert([productToInsert])
         .select();
       
-      if (error) {
-        console.error("Errore dettagliato nell'aggiunta del prodotto:", error);
-        throw error;
-      }
+      if (error) throw error;
       
       if (data && data.length > 0) {
         // Gestisci gli allergeni se presenti
-        if (productData.allergens && productData.allergens.length > 0) {
-          const allergenInserts = productData.allergens.map(allergen => ({
+        const allergens = productData.allergens || [];
+        if (allergens.length > 0) {
+          const allergenInserts = allergens.map(allergen => ({
             product_id: data[0].id,
             allergen_id: allergen.id,
           }));
@@ -312,18 +320,13 @@ const Dashboard = () => {
             .from('product_allergens')
             .insert(allergenInserts);
           
-          if (allergensError) {
-            console.error("Errore nell'aggiunta degli allergeni:", allergensError);
-            throw allergensError;
-          }
+          if (allergensError) throw allergensError;
         }
 
         // Aggiorna i prodotti
         await loadProducts(selectedCategory);
         toast.success("Prodotto aggiunto con successo!");
-      } else {
-        console.error("Nessun dato restituito dopo l'inserimento del prodotto");
-        toast.error("Errore nell'aggiunta del prodotto. Nessun dato restituito.");
+        setShowProductForm(false);
       }
     } catch (error: any) {
       console.error('Errore nell\'aggiunta del prodotto:', error);
@@ -376,6 +379,8 @@ const Dashboard = () => {
       }
       
       toast.success("Prodotto aggiornato con successo!");
+      setShowProductForm(false);
+      setEditingProduct(null);
     } catch (error) {
       console.error('Errore nell\'aggiornamento del prodotto:', error);
       toast.error("Errore nell'aggiornamento del prodotto. Riprova più tardi.");
@@ -397,33 +402,14 @@ const Dashboard = () => {
       if (error) throw error;
       
       // Aggiorna lo stato locale
-      setProducts(products.filter(p => p.id !== productId));
+      if (selectedCategory) {
+        await loadProducts(selectedCategory);
+      }
+      
       toast.success("Prodotto eliminato con successo!");
     } catch (error) {
       console.error('Errore nell\'eliminazione del prodotto:', error);
       toast.error("Errore nell'eliminazione del prodotto. Riprova più tardi.");
-    }
-  };
-
-  // Riordina i prodotti
-  const handleReorderProducts = async (reorderedProducts: Product[]) => {
-    try {
-      // Aggiorna l'ordine nel database
-      for (let i = 0; i < reorderedProducts.length; i++) {
-        const { error } = await supabase
-          .from('products')
-          .update({ display_order: i })
-          .eq('id', reorderedProducts[i].id);
-        
-        if (error) throw error;
-      }
-      
-      // Aggiorna lo stato locale
-      setProducts(reorderedProducts);
-      toast.success("Ordine dei prodotti aggiornato con successo!");
-    } catch (error) {
-      console.error('Errore nel riordinamento dei prodotti:', error);
-      toast.error("Errore nel riordinamento dei prodotti. Riprova più tardi.");
     }
   };
 
@@ -444,7 +430,6 @@ const Dashboard = () => {
       const file = e.target.files?.[0];
       if (!file) return;
       
-      // Valida il tipo di file
       if (!file.type.startsWith('image/')) {
         toast.error("Per favore seleziona un'immagine valida");
         return;
@@ -453,11 +438,9 @@ const Dashboard = () => {
       setIsUploading(true);
       
       try {
-        // Crea un'anteprima locale
         const objectUrl = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
         
-        // Carica l'immagine su Supabase Storage
         const filePath = `menu/${Date.now()}-${file.name}`;
         const { data, error } = await supabase.storage
           .from('menu-images')
@@ -468,7 +451,6 @@ const Dashboard = () => {
         
         if (error) throw error;
         
-        // Ottieni l'URL pubblico dell'immagine
         const { data: publicUrlData } = supabase.storage
           .from('menu-images')
           .getPublicUrl(data.path);
@@ -486,7 +468,7 @@ const Dashboard = () => {
       <div className="space-y-2">
         <Label>{label}</Label>
         {previewUrl && (
-          <div className="relative w-full h-48 mb-2">
+          <div className="relative w-full h-36 mb-2">
             <img 
               src={previewUrl} 
               alt="Preview" 
@@ -514,104 +496,171 @@ const Dashboard = () => {
     );
   };
 
-  // Componente per l'aggiunta/modifica delle categorie
-  const CategoryForm = ({ 
-    initialData, 
-    onSubmit,
-    onCancel 
-  }: { 
-    initialData?: Category, 
-    onSubmit: (data: Partial<Category>) => void,
-    onCancel: () => void 
-  }) => {
-    const [title, setTitle] = useState(initialData?.title || "");
-    const [imageUrl, setImageUrl] = useState<string | null>(initialData?.image_url || null);
-    const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
+  // Schema di validazione per il form categoria
+  const categoryFormSchema = z.object({
+    title: z.string().min(1, "Il nome è obbligatorio"),
+    description: z.string().optional(),
+    is_active: z.boolean().default(true),
+    image_url: z.string().optional().nullable(),
+  });
 
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      onSubmit({
-        title,
-        image_url: imageUrl,
-        is_active: isActive
-      });
+  // Schema di validazione per il form prodotto
+  const productFormSchema = z.object({
+    title: z.string().min(1, "Il nome è obbligatorio"),
+    description: z.string().optional(),
+    is_active: z.boolean().default(true),
+    image_url: z.string().optional().nullable(),
+    price_standard: z.coerce.number().min(0, "Il prezzo deve essere maggiore o uguale a 0"),
+    has_multiple_prices: z.boolean().default(false),
+    price_variant_1_name: z.string().optional().nullable(),
+    price_variant_1_value: z.coerce.number().optional().nullable(),
+    price_variant_2_name: z.string().optional().nullable(),
+    price_variant_2_value: z.coerce.number().optional().nullable(),
+  });
+
+  // Form categoria
+  const CategoryFormPanel = () => {
+    const isEditing = Boolean(editingCategory);
+    
+    const form = useForm<z.infer<typeof categoryFormSchema>>({
+      resolver: zodResolver(categoryFormSchema),
+      defaultValues: {
+        title: editingCategory?.title || "",
+        description: editingCategory?.description || "",
+        is_active: editingCategory?.is_active ?? true,
+        image_url: editingCategory?.image_url || null,
+      },
+    });
+    
+    const onSubmit = (values: z.infer<typeof categoryFormSchema>) => {
+      if (isEditing && editingCategory) {
+        handleUpdateCategory(editingCategory.id, values);
+      } else {
+        handleAddCategory(values);
+      }
     };
 
     return (
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Nome Categoria</Label>
-          <Input 
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nome della categoria"
-            required
-          />
-        </div>
-        
-        <ImageUploader
-          currentImage={imageUrl}
-          onImageUploaded={setImageUrl}
-          label="Immagine Categoria"
-        />
-        
-        <div className="flex items-center justify-between">
-          <Label htmlFor="is-active">Attiva</Label>
-          <Switch 
-            id="is-active" 
-            checked={isActive} 
-            onCheckedChange={setIsActive}
-          />
-        </div>
-        
-        <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={onCancel}>Annulla</Button>
-          <Button type="submit">Salva</Button>
-        </div>
-      </form>
+      <Sheet open={showCategoryForm} onOpenChange={setShowCategoryForm}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{isEditing ? "Modifica Categoria" : "Nuova Categoria"}</SheetTitle>
+          </SheetHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome Categoria</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Nome categoria" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrizione</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Descrizione della categoria"
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="image_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <ImageUploader
+                      currentImage={field.value || null}
+                      onImageUploaded={(url) => field.onChange(url)}
+                      label="Immagine Categoria"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Attiva</FormLabel>
+                      <FormDescription>
+                        Mostra questa categoria nel menu
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCategoryForm(false);
+                    setEditingCategory(null);
+                  }}
+                >
+                  Annulla
+                </Button>
+                <Button type="submit">Salva</Button>
+              </div>
+            </form>
+          </Form>
+        </SheetContent>
+      </Sheet>
     );
   };
 
-  // Componente per l'aggiunta/modifica dei prodotti
-  const ProductForm = ({ 
-    initialData,
-    onSubmit,
-    onCancel
-  }: { 
-    initialData?: Product,
-    onSubmit: (data: Partial<Product>) => void,
-    onCancel: () => void
-  }) => {
-    const [title, setTitle] = useState(initialData?.title || "");
-    const [description, setDescription] = useState(initialData?.description || "");
-    const [imageUrl, setImageUrl] = useState<string | null>(initialData?.image_url || null);
-    const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
-    const [priceStandard, setPriceStandard] = useState(initialData?.price_standard?.toString() || "");
-    const [hasMultiplePrices, setHasMultiplePrices] = useState(initialData?.has_multiple_prices || false);
-    const [priceVariant1Name, setPriceVariant1Name] = useState(initialData?.price_variant_1_name || "");
-    const [priceVariant1Value, setPriceVariant1Value] = useState(initialData?.price_variant_1_value?.toString() || "");
-    const [priceVariant2Name, setPriceVariant2Name] = useState(initialData?.price_variant_2_name || "");
-    const [priceVariant2Value, setPriceVariant2Value] = useState(initialData?.price_variant_2_value?.toString() || "");
-    const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>(initialData?.allergens || []);
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      onSubmit({
-        title,
-        description,
-        image_url: imageUrl,
-        is_active: isActive,
-        price_standard: parseFloat(priceStandard),
-        has_multiple_prices: hasMultiplePrices,
-        price_variant_1_name: hasMultiplePrices ? priceVariant1Name : null,
-        price_variant_1_value: hasMultiplePrices && priceVariant1Value ? parseFloat(priceVariant1Value) : null,
-        price_variant_2_name: hasMultiplePrices ? priceVariant2Name : null,
-        price_variant_2_value: hasMultiplePrices && priceVariant2Value ? parseFloat(priceVariant2Value) : null,
-        allergens: selectedAllergens
-      });
-    };
-
+  // Form prodotto
+  const ProductFormPanel = () => {
+    const isEditing = Boolean(editingProduct);
+    const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>(
+      editingProduct?.allergens || []
+    );
+    
+    const form = useForm<z.infer<typeof productFormSchema>>({
+      resolver: zodResolver(productFormSchema),
+      defaultValues: {
+        title: editingProduct?.title || "",
+        description: editingProduct?.description || "",
+        is_active: editingProduct?.is_active ?? true,
+        image_url: editingProduct?.image_url || null,
+        price_standard: editingProduct?.price_standard || 0,
+        has_multiple_prices: editingProduct?.has_multiple_prices || false,
+        price_variant_1_name: editingProduct?.price_variant_1_name || "",
+        price_variant_1_value: editingProduct?.price_variant_1_value || null,
+        price_variant_2_name: editingProduct?.price_variant_2_name || "",
+        price_variant_2_value: editingProduct?.price_variant_2_value || null,
+      },
+    });
+    
+    const hasMultiplePrices = form.watch("has_multiple_prices");
+    
     const toggleAllergen = (allergen: Allergen) => {
       if (selectedAllergens.some(a => a.id === allergen.id)) {
         setSelectedAllergens(selectedAllergens.filter(a => a.id !== allergen.id));
@@ -619,632 +668,702 @@ const Dashboard = () => {
         setSelectedAllergens([...selectedAllergens, allergen]);
       }
     };
+    
+    const onSubmit = (values: z.infer<typeof productFormSchema>) => {
+      // Aggiungi gli allergeni ai valori del form
+      const productData = {
+        ...values,
+        allergens: selectedAllergens
+      };
+      
+      if (isEditing && editingProduct) {
+        handleUpdateProduct(editingProduct.id, productData);
+      } else {
+        handleAddProduct(productData);
+      }
+    };
 
     return (
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Nome Prodotto</Label>
-          <Input 
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nome del prodotto"
-            required
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="description">Descrizione</Label>
-          <Textarea 
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Descrizione del prodotto"
-            rows={3}
-          />
-        </div>
-        
-        <ImageUploader
-          currentImage={imageUrl}
-          onImageUploaded={setImageUrl}
-          label="Immagine Prodotto"
-        />
-        
-        <div className="flex items-center justify-between">
-          <Label htmlFor="is-product-active">Attivo</Label>
-          <Switch 
-            id="is-product-active" 
-            checked={isActive} 
-            onCheckedChange={setIsActive}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="price">Prezzo (€)</Label>
-          <Input 
-            id="price"
-            type="number"
-            step="0.01"
-            min="0"
-            value={priceStandard}
-            onChange={(e) => setPriceStandard(e.target.value)}
-            placeholder="0.00"
-            required
-          />
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <Label htmlFor="has-multiple-prices">Prezzi multipli</Label>
-          <Switch 
-            id="has-multiple-prices" 
-            checked={hasMultiplePrices} 
-            onCheckedChange={setHasMultiplePrices}
-          />
-        </div>
-        
-        {hasMultiplePrices && (
-          <div className="border rounded-md p-3 space-y-3 bg-gray-50">
-            <h4 className="font-medium">Varianti di prezzo</h4>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="variant1-name">Nome Variante 1</Label>
-                <Input 
-                  id="variant1-name"
-                  value={priceVariant1Name}
-                  onChange={(e) => setPriceVariant1Name(e.target.value)}
-                  placeholder="Es. Bottiglia"
-                />
+      <Sheet open={showProductForm} onOpenChange={setShowProductForm}>
+        <SheetContent className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{isEditing ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
+          </SheetHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <ScrollArea className="h-[calc(100vh-120px)] pr-4">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Prodotto</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Nome prodotto" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descrizione</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            {...field} 
+                            placeholder="Descrizione del prodotto"
+                            value={field.value || ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="image_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <ImageUploader
+                          currentImage={field.value || null}
+                          onImageUploaded={(url) => field.onChange(url)}
+                          label="Immagine Prodotto"
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="is_active"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                        <div className="space-y-0.5">
+                          <FormLabel>Attivo</FormLabel>
+                          <FormDescription>
+                            Mostra questo prodotto nel menu
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="price_standard"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Prezzo (€)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="has_multiple_prices"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                        <div className="space-y-0.5">
+                          <FormLabel>Prezzi multipli</FormLabel>
+                          <FormDescription>
+                            Abilita diverse varianti di prezzo
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {hasMultiplePrices && (
+                    <div className="border rounded-md p-4 space-y-4 bg-gray-50">
+                      <h4 className="font-medium">Varianti di prezzo</h4>
+                      
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField
+                            control={form.control}
+                            name="price_variant_1_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome Variante 1</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Es. Bottiglia" value={field.value || ""} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="price_variant_1_value"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Prezzo Variante 1 (€)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    {...field}
+                                    value={field.value || ""}
+                                    onChange={(e) => {
+                                      const value = e.target.value ? parseFloat(e.target.value) : null;
+                                      field.onChange(value);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField
+                            control={form.control}
+                            name="price_variant_2_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome Variante 2</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Es. Calice" value={field.value || ""} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="price_variant_2_value"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Prezzo Variante 2 (€)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    {...field}
+                                    value={field.value || ""}
+                                    onChange={(e) => {
+                                      const value = e.target.value ? parseFloat(e.target.value) : null;
+                                      field.onChange(value);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label className="block">Allergeni</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {allergens.map((allergen) => (
+                        <div 
+                          key={allergen.id} 
+                          className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
+                            selectedAllergens.some(a => a.id === allergen.id)
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                          onClick={() => toggleAllergen(allergen)}
+                        >
+                          {allergen.number}: {allergen.title}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowProductForm(false);
+                    setEditingProduct(null);
+                  }}
+                >
+                  Annulla
+                </Button>
+                <Button type="submit">Salva</Button>
               </div>
-              <div>
-                <Label htmlFor="variant1-price">Prezzo Variante 1 (€)</Label>
-                <Input 
-                  id="variant1-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={priceVariant1Value}
-                  onChange={(e) => setPriceVariant1Value(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="variant2-name">Nome Variante 2</Label>
-                <Input 
-                  id="variant2-name"
-                  value={priceVariant2Name}
-                  onChange={(e) => setPriceVariant2Name(e.target.value)}
-                  placeholder="Es. Calice"
-                />
-              </div>
-              <div>
-                <Label htmlFor="variant2-price">Prezzo Variante 2 (€)</Label>
-                <Input 
-                  id="variant2-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={priceVariant2Value}
-                  onChange={(e) => setPriceVariant2Value(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="space-y-2">
-          <Label className="block">Allergeni</Label>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {allergens.map((allergen) => (
-              <div 
-                key={allergen.id} 
-                className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
-                  selectedAllergens.some(a => a.id === allergen.id)
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-white hover:bg-gray-50"
-                }`}
-                onClick={() => toggleAllergen(allergen)}
-              >
-                {allergen.number}: {allergen.title}
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="flex justify-end space-x-2 pt-2">
-          <Button type="button" variant="outline" onClick={onCancel}>Annulla</Button>
-          <Button type="submit">Salva</Button>
-        </div>
-      </form>
+            </form>
+          </Form>
+        </SheetContent>
+      </Sheet>
     );
   };
 
-  // Componente per la gestione delle categorie
-  const CategoriesManager = () => {
-    const [showAddDialog, setShowAddDialog] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [reorderingList, setReorderingList] = useState<Category[]>([]);
-
-    const startReordering = () => {
-      setIsReordering(true);
-      setReorderingList([...categories]);
-    };
-
-    const cancelReordering = () => {
-      setIsReordering(false);
-    };
-
-    const moveCategory = (index: number, direction: 'up' | 'down') => {
-      if (
-        (direction === 'up' && index === 0) || 
-        (direction === 'down' && index === reorderingList.length - 1)
-      ) {
-        return;
-      }
-
-      const newList = [...reorderingList];
-      const newIndex = direction === 'up' ? index - 1 : index + 1;
-      [newList[index], newList[newIndex]] = [newList[newIndex], newList[index]];
-      setReorderingList(newList);
-    };
-
-    const saveReordering = () => {
-      handleReorderCategories(reorderingList);
-    };
-
+  // Componente lista categorie
+  const CategoriesList = () => {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Categorie</h2>
-          {isReordering ? (
-            <div className="space-x-2">
-              <Button onClick={cancelReordering} variant="outline">
-                <X className="h-4 w-4 mr-1" /> Annulla
-              </Button>
-              <Button onClick={saveReordering} variant="default">
-                <Save className="h-4 w-4 mr-1" /> Salva
-              </Button>
-            </div>
-          ) : (
-            <div className="space-x-2">
-              <Button onClick={startReordering} variant="outline">
-                <Move className="h-4 w-4 mr-1" /> Riordina
-              </Button>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <PlusCircle className="h-4 w-4 mr-1" /> Aggiungi
-              </Button>
-            </div>
-          )}
+      <div className="h-full flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-lg font-semibold">Categorie</h2>
+          <Button onClick={() => {
+            setEditingCategory(null);
+            setShowCategoryForm(true);
+          }} size="sm">
+            <PlusCircle className="h-4 w-4 mr-2" /> Nuova
+          </Button>
         </div>
-
-        <ScrollArea className="h-[calc(100vh-250px)]">
-          <div className="space-y-2">
-            {isReordering ? (
-              // Modalità riordinamento
-              reorderingList.map((category, index) => (
-                <div 
-                  key={category.id}
-                  className="flex items-center justify-between bg-white p-3 rounded-md border"
-                >
-                  <div className="flex items-center">
-                    <span className="font-medium">{category.title}</span>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => moveCategory(index, 'up')}
-                      disabled={index === 0}
-                    >
-                      ↑
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => moveCategory(index, 'down')}
-                      disabled={index === reorderingList.length - 1}
-                    >
-                      ↓
-                    </Button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              // Modalità normale
-              categories.map((category) => (
-                <div 
-                  key={category.id}
-                  className={`flex items-center justify-between p-3 rounded-md border cursor-pointer ${
-                    selectedCategory === category.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-white hover:bg-gray-50"
-                  }`}
-                  onClick={() => handleCategorySelect(category.id)}
-                >
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-200 rounded-sm overflow-hidden mr-3">
-                      {category.image_url ? (
-                        <img 
-                          src={category.image_url} 
-                          alt={category.title} 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : null}
-                    </div>
-                    <span className="font-medium">{category.title}</span>
-                    {!category.is_active && (
-                      <span className="ml-2 text-xs px-2 py-0.5 bg-gray-300 text-gray-700 rounded-full">
-                        Inattiva
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingCategory(category);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCategory(category.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))
-            )}
-
-            {categories.length === 0 && !isLoading && (
-              <div className="text-center py-6 text-gray-500">
-                Nessuna categoria trovata. Aggiungi una nuova categoria per iniziare.
-              </div>
-            )}
-
-            {isLoading && (
+        
+        <ScrollArea className="flex-grow">
+          <div className="p-2">
+            {isLoadingCategories ? (
               <div className="space-y-2">
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {categories.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Nessuna categoria trovata.<br />
+                    Crea una nuova categoria per iniziare.
+                  </div>
+                ) : (
+                  categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
+                        selectedCategory === category.id
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => handleCategorySelect(category.id)}
+                    >
+                      <div className="flex items-center space-x-2">
+                        {category.image_url ? (
+                          <div className="w-8 h-8 rounded-md overflow-hidden">
+                            <img
+                              src={category.image_url}
+                              alt={category.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
+                            <Package className="h-4 w-4" />
+                          </div>
+                        )}
+                        <span className="truncate max-w-[120px]">{category.title}</span>
+                      </div>
+                      
+                      {!category.is_active && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                          Disattivata
+                        </span>
+                      )}
+                      
+                      <div className="flex">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCategory(category);
+                            setShowCategoryForm(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCategory(category.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
         </ScrollArea>
-
-        {/* Dialog per aggiungere una categoria */}
-        <Dialog 
-          open={showAddDialog} 
-          onOpenChange={(open) => !open && setShowAddDialog(false)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Aggiungi Categoria</DialogTitle>
-            </DialogHeader>
-            <CategoryForm 
-              onSubmit={(data) => {
-                handleAddCategory(data);
-                setShowAddDialog(false);
-              }}
-              onCancel={() => setShowAddDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
-
-        {/* Dialog per modificare una categoria */}
-        <Dialog 
-          open={!!editingCategory} 
-          onOpenChange={(open) => !open && setEditingCategory(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Modifica Categoria</DialogTitle>
-            </DialogHeader>
-            {editingCategory && (
-              <CategoryForm 
-                initialData={editingCategory}
-                onSubmit={(data) => {
-                  handleUpdateCategory(editingCategory.id, data);
-                  setEditingCategory(null);
-                }}
-                onCancel={() => setEditingCategory(null)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     );
   };
 
-  // Componente per la gestione dei prodotti
-  const ProductsManager = () => {
-    const [showAddDialog, setShowAddDialog] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [isReorderingProducts, setIsReorderingProducts] = useState(false);
-    const [reorderingProductsList, setReorderingProductsList] = useState<Product[]>([]);
-
-    const startReordering = () => {
-      setIsReorderingProducts(true);
-      setReorderingProductsList([...products]);
-    };
-
-    const cancelReordering = () => {
-      setIsReorderingProducts(false);
-    };
-
-    const moveProduct = (index: number, direction: 'up' | 'down') => {
-      if (
-        (direction === 'up' && index === 0) || 
-        (direction === 'down' && index === reorderingProductsList.length - 1)
-      ) {
-        return;
-      }
-
-      const newList = [...reorderingProductsList];
-      const newIndex = direction === 'up' ? index - 1 : index + 1;
-      [newList[index], newList[newIndex]] = [newList[newIndex], newList[index]];
-      setReorderingProductsList(newList);
-    };
-
-    const saveReordering = () => {
-      handleReorderProducts(reorderingProductsList);
-      setIsReorderingProducts(false);
-    };
-
-    // Trova la categoria selezionata
-    const selectedCategoryData = categories.find(c => c.id === selectedCategory);
-
+  // Componente lista prodotti
+  const ProductsList = () => {
+    // Funzione per filtrare i prodotti in base alla ricerca
+    const filteredProducts = products.filter(
+      product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">
-            {selectedCategoryData 
-              ? `Prodotti: ${selectedCategoryData.title}`
-              : "Seleziona una categoria"
-            }
-          </h2>
-          {selectedCategory && (
-            isReorderingProducts ? (
-              <div className="space-x-2">
-                <Button onClick={cancelReordering} variant="outline">
-                  <X className="h-4 w-4 mr-1" /> Annulla
-                </Button>
-                <Button onClick={saveReordering} variant="default">
-                  <Save className="h-4 w-4 mr-1" /> Salva
-                </Button>
+      <div className="h-full flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b">
+          <div className="flex-1">
+            <Input
+              placeholder="Cerca prodotti..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-sm"
+              icon={<Search className="h-4 w-4" />}
+            />
+          </div>
+          <Button
+            onClick={() => {
+              if (!selectedCategory) {
+                toast.error("Seleziona prima una categoria");
+                return;
+              }
+              setEditingProduct(null);
+              setShowProductForm(true);
+            }}
+            size="sm"
+            className="ml-2"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" /> Nuovo
+          </Button>
+        </div>
+        
+        <ScrollArea className="flex-grow">
+          <div className="p-4">
+            {!selectedCategory ? (
+              <div className="text-center py-8 text-gray-500">
+                Seleziona una categoria per visualizzare i prodotti.
+              </div>
+            ) : isLoadingProducts ? (
+              <div className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                {searchQuery ? 
+                  "Nessun prodotto trovato per questa ricerca." : 
+                  "Nessun prodotto in questa categoria."}
               </div>
             ) : (
-              <div className="space-x-2">
-                <Button onClick={startReordering} variant="outline">
-                  <Move className="h-4 w-4 mr-1" /> Riordina
-                </Button>
-                <Button onClick={() => setShowAddDialog(true)}>
-                  <PlusCircle className="h-4 w-4 mr-1" /> Aggiungi
-                </Button>
-              </div>
-            )
-          )}
-        </div>
-
-        {selectedCategory ? (
-          <ScrollArea className="h-[calc(100vh-250px)]">
-            <div className="space-y-3">
-              {isReorderingProducts ? (
-                // Modalità riordinamento prodotti
-                reorderingProductsList.map((product, index) => (
-                  <div 
+              <div className="space-y-2">
+                {filteredProducts.map((product) => (
+                  <div
                     key={product.id}
-                    className="flex items-center justify-between bg-white p-3 rounded-md border"
+                    className={`border rounded-md p-3 cursor-pointer transition-colors ${
+                      selectedProduct === product.id 
+                        ? "border-primary bg-primary/5" 
+                        : "hover:bg-gray-50"
+                    } ${!product.is_active ? "opacity-60" : ""}`}
+                    onClick={() => setSelectedProduct(product.id)}
                   >
-                    <div className="flex items-center">
-                      <span className="font-medium">{product.title}</span>
-                    </div>
-                    <div className="flex space-x-1">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => moveProduct(index, 'up')}
-                        disabled={index === 0}
-                      >
-                        ↑
-                      </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => moveProduct(index, 'down')}
-                        disabled={index === reorderingProductsList.length - 1}
-                      >
-                        ↓
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                // Modalità normale prodotti
-                products.map((product) => (
-                  <Card key={product.id} className={`${!product.is_active ? 'opacity-70' : ''}`}>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{product.title}</CardTitle>
-                        <div className="flex space-x-1">
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            onClick={() => setEditingProduct(product)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            onClick={() => handleDeleteProduct(product.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex flex-wrap gap-4">
-                        {/* Informazioni prodotto */}
-                        <div className="flex-1 min-w-[60%]">
-                          {product.description && (
-                            <p className="text-gray-600 text-sm">{product.description}</p>
-                          )}
-                          
-                          {/* Allergeni */}
-                          {product.allergens && product.allergens.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs text-gray-500">Allergeni:</p>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {product.allergens.map(allergen => (
-                                  <span key={allergen.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
-                                    {allergen.number}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Prezzi */}
-                          <div className="mt-2">
-                            {product.has_multiple_prices ? (
-                              <div className="space-y-1">
-                                <p className="font-medium">{product.price_standard} €</p>
-                                {product.price_variant_1_name && (
-                                  <p className="text-sm">{product.price_variant_1_name}: {product.price_variant_1_value} €</p>
-                                )}
-                                {product.price_variant_2_name && (
-                                  <p className="text-sm">{product.price_variant_2_name}: {product.price_variant_2_value} €</p>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="font-medium">{product.price_standard} €</p>
-                            )}
-                          </div>
-                          
-                          {/* Badge per prodotto inattivo */}
-                          {!product.is_active && (
-                            <div className="mt-2">
-                              <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                                Non disponibile
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Immagine prodotto */}
-                        {product.image_url && (
-                          <div className="w-24 h-24 bg-gray-100 rounded-md overflow-hidden">
-                            <img 
+                    <div className="flex justify-between">
+                      <div className="flex space-x-3">
+                        {product.image_url ? (
+                          <div className="w-16 h-16 rounded-md overflow-hidden">
+                            <img
                               src={product.image_url}
-                              alt={product.title} // Fix: changed from product.name to product.title
+                              alt={product.title}
                               className="w-full h-full object-cover"
                             />
                           </div>
+                        ) : (
+                          <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md">
+                            <Package className="h-6 w-6 text-gray-400" />
+                          </div>
                         )}
+                        
+                        <div>
+                          <h3 className="font-medium">{product.title}</h3>
+                          {product.description && (
+                            <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                          )}
+                          
+                          <div className="flex items-center mt-1 space-x-2">
+                            <span className="text-sm font-semibold">{product.price_standard} €</span>
+                            
+                            {!product.is_active && (
+                              <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                                Non disponibile
+                              </span>
+                            )}
+                            
+                            {product.allergens && product.allergens.length > 0 && (
+                              <div className="flex space-x-1">
+                                {product.allergens.slice(0, 3).map((allergen) => (
+                                  <span 
+                                    key={allergen.id}
+                                    className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
+                                  >
+                                    {allergen.number}
+                                  </span>
+                                ))}
+                                {product.allergens.length > 3 && (
+                                  <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
+                                    +{product.allergens.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-
-              {products.length === 0 && !isLoading && (
-                <div className="text-center py-6 text-gray-500">
-                  Nessun prodotto trovato in questa categoria. Aggiungi un nuovo prodotto per iniziare.
-                </div>
-              )}
-
-              {isLoading && (
-                <div className="space-y-3">
-                  <Skeleton className="h-36 w-full" />
-                  <Skeleton className="h-36 w-full" />
-                  <Skeleton className="h-36 w-full" />
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        ) : (
-          <div className="text-center py-12 text-gray-500">
-            Seleziona una categoria per visualizzare e gestire i prodotti.
+                      
+                      <div className="flex items-start space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingProduct(product);
+                            setShowProductForm(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProduct(product.id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </ScrollArea>
+      </div>
+    );
+  };
 
-        {/* Dialog per aggiungere un prodotto */}
-        <Dialog 
-          open={showAddDialog} 
-          onOpenChange={(open) => !open && setShowAddDialog(false)}
-        >
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Aggiungi Prodotto</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="max-h-[80vh]">
-              <ProductForm 
-                onSubmit={(data) => {
-                  handleAddProduct(data);
-                  setShowAddDialog(false);
-                }}
-                onCancel={() => setShowAddDialog(false)}
-              />
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
-
-        {/* Dialog per modificare un prodotto */}
-        <Dialog 
-          open={!!editingProduct} 
-          onOpenChange={(open) => !open && setEditingProduct(null)}
-        >
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Modifica Prodotto</DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="max-h-[80vh]">
-              {editingProduct && (
-                <ProductForm 
-                  initialData={editingProduct}
-                  onSubmit={(data) => {
-                    handleUpdateProduct(editingProduct.id, data);
-                    setEditingProduct(null);
-                  }}
-                  onCancel={() => setEditingProduct(null)}
-                />
+  // Componente dettaglio prodotto
+  const ProductDetail = () => {
+    const product = products.find(p => p.id === selectedProduct);
+    
+    if (!product) {
+      return (
+        <div className="h-full flex items-center justify-center text-gray-500">
+          Seleziona un prodotto per visualizzare i dettagli.
+        </div>
+      );
+    }
+    
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
+          <div className="flex space-x-2">
+            <Button 
+              size="sm" 
+              onClick={() => {
+                setEditingProduct(product);
+                setShowProductForm(true);
+              }}
+            >
+              <Edit className="h-4 w-4 mr-2" /> Modifica
+            </Button>
+          </div>
+        </div>
+        
+        <ScrollArea className="flex-grow">
+          <div className="p-4 space-y-6">
+            {/* Intestazione prodotto */}
+            <div className="flex space-x-4">
+              {product.image_url ? (
+                <div className="w-32 h-32 rounded-md overflow-hidden">
+                  <img
+                    src={product.image_url}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-md">
+                  <Package className="h-10 w-10 text-gray-400" />
+                </div>
               )}
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
+              
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-2xl font-bold">{product.title}</h1>
+                  {!product.is_active && (
+                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                      Non disponibile
+                    </span>
+                  )}
+                </div>
+                
+                {product.description && (
+                  <p className="text-gray-700 mt-2">{product.description}</p>
+                )}
+                
+                <div className="mt-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-600 font-medium">Categoria: </span>
+                    <span className="ml-2">
+                      {categories.find(c => c.id === product.category_id)?.title || ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            {/* Prezzi */}
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-xl font-semibold mb-4">Prezzi</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span>Prezzo standard</span>
+                    <span className="font-semibold">{product.price_standard} €</span>
+                  </div>
+                  
+                  {product.has_multiple_prices && (
+                    <>
+                      {product.price_variant_1_name && (
+                        <div className="flex justify-between items-center">
+                          <span>{product.price_variant_1_name}</span>
+                          <span className="font-semibold">{product.price_variant_1_value} €</span>
+                        </div>
+                      )}
+                      
+                      {product.price_variant_2_name && (
+                        <div className="flex justify-between items-center">
+                          <span>{product.price_variant_2_name}</span>
+                          <span className="font-semibold">{product.price_variant_2_value} €</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Allergeni */}
+            {product.allergens && product.allergens.length > 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-xl font-semibold mb-4">Allergeni</h3>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {product.allergens.map((allergen) => (
+                      <div 
+                        key={allergen.id}
+                        className="bg-gray-100 rounded-full px-3 py-1"
+                      >
+                        {allergen.number}: {allergen.title}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Info tecniche */}
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-xl font-semibold mb-4">Informazioni tecniche</h3>
+                
+                <Table>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">ID</TableCell>
+                      <TableCell>{product.id}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Ordine di visualizzazione</TableCell>
+                      <TableCell>{product.display_order}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Creato il</TableCell>
+                      <TableCell>
+                        {product.created_at && new Date(product.created_at).toLocaleDateString('it-IT')}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">Ultimo aggiornamento</TableCell>
+                      <TableCell>
+                        {product.updated_at && new Date(product.updated_at).toLocaleDateString('it-IT')}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        </ScrollArea>
       </div>
     );
   };
 
   return (
-    <Tabs defaultValue="categories" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="categories">Categorie</TabsTrigger>
-        <TabsTrigger value="products">Prodotti</TabsTrigger>
-      </TabsList>
+    <div className="h-[calc(100vh-4rem)]">
+      <div className="grid grid-cols-12 h-full divide-x">
+        {/* Colonna categorie */}
+        <div className="col-span-3 h-full border-r">
+          <CategoriesList />
+        </div>
+        
+        {/* Colonna prodotti */}
+        <div className="col-span-4 h-full border-r">
+          <ProductsList />
+        </div>
+        
+        {/* Colonna dettaglio */}
+        <div className="col-span-5 h-full">
+          <ProductDetail />
+        </div>
+      </div>
       
-      <TabsContent value="categories" className="mt-6">
-        <CategoriesManager />
-      </TabsContent>
-      
-      <TabsContent value="products" className="mt-6">
-        <ProductsManager />
-      </TabsContent>
-    </Tabs>
+      {/* Form pannelli laterali */}
+      <CategoryFormPanel />
+      <ProductFormPanel />
+    </div>
   );
 };
 
