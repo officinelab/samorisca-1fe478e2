@@ -234,10 +234,24 @@ const Dashboard = () => {
     setCategories(updatedCategories);
     
     try {
-      // Aggiorna il database
+      // Aggiorna il database - ora includiamo tutti i campi richiesti
       const updates = [
-        { id: category1.id, display_order: category1.display_order },
-        { id: category2.id, display_order: category2.display_order }
+        { 
+          id: category1.id, 
+          display_order: category1.display_order,
+          title: category1.title,
+          description: category1.description,
+          image_url: category1.image_url,
+          is_active: category1.is_active
+        },
+        { 
+          id: category2.id, 
+          display_order: category2.display_order,
+          title: category2.title,
+          description: category2.description,
+          image_url: category2.image_url,
+          is_active: category2.is_active
+        }
       ];
       
       const { error } = await supabase
@@ -286,10 +300,38 @@ const Dashboard = () => {
     setProducts(updatedProducts);
     
     try {
-      // Aggiorna il database
+      // Aggiorna il database - ora includiamo tutti i campi richiesti
       const updates = [
-        { id: product1.id, display_order: product1.display_order },
-        { id: product2.id, display_order: product2.display_order }
+        { 
+          id: product1.id, 
+          display_order: product1.display_order,
+          title: product1.title,
+          category_id: product1.category_id,
+          description: product1.description,
+          image_url: product1.image_url,
+          is_active: product1.is_active,
+          price_standard: product1.price_standard,
+          has_multiple_prices: product1.has_multiple_prices,
+          price_variant_1_name: product1.price_variant_1_name,
+          price_variant_1_value: product1.price_variant_1_value,
+          price_variant_2_name: product1.price_variant_2_name,
+          price_variant_2_value: product1.price_variant_2_value
+        },
+        { 
+          id: product2.id, 
+          display_order: product2.display_order,
+          title: product2.title,
+          category_id: product2.category_id,
+          description: product2.description,
+          image_url: product2.image_url,
+          is_active: product2.is_active,
+          price_standard: product2.price_standard,
+          has_multiple_prices: product2.has_multiple_prices,
+          price_variant_1_name: product2.price_variant_1_name,
+          price_variant_1_value: product2.price_variant_1_value,
+          price_variant_2_name: product2.price_variant_2_name,
+          price_variant_2_value: product2.price_variant_2_value
+        }
       ];
       
       const { error } = await supabase
