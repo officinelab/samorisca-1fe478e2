@@ -142,35 +142,158 @@ const MenuPrint = () => {
         <head>
           <title>Sa Morisca Menu</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
+            @page {
+              size: A4;
               margin: 0;
-              padding: 20px;
-              color: #333;
             }
-            img {
-              max-width: 100%;
-              height: auto;
+            
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: 'Arial', sans-serif;
+              width: 210mm;
+              height: 297mm;
             }
-            .print-container {
-              max-width: 800px;
-              margin: 0 auto;
-              background: white;
+            
+            .page {
+              width: 210mm;
+              height: 297mm;
+              padding: 20mm 0;
+              box-sizing: border-box;
             }
+            
+            .menu-container {
+              margin-left: 1cm;
+              margin-right: 3cm;
+            }
+            
+            .category {
+              margin-bottom: 15mm;
+            }
+            
+            .category-title {
+              font-size: 18pt;
+              font-weight: bold;
+              margin-bottom: 5mm;
+              text-transform: uppercase;
+              border-bottom: 1px solid #000;
+              padding-bottom: 2mm;
+            }
+            
+            .menu-item {
+              margin-bottom: 5mm;
+            }
+            
+            .item-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              width: 100%;
+            }
+            
+            .item-title {
+              font-weight: bold;
+              font-size: 12pt;
+              width: auto;
+              white-space: nowrap;
+              margin-right: 10px;
+            }
+            
+            .item-allergens {
+              width: auto;
+              font-size: 10pt;
+              white-space: nowrap;
+              margin-right: 10px;
+            }
+            
+            .item-dots {
+              flex-grow: 1;
+              position: relative;
+              top: -3px;
+              border-bottom: 1px dotted #000;
+            }
+            
+            .item-price {
+              text-align: right;
+              font-weight: bold;
+              width: auto;
+              white-space: nowrap;
+              margin-left: 10px;
+            }
+            
+            .item-description {
+              font-size: 10pt;
+              font-style: italic;
+              margin-top: 2mm;
+              width: auto;
+              max-width: calc(100% - 20px);
+            }
+            
+            .allergens-section {
+              margin-top: 20mm;
+              border-top: 1px solid #000;
+              padding-top: 5mm;
+            }
+            
+            .allergens-title {
+              font-size: 14pt;
+              font-weight: bold;
+              margin-bottom: 5mm;
+              text-transform: uppercase;
+            }
+            
+            .allergens-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 10px;
+            }
+            
+            .allergen-item {
+              display: flex;
+              align-items: center;
+            }
+            
+            .allergen-number {
+              display: inline-block;
+              width: 20px;
+              height: 20px;
+              background-color: #f0f0f0;
+              border-radius: 50%;
+              text-align: center;
+              line-height: 20px;
+              margin-right: 8px;
+              font-weight: bold;
+            }
+            
+            .allergen-content {
+              flex: 1;
+            }
+            
+            .allergen-title {
+              font-weight: bold;
+            }
+            
+            .allergen-description {
+              font-size: 9pt;
+              color: #555;
+            }
+            
             @media print {
               body {
-                padding: 0;
-                color: #000;
+                width: 210mm;
+                height: 297mm;
               }
-              .print-container {
-                width: 100%;
-                max-width: 100%;
+              
+              .page {
+                margin: 0;
+                padding: 20mm 0;
+                box-shadow: none;
               }
             }
           </style>
         </head>
         <body>
-          <div class="print-container">
+          <div class="page">
             ${content}
           </div>
           <script>
@@ -201,91 +324,83 @@ const MenuPrint = () => {
 
   // Layout Classico
   const ClassicLayout = () => (
-    <div className="bg-white rounded-md p-8">
-      <div className="text-center mb-8">
-        <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold">Sa Morisca Menu</h1>
-      </div>
-      
-      <div className="space-y-8">
+    <div className="page">
+      <div className="menu-container">
+        <div className="text-center mb-8">
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold">Sa Morisca Menu</h1>
+        </div>
+        
         {categories
           .filter(category => selectedCategories.includes(category.id))
           .map(category => (
-            <div key={category.id} className="mb-8">
-              <h2 className="text-2xl font-semibold border-b-2 border-gray-300 pb-2 mb-4">
+            <div key={category.id} className="category">
+              <h2 className="category-title">
                 {category.title}
               </h2>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div>
                 {products[category.id]?.map(product => (
-                  <div key={product.id} className="flex justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-baseline">
-                        <h3 className="text-lg font-medium">{product.title}</h3>
-                        {product.allergens && product.allergens.length > 0 && (
-                          <div className="ml-2 flex">
-                            {product.allergens.map(allergen => (
-                              <span key={allergen.id} className="text-xs bg-gray-200 rounded-full px-1 mx-0.5">
-                                {allergen.number}
-                              </span>
-                            ))}
-                          </div>
+                  <div key={product.id} className="menu-item">
+                    <div className="item-header">
+                      <div className="item-title">{product.title}</div>
+                      {product.allergens && product.allergens.length > 0 && (
+                        <div className="item-allergens">
+                          {product.allergens.map(allergen => allergen.number).join(", ")}
+                        </div>
+                      )}
+                      <div className="item-dots"></div>
+                      <div className="item-price">
+                        {product.has_multiple_prices ? (
+                          `€ ${product.price_standard}`
+                        ) : (
+                          `€ ${product.price_standard}`
                         )}
                       </div>
-                      {product.description && (
-                        <p className="text-gray-600 text-sm">{product.description}</p>
-                      )}
                     </div>
                     
-                    <div className="ml-4 min-w-[80px] text-right">
-                      {product.has_multiple_prices ? (
-                        <div>
-                          <div>{product.price_standard} €</div>
-                          {product.price_variant_1_name && (
-                            <div className="text-sm">
-                              {product.price_variant_1_name}: {product.price_variant_1_value} €
-                            </div>
-                          )}
-                          {product.price_variant_2_name && (
-                            <div className="text-sm">
-                              {product.price_variant_2_name}: {product.price_variant_2_value} €
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div>{product.price_standard} €</div>
-                      )}
-                    </div>
+                    {product.description && (
+                      <div className="item-description">{product.description}</div>
+                    )}
+                    
+                    {product.has_multiple_prices && (
+                      <div className="mt-1 text-sm flex justify-end space-x-4">
+                        {product.price_variant_1_name && (
+                          <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
+                        )}
+                        {product.price_variant_2_name && (
+                          <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
           ))}
-      </div>
-      
-      {printAllergens && allergens.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold border-b-2 border-gray-300 pb-2 mb-4">
-            Tabella Allergeni
-          </h2>
           
-          <div className="grid grid-cols-2 gap-4">
-            {allergens.map(allergen => (
-              <div key={allergen.id} className="flex items-start">
-                <span className="inline-block w-6 h-6 rounded-full bg-gray-200 text-center leading-6 mr-2">
-                  {allergen.number}
-                </span>
-                <div>
-                  <div className="font-medium">{allergen.title}</div>
-                  {allergen.description && (
-                    <div className="text-sm text-gray-600">{allergen.description}</div>
-                  )}
+        {printAllergens && allergens.length > 0 && (
+          <div className="allergens-section">
+            <h2 className="allergens-title">
+              Tabella Allergeni
+            </h2>
+            
+            <div className="allergens-grid">
+              {allergens.map(allergen => (
+                <div key={allergen.id} className="allergen-item">
+                  <span className="allergen-number">{allergen.number}</span>
+                  <div className="allergen-content">
+                    <div className="allergen-title">{allergen.title}</div>
+                    {allergen.description && (
+                      <div className="allergen-description">{allergen.description}</div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 
