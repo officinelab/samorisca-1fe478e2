@@ -146,9 +146,15 @@ export type Database = {
           created_at: string | null
           description: string | null
           display_order: number
+          has_multiple_prices: boolean | null
           id: string
           image_url: string | null
           is_active: boolean | null
+          price_standard: number | null
+          price_variant_1_name: string | null
+          price_variant_1_value: number | null
+          price_variant_2_name: string | null
+          price_variant_2_value: number | null
           title: string
           updated_at: string | null
         }
@@ -157,9 +163,15 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           display_order?: number
+          has_multiple_prices?: boolean | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          price_standard?: number | null
+          price_variant_1_name?: string | null
+          price_variant_1_value?: number | null
+          price_variant_2_name?: string | null
+          price_variant_2_value?: number | null
           title: string
           updated_at?: string | null
         }
@@ -168,9 +180,15 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           display_order?: number
+          has_multiple_prices?: boolean | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          price_standard?: number | null
+          price_variant_1_name?: string | null
+          price_variant_1_value?: number | null
+          price_variant_2_name?: string | null
+          price_variant_2_value?: number | null
           title?: string
           updated_at?: string | null
         }

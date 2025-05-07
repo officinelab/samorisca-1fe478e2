@@ -1,4 +1,5 @@
 
+
 export interface Allergen {
   id: string;
   number: number;
@@ -29,8 +30,8 @@ export interface Product {
   image_url: string | null;
   is_active: boolean;
   display_order: number;
-  price_standard?: number;
-  has_multiple_prices?: boolean;
+  price_standard?: number | null;
+  has_multiple_prices?: boolean | null;
   price_variant_1_name?: string | null;
   price_variant_1_value?: number | null;
   price_variant_2_name?: string | null;
