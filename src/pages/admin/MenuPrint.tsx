@@ -319,10 +319,21 @@ const MenuPrint = () => {
     handlePrint();
   };
 
-  // Layout Classico
+  // Layout Classico - Aggiornato per corrispondere al layout di stampa
   const ClassicLayout = () => (
-    <div className="page">
-      <div className="menu-container">
+    <div className="page" style={{
+      width: '210mm',
+      height: '297mm',
+      padding: '20mm 0',
+      boxSizing: 'border-box',
+      fontFamily: 'Arial, sans-serif',
+      margin: '0 auto',
+      backgroundColor: 'white'
+    }}>
+      <div className="menu-container" style={{
+        marginLeft: '1cm',
+        marginRight: '3cm'
+      }}>
         <div className="text-center mb-8">
           <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Sa Morisca Menu</h1>
@@ -331,34 +342,75 @@ const MenuPrint = () => {
         {categories
           .filter(category => selectedCategories.includes(category.id))
           .map(category => (
-            <div key={category.id} className="category">
-              <h2 className="category-title">
+            <div key={category.id} style={{
+              marginBottom: '15mm'
+            }} className="category">
+              <h2 style={{
+                fontSize: '18pt',
+                fontWeight: 'bold',
+                marginBottom: '5mm',
+                textTransform: 'uppercase',
+                borderBottom: '1px solid #000',
+                paddingBottom: '2mm'
+              }} className="category-title">
                 {category[`title_${language}`] || category.title}
               </h2>
               
               <div>
                 {products[category.id]?.map(product => (
-                  <div key={product.id} className="menu-item">
-                    <div className="item-header">
-                      <div className="item-title">
+                  <div key={product.id} style={{
+                    marginBottom: '5mm'
+                  }} className="menu-item">
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      width: '100%'
+                    }} className="item-header">
+                      <div style={{
+                        fontWeight: 'bold',
+                        fontSize: '12pt',
+                        width: 'auto',
+                        whiteSpace: 'nowrap',
+                        marginRight: '10px'
+                      }} className="item-title">
                         {product[`title_${language}`] || product.title}
                       </div>
                       {product.allergens && product.allergens.length > 0 && (
-                        <div className="item-allergens">
+                        <div style={{
+                          width: 'auto',
+                          fontSize: '10pt',
+                          whiteSpace: 'nowrap',
+                          marginRight: '10px'
+                        }} className="item-allergens">
                           {product.allergens.map(allergen => allergen.number).join(", ")}
                         </div>
                       )}
-                      <div className="item-dots"></div>
-                      <div className="item-price">
-                        {product.has_multiple_prices 
-                          ? `€ ${product.price_standard}` 
-                          : `€ ${product.price_standard}`
-                        }
+                      <div style={{
+                        flexGrow: 1,
+                        position: 'relative',
+                        top: '-3px',
+                        borderBottom: '1px dotted #000'
+                      }} className="item-dots"></div>
+                      <div style={{
+                        textAlign: 'right',
+                        fontWeight: 'bold',
+                        width: 'auto',
+                        whiteSpace: 'nowrap',
+                        marginLeft: '10px'
+                      }} className="item-price">
+                        € {product.price_standard}
                       </div>
                     </div>
                     
                     {(product[`description_${language}`] || product.description) && (
-                      <div className="item-description">
+                      <div style={{
+                        fontSize: '10pt',
+                        fontStyle: 'italic',
+                        marginTop: '2mm',
+                        width: 'auto',
+                        maxWidth: 'calc(100% - 20px)'
+                      }} className="item-description">
                         {product[`description_${language}`] || product.description}
                       </div>
                     )}
@@ -380,19 +432,48 @@ const MenuPrint = () => {
           ))}
           
         {printAllergens && allergens.length > 0 && (
-          <div className="allergens-section">
-            <h2 className="allergens-title">
+          <div style={{
+            marginTop: '20mm',
+            borderTop: '1px solid #000',
+            paddingTop: '5mm'
+          }} className="allergens-section">
+            <h2 style={{
+              fontSize: '14pt',
+              fontWeight: 'bold',
+              marginBottom: '5mm',
+              textTransform: 'uppercase'
+            }} className="allergens-title">
               Tabella Allergeni
             </h2>
             
-            <div className="allergens-grid">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '10px'
+            }} className="allergens-grid">
               {allergens.map(allergen => (
-                <div key={allergen.id} className="allergen-item">
-                  <span className="allergen-number">{allergen.number}</span>
-                  <div className="allergen-content">
-                    <div className="allergen-title">{allergen.title}</div>
+                <div key={allergen.id} style={{
+                  display: 'flex',
+                  alignItems: 'center'
+                }} className="allergen-item">
+                  <span style={{
+                    display: 'inline-block',
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '50%',
+                    textAlign: 'center',
+                    lineHeight: '20px',
+                    marginRight: '8px',
+                    fontWeight: 'bold'
+                  }} className="allergen-number">{allergen.number}</span>
+                  <div style={{flex: 1}} className="allergen-content">
+                    <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
                     {allergen.description && (
-                      <div className="allergen-description">{allergen.description}</div>
+                      <div style={{
+                        fontSize: '9pt',
+                        color: '#555'
+                      }} className="allergen-description">{allergen.description}</div>
                     )}
                   </div>
                 </div>
