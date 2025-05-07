@@ -21,7 +21,9 @@ import {
   ChevronDown,
   Package,
   Menu,
-  Settings
+  Settings,
+  Save,
+  ArrowLeft
 } from "lucide-react";
 import { 
   Sheet, 
@@ -53,6 +55,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Category, Product, Allergen } from "@/types/database";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -63,12 +66,16 @@ const Dashboard = () => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [showMobileCategories, setShowMobileCategories] = useState(true);
+  const [showMobileProducts, setShowMobileProducts] = useState(false);
+  const [showMobileDetail, setShowMobileDetail] = useState(false);
   
   // Stati per i pannelli laterali
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [showProductForm, setShowProductForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+  const isMobile = useIsMobile();
 
   // Carica le categorie, i prodotti e gli allergeni
   useEffect(() => {
@@ -163,6 +170,7 @@ const Dashboard = () => {
       setProducts(productsWithAllergens);
       // Reimposta il prodotto selezionato quando cambia la categoria
       setSelectedProduct(null);
+      setIsEditing(false);
     } catch (error) {
       console.error('Errore nel caricamento dei prodotti:', error);
       toast.error("Errore nel caricamento dei prodotti. Riprova più tardi.");
@@ -175,6 +183,129 @@ const Dashboard = () => {
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
     loadProducts(categoryId);
+    
+    if (isMobile) {
+      setShowMobileCategories(false);
+      setShowMobileProducts(true);
+      setShowMobileDetail(false);
+    }
+  };
+
+  // Gestisce la selezione di un prodotto
+  const handleProductSelect = (productId: string) => {
+    setSelectedProduct(productId);
+    setIsEditing(false);
+    
+    if (isMobile) {
+      setShowMobileProducts(false);
+      setShowMobileDetail(true);
+    }
+  };
+
+  // Cambia l'ordine di visualizzazione di una categoria
+  const handleCategoryReorder = async (categoryId: string, direction: 'up' | 'down') => {
+    // Trova l'indice della categoria corrente
+    const currentIndex = categories.findIndex(c => c.id === categoryId);
+    if (currentIndex === -1) return;
+
+    // Calcola il nuovo indice
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    
+    // Verifica che il nuovo indice sia valido
+    if (newIndex < 0 || newIndex >= categories.length) return;
+    
+    // Crea una copia dell'array delle categorie
+    const updatedCategories = [...categories];
+    
+    // Recupera le categorie coinvolte
+    const category1 = updatedCategories[currentIndex];
+    const category2 = updatedCategories[newIndex];
+    
+    // Scambia gli ordini di visualizzazione
+    const tempOrder = category1.display_order;
+    category1.display_order = category2.display_order;
+    category2.display_order = tempOrder;
+    
+    // Aggiorna localmente l'array
+    [updatedCategories[currentIndex], updatedCategories[newIndex]] = 
+      [updatedCategories[newIndex], updatedCategories[currentIndex]];
+    
+    // Aggiorna lo stato
+    setCategories(updatedCategories);
+    
+    try {
+      // Aggiorna il database
+      const updates = [
+        { id: category1.id, display_order: category1.display_order },
+        { id: category2.id, display_order: category2.display_order }
+      ];
+      
+      const { error } = await supabase
+        .from('categories')
+        .upsert(updates);
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('Errore nel riordinamento delle categorie:', error);
+      toast.error("Errore nel riordinamento delle categorie. Riprova più tardi.");
+      // Ricarica le categorie in caso di errore
+      loadCategories();
+    }
+  };
+
+  // Cambia l'ordine di visualizzazione di un prodotto
+  const handleProductReorder = async (productId: string, direction: 'up' | 'down') => {
+    // Trova l'indice del prodotto corrente
+    const currentIndex = products.findIndex(p => p.id === productId);
+    if (currentIndex === -1) return;
+
+    // Calcola il nuovo indice
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    
+    // Verifica che il nuovo indice sia valido
+    if (newIndex < 0 || newIndex >= products.length) return;
+    
+    // Crea una copia dell'array dei prodotti
+    const updatedProducts = [...products];
+    
+    // Recupera i prodotti coinvolti
+    const product1 = updatedProducts[currentIndex];
+    const product2 = updatedProducts[newIndex];
+    
+    // Scambia gli ordini di visualizzazione
+    const tempOrder = product1.display_order;
+    product1.display_order = product2.display_order;
+    product2.display_order = tempOrder;
+    
+    // Aggiorna localmente l'array
+    [updatedProducts[currentIndex], updatedProducts[newIndex]] = 
+      [updatedProducts[newIndex], updatedProducts[currentIndex]];
+    
+    // Aggiorna lo stato
+    setProducts(updatedProducts);
+    
+    try {
+      // Aggiorna il database
+      const updates = [
+        { id: product1.id, display_order: product1.display_order },
+        { id: product2.id, display_order: product2.display_order }
+      ];
+      
+      const { error } = await supabase
+        .from('products')
+        .upsert(updates);
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('Errore nel riordinamento dei prodotti:', error);
+      toast.error("Errore nel riordinamento dei prodotti. Riprova più tardi.");
+      // Ricarica i prodotti in caso di errore
+      if (selectedCategory) {
+        loadProducts(selectedCategory);
+      }
+    }
   };
 
   // Aggiunge una nuova categoria
@@ -325,8 +456,13 @@ const Dashboard = () => {
 
         // Aggiorna i prodotti
         await loadProducts(selectedCategory);
+        setSelectedProduct(data[0].id);
         toast.success("Prodotto aggiunto con successo!");
-        setShowProductForm(false);
+        
+        if (isMobile) {
+          setShowMobileProducts(false);
+          setShowMobileDetail(true);
+        }
       }
     } catch (error: any) {
       console.error('Errore nell\'aggiunta del prodotto:', error);
@@ -378,9 +514,11 @@ const Dashboard = () => {
         await loadProducts(selectedCategory);
       }
       
+      // Riseleziona il prodotto aggiornato
+      setSelectedProduct(productId);
+      setIsEditing(false);
+      
       toast.success("Prodotto aggiornato con successo!");
-      setShowProductForm(false);
-      setEditingProduct(null);
     } catch (error) {
       console.error('Errore nell\'aggiornamento del prodotto:', error);
       toast.error("Errore nell'aggiornamento del prodotto. Riprova più tardi.");
@@ -406,7 +544,15 @@ const Dashboard = () => {
         await loadProducts(selectedCategory);
       }
       
+      setSelectedProduct(null);
+      setIsEditing(false);
+      
       toast.success("Prodotto eliminato con successo!");
+      
+      if (isMobile) {
+        setShowMobileProducts(true);
+        setShowMobileDetail(false);
+      }
     } catch (error) {
       console.error('Errore nell\'eliminazione del prodotto:', error);
       toast.error("Errore nell'eliminazione del prodotto. Riprova più tardi.");
@@ -637,25 +783,27 @@ const Dashboard = () => {
   };
 
   // Form prodotto
-  const ProductFormPanel = () => {
-    const isEditing = Boolean(editingProduct);
+  const ProductForm = ({ product, onSubmit }: { 
+    product: Product | null, 
+    onSubmit: (data: any) => void 
+  }) => {
     const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>(
-      editingProduct?.allergens || []
+      product?.allergens || []
     );
     
     const form = useForm<z.infer<typeof productFormSchema>>({
       resolver: zodResolver(productFormSchema),
       defaultValues: {
-        title: editingProduct?.title || "",
-        description: editingProduct?.description || "",
-        is_active: editingProduct?.is_active ?? true,
-        image_url: editingProduct?.image_url || null,
-        price_standard: editingProduct?.price_standard || 0,
-        has_multiple_prices: editingProduct?.has_multiple_prices || false,
-        price_variant_1_name: editingProduct?.price_variant_1_name || "",
-        price_variant_1_value: editingProduct?.price_variant_1_value || null,
-        price_variant_2_name: editingProduct?.price_variant_2_name || "",
-        price_variant_2_value: editingProduct?.price_variant_2_value || null,
+        title: product?.title || "",
+        description: product?.description || "",
+        is_active: product?.is_active ?? true,
+        image_url: product?.image_url || null,
+        price_standard: product?.price_standard || 0,
+        has_multiple_prices: product?.has_multiple_prices || false,
+        price_variant_1_name: product?.price_variant_1_name || "",
+        price_variant_1_value: product?.price_variant_1_value || null,
+        price_variant_2_name: product?.price_variant_2_name || "",
+        price_variant_2_value: product?.price_variant_2_value || null,
       },
     });
     
@@ -669,264 +817,252 @@ const Dashboard = () => {
       }
     };
     
-    const onSubmit = (values: z.infer<typeof productFormSchema>) => {
+    const handleFormSubmit = (values: z.infer<typeof productFormSchema>) => {
       // Aggiungi gli allergeni ai valori del form
       const productData = {
         ...values,
         allergens: selectedAllergens
       };
       
-      if (isEditing && editingProduct) {
-        handleUpdateProduct(editingProduct.id, productData);
-      } else {
-        handleAddProduct(productData);
-      }
+      onSubmit(productData);
     };
 
     return (
-      <Sheet open={showProductForm} onOpenChange={setShowProductForm}>
-        <SheetContent className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>{isEditing ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
-          </SheetHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-              <ScrollArea className="h-[calc(100vh-120px)] pr-4">
+      <div className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Prodotto</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome prodotto" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrizione</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Descrizione del prodotto"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <ImageUploader
+                    currentImage={field.value || null}
+                    onImageUploaded={(url) => field.onChange(url)}
+                    label="Immagine Prodotto"
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Attivo</FormLabel>
+                    <FormDescription>
+                      Mostra questo prodotto nel menu
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="price_standard"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prezzo (€)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="has_multiple_prices"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Prezzi multipli</FormLabel>
+                    <FormDescription>
+                      Abilita diverse varianti di prezzo
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            {hasMultiplePrices && (
+              <div className="border rounded-md p-4 space-y-4 bg-gray-50">
+                <h4 className="font-medium">Varianti di prezzo</h4>
+                
                 <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome Prodotto</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nome prodotto" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 1</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Es. Bottiglia" value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 1 (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const value = e.target.value ? parseFloat(e.target.value) : null;
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descrizione</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            {...field} 
-                            placeholder="Descrizione del prodotto"
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="image_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <ImageUploader
-                          currentImage={field.value || null}
-                          onImageUploaded={(url) => field.onChange(url)}
-                          label="Immagine Prodotto"
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="is_active"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>Attivo</FormLabel>
-                          <FormDescription>
-                            Mostra questo prodotto nel menu
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="price_standard"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prezzo (€)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="has_multiple_prices"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>Prezzi multipli</FormLabel>
-                          <FormDescription>
-                            Abilita diverse varianti di prezzo
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {hasMultiplePrices && (
-                    <div className="border rounded-md p-4 space-y-4 bg-gray-50">
-                      <h4 className="font-medium">Varianti di prezzo</h4>
-                      
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
-                          <FormField
-                            control={form.control}
-                            name="price_variant_1_name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nome Variante 1</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="Es. Bottiglia" value={field.value || ""} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="price_variant_1_value"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Prezzo Variante 1 (€)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    {...field}
-                                    value={field.value || ""}
-                                    onChange={(e) => {
-                                      const value = e.target.value ? parseFloat(e.target.value) : null;
-                                      field.onChange(value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3">
-                          <FormField
-                            control={form.control}
-                            name="price_variant_2_name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nome Variante 2</FormLabel>
-                                <FormControl>
-                                  <Input {...field} placeholder="Es. Calice" value={field.value || ""} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="price_variant_2_value"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Prezzo Variante 2 (€)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    {...field}
-                                    value={field.value || ""}
-                                    onChange={(e) => {
-                                      const value = e.target.value ? parseFloat(e.target.value) : null;
-                                      field.onChange(value);
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label className="block">Allergeni</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {allergens.map((allergen) => (
-                        <div 
-                          key={allergen.id} 
-                          className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
-                            selectedAllergens.some(a => a.id === allergen.id)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-white hover:bg-gray-50"
-                          }`}
-                          onClick={() => toggleAllergen(allergen)}
-                        >
-                          {allergen.number}: {allergen.title}
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 2</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Es. Calice" value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 2 (€)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                const value = e.target.value ? parseFloat(e.target.value) : null;
+                                field.onChange(value);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              </ScrollArea>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowProductForm(false);
-                    setEditingProduct(null);
-                  }}
-                >
-                  Annulla
-                </Button>
-                <Button type="submit">Salva</Button>
               </div>
-            </form>
-          </Form>
-        </SheetContent>
-      </Sheet>
+            )}
+            
+            <div className="space-y-2">
+              <Label className="block">Allergeni</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {allergens.map((allergen) => (
+                  <div 
+                    key={allergen.id} 
+                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
+                      selectedAllergens.some(a => a.id === allergen.id)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-white hover:bg-gray-50"
+                    }`}
+                    onClick={() => toggleAllergen(allergen)}
+                  >
+                    {allergen.number}: {allergen.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  if (product) {
+                    setIsEditing(false);
+                  }
+                }}
+              >
+                Annulla
+              </Button>
+              <Button type="submit">Salva</Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     );
   };
 
@@ -960,7 +1096,7 @@ const Dashboard = () => {
                     Crea una nuova categoria per iniziare.
                   </div>
                 ) : (
-                  categories.map((category) => (
+                  categories.map((category, index) => (
                     <div
                       key={category.id}
                       className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
@@ -994,6 +1130,34 @@ const Dashboard = () => {
                       )}
                       
                       <div className="flex">
+                        {/* Bottoni per riordinare */}
+                        <div className="flex flex-col mr-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCategoryReorder(category.id, 'up');
+                            }}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCategoryReorder(category.id, 'down');
+                            }}
+                            disabled={index === categories.length - 1}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
                         <Button 
                           variant="ghost" 
                           size="icon"
@@ -1034,9 +1198,24 @@ const Dashboard = () => {
       product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
     
+    const handleBackToCategories = () => {
+      setShowMobileCategories(true);
+      setShowMobileProducts(false);
+    };
+    
     return (
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-2"
+              onClick={handleBackToCategories}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <div className="flex-1">
             <Input
               placeholder="Cerca prodotti..."
@@ -1052,8 +1231,14 @@ const Dashboard = () => {
                 toast.error("Seleziona prima una categoria");
                 return;
               }
-              setEditingProduct(null);
-              setShowProductForm(true);
+              
+              setSelectedProduct(null);
+              setIsEditing(true);
+              
+              if (isMobile) {
+                setShowMobileProducts(false);
+                setShowMobileDetail(true);
+              }
             }}
             size="sm"
             className="ml-2"
@@ -1082,7 +1267,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product, index) => (
                   <div
                     key={product.id}
                     className={`border rounded-md p-3 cursor-pointer transition-colors ${
@@ -1090,7 +1275,7 @@ const Dashboard = () => {
                         ? "border-primary bg-primary/5" 
                         : "hover:bg-gray-50"
                     } ${!product.is_active ? "opacity-60" : ""}`}
-                    onClick={() => setSelectedProduct(product.id)}
+                    onClick={() => handleProductSelect(product.id)}
                   >
                     <div className="flex justify-between">
                       <div className="flex space-x-3">
@@ -1145,13 +1330,46 @@ const Dashboard = () => {
                       </div>
                       
                       <div className="flex items-start space-x-1">
+                        {/* Bottoni per riordinare */}
+                        <div className="flex flex-col mr-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleProductReorder(product.id, 'up');
+                            }}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleProductReorder(product.id, 'down');
+                            }}
+                            disabled={index === filteredProducts.length - 1}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setEditingProduct(product);
-                            setShowProductForm(true);
+                            setSelectedProduct(product.id);
+                            setIsEditing(true);
+                            
+                            if (isMobile) {
+                              setShowMobileProducts(false);
+                              setShowMobileDetail(true);
+                            }
                           }}
                         >
                           <Edit className="h-4 w-4" />
@@ -1182,7 +1400,12 @@ const Dashboard = () => {
   const ProductDetail = () => {
     const product = products.find(p => p.id === selectedProduct);
     
-    if (!product) {
+    const handleBackToProducts = () => {
+      setShowMobileProducts(true);
+      setShowMobileDetail(false);
+    };
+    
+    if (!selectedProduct && !isEditing) {
       return (
         <div className="h-full flex items-center justify-center text-gray-500">
           Seleziona un prodotto per visualizzare i dettagli.
@@ -1190,17 +1413,61 @@ const Dashboard = () => {
       );
     }
     
+    if (isEditing) {
+      return (
+        <div className="h-full flex flex-col">
+          <div className="flex justify-between items-center p-4 border-b">
+            {isMobile && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="mr-2"
+                onClick={handleBackToProducts}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
+          </div>
+          
+          <ScrollArea className="flex-grow">
+            <div className="p-4">
+              <ProductForm 
+                product={product} 
+                onSubmit={(data) => {
+                  if (product) {
+                    handleUpdateProduct(product.id, data);
+                  } else {
+                    handleAddProduct(data);
+                  }
+                }} 
+              />
+            </div>
+          </ScrollArea>
+        </div>
+      );
+    }
+    
+    if (!product) return null;
+    
     return (
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-2"
+              onClick={handleBackToProducts}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
           <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
           <div className="flex space-x-2">
             <Button 
               size="sm" 
-              onClick={() => {
-                setEditingProduct(product);
-                setShowProductForm(true);
-              }}
+              onClick={() => setIsEditing(true)}
             >
               <Edit className="h-4 w-4 mr-2" /> Modifica
             </Button>
@@ -1341,28 +1608,43 @@ const Dashboard = () => {
     );
   };
 
+  // Layout mobile
+  const MobileLayout = () => {
+    if (showMobileCategories) {
+      return <CategoriesList />;
+    } else if (showMobileProducts) {
+      return <ProductsList />;
+    } else if (showMobileDetail) {
+      return <ProductDetail />;
+    }
+    
+    // Default fallback
+    return <CategoriesList />;
+  };
+
+  // Layout desktop
+  const DesktopLayout = () => (
+    <div className="grid grid-cols-12 h-full divide-x">
+      <div className="col-span-3 h-full border-r">
+        <CategoriesList />
+      </div>
+      
+      <div className="col-span-4 h-full border-r">
+        <ProductsList />
+      </div>
+      
+      <div className="col-span-5 h-full">
+        <ProductDetail />
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-[calc(100vh-4rem)]">
-      <div className="grid grid-cols-12 h-full divide-x">
-        {/* Colonna categorie */}
-        <div className="col-span-3 h-full border-r">
-          <CategoriesList />
-        </div>
-        
-        {/* Colonna prodotti */}
-        <div className="col-span-4 h-full border-r">
-          <ProductsList />
-        </div>
-        
-        {/* Colonna dettaglio */}
-        <div className="col-span-5 h-full">
-          <ProductDetail />
-        </div>
-      </div>
+      {isMobile ? <MobileLayout /> : <DesktopLayout />}
       
       {/* Form pannelli laterali */}
       <CategoryFormPanel />
-      <ProductFormPanel />
     </div>
   );
 };
