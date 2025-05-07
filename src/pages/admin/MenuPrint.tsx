@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const MenuPrint = () => {
   const [selectedLayout, setSelectedLayout] = useState("classic");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [printAllergens, setPrintAllergens] = useState(true);
+  const printContentRef = useRef<HTMLDivElement>(null);
 
   // Carica i dati
   useEffect(() => {
@@ -124,19 +126,82 @@ const MenuPrint = () => {
     }
   };
 
-  // Apre la finestra di stampa del browser
+  // Apre la finestra di stampa del browser con gestione specifica
   const handlePrint = () => {
-    window.print();
+    if (printContentRef.current) {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error("Il browser ha bloccato l'apertura della finestra di stampa.");
+        return;
+      }
+      
+      const content = printContentRef.current.innerHTML;
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Sa Morisca Menu</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              color: #333;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            .print-container {
+              max-width: 800px;
+              margin: 0 auto;
+              background: white;
+            }
+            @media print {
+              body {
+                padding: 0;
+                color: #000;
+              }
+              .print-container {
+                width: 100%;
+                max-width: 100%;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${content}
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                // setTimeout(function() { window.close(); }, 500);
+              }, 500);
+            };
+          </script>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.open();
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } else {
+      toast.error("Errore durante la preparazione della stampa.");
+    }
   };
 
   // Scarica il menu come PDF
   const handleDownloadPDF = () => {
-    window.print();
+    // Utilizziamo la stessa funzione di stampa per generare il PDF
+    handlePrint();
   };
 
   // Layout Classico
   const ClassicLayout = () => (
-    <div className="bg-white rounded-md shadow-sm p-8">
+    <div className="bg-white rounded-md p-8">
       <div className="text-center mb-8">
         <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
         <h1 className="text-3xl font-bold">Sa Morisca Menu</h1>
@@ -226,7 +291,7 @@ const MenuPrint = () => {
 
   // Layout Moderno
   const ModernLayout = () => (
-    <div className="bg-white rounded-md shadow-sm p-8">
+    <div className="bg-white rounded-md p-8">
       <div className="text-center mb-10">
         <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-24 mx-auto mb-4" />
         <h1 className="text-4xl font-bold">Sa Morisca</h1>
@@ -316,7 +381,7 @@ const MenuPrint = () => {
 
   // Solo Tabella Allergeni
   const AllergensTable = () => (
-    <div className="bg-white rounded-md shadow-sm p-8">
+    <div className="bg-white rounded-md p-8">
       <div className="text-center mb-8">
         <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
         <h1 className="text-3xl font-bold mb-2">Tabella Allergeni</h1>
@@ -462,7 +527,7 @@ const MenuPrint = () => {
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
         <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none">
           <ScrollArea className="h-[60vh] print:h-auto">
-            <div className="p-4 print:p-0">
+            <div className="p-4 print:p-0" ref={printContentRef}>
               {selectedLayout === "classic" && <ClassicLayout />}
               {selectedLayout === "modern" && <ModernLayout />}
               {selectedLayout === "allergens" && <AllergensTable />}
@@ -474,8 +539,21 @@ const MenuPrint = () => {
       {/* Stili per la stampa - visibili solo quando si stampa */}
       <style>{`
         @media print {
+          @page {
+            size: auto;
+            margin: 10mm;
+          }
+          html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+          }
           body * {
             visibility: hidden;
+          }
+          #print-content, #print-content * {
+            visibility: visible;
           }
           .print\\:p-0, .print\\:p-0 * {
             visibility: visible;
@@ -485,6 +563,9 @@ const MenuPrint = () => {
             left: 0;
             top: 0;
             width: 100%;
+          }
+          .print-hidden {
+            display: none !important;
           }
         }
       `}</style>
