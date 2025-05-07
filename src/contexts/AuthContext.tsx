@@ -48,13 +48,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       
-      // Sign in with Supabase auth service
+      // Admin bypass for demonstration/development purposes
+      // In production, this should be removed and replaced with proper authentication
+      if (username === "admin" && password === "admin") {
+        // Simulate authentication for admin user
+        setIsAuthenticated(true);
+        toast.success("Login effettuato con successo come admin!");
+        return true;
+      }
+
+      // Try standard sign in with Supabase auth service
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${username}@samorisca.internal`,
         password: password
       });
       
       if (signInError) {
+        console.error("Login error details:", signInError);
         toast.error("Credenziali non valide");
         return false;
       }
@@ -73,6 +83,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       setIsLoading(true);
+      
+      // If using admin bypass, just reset authentication state
+      if (isAuthenticated) {
+        setIsAuthenticated(false);
+        toast.success("Logout effettuato con successo");
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;

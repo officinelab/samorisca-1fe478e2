@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,8 +27,10 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!username || !password) {
+      setError("Inserisci username e password");
       return;
     }
     
@@ -35,6 +40,8 @@ const Login = () => {
     if (success) {
       const from = (location.state as any)?.from || "/admin/dashboard";
       navigate(from, { replace: true });
+    } else {
+      setError("Credenziali non valide. Prova con username: admin, password: admin");
     }
     
     setIsSubmitting(false);
@@ -57,6 +64,13 @@ const Login = () => {
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="username">Nome utente</Label>
               <Input
@@ -78,6 +92,12 @@ const Login = () => {
                 placeholder="Inserisci la tua password"
                 required
               />
+            </div>
+            
+            <div className="text-sm text-gray-500">
+              <p>Per accesso di test, usa:</p>
+              <p>Username: <strong>admin</strong></p>
+              <p>Password: <strong>admin</strong></p>
             </div>
           </CardContent>
           
