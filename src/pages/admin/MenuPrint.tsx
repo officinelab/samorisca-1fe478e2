@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -151,8 +150,6 @@ const MenuPrint = () => {
               margin: 0;
               padding: 0;
               font-family: 'Arial', sans-serif;
-              width: 210mm;
-              height: 297mm;
             }
             
             .page {
@@ -336,14 +333,16 @@ const MenuPrint = () => {
           .map(category => (
             <div key={category.id} className="category">
               <h2 className="category-title">
-                {category.title}
+                {category[`title_${language}`] || category.title}
               </h2>
               
               <div>
                 {products[category.id]?.map(product => (
                   <div key={product.id} className="menu-item">
                     <div className="item-header">
-                      <div className="item-title">{product.title}</div>
+                      <div className="item-title">
+                        {product[`title_${language}`] || product.title}
+                      </div>
                       {product.allergens && product.allergens.length > 0 && (
                         <div className="item-allergens">
                           {product.allergens.map(allergen => allergen.number).join(", ")}
@@ -351,16 +350,17 @@ const MenuPrint = () => {
                       )}
                       <div className="item-dots"></div>
                       <div className="item-price">
-                        {product.has_multiple_prices ? (
-                          `€ ${product.price_standard}`
-                        ) : (
-                          `€ ${product.price_standard}`
-                        )}
+                        {product.has_multiple_prices 
+                          ? `€ ${product.price_standard}` 
+                          : `€ ${product.price_standard}`
+                        }
                       </div>
                     </div>
                     
-                    {product.description && (
-                      <div className="item-description">{product.description}</div>
+                    {(product[`description_${language}`] || product.description) && (
+                      <div className="item-description">
+                        {product[`description_${language}`] || product.description}
+                      </div>
                     )}
                     
                     {product.has_multiple_prices && (
