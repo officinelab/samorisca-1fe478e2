@@ -35,6 +35,7 @@ const Dashboard = () => {
           .order('display_order', { ascending: true });
 
         if (categoriesError) throw categoriesError;
+        console.log("Categorie caricate:", categoriesData);
         setCategories(categoriesData || []);
         
         if (categoriesData && categoriesData.length > 0) {
@@ -120,6 +121,9 @@ const Dashboard = () => {
   // Aggiunge una nuova categoria
   const handleAddCategory = async (categoryData: Partial<Category>) => {
     try {
+      // Log per debugging
+      console.log("Tentativo di aggiunta categoria:", categoryData);
+      
       // Determina il prossimo display_order
       const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
       const nextOrder = maxOrder + 1;
@@ -130,26 +134,41 @@ const Dashboard = () => {
         return;
       }
       
+      // Prepara i dati da inserire
+      const categoryToInsert = {
+        title: categoryData.title,
+        description: categoryData.description || null,
+        image_url: categoryData.image_url || null,
+        is_active: categoryData.is_active !== undefined ? categoryData.is_active : true,
+        display_order: nextOrder
+      };
+      
+      console.log("Dati categoria da inserire:", categoryToInsert);
+      
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ 
-          ...categoryData, 
-          title: categoryData.title,
-          display_order: nextOrder 
-        }])
+        .insert([categoryToInsert])
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Errore dettagliato nell'aggiunta della categoria:", error);
+        throw error;
+      }
+      
+      console.log("Risposta dall'inserimento categoria:", data);
       
       if (data && data.length > 0) {
         setCategories([...categories, data[0]]);
         setSelectedCategory(data[0].id);
         await loadProducts(data[0].id);
         toast.success("Categoria aggiunta con successo!");
+      } else {
+        console.error("Nessun dato restituito dopo l'inserimento");
+        toast.error("Errore nell'aggiunta della categoria. Nessun dato restituito.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Errore nell\'aggiunta della categoria:', error);
-      toast.error("Errore nell'aggiunta della categoria. Riprova più tardi.");
+      toast.error(`Errore nell'aggiunta della categoria: ${error.message || 'Riprova più tardi.'}`);
     }
   };
 
@@ -239,6 +258,9 @@ const Dashboard = () => {
     if (!selectedCategory) return;
 
     try {
+      // Log per debugging
+      console.log("Tentativo di aggiunta prodotto:", productData);
+      
       // Determina il prossimo display_order per i prodotti nella categoria
       const maxOrder = Math.max(...products.map(p => p.display_order), 0);
       const nextOrder = maxOrder + 1;
@@ -249,17 +271,33 @@ const Dashboard = () => {
         return;
       }
       
+      // Prepara i dati da inserire
+      const productToInsert = {
+        title: productData.title,
+        description: productData.description || null,
+        image_url: productData.image_url || null,
+        category_id: selectedCategory,
+        is_active: productData.is_active !== undefined ? productData.is_active : true,
+        display_order: nextOrder,
+        price_standard: productData.price_standard || 0,
+        has_multiple_prices: productData.has_multiple_prices || false,
+        price_variant_1_name: productData.price_variant_1_name || null,
+        price_variant_1_value: productData.price_variant_1_value || null,
+        price_variant_2_name: productData.price_variant_2_name || null,
+        price_variant_2_value: productData.price_variant_2_value || null
+      };
+      
+      console.log("Dati prodotto da inserire:", productToInsert);
+      
       const { data, error } = await supabase
         .from('products')
-        .insert([{ 
-          ...productData, 
-          category_id: selectedCategory,
-          display_order: nextOrder,
-          title: productData.title
-        }])
+        .insert([productToInsert])
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Errore dettagliato nell'aggiunta del prodotto:", error);
+        throw error;
+      }
       
       if (data && data.length > 0) {
         // Gestisci gli allergeni se presenti
@@ -273,16 +311,22 @@ const Dashboard = () => {
             .from('product_allergens')
             .insert(allergenInserts);
           
-          if (allergensError) throw allergensError;
+          if (allergensError) {
+            console.error("Errore nell'aggiunta degli allergeni:", allergensError);
+            throw allergensError;
+          }
         }
 
         // Aggiorna i prodotti
         await loadProducts(selectedCategory);
         toast.success("Prodotto aggiunto con successo!");
+      } else {
+        console.error("Nessun dato restituito dopo l'inserimento del prodotto");
+        toast.error("Errore nell'aggiunta del prodotto. Nessun dato restituito.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Errore nell\'aggiunta del prodotto:', error);
-      toast.error("Errore nell'aggiunta del prodotto. Riprova più tardi.");
+      toast.error(`Errore nell'aggiunta del prodotto: ${error.message || 'Riprova più tardi.'}`);
     }
   };
 
