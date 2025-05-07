@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +9,7 @@ import { PlusCircle, Edit, Trash2, Move, Save, X, AlertTriangle } from "lucide-r
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { Allergen } from "@/types/database";
 
 // Tipo per gli allergeni
 interface Allergen {
@@ -37,7 +37,7 @@ const Allergens = () => {
         const { data, error } = await supabase
           .from('allergens')
           .select('*')
-          .order('display_order', { ascending: true }) as { data: Allergen[] | null; error: any };
+          .order('display_order', { ascending: true });
         
         if (error) throw error;
         
@@ -64,14 +64,21 @@ const Allergens = () => {
       const maxOrder = Math.max(...allergens.map(a => a.display_order), 0);
       const nextOrder = maxOrder + 1;
       
+      // Ensure title is provided (required by the database)
+      if (!allergenData.title) {
+        toast.error("Il titolo è obbligatorio");
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('allergens')
         .insert([{ 
           ...allergenData, 
           number: allergenData.number || nextNumber,
-          display_order: nextOrder
+          display_order: nextOrder,
+          title: allergenData.title
         }])
-        .select() as { data: Allergen[] | null; error: any };
+        .select();
       
       if (error) throw error;
       
@@ -91,7 +98,7 @@ const Allergens = () => {
       const { error } = await supabase
         .from('allergens')
         .update(allergenData)
-        .eq('id', allergenId) as { error: any };
+        .eq('id', allergenId);
       
       if (error) throw error;
       
@@ -117,7 +124,7 @@ const Allergens = () => {
       const { error } = await supabase
         .from('allergens')
         .delete()
-        .eq('id', allergenId) as { error: any };
+        .eq('id', allergenId);
       
       if (error) throw error;
       
@@ -148,7 +155,7 @@ const Allergens = () => {
             number: allergen.number, 
             display_order: allergen.display_order 
           })
-          .eq('id', allergen.id) as { error: any };
+          .eq('id', allergen.id);
         
         if (error) throw error;
       }

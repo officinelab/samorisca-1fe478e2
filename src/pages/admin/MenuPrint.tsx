@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -11,39 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Printer, FileDown } from "lucide-react";
-
-// Tipi
-interface Category {
-  id: string;
-  title: string;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
-}
-
-interface Product {
-  id: string;
-  category_id: string;
-  name: string;
-  description: string | null;
-  image_url: string | null;
-  is_active: boolean;
-  price_standard: number;
-  has_multiple_prices: boolean;
-  price_variant_1_name: string | null;
-  price_variant_1_value: number | null;
-  price_variant_2_name: string | null;
-  price_variant_2_value: number | null;
-  allergens?: { id: string; number: number; title: string }[];
-}
-
-interface Allergen {
-  id: string;
-  number: number;
-  title: string;
-  description: string | null;
-  icon_url: string | null;
-}
+import { Category, Product, Allergen } from "@/types/database";
 
 const MenuPrint = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -110,7 +77,7 @@ const MenuPrint = () => {
                 productAllergensDetails = allergensDetails || [];
               }
               
-              return { ...product, allergens: productAllergensDetails };
+              return { ...product, allergens: productAllergensDetails } as Product;
             })
           );
           
@@ -164,8 +131,6 @@ const MenuPrint = () => {
 
   // Scarica il menu come PDF
   const handleDownloadPDF = () => {
-    // Questa funzione utilizza la stampa del browser per generare un PDF
-    // Si potrebbe implementare una generazione PDF lato server in futuro
     window.print();
   };
 
@@ -191,7 +156,7 @@ const MenuPrint = () => {
                   <div key={product.id} className="flex justify-between">
                     <div className="flex-1">
                       <div className="flex items-baseline">
-                        <h3 className="text-lg font-medium">{product.name}</h3>
+                        <h3 className="text-lg font-medium">{product.title}</h3>
                         {product.allergens && product.allergens.length > 0 && (
                           <div className="ml-2 flex">
                             {product.allergens.map(allergen => (
@@ -283,7 +248,7 @@ const MenuPrint = () => {
                 {products[category.id]?.map(product => (
                   <div key={product.id} className="border-b border-gray-100 pb-4">
                     <div className="flex justify-between items-baseline mb-2">
-                      <h3 className="text-lg font-semibold">{product.name}</h3>
+                      <h3 className="text-lg font-semibold">{product.title}</h3>
                       <div className="ml-4 font-medium">
                         {!product.has_multiple_prices ? (
                           <div>{product.price_standard} €</div>
@@ -507,7 +472,7 @@ const MenuPrint = () => {
       </div>
 
       {/* Stili per la stampa - visibili solo quando si stampa */}
-      <style jsx global>{`
+      <style>{`
         @media print {
           body * {
             visibility: hidden;

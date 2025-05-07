@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, ShoppingCart, X, Plus, Minus, Info, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Category, Product, Allergen } from "@/types/database";
 
 // Tipi
 interface Category {
@@ -161,7 +161,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
               })
             );
             
-            productsMap[category.id] = productsWithAllergens;
+            productsMap[category.id] = productsWithAllergens as Product[];
           }
           
           setProducts(productsMap);
@@ -283,7 +283,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           <div className="h-36 w-full">
             <img 
               src={product.image_url} 
-              alt={product.name} 
+              alt={product.title} 
               className="h-full w-full object-cover"
             />
           </div>
@@ -292,7 +292,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         <div className="p-4">
           <div className="flex justify-between items-start mb-1">
             <h3 className="font-medium text-lg">
-              {product.name}
+              {product.title}
             </h3>
             
             {!product.has_multiple_prices && (
@@ -502,7 +502,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           <div className={`${deviceView === 'desktop' ? '' : 'mb-4'}`}>
             <div className="sticky top-20">
               {deviceView === 'mobile' ? (
-                <ScrollArea className="w-full" orientation="horizontal">
+                <ScrollArea className="w-full">
                   <div className="flex space-x-2 pb-2 px-1">
                     {categories.map(category => (
                       <Button

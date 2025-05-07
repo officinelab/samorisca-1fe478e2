@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       
-      // Sign in con il servizio di auth di Supabase
+      // Sign in with Supabase auth service
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${username}@samorisca.internal`,
         password: password

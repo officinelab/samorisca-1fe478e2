@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,52 +13,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Tipi
-interface Category {
-  id: string;
-  title: string;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
-}
-
-interface Product {
-  id: string;
-  category_id: string;
-  title: string; // Ridenominata da name a title per corrispondere alla tabella
-  description: string | null;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
-  price_standard?: number;
-  has_multiple_prices?: boolean;
-  price_variant_1_name?: string | null;
-  price_variant_1_value?: number | null;
-  price_variant_2_name?: string | null;
-  price_variant_2_value?: number | null;
-  allergens?: { id: string; number: number; title: string }[];
-}
-
-interface ProductPrice {
-  id: string;
-  product_id: string;
-  name: string | null;
-  price: number;
-  display_order: number;
-}
-
-interface Allergen {
-  id: string;
-  number: number;
-  title: string;
-}
-
-interface ProductAllergen {
-  id: string;
-  product_id: string;
-  allergen_id: string;
-}
+import { Category, Product, Allergen } from "@/types/database";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -78,7 +32,7 @@ const Dashboard = () => {
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
-          .order('display_order', { ascending: true }) as { data: Category[] | null; error: any };
+          .order('display_order', { ascending: true });
 
         if (categoriesError) throw categoriesError;
         setCategories(categoriesData || []);
@@ -95,7 +49,7 @@ const Dashboard = () => {
         const { data: allergensData, error: allergensError } = await supabase
           .from('allergens')
           .select('*')
-          .order('number', { ascending: true }) as { data: Allergen[] | null; error: any };
+          .order('number', { ascending: true });
 
         if (allergensError) throw allergensError;
         setAllergens(allergensData || []);
@@ -119,7 +73,7 @@ const Dashboard = () => {
         .from('products')
         .select('*')
         .eq('category_id', categoryId)
-        .order('display_order', { ascending: true }) as { data: Product[] | null; error: any };
+        .order('display_order', { ascending: true });
 
       if (productsError) throw productsError;
       
@@ -129,7 +83,7 @@ const Dashboard = () => {
           const { data: productAllergens, error: allergensError } = await supabase
             .from('product_allergens')
             .select('allergen_id')
-            .eq('product_id', product.id) as { data: ProductAllergen[] | null; error: any };
+            .eq('product_id', product.id);
           
           if (allergensError) throw allergensError;
           
@@ -140,7 +94,7 @@ const Dashboard = () => {
             const { data: allergensDetails, error: detailsError } = await supabase
               .from('allergens')
               .select('id, number, title')
-              .in('id', allergenIds) as { data: Allergen[] | null; error: any };
+              .in('id', allergenIds);
             
             if (detailsError) throw detailsError;
             productAllergensDetails = allergensDetails || [];
@@ -168,12 +122,22 @@ const Dashboard = () => {
     try {
       // Determina il prossimo display_order
       const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
-      const newOrder = maxOrder + 1;
+      const nextOrder = maxOrder + 1;
+      
+      // Ensure title is provided (required by the database)
+      if (!categoryData.title) {
+        toast.error("Il titolo è obbligatorio");
+        return;
+      }
       
       const { data, error } = await supabase
         .from('categories')
-        .insert([{ ...categoryData, display_order: newOrder }])
-        .select() as { data: Category[] | null; error: any };
+        .insert([{ 
+          ...categoryData, 
+          title: categoryData.title,
+          display_order: nextOrder 
+        }])
+        .select();
       
       if (error) throw error;
       
@@ -195,7 +159,7 @@ const Dashboard = () => {
       const { error } = await supabase
         .from('categories')
         .update(categoryData)
-        .eq('id', categoryId) as { error: any };
+        .eq('id', categoryId);
       
       if (error) throw error;
       
@@ -277,14 +241,21 @@ const Dashboard = () => {
     try {
       // Determina il prossimo display_order per i prodotti nella categoria
       const maxOrder = Math.max(...products.map(p => p.display_order), 0);
-      const newOrder = maxOrder + 1;
+      const nextOrder = maxOrder + 1;
+      
+      // Ensure title is provided (required by the database)
+      if (!productData.title) {
+        toast.error("Il titolo è obbligatorio");
+        return;
+      }
       
       const { data, error } = await supabase
         .from('products')
         .insert([{ 
           ...productData, 
           category_id: selectedCategory,
-          display_order: newOrder,
+          display_order: nextOrder,
+          title: productData.title
         }])
         .select();
       
@@ -563,7 +534,7 @@ const Dashboard = () => {
     onSubmit: (data: Partial<Product>) => void,
     onCancel: () => void
   }) => {
-    const [name, setName] = useState(initialData?.name || "");
+    const [title, setTitle] = useState(initialData?.title || "");
     const [description, setDescription] = useState(initialData?.description || "");
     const [imageUrl, setImageUrl] = useState<string | null>(initialData?.image_url || null);
     const [isActive, setIsActive] = useState(initialData?.is_active ?? true);
@@ -578,7 +549,7 @@ const Dashboard = () => {
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       onSubmit({
-        name,
+        title, // Changed from name to title to match database column
         description,
         image_url: imageUrl,
         is_active: isActive,
@@ -603,11 +574,11 @@ const Dashboard = () => {
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nome Prodotto</Label>
+          <Label htmlFor="title">Nome Prodotto</Label>
           <Input 
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="Nome del prodotto"
             required
           />
@@ -1029,7 +1000,7 @@ const Dashboard = () => {
                     className="flex items-center justify-between bg-white p-3 rounded-md border"
                   >
                     <div className="flex items-center">
-                      <span className="font-medium">{product.name}</span>
+                      <span className="font-medium">{product.title}</span> {/* Changed from name to title */}
                     </div>
                     <div className="flex space-x-1">
                       <Button 
@@ -1057,7 +1028,7 @@ const Dashboard = () => {
                   <Card key={product.id} className={`${!product.is_active ? 'opacity-70' : ''}`}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{product.name}</CardTitle>
+                        <CardTitle className="text-lg">{product.title}</CardTitle> {/* Changed from name to title */}
                         <div className="flex space-x-1">
                           <Button 
                             size="icon" 
