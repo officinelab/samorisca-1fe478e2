@@ -6,7 +6,7 @@ import { toast } from "@/components/ui/sonner";
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -44,22 +44,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
-      // Admin bypass for demonstration/development purposes
-      // In production, this should be removed and replaced with proper authentication
-      if (username === "admin" && password === "admin") {
-        // Simulate authentication for admin user
-        setIsAuthenticated(true);
-        toast.success("Login effettuato con successo come admin!");
-        return true;
-      }
-
-      // Try standard sign in with Supabase auth service
+      // Try sign in with Supabase auth service
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: `${username}@samorisca.internal`,
+        email: email,
         password: password
       });
       
@@ -84,13 +75,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       
-      // If using admin bypass, just reset authentication state
-      if (isAuthenticated) {
-        setIsAuthenticated(false);
-        toast.success("Logout effettuato con successo");
-        return;
-      }
-
       const { error } = await supabase.auth.signOut();
       if (error) {
         throw error;

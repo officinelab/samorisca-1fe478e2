@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,19 +29,19 @@ const Login = () => {
     e.preventDefault();
     setError(null);
     
-    if (!username || !password) {
-      setError("Inserisci username e password");
+    if (!email || !password) {
+      setError("Inserisci email e password");
       return;
     }
     
     setIsSubmitting(true);
-    const success = await login(username, password);
+    const success = await login(email, password);
     
     if (success) {
       const from = (location.state as any)?.from || "/admin/dashboard";
       navigate(from, { replace: true });
     } else {
-      setError("Credenziali non valide. Prova con username: admin, password: admin");
+      setError("Credenziali non valide");
     }
     
     setIsSubmitting(false);
@@ -72,13 +72,13 @@ const Login = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="username">Nome utente</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Inserisci il tuo nome utente"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Inserisci la tua email"
                 required
               />
             </div>
@@ -92,12 +92,6 @@ const Login = () => {
                 placeholder="Inserisci la tua password"
                 required
               />
-            </div>
-            
-            <div className="text-sm text-gray-500">
-              <p>Per accesso di test, usa:</p>
-              <p>Username: <strong>admin</strong></p>
-              <p>Password: <strong>admin</strong></p>
             </div>
           </CardContent>
           
