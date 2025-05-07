@@ -27,24 +27,38 @@ interface Category {
 interface Product {
   id: string;
   category_id: string;
-  name: string;
+  title: string; // Ridenominata da name a title per corrispondere alla tabella
   description: string | null;
   image_url: string | null;
   is_active: boolean;
   display_order: number;
-  price_standard: number;
-  has_multiple_prices: boolean;
-  price_variant_1_name: string | null;
-  price_variant_1_value: number | null;
-  price_variant_2_name: string | null;
-  price_variant_2_value: number | null;
+  price_standard?: number;
+  has_multiple_prices?: boolean;
+  price_variant_1_name?: string | null;
+  price_variant_1_value?: number | null;
+  price_variant_2_name?: string | null;
+  price_variant_2_value?: number | null;
   allergens?: { id: string; number: number; title: string }[];
+}
+
+interface ProductPrice {
+  id: string;
+  product_id: string;
+  name: string | null;
+  price: number;
+  display_order: number;
 }
 
 interface Allergen {
   id: string;
   number: number;
   title: string;
+}
+
+interface ProductAllergen {
+  id: string;
+  product_id: string;
+  allergen_id: string;
 }
 
 const Dashboard = () => {
@@ -64,7 +78,7 @@ const Dashboard = () => {
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
-          .order('display_order', { ascending: true });
+          .order('display_order', { ascending: true }) as { data: Category[] | null; error: any };
 
         if (categoriesError) throw categoriesError;
         setCategories(categoriesData || []);
@@ -81,7 +95,7 @@ const Dashboard = () => {
         const { data: allergensData, error: allergensError } = await supabase
           .from('allergens')
           .select('*')
-          .order('number', { ascending: true });
+          .order('number', { ascending: true }) as { data: Allergen[] | null; error: any };
 
         if (allergensError) throw allergensError;
         setAllergens(allergensData || []);
@@ -105,7 +119,7 @@ const Dashboard = () => {
         .from('products')
         .select('*')
         .eq('category_id', categoryId)
-        .order('display_order', { ascending: true });
+        .order('display_order', { ascending: true }) as { data: Product[] | null; error: any };
 
       if (productsError) throw productsError;
       
@@ -115,7 +129,7 @@ const Dashboard = () => {
           const { data: productAllergens, error: allergensError } = await supabase
             .from('product_allergens')
             .select('allergen_id')
-            .eq('product_id', product.id);
+            .eq('product_id', product.id) as { data: ProductAllergen[] | null; error: any };
           
           if (allergensError) throw allergensError;
           
@@ -126,7 +140,7 @@ const Dashboard = () => {
             const { data: allergensDetails, error: detailsError } = await supabase
               .from('allergens')
               .select('id, number, title')
-              .in('id', allergenIds);
+              .in('id', allergenIds) as { data: Allergen[] | null; error: any };
             
             if (detailsError) throw detailsError;
             productAllergensDetails = allergensDetails || [];
@@ -159,7 +173,7 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from('categories')
         .insert([{ ...categoryData, display_order: newOrder }])
-        .select();
+        .select() as { data: Category[] | null; error: any };
       
       if (error) throw error;
       
@@ -181,7 +195,7 @@ const Dashboard = () => {
       const { error } = await supabase
         .from('categories')
         .update(categoryData)
-        .eq('id', categoryId);
+        .eq('id', categoryId) as { error: any };
       
       if (error) throw error;
       

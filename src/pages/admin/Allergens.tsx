@@ -37,7 +37,7 @@ const Allergens = () => {
         const { data, error } = await supabase
           .from('allergens')
           .select('*')
-          .order('display_order', { ascending: true });
+          .order('display_order', { ascending: true }) as { data: Allergen[] | null; error: any };
         
         if (error) throw error;
         
@@ -71,7 +71,7 @@ const Allergens = () => {
           number: allergenData.number || nextNumber,
           display_order: nextOrder
         }])
-        .select();
+        .select() as { data: Allergen[] | null; error: any };
       
       if (error) throw error;
       
@@ -91,7 +91,7 @@ const Allergens = () => {
       const { error } = await supabase
         .from('allergens')
         .update(allergenData)
-        .eq('id', allergenId);
+        .eq('id', allergenId) as { error: any };
       
       if (error) throw error;
       
@@ -117,7 +117,7 @@ const Allergens = () => {
       const { error } = await supabase
         .from('allergens')
         .delete()
-        .eq('id', allergenId);
+        .eq('id', allergenId) as { error: any };
       
       if (error) throw error;
       
@@ -148,7 +148,7 @@ const Allergens = () => {
             number: allergen.number, 
             display_order: allergen.display_order 
           })
-          .eq('id', allergen.id);
+          .eq('id', allergen.id) as { error: any };
         
         if (error) throw error;
       }

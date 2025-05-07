@@ -48,9 +48,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       
-      // Poiché le tabelle non sono ancora riconosciute correttamente nei tipi,
-      // usiamo un approccio più generico per l'autenticazione
-      
       // Sign in con il servizio di auth di Supabase
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: `${username}@samorisca.internal`,
