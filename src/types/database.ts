@@ -24,7 +24,7 @@ export interface Category {
 export interface Product {
   id: string;
   category_id: string;
-  title: string;  // The database field is called "title", not "name"
+  title: string;
   description: string | null;
   image_url: string | null;
   is_active: boolean;

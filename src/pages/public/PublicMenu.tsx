@@ -11,41 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, ShoppingCart, X, Plus, Minus, Info, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Category, Product, Allergen } from "@/types/database";
+import { Category as CategoryType, Product as ProductType, Allergen as AllergenType } from "@/types/database";
 
-// Tipi
-interface Category {
-  id: string;
-  title: string;
-  image_url: string | null;
-  is_active: boolean;
-  display_order: number;
-}
-
-interface Product {
-  id: string;
-  category_id: string;
-  name: string;
-  description: string | null;
-  image_url: string | null;
-  is_active: boolean;
-  price_standard: number;
-  has_multiple_prices: boolean;
-  price_variant_1_name: string | null;
-  price_variant_1_value: number | null;
-  price_variant_2_name: string | null;
-  price_variant_2_value: number | null;
-  allergens?: { id: string; number: number; title: string }[];
-}
-
-interface Allergen {
-  id: string;
-  number: number;
-  title: string;
-  description: string | null;
-  icon_url: string | null;
-}
-
+// Local interfaces for cart items
 interface CartItem {
   id: string;
   productId: string;
@@ -66,9 +34,9 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   previewLanguage = 'it',
   deviceView = 'mobile'
 }) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Record<string, Product[]>>({});
-  const [allergens, setAllergens] = useState<Allergen[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [products, setProducts] = useState<Record<string, ProductType[]>>({});
+  const [allergens, setAllergens] = useState<AllergenType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState(previewLanguage);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -122,7 +90,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           setSelectedCategory(categoriesData[0].id);
           
           // Carica prodotti per ogni categoria
-          const productsMap: Record<string, Product[]> = {};
+          const productsMap: Record<string, ProductType[]> = {};
           
           for (const category of categoriesData) {
             const { data: productsData, error: productsError } = await supabase
@@ -157,11 +125,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   productAllergensDetails = allergensDetails || [];
                 }
                 
-                return { ...product, allergens: productAllergensDetails };
+                return { ...product, allergens: productAllergensDetails } as ProductType;
               })
             );
             
-            productsMap[category.id] = productsWithAllergens as Product[];
+            productsMap[category.id] = productsWithAllergens;
           }
           
           setProducts(productsMap);
@@ -188,7 +156,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   }, [isPreview, previewLanguage]);
 
   // Aggiunge un prodotto al carrello
-  const addToCart = (product: Product, variantName?: string, variantPrice?: number) => {
+  const addToCart = (product: ProductType, variantName?: string, variantPrice?: number) => {
     const price = variantPrice !== undefined ? variantPrice : product.price_standard;
     const itemId = `${product.id}${variantName ? `-${variantName}` : ''}`;
     
@@ -207,15 +175,15 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         {
           id: itemId,
           productId: product.id,
-          name: product.name,
-          price: price,
+          name: product.title,
+          price: price || 0,
           variantName,
           quantity: 1
         }
       ]);
     }
     
-    toast.success(`${product.name} aggiunto all'ordine`);
+    toast.success(`${product.title} aggiunto all'ordine`);
   };
 
   // Rimuove un prodotto dal carrello
@@ -276,7 +244,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   };
 
   // Componente per la card del prodotto
-  const ProductCard = ({ product }: { product: Product }) => {
+  const ProductCard = ({ product }: { product: ProductType }) => {
     return (
       <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
         {product.image_url && (
@@ -296,7 +264,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             </h3>
             
             {!product.has_multiple_prices && (
-              <span className="font-medium">{product.price_standard.toFixed(2)} €</span>
+              <span className="font-medium">{product.price_standard?.toFixed(2)} €</span>
             )}
           </div>
           
@@ -322,7 +290,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                 className="w-full justify-between"
                 onClick={() => addToCart(product)}
               >
-                Standard: {product.price_standard.toFixed(2)} €
+                Standard: {product.price_standard?.toFixed(2)} €
                 <Plus size={16} />
               </Button>
               
@@ -333,7 +301,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   className="w-full justify-between"
                   onClick={() => addToCart(product, product.price_variant_1_name, product.price_variant_1_value)}
                 >
-                  {product.price_variant_1_name}: {product.price_variant_1_value.toFixed(2)} €
+                  {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
                   <Plus size={16} />
                 </Button>
               )}
@@ -345,7 +313,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   className="w-full justify-between"
                   onClick={() => addToCart(product, product.price_variant_2_name, product.price_variant_2_value)}
                 >
-                  {product.price_variant_2_name}: {product.price_variant_2_value.toFixed(2)} €
+                  {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
                   <Plus size={16} />
                 </Button>
               )}
@@ -453,7 +421,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                                       id: item.productId,
                                       price_standard: item.price,
                                       name: item.name,
-                                    } as Product, item.variantName)}
+                                    } as ProductType, item.variantName)}
                                   >
                                     <Plus size={14} />
                                   </Button>

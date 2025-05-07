@@ -549,7 +549,7 @@ const Dashboard = () => {
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       onSubmit({
-        title, // Changed from name to title to match database column
+        title,
         description,
         image_url: imageUrl,
         is_active: isActive,
@@ -1000,7 +1000,7 @@ const Dashboard = () => {
                     className="flex items-center justify-between bg-white p-3 rounded-md border"
                   >
                     <div className="flex items-center">
-                      <span className="font-medium">{product.title}</span> {/* Changed from name to title */}
+                      <span className="font-medium">{product.title}</span>
                     </div>
                     <div className="flex space-x-1">
                       <Button 
@@ -1028,7 +1028,7 @@ const Dashboard = () => {
                   <Card key={product.id} className={`${!product.is_active ? 'opacity-70' : ''}`}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{product.title}</CardTitle> {/* Changed from name to title */}
+                        <CardTitle className="text-lg">{product.title}</CardTitle>
                         <div className="flex space-x-1">
                           <Button 
                             size="icon" 

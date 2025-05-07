@@ -21,6 +21,14 @@ interface Allergen {
   display_order: number;
 }
 
+// Tipo per i dati di form dell'allergene
+interface AllergenFormData {
+  number?: number;
+  title: string;
+  description: string | null;
+  icon_url: string | null;
+}
+
 const Allergens = () => {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
