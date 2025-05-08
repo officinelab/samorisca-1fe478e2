@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import PublicMenu from "../public/PublicMenu";
 
 const MenuPreview = () => {
@@ -44,16 +45,16 @@ const MenuPreview = () => {
         </TabsList>
         <TabsContent value="mobile" className="mt-4">
           <div className="mx-auto max-w-md border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <div className="h-full overflow-y-auto">
+            <ScrollArea className="h-full">
               <PublicMenu isPreview={true} previewLanguage={language} deviceView="mobile" />
-            </div>
+            </ScrollArea>
           </div>
         </TabsContent>
         <TabsContent value="desktop" className="mt-4">
           <div className="mx-auto max-w-4xl border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <div className="h-full overflow-y-auto">
+            <ScrollArea className="h-full">
               <PublicMenu isPreview={true} previewLanguage={language} deviceView="desktop" />
-            </div>
+            </ScrollArea>
           </div>
         </TabsContent>
       </Tabs>
