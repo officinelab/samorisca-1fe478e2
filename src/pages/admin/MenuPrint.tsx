@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -155,17 +156,24 @@ const MenuPrint = () => {
             .page {
               width: 210mm;
               height: 297mm;
-              padding: 20mm 0;
+              padding: 20mm 15mm;
               box-sizing: border-box;
+              page-break-after: always;
+              position: relative;
+            }
+            
+            .page:last-of-type {
+              page-break-after: avoid;
             }
             
             .menu-container {
-              margin-left: 1cm;
-              margin-right: 3cm;
+              margin: 0 auto;
+              max-width: 100%;
             }
             
             .category {
               margin-bottom: 15mm;
+              break-inside: avoid;
             }
             
             .category-title {
@@ -179,6 +187,7 @@ const MenuPrint = () => {
             
             .menu-item {
               margin-bottom: 5mm;
+              break-inside: avoid;
             }
             
             .item-header {
@@ -230,6 +239,7 @@ const MenuPrint = () => {
               margin-top: 20mm;
               border-top: 1px solid #000;
               padding-top: 5mm;
+              break-before: page;
             }
             
             .allergens-title {
@@ -248,6 +258,7 @@ const MenuPrint = () => {
             .allergen-item {
               display: flex;
               align-items: center;
+              break-inside: avoid;
             }
             
             .allergen-number {
@@ -274,6 +285,35 @@ const MenuPrint = () => {
               font-size: 9pt;
               color: #555;
             }
+
+            /* Pagina di copertina */
+            .cover-page {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              height: 100%;
+              text-align: center;
+            }
+
+            .cover-title {
+              font-size: 36pt;
+              font-weight: bold;
+              margin-bottom: 10mm;
+            }
+
+            .cover-subtitle {
+              font-size: 18pt;
+              margin-bottom: 20mm;
+            }
+
+            .page-number {
+              position: absolute;
+              bottom: 10mm;
+              right: 15mm;
+              font-size: 10pt;
+              color: #888;
+            }
             
             @media print {
               body {
@@ -283,18 +323,31 @@ const MenuPrint = () => {
               
               .page {
                 margin: 0;
-                padding: 20mm 0;
+                padding: 20mm 15mm;
                 box-shadow: none;
+              }
+
+              .page-break {
+                page-break-before: always;
               }
             }
           </style>
         </head>
         <body>
-          <div class="page">
-            ${content}
-          </div>
+          ${content}
           <script>
             window.onload = function() {
+              // Aggiungi numeri di pagina
+              const pages = document.querySelectorAll('.page');
+              pages.forEach((page, index) => {
+                if (index > 0) { // Salta la copertina
+                  const pageNumber = document.createElement('div');
+                  pageNumber.className = 'page-number';
+                  pageNumber.textContent = index;
+                  page.appendChild(pageNumber);
+                }
+              });
+              
               setTimeout(function() {
                 window.print();
                 // setTimeout(function() { window.close(); }, 500);
@@ -319,124 +372,149 @@ const MenuPrint = () => {
     handlePrint();
   };
 
-  // Layout Classico - Aggiornato per corrispondere al layout di stampa
+  // Layout Classico - Aggiornato per supportare la paginazione
   const ClassicLayout = () => (
-    <div className="page" style={{
-      width: '210mm',
-      height: '297mm',
-      padding: '20mm 0',
-      boxSizing: 'border-box',
-      fontFamily: 'Arial, sans-serif',
-      margin: '0 auto',
-      backgroundColor: 'white'
-    }}>
-      <div className="menu-container" style={{
-        marginLeft: '1cm',
-        marginRight: '3cm'
+    <>
+      {/* Pagina di copertina */}
+      <div className="page" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        fontFamily: 'Arial, sans-serif',
+        margin: '0 auto',
+        backgroundColor: 'white',
       }}>
-        <div className="text-center mb-8">
-          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold">Sa Morisca Menu</h1>
+        <div className="cover-page">
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
+          <div className="cover-title">Sa Morisca</div>
+          <div className="cover-subtitle">Menu</div>
         </div>
-        
-        {categories
-          .filter(category => selectedCategories.includes(category.id))
-          .map(category => (
-            <div key={category.id} style={{
-              marginBottom: '15mm'
-            }} className="category">
-              <h2 style={{
-                fontSize: '18pt',
-                fontWeight: 'bold',
-                marginBottom: '5mm',
-                textTransform: 'uppercase',
-                borderBottom: '1px solid #000',
-                paddingBottom: '2mm'
-              }} className="category-title">
-                {category[`title_${language}`] || category.title}
-              </h2>
-              
-              <div>
-                {products[category.id]?.map(product => (
-                  <div key={product.id} style={{
-                    marginBottom: '5mm'
-                  }} className="menu-item">
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                      width: '100%'
-                    }} className="item-header">
+      </div>
+
+      {/* Pagine di contenuto */}
+      <div className="page" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        fontFamily: 'Arial, sans-serif',
+        margin: '0 auto',
+        backgroundColor: 'white'
+      }}>
+        <div className="menu-container">
+          {categories
+            .filter(category => selectedCategories.includes(category.id))
+            .map((category, categoryIndex) => (
+              <div key={category.id} 
+                style={{
+                  marginBottom: '15mm',
+                  breakInside: 'avoid',
+                }} 
+                className="category">
+                <h2 style={{
+                  fontSize: '18pt',
+                  fontWeight: 'bold',
+                  marginBottom: '5mm',
+                  textTransform: 'uppercase',
+                  borderBottom: '1px solid #000',
+                  paddingBottom: '2mm'
+                }} className="category-title">
+                  {category[`title_${language}`] || category.title}
+                </h2>
+                
+                <div>
+                  {products[category.id]?.map((product, productIndex) => (
+                    <div key={product.id} 
+                      style={{
+                        marginBottom: '5mm',
+                        breakInside: 'avoid',
+                      }} 
+                      className="menu-item">
                       <div style={{
-                        fontWeight: 'bold',
-                        fontSize: '12pt',
-                        width: 'auto',
-                        whiteSpace: 'nowrap',
-                        marginRight: '10px'
-                      }} className="item-title">
-                        {product[`title_${language}`] || product.title}
-                      </div>
-                      {product.allergens && product.allergens.length > 0 && (
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        width: '100%'
+                      }} className="item-header">
                         <div style={{
+                          fontWeight: 'bold',
+                          fontSize: '12pt',
                           width: 'auto',
-                          fontSize: '10pt',
                           whiteSpace: 'nowrap',
                           marginRight: '10px'
-                        }} className="item-allergens">
-                          {product.allergens.map(allergen => allergen.number).join(", ")}
+                        }} className="item-title">
+                          {product[`title_${language}`] || product.title}
+                        </div>
+                        {product.allergens && product.allergens.length > 0 && (
+                          <div style={{
+                            width: 'auto',
+                            fontSize: '10pt',
+                            whiteSpace: 'nowrap',
+                            marginRight: '10px'
+                          }} className="item-allergens">
+                            {product.allergens.map(allergen => allergen.number).join(", ")}
+                          </div>
+                        )}
+                        <div style={{
+                          flexGrow: 1,
+                          position: 'relative',
+                          top: '-3px',
+                          borderBottom: '1px dotted #000'
+                        }} className="item-dots"></div>
+                        <div style={{
+                          textAlign: 'right',
+                          fontWeight: 'bold',
+                          width: 'auto',
+                          whiteSpace: 'nowrap',
+                          marginLeft: '10px'
+                        }} className="item-price">
+                          € {product.price_standard}
+                        </div>
+                      </div>
+                      
+                      {(product[`description_${language}`] || product.description) && (
+                        <div style={{
+                          fontSize: '10pt',
+                          fontStyle: 'italic',
+                          marginTop: '2mm',
+                          width: 'auto',
+                          maxWidth: 'calc(100% - 20px)'
+                        }} className="item-description">
+                          {product[`description_${language}`] || product.description}
                         </div>
                       )}
-                      <div style={{
-                        flexGrow: 1,
-                        position: 'relative',
-                        top: '-3px',
-                        borderBottom: '1px dotted #000'
-                      }} className="item-dots"></div>
-                      <div style={{
-                        textAlign: 'right',
-                        fontWeight: 'bold',
-                        width: 'auto',
-                        whiteSpace: 'nowrap',
-                        marginLeft: '10px'
-                      }} className="item-price">
-                        € {product.price_standard}
-                      </div>
+                      
+                      {product.has_multiple_prices && (
+                        <div className="mt-1 text-sm flex justify-end space-x-4">
+                          {product.price_variant_1_name && (
+                            <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
+                          )}
+                          {product.price_variant_2_name && (
+                            <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    
-                    {(product[`description_${language}`] || product.description) && (
-                      <div style={{
-                        fontSize: '10pt',
-                        fontStyle: 'italic',
-                        marginTop: '2mm',
-                        width: 'auto',
-                        maxWidth: 'calc(100% - 20px)'
-                      }} className="item-description">
-                        {product[`description_${language}`] || product.description}
-                      </div>
-                    )}
-                    
-                    {product.has_multiple_prices && (
-                      <div className="mt-1 text-sm flex justify-end space-x-4">
-                        {product.price_variant_1_name && (
-                          <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
-                        )}
-                        {product.price_variant_2_name && (
-                          <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+        </div>
+      </div>
           
-        {printAllergens && allergens.length > 0 && (
-          <div style={{
-            marginTop: '20mm',
-            borderTop: '1px solid #000',
-            paddingTop: '5mm'
-          }} className="allergens-section">
+      {/* Pagina degli allergeni */}
+      {printAllergens && allergens.length > 0 && (
+        <div className="page" style={{
+          width: '210mm',
+          height: '297mm',
+          padding: '20mm 15mm',
+          boxSizing: 'border-box',
+          fontFamily: 'Arial, sans-serif',
+          margin: '0 auto',
+          backgroundColor: 'white'
+        }}>
+          <div className="allergens-section">
             <h2 style={{
               fontSize: '14pt',
               fontWeight: 'bold',
@@ -454,7 +532,8 @@ const MenuPrint = () => {
               {allergens.map(allergen => (
                 <div key={allergen.id} style={{
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  breakInside: 'avoid'
                 }} className="allergen-item">
                   <span style={{
                     display: 'inline-block',
@@ -480,138 +559,189 @@ const MenuPrint = () => {
               ))}
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 
-  // Layout Moderno
+  // Layout Moderno - Aggiornato per supportare la paginazione
   const ModernLayout = () => (
-    <div className="bg-white rounded-md p-8">
-      <div className="text-center mb-10">
-        <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-24 mx-auto mb-4" />
-        <h1 className="text-4xl font-bold">Sa Morisca</h1>
-        <p className="text-gray-500">Menu</p>
+    <>
+      {/* Pagina di copertina */}
+      <div className="page bg-white" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        margin: '0 auto',
+      }}>
+        <div className="flex flex-col justify-center items-center h-full text-center">
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-24 mb-8" />
+          <h1 className="text-5xl font-bold mb-4">Sa Morisca</h1>
+          <p className="text-2xl text-gray-600">Menu</p>
+        </div>
       </div>
-      
-      <div className="space-y-10">
-        {categories
-          .filter(category => selectedCategories.includes(category.id))
-          .map(category => (
-            <div key={category.id} className="mb-10">
-              <div className="flex items-center mb-6">
-                <div className="flex-1 border-b border-gray-300"></div>
-                <h2 className="text-2xl font-bold px-4 uppercase">{category.title}</h2>
-                <div className="flex-1 border-b border-gray-300"></div>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-6">
-                {products[category.id]?.map(product => (
-                  <div key={product.id} className="border-b border-gray-100 pb-4">
-                    <div className="flex justify-between items-baseline mb-2">
-                      <h3 className="text-lg font-semibold">{product.title}</h3>
-                      <div className="ml-4 font-medium">
-                        {!product.has_multiple_prices ? (
-                          <div>{product.price_standard} €</div>
-                        ) : (
-                          <div>{product.price_standard} €</div>
-                        )}
+
+      {/* Pagine di contenuto */}
+      <div className="page bg-white p-8" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        margin: '0 auto',
+      }}>
+        <div className="space-y-10">
+          {categories
+            .filter(category => selectedCategories.includes(category.id))
+            .map(category => (
+              <div key={category.id} className="mb-10" style={{ breakInside: 'avoid' }}>
+                <div className="flex items-center mb-6">
+                  <div className="flex-1 border-b border-gray-300"></div>
+                  <h2 className="text-2xl font-bold px-4 uppercase">{category[`title_${language}`] || category.title}</h2>
+                  <div className="flex-1 border-b border-gray-300"></div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-6">
+                  {products[category.id]?.map(product => (
+                    <div key={product.id} className="border-b border-gray-100 pb-4" style={{ breakInside: 'avoid' }}>
+                      <div className="flex justify-between items-baseline mb-2">
+                        <h3 className="text-lg font-semibold">{product[`title_${language}`] || product.title}</h3>
+                        <div className="ml-4 font-medium">
+                          {!product.has_multiple_prices ? (
+                            <div>{product.price_standard} €</div>
+                          ) : (
+                            <div>{product.price_standard} €</div>
+                          )}
+                        </div>
                       </div>
+                      
+                      {(product[`description_${language}`] || product.description) && (
+                        <p className="text-gray-600 mb-2">{product[`description_${language}`] || product.description}</p>
+                      )}
+                      
+                      {product.has_multiple_prices && (
+                        <div className="flex justify-end space-x-4 text-sm">
+                          {product.price_variant_1_name && (
+                            <div>{product.price_variant_1_name}: {product.price_variant_1_value} €</div>
+                          )}
+                          {product.price_variant_2_name && (
+                            <div>{product.price_variant_2_name}: {product.price_variant_2_value} €</div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {product.allergens && product.allergens.length > 0 && (
+                        <div className="flex mt-1">
+                          <div className="text-xs text-gray-500">Allergeni:</div>
+                          {product.allergens.map(allergen => (
+                            <span key={allergen.id} className="text-xs bg-gray-100 rounded-full px-2 ml-1">
+                              {allergen.number}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    
-                    {product.description && (
-                      <p className="text-gray-600 mb-2">{product.description}</p>
-                    )}
-                    
-                    {product.has_multiple_prices && (
-                      <div className="flex justify-end space-x-4 text-sm">
-                        {product.price_variant_1_name && (
-                          <div>{product.price_variant_1_name}: {product.price_variant_1_value} €</div>
-                        )}
-                        {product.price_variant_2_name && (
-                          <div>{product.price_variant_2_name}: {product.price_variant_2_value} €</div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {product.allergens && product.allergens.length > 0 && (
-                      <div className="flex mt-1">
-                        <div className="text-xs text-gray-500">Allergeni:</div>
-                        {product.allergens.map(allergen => (
-                          <span key={allergen.id} className="text-xs bg-gray-100 rounded-full px-2 ml-1">
-                            {allergen.number}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-      </div>
-      
-      {printAllergens && allergens.length > 0 && (
-        <div className="mt-12 pt-8 border-t border-gray-300">
-          <h2 className="text-xl font-bold text-center mb-6">Allergeni</h2>
-          
-          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            {allergens.map(allergen => (
-              <div key={allergen.id} className="flex items-center">
-                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 font-bold mr-2">
-                  {allergen.number}
-                </span>
-                <div>
-                  <span className="font-medium">{allergen.title}</span>
-                  {allergen.description && (
-                    <span className="text-sm text-gray-500 ml-1">({allergen.description})</span>
-                  )}
+                  ))}
                 </div>
               </div>
             ))}
+        </div>
+      </div>
+      
+      {/* Pagina allergeni */}
+      {printAllergens && allergens.length > 0 && (
+        <div className="page bg-white p-8" style={{
+          width: '210mm',
+          height: '297mm',
+          padding: '20mm 15mm',
+          boxSizing: 'border-box',
+          margin: '0 auto',
+        }}>
+          <div className="mt-8 pt-8 border-t border-gray-300">
+            <h2 className="text-xl font-bold text-center mb-6">Allergeni</h2>
+            
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              {allergens.map(allergen => (
+                <div key={allergen.id} className="flex items-center" style={{ breakInside: 'avoid' }}>
+                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 font-bold mr-2">
+                    {allergen.number}
+                  </span>
+                  <div>
+                    <span className="font-medium">{allergen.title}</span>
+                    {allergen.description && (
+                      <span className="text-sm text-gray-500 ml-1">({allergen.description})</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 
   // Solo Tabella Allergeni
   const AllergensTable = () => (
-    <div className="bg-white rounded-md p-8">
-      <div className="text-center mb-8">
-        <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold mb-2">Tabella Allergeni</h1>
-        <p className="text-gray-600">Sa Morisca Ristorante</p>
+    <>
+      {/* Pagina di copertina */}
+      <div className="page bg-white" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        margin: '0 auto',
+      }}>
+        <div className="text-center" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}>
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-8" />
+          <h1 className="text-4xl font-bold mb-4">Tabella Allergeni</h1>
+          <p className="text-xl text-gray-600">Sa Morisca Ristorante</p>
+        </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {allergens.map(allergen => (
-          <div key={allergen.id} className="flex items-start p-3 border-b">
-            <div className="flex flex-col items-center mr-4">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 font-bold text-lg">
-                {allergen.number}
-              </div>
-              {allergen.icon_url && (
-                <div className="w-12 h-12 mt-2">
-                  <img 
-                    src={allergen.icon_url}
-                    alt={`Icona ${allergen.title}`}
-                    className="w-full h-full object-contain"
-                  />
+
+      {/* Pagina degli allergeni */}
+      <div className="page bg-white rounded-md p-8" style={{
+        width: '210mm',
+        height: '297mm',
+        padding: '20mm 15mm',
+        boxSizing: 'border-box',
+        margin: '0 auto',
+      }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {allergens.map((allergen, index) => (
+            <div key={allergen.id} className="flex items-start p-3 border-b" style={{ breakInside: 'avoid' }}>
+              <div className="flex flex-col items-center mr-4">
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 font-bold text-lg">
+                  {allergen.number}
                 </div>
-              )}
+                {allergen.icon_url && (
+                  <div className="w-12 h-12 mt-2">
+                    <img 
+                      src={allergen.icon_url}
+                      alt={`Icona ${allergen.title}`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <h3 className="font-semibold text-lg">{allergen.title}</h3>
+                {allergen.description && (
+                  <p className="text-gray-600">{allergen.description}</p>
+                )}
+              </div>
             </div>
-            
-            <div>
-              <h3 className="font-semibold text-lg">{allergen.title}</h3>
-              {allergen.description && (
-                <p className="text-gray-600">{allergen.description}</p>
-              )}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 
   return (
@@ -736,8 +866,8 @@ const MenuPrint = () => {
       <style>{`
         @media print {
           @page {
-            size: auto;
-            margin: 10mm;
+            size: A4;
+            margin: 0;
           }
           html, body {
             width: 100%;
@@ -770,3 +900,4 @@ const MenuPrint = () => {
 };
 
 export default MenuPrint;
+
