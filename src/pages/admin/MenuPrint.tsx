@@ -12,6 +12,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Printer, FileDown } from "lucide-react";
 import { Category, Product, Allergen } from "@/types/database";
 
+// Dimensioni standard A4 in mm
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
+const MM_TO_PX_FACTOR = 3.78; // Fattore di conversione approssimativo da mm a px
+
 const MenuPrint = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Record<string, Product[]>>({});
@@ -22,6 +27,7 @@ const MenuPrint = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [printAllergens, setPrintAllergens] = useState(true);
   const printContentRef = useRef<HTMLDivElement>(null);
+  const [showPageBoundaries, setShowPageBoundaries] = useState(true);
 
   // Carica i dati
   useEffect(() => {
@@ -378,13 +384,72 @@ const MenuPrint = () => {
     handlePrint();
   };
 
+  // Calcola il numero di pagine basato sul contenuto
+  const renderPageBoundaries = () => {
+    if (!showPageBoundaries) return null;
+    
+    // Usiamo un placeholder con più pagine per la visualizzazione
+    const pageCount = 3; // Numero di pagine di esempio
+    
+    return (
+      <div className="pointer-events-none absolute inset-0">
+        {Array.from({ length: pageCount }).map((_, index) => (
+          <div 
+            key={index} 
+            className="relative"
+            style={{ 
+              width: `${A4_WIDTH_MM * MM_TO_PX_FACTOR}px`, 
+              height: `${A4_HEIGHT_MM * MM_TO_PX_FACTOR}px`,
+              margin: 'auto',
+            }}
+          >
+            {/* Bordo pagina A4 */}
+            <div 
+              className="absolute border-2 border-dashed border-gray-400"
+              style={{ 
+                width: '100%', 
+                height: '100%',
+                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              {/* Indicatore numero pagina */}
+              {index > 0 && (
+                <div 
+                  className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
+                  style={{ opacity: 0.8 }}
+                >
+                  Pagina {index + 1}
+                </div>
+              )}
+            </div>
+            
+            {/* Linea di separazione tra le pagine */}
+            {index < pageCount - 1 && (
+              <div 
+                className="absolute bottom-0 left-0 right-0 border-b-2 border-dashed border-red-400"
+                style={{ 
+                  transform: 'translateY(1px)',
+                  zIndex: 20,
+                }}
+              >
+                <div className="absolute right-0 top-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
+                  Fine pagina {index + 1}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   // Layout Classico - Aggiornato per supportare la paginazione
   const ClassicLayout = () => (
     <>
       {/* Pagina di copertina */}
       <div className="page" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
@@ -415,8 +480,8 @@ const MenuPrint = () => {
 
       {/* Pagine di contenuto */}
       <div className="page" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
@@ -534,8 +599,8 @@ const MenuPrint = () => {
       {/* Pagina degli allergeni */}
       {printAllergens && allergens.length > 0 && (
         <div className="page" style={{
-          width: '210mm',
-          height: '297mm',
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
           fontFamily: 'Arial, sans-serif',
@@ -575,8 +640,8 @@ const MenuPrint = () => {
                     backgroundColor: '#f0f0f0',
                     borderRadius: '50%',
                     textAlign: 'center',
-                    lineHeight: '20px',
-                    marginRight: '8px',
+                    line-height: '20px',
+                    margin-right: '8px',
                     fontWeight: 'bold'
                   }} className="allergen-number">{allergen.number}</span>
                   <div style={{flex: 1}} className="allergen-content">
@@ -602,8 +667,8 @@ const MenuPrint = () => {
     <>
       {/* Pagina di copertina */}
       <div className="page bg-white" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
@@ -632,8 +697,8 @@ const MenuPrint = () => {
 
       {/* Pagine di contenuto */}
       <div className="page bg-white" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
@@ -754,8 +819,8 @@ const MenuPrint = () => {
       {/* Pagina allergeni */}
       {printAllergens && allergens.length > 0 && (
         <div className="page bg-white" style={{
-          width: '210mm',
-          height: '297mm',
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
           margin: '0 auto',
@@ -821,8 +886,8 @@ const MenuPrint = () => {
     <>
       {/* Pagina di copertina */}
       <div className="page bg-white" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
@@ -856,8 +921,8 @@ const MenuPrint = () => {
 
       {/* Pagina degli allergeni */}
       <div className="page bg-white" style={{
-        width: '210mm',
-        height: '297mm',
+        width: `${A4_WIDTH_MM}mm`,
+        height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
@@ -989,9 +1054,9 @@ const MenuPrint = () => {
             </div>
 
             {/* Opzioni allergeni */}
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col space-y-2">
               {selectedLayout !== "allergens" && (
-                <div className="flex items-center space-x-2 mt-6">
+                <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="print-allergens" 
                     checked={printAllergens}
@@ -1000,6 +1065,14 @@ const MenuPrint = () => {
                   <Label htmlFor="print-allergens">Includi tabella allergeni</Label>
                 </div>
               )}
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="show-boundaries" 
+                  checked={showPageBoundaries}
+                  onCheckedChange={(checked) => setShowPageBoundaries(checked as boolean)}
+                />
+                <Label htmlFor="show-boundaries">Mostra limiti pagina A4</Label>
+              </div>
             </div>
           </div>
 
@@ -1039,13 +1112,14 @@ const MenuPrint = () => {
       {/* Anteprima di stampa */}
       <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
-        <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none">
+        <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none relative">
           <ScrollArea className="h-[60vh] print:h-auto">
             <div className="bg-white print:p-0" ref={printContentRef}>
               {selectedLayout === "classic" && <ClassicLayout />}
               {selectedLayout === "modern" && <ModernLayout />}
               {selectedLayout === "allergens" && <AllergensTable />}
             </div>
+            {showPageBoundaries && renderPageBoundaries()}
           </ScrollArea>
         </div>
       </div>
