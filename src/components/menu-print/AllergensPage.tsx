@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Allergen } from '@/types/database';
 
@@ -111,60 +112,86 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                 borderBottom: '1px solid #e5e7eb',
                 breakInside: 'avoid',
               }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  marginRight: '16px',
-                  flexShrink: 0, // Impedisce la compressione dell'icona
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '9999px',
-                    backgroundColor: '#f3f4f6',
-                    fontWeight: '700',
-                    fontSize: '18px',
-                  }}>
-                    {allergen.number}
-                  </div>
-                  {allergen.icon_url && (
-                    <div style={{
-                      width: '48px',
-                      height: '48px',
-                      marginTop: '8px',
-                    }}>
-                      <img 
-                        src={allergen.icon_url}
-                        alt={`Icona ${allergen.title}`}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                        }}
-                      />
+                {/* Colonna 1a - Informazioni allergene */}
+                <div style={{ flexGrow: 1 }}>
+                  {/* Prima riga con 3 colonne */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {/* Colonna 1b - Numero */}
+                    <div>
+                      <span style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '9999px',
+                        backgroundColor: '#f3f4f6',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                      }}>
+                        {allergen.number}
+                      </span>
                     </div>
-                  )}
-                </div>
-                
-                <div style={{
-                  overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
-                  wordWrap: 'break-word',
-                  wordBreak: 'normal',
-                  hyphens: 'auto',
-                }}>
-                  <h3 style={{
-                    fontWeight: '600',
-                    fontSize: '18px',
-                  }}>{allergen.title}</h3>
-                  {allergen.description && (
-                    <p style={{
-                      color: '#6b7280',
-                    }}>{allergen.description}</p>
-                  )}
+                    
+                    {/* Colonna 2b - Icona */}
+                    <div style={{ marginLeft: '4px', marginRight: '4px' }}>
+                      {allergen.icon_url && (
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '4px',
+                          overflow: 'hidden',
+                        }}>
+                          <img 
+                            src={allergen.icon_url}
+                            alt={`Icona per ${allergen.title}`}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        </div>
+                      )}
+                      {!allergen.icon_url && (
+                        <div style={{
+                          width: '32px',
+                          height: '32px',
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#d1d5db',
+                        }}>
+                          <span style={{ fontSize: '10px' }}>No icon</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Colonna 3b - Titolo */}
+                      <div>
+                        <h3 style={{
+                          fontWeight: '500',
+                          fontSize: '16px',
+                          margin: '0',
+                        }}>{allergen.title}</h3>
+                      </div>
+                      
+                      {/* Seconda riga - Descrizione allineata con il titolo */}
+                      {allergen.description && (
+                        <div>
+                          <p style={{
+                            fontSize: '14px',
+                            color: '#6b7280',
+                            margin: '2px 0 0 0',
+                          }}>{allergen.description}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -198,33 +225,56 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
               {allergens.map(allergen => (
                 <div key={allergen.id} style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   breakInside: 'avoid',
+                  padding: '5px 0',
                 }} className="allergen-item">
-                  <span style={{
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#f0f0f0',
-                    borderRadius: '50%',
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    marginRight: '8px',
-                    fontWeight: 'bold',
-                    flexShrink: 0, // Impedisce la compressione del numero
-                  }} className="allergen-number">{allergen.number}</span>
-                  <div style={{
-                    flex: 1,
-                    overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
-                    wordWrap: 'break-word',
-                  }} className="allergen-content">
-                    <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
-                    {allergen.description && (
+                  {/* Layout simile ad AllergenCard */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {/* Numero */}
+                    <span style={{
+                      display: 'inline-block',
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#f0f0f0',
+                      borderRadius: '50%',
+                      textAlign: 'center',
+                      lineHeight: '20px',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                    }} className="allergen-number">{allergen.number}</span>
+                    
+                    {/* Icona (opzionale) */}
+                    {allergen.icon_url && (
                       <div style={{
-                        fontSize: '9pt',
-                        color: '#555',
-                      }} className="allergen-description">{allergen.description}</div>
+                        width: '24px',
+                        height: '24px',
+                        marginLeft: '4px',
+                        marginRight: '4px',
+                        flexShrink: 0,
+                      }}>
+                        <img 
+                          src={allergen.icon_url}
+                          alt={`Icona per ${allergen.title}`}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                          }}
+                        />
+                      </div>
                     )}
+                    
+                    {/* Contenuto (titolo e descrizione) */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
+                      {allergen.description && (
+                        <div style={{
+                          fontSize: '9pt',
+                          color: '#555',
+                        }} className="allergen-description">{allergen.description}</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
