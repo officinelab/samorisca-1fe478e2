@@ -20,14 +20,14 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
-    padding: '20mm 15mm 80mm 15mm', // Aumentato il padding bottom a 80mm (8cm)
+    padding: '20mm 15mm 80mm 15mm',
     boxSizing: 'border-box' as const,
     margin: '0 auto',
     pageBreakAfter: 'avoid' as const,
     breakAfter: 'avoid' as const,
     border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
     boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
-    overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
+    overflow: 'hidden',
     position: 'relative' as const,
   });
 
@@ -50,10 +50,9 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             }}>Allergeni</h2>
             
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              columnGap: '24px',
-              rowGap: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
             }}>
               {allergens.map(allergen => (
                 <div key={allergen.id} style={{
@@ -71,13 +70,13 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                     backgroundColor: '#f3f4f6',
                     fontWeight: '700',
                     fontSize: '18px',
-                    flexShrink: 0, // Impedisce la compressione del numero
-                    marginRight: '8px', // Aggiunto spazio tra il numero e il testo
+                    flexShrink: 0,
+                    marginRight: '8px',
                   }}>
                     {allergen.number}
                   </span>
                   <div style={{
-                    overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                    overflowWrap: 'break-word',
                     wordWrap: 'break-word',
                   }}>
                     <span style={{fontWeight: '500'}}>{allergen.title}</span>
@@ -98,8 +97,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
       case 'allergens':
         return (
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            display: 'flex',
+            flexDirection: 'column',
             gap: '24px',
             maxHeight: 'calc(100% - 80mm)',
             overflow: 'hidden',
@@ -218,8 +217,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             </h2>
             
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+              display: 'flex',
+              flexDirection: 'column',
               gap: '10px',
             }} className="allergens-grid">
               {allergens.map(allergen => (
