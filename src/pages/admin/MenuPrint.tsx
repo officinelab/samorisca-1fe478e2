@@ -382,7 +382,7 @@ const MenuPrint = () => {
   const ClassicLayout = () => (
     <>
       {/* Pagina di copertina */}
-      <div className="page relative" style={{
+      <div className="page" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -411,11 +411,10 @@ const MenuPrint = () => {
             marginBottom: '20mm',
           }}>Menu</div>
         </div>
-        <div className="page-break-indicator">Pagina 1</div>
       </div>
 
       {/* Pagine di contenuto */}
-      <div className="page relative" style={{
+      <div className="page" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -530,12 +529,11 @@ const MenuPrint = () => {
               </div>
             ))}
         </div>
-        <div className="page-break-indicator">Pagina 2</div>
       </div>
           
       {/* Pagina degli allergeni */}
       {printAllergens && allergens.length > 0 && (
-        <div className="page relative" style={{
+        <div className="page" style={{
           width: '210mm',
           height: '297mm',
           padding: '20mm 15mm',
@@ -594,7 +592,6 @@ const MenuPrint = () => {
               ))}
             </div>
           </div>
-          <div className="page-break-indicator">Pagina 3</div>
         </div>
       )}
     </>
@@ -604,7 +601,7 @@ const MenuPrint = () => {
   const ModernLayout = () => (
     <>
       {/* Pagina di copertina */}
-      <div className="page relative bg-white" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -631,11 +628,10 @@ const MenuPrint = () => {
             color: '#666',
           }}>Menu</p>
         </div>
-        <div className="page-break-indicator">Pagina 1</div>
       </div>
 
       {/* Pagine di contenuto */}
-      <div className="page relative bg-white" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -753,12 +749,11 @@ const MenuPrint = () => {
               </div>
             ))}
         </div>
-        <div className="page-break-indicator">Pagina 2</div>
       </div>
       
       {/* Pagina allergeni */}
       {printAllergens && allergens.length > 0 && (
-        <div className="page relative bg-white" style={{
+        <div className="page bg-white" style={{
           width: '210mm',
           height: '297mm',
           padding: '20mm 15mm',
@@ -816,7 +811,6 @@ const MenuPrint = () => {
               ))}
             </div>
           </div>
-          <div className="page-break-indicator">Pagina 3</div>
         </div>
       )}
     </>
@@ -826,7 +820,7 @@ const MenuPrint = () => {
   const AllergensTable = () => (
     <>
       {/* Pagina di copertina */}
-      <div className="page relative bg-white" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -858,11 +852,10 @@ const MenuPrint = () => {
             color: '#6b7280',
           }}>Sa Morisca Ristorante</p>
         </div>
-        <div className="page-break-indicator">Pagina 1</div>
       </div>
 
       {/* Pagina degli allergeni */}
-      <div className="page relative bg-white" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
@@ -935,7 +928,6 @@ const MenuPrint = () => {
             </div>
           ))}
         </div>
-        <div className="page-break-indicator">Pagina 2</div>
       </div>
     </>
   );
@@ -993,4 +985,124 @@ const MenuPrint = () => {
                   <SelectItem value="de">Deutsch</SelectItem>
                   <SelectItem value="es">Español</SelectItem>
                 </SelectContent>
-              </Select
+              </Select>
+            </div>
+
+            {/* Opzioni allergeni */}
+            <div className="flex items-center space-x-2">
+              {selectedLayout !== "allergens" && (
+                <div className="flex items-center space-x-2 mt-6">
+                  <Checkbox 
+                    id="print-allergens" 
+                    checked={printAllergens}
+                    onCheckedChange={(checked) => setPrintAllergens(checked as boolean)}
+                  />
+                  <Label htmlFor="print-allergens">Includi tabella allergeni</Label>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {selectedLayout !== "allergens" && (
+            <div className="mt-6">
+              <Label className="mb-2 block">Categorie da includere</Label>
+              <div className="flex items-center mb-2">
+                <Checkbox 
+                  id="toggle-all-categories"
+                  checked={selectedCategories.length === categories.length}
+                  onCheckedChange={handleToggleAllCategories}
+                />
+                <Label htmlFor="toggle-all-categories" className="ml-2 font-medium">
+                  {selectedCategories.length === categories.length ? "Deseleziona tutto" : "Seleziona tutto"}
+                </Label>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                {categories.map(category => (
+                  <div key={category.id} className="flex items-center">
+                    <Checkbox 
+                      id={`category-${category.id}`}
+                      checked={selectedCategories.includes(category.id)}
+                      onCheckedChange={() => handleCategoryToggle(category.id)}
+                    />
+                    <Label htmlFor={`category-${category.id}`} className="ml-2">
+                      {category.title}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Anteprima di stampa */}
+      <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
+        <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
+        <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none">
+          <ScrollArea className="h-[60vh] print:h-auto">
+            <div className="bg-white print:p-0" ref={printContentRef}>
+              {selectedLayout === "classic" && <ClassicLayout />}
+              {selectedLayout === "modern" && <ModernLayout />}
+              {selectedLayout === "allergens" && <AllergensTable />}
+            </div>
+          </ScrollArea>
+        </div>
+      </div>
+
+      {/* Stili per la stampa - visibili solo quando si stampa */}
+      <style>
+        {`
+        @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          html, body {
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            padding: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #print-content, #print-content * {
+            visibility: visible;
+          }
+          .print\\:p-0, .print\\:p-0 * {
+            visibility: visible;
+          }
+          .print\\:p-0 {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          .print-hidden {
+            display: none !important;
+          }
+          
+          /* Stile per il supporto corretto alla paginazione */
+          .page {
+            page-break-after: always;
+            break-after: page;
+          }
+          .page:last-of-type {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          .category, .menu-item {
+            break-inside: avoid;
+          }
+          .allergen-item {
+            break-inside: avoid;
+          }
+        }
+      `}
+      </style>
+    </div>
+  );
+};
+
+export default MenuPrint;
