@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -1193,42 +1194,45 @@ const Dashboard = () => {
                   categories.map((category, index) => (
                     <div
                       key={category.id}
-                      className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
+                      className={`flex flex-col p-2 rounded-md cursor-pointer ${
                         selectedCategory === category.id
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-gray-100"
                       }`}
                       onClick={() => handleCategorySelect(category.id)}
                     >
-                      <div className="flex items-center space-x-2">
-                        {category.image_url ? (
-                          <div className="w-8 h-8 rounded-md overflow-hidden">
-                            <img
-                              src={category.image_url}
-                              alt={category.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
-                            <Package className="h-4 w-4" />
-                          </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {category.image_url ? (
+                            <div className="w-8 h-8 rounded-md overflow-hidden">
+                              <img
+                                src={category.image_url}
+                                alt={category.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
+                              <Package className="h-4 w-4" />
+                            </div>
+                          )}
+                          <span className="truncate max-w-[120px]">{category.title}</span>
+                        </div>
+                        
+                        {!category.is_active && (
+                          <span className="text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                            Disattivata
+                          </span>
                         )}
-                        <span className="truncate max-w-[120px]">{category.title}</span>
                       </div>
                       
-                      {!category.is_active && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                          Disattivata
-                        </span>
-                      )}
-                      
-                      <div className="flex">
+                      {/* Azioni allineate a destra in una riga separata */}
+                      <div className="flex justify-end mt-2">
                         {/* Bottoni per riordinare */}
-                        <div className="flex flex-col mr-1">
+                        <div className="flex mr-1">
                           <Button 
                             variant="ghost" 
-                            size="icon"
+                            size="sm"
                             className="h-6 w-6"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1240,7 +1244,7 @@ const Dashboard = () => {
                           </Button>
                           <Button 
                             variant="ghost" 
-                            size="icon"
+                            size="sm"
                             className="h-6 w-6"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1254,7 +1258,7 @@ const Dashboard = () => {
                         
                         <Button 
                           variant="ghost" 
-                          size="icon"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingCategory(category);
@@ -1265,7 +1269,7 @@ const Dashboard = () => {
                         </Button>
                         <Button 
                           variant="ghost" 
-                          size="icon" 
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteCategory(category.id);
@@ -1371,114 +1375,119 @@ const Dashboard = () => {
                     } ${!product.is_active ? "opacity-60" : ""}`}
                     onClick={() => handleProductSelect(product.id)}
                   >
-                    <div className="flex justify-between">
-                      <div className="flex space-x-3">
-                        {product.image_url ? (
-                          <div className="w-16 h-16 rounded-md overflow-hidden">
-                            <img
-                              src={product.image_url}
-                              alt={product.title}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md">
-                            <Package className="h-6 w-6 text-gray-400" />
-                          </div>
+                    {/* Prima riga: informazioni del prodotto */}
+                    <div className="flex space-x-3">
+                      {/* Immagine del prodotto */}
+                      {product.image_url ? (
+                        <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                          <img
+                            src={product.image_url}
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md flex-shrink-0">
+                          <Package className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                      
+                      {/* Informazioni sul prodotto */}
+                      <div className="flex-1">
+                        <h3 className="font-medium">{product.title}</h3>
+                        {product.description && (
+                          <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
                         )}
                         
-                        <div>
-                          <h3 className="font-medium">{product.title}</h3>
-                          {product.description && (
-                            <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                        <div className="flex items-center mt-1 space-x-2">
+                          <span className="text-sm font-semibold">{product.price_standard} €</span>
+                          {product.has_price_suffix && product.price_suffix && (
+                            <span className="text-xs text-gray-500">{product.price_suffix}</span>
                           )}
                           
-                          <div className="flex items-center mt-1 space-x-2">
-                            <span className="text-sm font-semibold">{product.price_standard} €</span>
-                            
-                            {!product.is_active && (
-                              <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                                Non disponibile
-                              </span>
-                            )}
-                            
-                            {product.allergens && product.allergens.length > 0 && (
-                              <div className="flex space-x-1">
-                                {product.allergens.slice(0, 3).map((allergen) => (
-                                  <span 
-                                    key={allergen.id}
-                                    className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
-                                  >
-                                    {allergen.number}
-                                  </span>
-                                ))}
-                                {product.allergens.length > 3 && (
-                                  <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
-                                    +{product.allergens.length - 3}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          {!product.is_active && (
+                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                              Non disponibile
+                            </span>
+                          )}
+                          
+                          {product.allergens && product.allergens.length > 0 && (
+                            <div className="flex space-x-1">
+                              {product.allergens.slice(0, 3).map((allergen) => (
+                                <span 
+                                  key={allergen.id}
+                                  className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
+                                >
+                                  {allergen.number}
+                                </span>
+                              ))}
+                              {product.allergens.length > 3 && (
+                                <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
+                                  +{product.allergens.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
+                      </div>
+                    </div>
+                    
+                    {/* Seconda riga: azioni allineate a destra */}
+                    <div className="flex justify-end mt-2">
+                      {/* Bottoni per riordinare */}
+                      <div className="flex mr-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductReorder(product.id, 'up');
+                          }}
+                          disabled={index === 0}
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleProductReorder(product.id, 'down');
+                          }}
+                          disabled={index === filteredProducts.length - 1}
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
                       </div>
                       
-                      <div className="flex items-start space-x-1">
-                        {/* Bottoni per riordinare */}
-                        <div className="flex flex-col mr-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleProductReorder(product.id, 'up');
-                            }}
-                            disabled={index === 0}
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleProductReorder(product.id, 'down');
-                            }}
-                            disabled={index === filteredProducts.length - 1}
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedProduct(product.id);
-                            setIsEditing(true);
-                            
-                            if (isMobile) {
-                              setShowMobileProducts(false);
-                              setShowMobileDetail(true);
-                            }
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteProduct(product.id);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProduct(product.id);
+                          setIsEditing(true);
+                          
+                          if (isMobile) {
+                            setShowMobileProducts(false);
+                            setShowMobileDetail(true);
+                          }
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProduct(product.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -1734,11 +1743,11 @@ const Dashboard = () => {
   // Layout desktop
   const DesktopLayout = () => (
     <div className="grid grid-cols-12 h-full divide-x">
-      <div className="col-span-3 h-full border-r">
+      <div className="col-span-2 h-full border-r">
         <CategoriesList />
       </div>
       
-      <div className="col-span-4 h-full border-r">
+      <div className="col-span-5 h-full border-r">
         <ProductsList />
       </div>
       
