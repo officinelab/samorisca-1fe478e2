@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -254,10 +255,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           <CardImage 
             src={product.image_url} 
             alt={product.title}
-            className="w-1/3 h-auto min-h-[150px]"
+            className="w-1/6 h-auto min-h-[150px]"
           />
         ) : (
-          <div className="w-1/3 bg-gray-100 flex items-center justify-center min-h-[150px]">
+          <div className="w-1/6 bg-gray-100 flex items-center justify-center min-h-[150px]">
             <span className="text-gray-400">Nessuna immagine</span>
           </div>
         )}
