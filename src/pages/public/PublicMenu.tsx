@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Allergen, Category as CategoryType, Product as ProductType } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent, CardImage } from "@/components/ui/card";
 
 // Local interfaces for cart items
 interface CartItem {
@@ -248,18 +249,20 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   // Componente per la card del prodotto
   const ProductCard = ({ product }: { product: ProductType }) => {
     return (
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-        {product.image_url && (
-          <div className="h-36 w-full">
-            <img 
-              src={product.image_url} 
-              alt={product.title} 
-              className="h-full w-full object-cover"
-            />
+      <Card horizontal className="overflow-hidden h-full">
+        {product.image_url ? (
+          <CardImage 
+            src={product.image_url} 
+            alt={product.title}
+            className="w-1/3 h-auto min-h-[150px]"
+          />
+        ) : (
+          <div className="w-1/3 bg-gray-100 flex items-center justify-center min-h-[150px]">
+            <span className="text-gray-400">Nessuna immagine</span>
           </div>
         )}
         
-        <div className="p-4">
+        <CardContent className="flex-1 p-4">
           <div className="flex justify-between items-start mb-1">
             <h3 className="font-medium text-lg">
               {product.title}
@@ -331,8 +334,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
               <Plus size={16} />
             </Button>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   };
 
