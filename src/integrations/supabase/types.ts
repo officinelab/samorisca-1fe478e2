@@ -147,10 +147,12 @@ export type Database = {
           description: string | null
           display_order: number
           has_multiple_prices: boolean | null
+          has_price_suffix: boolean | null
           id: string
           image_url: string | null
           is_active: boolean | null
           price_standard: number | null
+          price_suffix: string | null
           price_variant_1_name: string | null
           price_variant_1_value: number | null
           price_variant_2_name: string | null
@@ -164,10 +166,12 @@ export type Database = {
           description?: string | null
           display_order?: number
           has_multiple_prices?: boolean | null
+          has_price_suffix?: boolean | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           price_standard?: number | null
+          price_suffix?: string | null
           price_variant_1_name?: string | null
           price_variant_1_value?: number | null
           price_variant_2_name?: string | null
@@ -181,10 +185,12 @@ export type Database = {
           description?: string | null
           display_order?: number
           has_multiple_prices?: boolean | null
+          has_price_suffix?: boolean | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           price_standard?: number | null
+          price_suffix?: string | null
           price_variant_1_name?: string | null
           price_variant_1_value?: number | null
           price_variant_2_name?: string | null

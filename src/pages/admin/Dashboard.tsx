@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -315,7 +314,9 @@ const Dashboard = () => {
           price_variant_1_name: product1.price_variant_1_name,
           price_variant_1_value: product1.price_variant_1_value,
           price_variant_2_name: product1.price_variant_2_name,
-          price_variant_2_value: product1.price_variant_2_value
+          price_variant_2_value: product1.price_variant_2_value,
+          has_price_suffix: product1.has_price_suffix,
+          price_suffix: product1.price_suffix
         },
         { 
           id: product2.id, 
@@ -330,7 +331,9 @@ const Dashboard = () => {
           price_variant_1_name: product2.price_variant_1_name,
           price_variant_1_value: product2.price_variant_1_value,
           price_variant_2_name: product2.price_variant_2_name,
-          price_variant_2_value: product2.price_variant_2_value
+          price_variant_2_value: product2.price_variant_2_value,
+          has_price_suffix: product2.has_price_suffix,
+          price_suffix: product2.price_suffix
         }
       ];
       
@@ -470,7 +473,9 @@ const Dashboard = () => {
         price_variant_1_name: productData.price_variant_1_name || null,
         price_variant_1_value: productData.price_variant_1_value || null,
         price_variant_2_name: productData.price_variant_2_name || null,
-        price_variant_2_value: productData.price_variant_2_value || null
+        price_variant_2_value: productData.price_variant_2_value || null,
+        has_price_suffix: productData.has_price_suffix || false,
+        price_suffix: productData.price_suffix || null
       };
       
       const { data, error } = await supabase
@@ -704,6 +709,8 @@ const Dashboard = () => {
     price_variant_1_value: z.coerce.number().optional().nullable(),
     price_variant_2_name: z.string().optional().nullable(),
     price_variant_2_value: z.coerce.number().optional().nullable(),
+    has_price_suffix: z.boolean().default(false),
+    price_suffix: z.string().optional().nullable(),
   });
 
   // Form categoria
@@ -846,10 +853,13 @@ const Dashboard = () => {
         price_variant_1_value: product?.price_variant_1_value || null,
         price_variant_2_name: product?.price_variant_2_name || "",
         price_variant_2_value: product?.price_variant_2_value || null,
+        has_price_suffix: product?.has_price_suffix || false,
+        price_suffix: product?.price_suffix || "",
       },
     });
     
     const hasMultiplePrices = form.watch("has_multiple_prices");
+    const hasPriceSuffix = form.watch("has_price_suffix");
     
     const toggleAllergen = (allergen: Allergen) => {
       if (selectedAllergens.some(a => a.id === allergen.id)) {
@@ -959,6 +969,48 @@ const Dashboard = () => {
                 </FormItem>
               )}
             />
+            
+            {/* Nuovo campo per il suffisso del prezzo */}
+            <FormField
+              control={form.control}
+              name="has_price_suffix"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel>Suffisso prezzo</FormLabel>
+                    <FormDescription>
+                      Aggiungi un suffisso al prezzo (es. "al kg", "/persona", ecc.)
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            {hasPriceSuffix && (
+              <FormField
+                control={form.control}
+                name="price_suffix"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Testo suffisso</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Es. al kg, /persona"
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             <FormField
               control={form.control}
@@ -1569,7 +1621,12 @@ const Dashboard = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span>Prezzo standard</span>
-                    <span className="font-semibold">{product.price_standard} €</span>
+                    <span className="font-semibold">
+                      {product.price_standard} €
+                      {product.has_price_suffix && product.price_suffix && (
+                        <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
+                      )}
+                    </span>
                   </div>
                   
                   {product.has_multiple_prices && (
@@ -1577,14 +1634,24 @@ const Dashboard = () => {
                       {product.price_variant_1_name && (
                         <div className="flex justify-between items-center">
                           <span>{product.price_variant_1_name}</span>
-                          <span className="font-semibold">{product.price_variant_1_value} €</span>
+                          <span className="font-semibold">
+                            {product.price_variant_1_value} €
+                            {product.has_price_suffix && product.price_suffix && (
+                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
+                            )}
+                          </span>
                         </div>
                       )}
                       
                       {product.price_variant_2_name && (
                         <div className="flex justify-between items-center">
                           <span>{product.price_variant_2_name}</span>
-                          <span className="font-semibold">{product.price_variant_2_value} €</span>
+                          <span className="font-semibold">
+                            {product.price_variant_2_value} €
+                            {product.has_price_suffix && product.price_suffix && (
+                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
+                            )}
+                          </span>
                         </div>
                       )}
                     </>
