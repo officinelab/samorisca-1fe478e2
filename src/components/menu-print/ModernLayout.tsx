@@ -48,11 +48,9 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
-        overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
       }}>
-        <div style={{marginBottom: '40px', maxHeight: 'calc(100% - 80mm)', overflow: 'hidden'}}>
-          {// ... keep existing code (iterazione delle categorie e prodotti)
-          categories
+        <div style={{marginBottom: '40px', overflow: 'visible'}}>
+          {categories
             .filter(category => selectedCategories.includes(category.id))
             .map(category => (
               <div key={category.id} style={{

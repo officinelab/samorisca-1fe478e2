@@ -85,7 +85,7 @@ const MenuPrint = () => {
       {/* Anteprima di stampa */}
       <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
-        <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none relative">
+        <div className="border rounded-md overflow-visible shadow print:border-0 print:shadow-none relative">
           <ScrollArea className="h-[60vh] print:h-auto">
             <div className="bg-white print:p-0 relative" ref={printContentRef}>
               <MenuLayoutSelector
@@ -150,6 +150,7 @@ const MenuPrint = () => {
           .page {
             page-break-after: always;
             break-after: page;
+            overflow: visible;
           }
           .page:last-of-type {
             page-break-after: avoid;
@@ -157,6 +158,7 @@ const MenuPrint = () => {
           }
           .category, .menu-item {
             break-inside: avoid;
+            overflow: visible;
           }
           .allergen-item {
             break-inside: avoid;
