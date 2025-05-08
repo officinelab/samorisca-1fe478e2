@@ -403,39 +403,44 @@ const MenuPrint = () => {
     return count;
   };
 
-  // Calcola il numero di pagine basato sul contenuto
+  // Calcola l'altezza del contenuto in px (approssimativo) per distribuirlo tra le pagine
+  const estimateContentHeight = () => {
+    if (!printContentRef.current) return 0;
+    return printContentRef.current.scrollHeight;
+  };
+
+  // Visualizza i limiti pagina A4 in modo più evidente
   const renderPageBoundaries = () => {
     if (!showPageBoundaries) return null;
     
-    // Usiamo un numero di pagine stimato in base al contenuto
     const pageCount = estimatePageCount();
+    const pageHeightPx = A4_HEIGHT_MM * MM_TO_PX_FACTOR;
     
     return (
       <div className="pointer-events-none absolute inset-0">
         {Array.from({ length: pageCount }).map((_, index) => (
           <div 
             key={index} 
-            className="relative"
+            className="relative mx-auto"
             style={{ 
               width: `${A4_WIDTH_MM * MM_TO_PX_FACTOR}px`, 
               height: `${A4_HEIGHT_MM * MM_TO_PX_FACTOR}px`,
-              margin: '0 auto',
-              position: 'relative',
-              marginBottom: '10px', // Spazio tra le pagine per rendere visibile il limite
+              marginBottom: '40px', // Spazio maggiore tra le pagine per visualizzare chiaramente l'interruzione
             }}
           >
-            {/* Bordo pagina A4 */}
+            {/* Sfondo pagina A4 con ombra */}
             <div 
-              className="absolute border-2 border-dashed border-gray-400"
+              className="absolute border-2 border-dashed border-gray-400 bg-white"
               style={{ 
                 width: '100%', 
                 height: '100%',
-                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+                zIndex: -1
               }}
             >
               {/* Indicatore tipo di pagina e numero */}
               <div 
-                className="absolute top-4 left-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
+                className="absolute top-4 left-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600 font-semibold"
                 style={{ opacity: 0.8 }}
               >
                 {index === 0 ? 'Copertina' : 
@@ -444,24 +449,24 @@ const MenuPrint = () => {
               
               {/* Indicatore numero pagina */}
               <div 
-                className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
+                className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600 font-semibold"
                 style={{ opacity: 0.8 }}
               >
                 Pagina {index + 1} di {pageCount}
               </div>
             </div>
             
-            {/* Indicatore fine pagina */}
+            {/* Linea di interruzione pagina con sfondo colorato più evidente */}
             <div 
-              className="absolute bottom-0 left-0 right-0"
+              className="absolute -bottom-[20px] left-0 right-0 h-[20px] flex items-center justify-center"
               style={{ 
-                borderBottom: '3px dashed red',
-                transform: 'translateY(1px)',
                 zIndex: 20,
               }}
             >
-              <div className="absolute right-0 bottom-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
-                Fine pagina {index + 1}
+              <div className="w-full h-[3px] border-b-[3px] border-dashed border-red-500 relative">
+                <div className="absolute right-0 -top-[18px] bg-red-100 text-red-800 px-3 py-1 text-sm font-bold rounded-md shadow-sm">
+                  Fine pagina {index + 1}
+                </div>
               </div>
             </div>
           </div>
@@ -470,236 +475,245 @@ const MenuPrint = () => {
     );
   };
 
-  // Layout Classico - Aggiornato per supportare la paginazione
-  const ClassicLayout = () => (
-    <>
-      {/* Pagina di copertina */}
-      <div className="page" style={{
-        width: `${A4_WIDTH_MM}mm`,
-        height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm',
-        boxSizing: 'border-box',
-        fontFamily: 'Arial, sans-serif',
-        margin: '0 auto',
-        backgroundColor: 'white',
-        position: 'relative',
-      }}>
-        <div className="cover-page" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100%',
-          textAlign: 'center',
-        }}>
-          <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
-          <div className="cover-title" style={{
-            fontSize: '36pt',
-            fontWeight: 'bold',
-            marginBottom: '10mm',
-          }}>Sa Morisca</div>
-          <div className="cover-subtitle" style={{
-            fontSize: '18pt',
-            marginBottom: '20mm',
-          }}>Menu</div>
-        </div>
-      </div>
-
-      {/* Pagine di contenuto */}
-      <div className="page" style={{
-        width: `${A4_WIDTH_MM}mm`,
-        height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm',
-        boxSizing: 'border-box',
-        fontFamily: 'Arial, sans-serif',
-        margin: '0 auto',
-        backgroundColor: 'white',
-        position: 'relative',
-      }}>
-        <div className="menu-container">
-          {categories
-            .filter(category => selectedCategories.includes(category.id))
-            .map((category, categoryIndex) => (
-              <div key={category.id} 
-                style={{
-                  marginBottom: '15mm',
-                  breakInside: 'avoid',
-                }} 
-                className="category">
-                <h2 style={{
-                  fontSize: '18pt',
-                  fontWeight: 'bold',
-                  marginBottom: '5mm',
-                  textTransform: 'uppercase',
-                  borderBottom: '1px solid #000',
-                  paddingBottom: '2mm'
-                }} className="category-title">
-                  {category[`title_${language}`] || category.title}
-                </h2>
-                
-                <div>
-                  {products[category.id]?.map((product, productIndex) => (
-                    <div key={product.id} 
-                      style={{
-                        marginBottom: '5mm',
-                        breakInside: 'avoid',
-                      }} 
-                      className="menu-item">
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'baseline',
-                        width: '100%'
-                      }} className="item-header">
-                        <div style={{
-                          fontWeight: 'bold',
-                          fontSize: '12pt',
-                          width: 'auto',
-                          whiteSpace: 'nowrap',
-                          marginRight: '10px'
-                        }} className="item-title">
-                          {product[`title_${language}`] || product.title}
-                        </div>
-                        {product.allergens && product.allergens.length > 0 && (
-                          <div style={{
-                            width: 'auto',
-                            fontSize: '10pt',
-                            whiteSpace: 'nowrap',
-                            marginRight: '10px'
-                          }} className="item-allergens">
-                            {product.allergens.map(allergen => allergen.number).join(", ")}
-                          </div>
-                        )}
-                        <div style={{
-                          flexGrow: 1,
-                          position: 'relative',
-                          top: '-3px',
-                          borderBottom: '1px dotted #000'
-                        }} className="item-dots"></div>
-                        <div style={{
-                          textAlign: 'right',
-                          fontWeight: 'bold',
-                          width: 'auto',
-                          whiteSpace: 'nowrap',
-                          marginLeft: '10px'
-                        }} className="item-price">
-                          € {product.price_standard}
-                        </div>
-                      </div>
-                      
-                      {(product[`description_${language}`] || product.description) && (
-                        <div style={{
-                          fontSize: '10pt',
-                          fontStyle: 'italic',
-                          marginTop: '2mm',
-                          width: 'auto',
-                          maxWidth: 'calc(100% - 20px)'
-                        }} className="item-description">
-                          {product[`description_${language}`] || product.description}
-                        </div>
-                      )}
-                      
-                      {product.has_multiple_prices && (
-                        <div style={{
-                          marginTop: '1mm',
-                          fontSize: '10pt',
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          gap: '1rem'
-                        }}>
-                          {product.price_variant_1_name && (
-                            <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
-                          )}
-                          {product.price_variant_2_name && (
-                            <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
-          
-      {/* Pagina degli allergeni */}
-      {printAllergens && allergens.length > 0 && (
-        <div className="page" style={{
+  // Layout Classico - Con supporto paginazione visibile
+  const ClassicLayout = () => {
+    // Calcolo altezza pagina A4 in px
+    const pageHeightPx = A4_HEIGHT_MM * MM_TO_PX_FACTOR;
+    const pagePaddingPx = 20 * MM_TO_PX_FACTOR; // 20mm di padding convertiti in px
+    const contentHeightPx = pageHeightPx - (pagePaddingPx * 2); // Altezza effettiva contenuto
+    
+    return (
+      <>
+        {/* Pagina di copertina */}
+        <div className="page relative bg-white" style={{
           width: `${A4_WIDTH_MM}mm`,
           height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
-          fontFamily: 'Arial, sans-serif',
           margin: '0 auto',
-          backgroundColor: 'white',
-          position: 'relative',
+          pageBreakAfter: 'always',
+          breakAfter: 'page',
+          marginBottom: showPageBoundaries ? '40px' : '0',
         }}>
-          <div className="allergens-section" style={{
-            marginTop: '0',
-            borderTop: 'none',
-            paddingTop: '0',
+          <div className="cover-page" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            textAlign: 'center',
           }}>
-            <h2 style={{
-              fontSize: '14pt',
+            <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
+            <div className="cover-title" style={{
+              fontSize: '36pt',
               fontWeight: 'bold',
-              marginBottom: '5mm',
-              textTransform: 'uppercase'
-            }} className="allergens-title">
-              Tabella Allergeni
-            </h2>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '10px'
-            }} className="allergens-grid">
-              {allergens.map(allergen => (
-                <div key={allergen.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  breakInside: 'avoid'
-                }} className="allergen-item">
-                  <span style={{
-                    display: 'inline-block',
-                    width: '20px',
-                    height: '20px',
-                    backgroundColor: '#f0f0f0',
-                    borderRadius: '50%',
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    marginRight: '8px',
-                    fontWeight: 'bold'
-                  }} className="allergen-number">{allergen.number}</span>
-                  <div style={{flex: 1}} className="allergen-content">
-                    <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
-                    {allergen.description && (
-                      <div style={{
-                        fontSize: '9pt',
-                        color: '#555'
-                      }} className="allergen-description">{allergen.description}</div>
-                    )}
+              marginBottom: '10mm',
+            }}>Sa Morisca</div>
+            <div className="cover-subtitle" style={{
+              fontSize: '18pt',
+              marginBottom: '20mm',
+            }}>Menu</div>
+          </div>
+        </div>
+
+        {/* Pagine di contenuto */}
+        <div className="page relative bg-white" style={{
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
+          padding: '20mm 15mm',
+          boxSizing: 'border-box',
+          margin: '0 auto',
+          pageBreakAfter: 'always',
+          breakAfter: 'page',
+          marginBottom: showPageBoundaries ? '40px' : '0',
+        }}>
+          <div className="menu-container">
+            {categories
+              .filter(category => selectedCategories.includes(category.id))
+              .map((category, categoryIndex) => (
+                <div key={category.id} 
+                  style={{
+                    marginBottom: '15mm',
+                    breakInside: 'avoid',
+                  }} 
+                  className="category">
+                  <h2 style={{
+                    fontSize: '18pt',
+                    fontWeight: 'bold',
+                    marginBottom: '5mm',
+                    textTransform: 'uppercase',
+                    borderBottom: '1px solid #000',
+                    paddingBottom: '2mm'
+                  }} className="category-title">
+                    {category[`title_${language}`] || category.title}
+                  </h2>
+                  
+                  <div>
+                    {products[category.id]?.map((product, productIndex) => (
+                      <div key={product.id} 
+                        style={{
+                          marginBottom: '5mm',
+                          breakInside: 'avoid',
+                        }} 
+                        className="menu-item">
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          width: '100%'
+                        }} className="item-header">
+                          <div style={{
+                            fontWeight: 'bold',
+                            fontSize: '12pt',
+                            width: 'auto',
+                            whiteSpace: 'nowrap',
+                            marginRight: '10px'
+                          }} className="item-title">
+                            {product[`title_${language}`] || product.title}
+                          </div>
+                          {product.allergens && product.allergens.length > 0 && (
+                            <div style={{
+                              width: 'auto',
+                              fontSize: '10pt',
+                              whiteSpace: 'nowrap',
+                              marginRight: '10px'
+                            }} className="item-allergens">
+                              {product.allergens.map(allergen => allergen.number).join(", ")}
+                            </div>
+                          )}
+                          <div style={{
+                            flexGrow: 1,
+                            position: 'relative',
+                            top: '-3px',
+                            borderBottom: '1px dotted #000'
+                          }} className="item-dots"></div>
+                          <div style={{
+                            textAlign: 'right',
+                            fontWeight: 'bold',
+                            width: 'auto',
+                            whiteSpace: 'nowrap',
+                            marginLeft: '10px'
+                          }} className="item-price">
+                            € {product.price_standard}
+                          </div>
+                        </div>
+                        
+                        {(product[`description_${language}`] || product.description) && (
+                          <div style={{
+                            fontSize: '10pt',
+                            fontStyle: 'italic',
+                            margin-top: '2mm',
+                            width: 'auto',
+                            maxWidth: 'calc(100% - 20px)'
+                          }} className="item-description">
+                            {product[`description_${language}`] || product.description}
+                          </div>
+                        )}
+                        
+                        {product.has_multiple_prices && (
+                          <div style={{
+                            marginTop: '1mm',
+                            fontSize: '10pt',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: '1rem'
+                          }}>
+                            {product.price_variant_1_name && (
+                              <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
+                            )}
+                            {product.price_variant_2_name && (
+                              <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}
-            </div>
           </div>
         </div>
-      )}
-    </>
-  );
+            
+        {/* Pagina degli allergeni */}
+        {printAllergens && allergens.length > 0 && (
+          <div className="page relative bg-white" style={{
+            width: `${A4_WIDTH_MM}mm`,
+            height: `${A4_HEIGHT_MM}mm`,
+            padding: '20mm 15mm',
+            boxSizing: 'border-box',
+            margin: '0 auto',
+            pageBreakAfter: 'avoid',
+            breakAfter: 'avoid',
+            marginBottom: showPageBoundaries ? '40px' : '0',
+          }}>
+            <div className="allergens-section" style={{
+              marginTop: '0',
+              borderTop: 'none',
+              paddingTop: '0',
+            }}>
+              <h2 style={{
+                fontSize: '14pt',
+                fontWeight: 'bold',
+                marginBottom: '5mm',
+                textTransform: 'uppercase'
+              }} className="allergens-title">
+                Tabella Allergeni
+              </h2>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '10px'
+              }} className="allergens-grid">
+                {allergens.map(allergen => (
+                  <div key={allergen.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    breakInside: 'avoid'
+                  }} className="allergen-item">
+                    <span style={{
+                      display: 'inline-block',
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#f0f0f0',
+                      borderRadius: '50%',
+                      textAlign: 'center',
+                      lineHeight: '20px',
+                      margin-right: '8px',
+                      fontWeight: 'bold'
+                    }} className="allergen-number">{allergen.number}</span>
+                    <div style={{flex: 1}} className="allergen-content">
+                      <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
+                      {allergen.description && (
+                        <div style={{
+                          fontSize: '9pt',
+                          color: '#555'
+                        }} className="allergen-description">{allergen.description}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
 
-  // Layout Moderno - Aggiornato per supportare la paginazione
+  // Layout Moderno - Con supporto paginazione visibile
   const ModernLayout = () => (
     <>
       {/* Pagina di copertina */}
-      <div className="page bg-white" style={{
+      <div className="page bg-white relative" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        position: 'relative',
+        pageBreakAfter: 'always',
+        breakAfter: 'page',
+        marginBottom: showPageBoundaries ? '40px' : '0',
       }}>
         <div style={{
           display: 'flex',
@@ -723,13 +737,15 @@ const MenuPrint = () => {
       </div>
 
       {/* Pagine di contenuto */}
-      <div className="page bg-white" style={{
+      <div className="page bg-white relative" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        position: 'relative',
+        pageBreakAfter: 'always',
+        breakAfter: 'page',
+        marginBottom: showPageBoundaries ? '40px' : '0',
       }}>
         <div style={{marginBottom: '40px'}}>
           {categories
@@ -845,13 +861,15 @@ const MenuPrint = () => {
       
       {/* Pagina allergeni */}
       {printAllergens && allergens.length > 0 && (
-        <div className="page bg-white" style={{
+        <div className="page bg-white relative" style={{
           width: `${A4_WIDTH_MM}mm`,
           height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
           margin: '0 auto',
-          position: 'relative',
+          pageBreakAfter: 'avoid',
+          breakAfter: 'avoid',
+          marginBottom: showPageBoundaries ? '40px' : '0',
         }}>
           <div style={{
             marginTop: '0',
@@ -908,17 +926,19 @@ const MenuPrint = () => {
     </>
   );
 
-  // Solo Tabella Allergeni
+  // Solo Tabella Allergeni - Con supporto paginazione visibile
   const AllergensTable = () => (
     <>
       {/* Pagina di copertina */}
-      <div className="page bg-white" style={{
+      <div className="page bg-white relative" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        position: 'relative',
+        pageBreakAfter: 'always',
+        breakAfter: 'page',
+        marginBottom: showPageBoundaries ? '40px' : '0',
       }}>
         <div style={{
           display: 'flex',
@@ -947,13 +967,13 @@ const MenuPrint = () => {
       </div>
 
       {/* Pagina degli allergeni */}
-      <div className="page bg-white" style={{
+      <div className="page bg-white relative" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        position: 'relative',
+        marginBottom: showPageBoundaries ? '40px' : '0',
       }}>
         <div style={{
           display: 'grid',
@@ -1141,7 +1161,7 @@ const MenuPrint = () => {
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
         <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none relative">
           <ScrollArea className="h-[60vh] print:h-auto">
-            <div className="bg-white print:p-0" ref={printContentRef}>
+            <div className="bg-white print:p-0 relative" ref={printContentRef}>
               {selectedLayout === "classic" && <ClassicLayout />}
               {selectedLayout === "modern" && <ModernLayout />}
               {selectedLayout === "allergens" && <AllergensTable />}
