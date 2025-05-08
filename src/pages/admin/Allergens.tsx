@@ -383,7 +383,8 @@ const Allergens = () => {
         Gestisci l'elenco degli allergeni che possono essere associati ai prodotti del menu.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Modificato da grid a flex column per mostrare una singola colonna */}
+      <div className="flex flex-col space-y-4">
         {isReordering ? (
           // Modalità riordinamento
           reorderingList.map((allergen, index) => (
@@ -416,13 +417,14 @@ const Allergens = () => {
             </div>
           ))
         ) : (
-          // Visualizzazione normale degli allergeni
+          // Visualizzazione normale degli allergeni in colonna singola
           allergens.map((allergen) => (
-            <Card key={allergen.id} className="overflow-hidden">
+            <Card key={allergen.id} className="overflow-hidden w-full">
               <CardContent className="p-0">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
+                      {/* Numero spostato vicino al titolo */}
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-800 font-bold">
                         {allergen.number}
                       </span>
@@ -433,7 +435,7 @@ const Allergens = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex space-x-1">
                       <Button 
                         size="icon" 
                         variant="ghost" 
@@ -453,7 +455,7 @@ const Allergens = () => {
                   
                   {/* Mostra l'icona se presente */}
                   {allergen.icon_url && (
-                    <div className="mt-3 flex justify-start">
+                    <div className="mt-3 flex justify-start ml-11">
                       <div className="w-12 h-12 bg-gray-50 rounded overflow-hidden">
                         <img 
                           src={allergen.icon_url}
@@ -470,7 +472,7 @@ const Allergens = () => {
         )}
 
         {allergens.length === 0 && !isLoading && (
-          <div className="col-span-full text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500">
             <AlertTriangle className="w-12 h-12 mx-auto mb-2 text-gray-400" />
             <p className="text-lg font-medium">Nessun allergene trovato</p>
             <p className="mt-1">Aggiungi il primo allergene per iniziare.</p>
@@ -479,18 +481,9 @@ const Allergens = () => {
 
         {isLoading && (
           <>
-            <div className="space-y-3">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-8 w-1/2" />
-            </div>
-            <div className="space-y-3">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-8 w-1/2" />
-            </div>
-            <div className="space-y-3">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-8 w-1/2" />
-            </div>
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
           </>
         )}
       </div>
