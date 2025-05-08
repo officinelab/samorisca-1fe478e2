@@ -19,16 +19,16 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
             {/* Colonna 1a - Informazioni allergene */}
             <div className="flex-grow space-y-2">
               {/* Prima riga con 3 colonne */}
-              <div className="grid grid-cols-12 gap-2 items-center">
+              <div className="flex items-center gap-1">
                 {/* Colonna 1b - Numero */}
-                <div className="col-span-1">
+                <div>
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-800 font-bold">
                     {allergen.number}
                   </span>
                 </div>
                 
                 {/* Colonna 2b - Icona */}
-                <div className="col-span-2">
+                <div className="mx-1">
                   {allergen.icon_url && (
                     <div className="w-10 h-10 bg-gray-50 rounded overflow-hidden">
                       <img 
@@ -46,7 +46,7 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
                 </div>
                 
                 {/* Colonna 3b - Titolo */}
-                <div className="col-span-9">
+                <div>
                   <h3 className="font-medium">{allergen.title}</h3>
                 </div>
               </div>
