@@ -10,15 +10,15 @@ type PageEstimatorProps = {
   printAllergens: boolean;
 };
 
-const PageEstimator: React.FC<PageEstimatorProps> = ({
+const PageEstimator = ({
   selectedLayout,
   selectedCategories,
   categories,
   allergens,
   printAllergens
-}) => {
+}: PageEstimatorProps): number => {
   // Calcola il numero di pagine stimato in base al contenuto selezionato
-  const estimatePageCount = () => {
+  const estimatePageCount = (): number => {
     let count = 1; // Inizia con la pagina di copertina
     
     // Considera le categorie selezionate e il loro contenuto
