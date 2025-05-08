@@ -45,24 +45,29 @@ export const usePrintOperations = () => {
               padding: 20mm 15mm;
               box-sizing: border-box;
               page-break-after: always;
+              break-after: page;
               position: relative;
               overflow: visible;
             }
             
             .page:last-of-type {
               page-break-after: avoid;
+              break-after: avoid;
             }
             
             .menu-container {
               margin: 0 auto;
               max-width: 100%;
               overflow: visible;
+              height: auto !important;
+              max-height: none !important;
             }
             
             .category {
               margin-bottom: 15mm;
               break-inside: avoid;
               page-break-inside: avoid;
+              overflow: visible;
             }
             
             .category-title {
@@ -78,6 +83,7 @@ export const usePrintOperations = () => {
               margin-bottom: 5mm;
               break-inside: avoid;
               page-break-inside: avoid;
+              overflow: visible;
             }
             
             .item-header {
@@ -222,8 +228,10 @@ export const usePrintOperations = () => {
                 margin: 0;
                 padding: 20mm 15mm;
                 box-shadow: none;
+                overflow: visible;
+                height: auto;
               }
-
+              
               .page-break {
                 page-break-before: always;
               }

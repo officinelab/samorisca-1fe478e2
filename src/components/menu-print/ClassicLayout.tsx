@@ -27,6 +27,45 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   allergens,
   printAllergens,
 }) => {
+  // Calcola se una categoria ha troppi elementi e dovrebbe iniziare in una nuova pagina
+  const shouldStartNewPage = (category: Category, prevCategoryIndex: number) => {
+    // Se è la prima categoria, non serve una nuova pagina
+    if (prevCategoryIndex < 0) return false;
+    
+    // Se la categoria precedente ha più di X elementi, inizia una nuova pagina
+    const prevCategoryItems = products[categories[prevCategoryIndex].id]?.length || 0;
+    return prevCategoryItems > 8;
+  };
+
+  // Array per tenere traccia delle categorie raggruppate per pagina
+  let pages: Category[][] = [];
+  let currentPage: Category[] = [];
+  
+  // Raggruppa le categorie in pagine
+  categories
+    .filter(category => selectedCategories.includes(category.id))
+    .forEach((category, index, filteredCategories) => {
+      const prevIndex = index > 0 ? filteredCategories.indexOf(filteredCategories[index - 1]) : -1;
+      
+      // Se la categoria dovrebbe iniziare una nuova pagina e abbiamo già delle categorie nella pagina corrente
+      if (shouldStartNewPage(category, prevIndex) && currentPage.length > 0) {
+        pages.push([...currentPage]);
+        currentPage = [category];
+      } else {
+        currentPage.push(category);
+      }
+    });
+  
+  // Aggiungi l'ultima pagina se contiene categorie
+  if (currentPage.length > 0) {
+    pages.push([...currentPage]);
+  }
+  
+  // Se non ci sono pagine, crea almeno una pagina vuota
+  if (pages.length === 0) {
+    pages = [[]];
+  }
+
   return (
     <>
       {/* Pagina di copertina */}
@@ -38,25 +77,24 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       />
 
       {/* Pagine di contenuto */}
-      <div className="page relative bg-white" style={{
-        width: `${A4_WIDTH_MM}mm`,
-        height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm 20mm 15mm', // Ridotto il padding bottom a 20mm
-        boxSizing: 'border-box',
-        margin: '0 auto 60px auto',
-        pageBreakAfter: 'always',
-        breakAfter: 'page',
-        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
-        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
-      }}>
-        <div className="menu-container" style={{ 
-          overflow: 'visible',
-          maxHeight: `${A4_HEIGHT_MM - 40}mm`, // Altezza massima del contenuto
-          position: 'relative'
+      {pages.map((pageCategories, pageIndex) => (
+        <div key={`page-${pageIndex}`} className="page relative bg-white" style={{
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
+          padding: '20mm 15mm 20mm 15mm',
+          boxSizing: 'border-box',
+          margin: '0 auto 60px auto',
+          pageBreakAfter: 'always',
+          breakAfter: 'page',
+          border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+          boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
         }}>
-          {categories
-            .filter(category => selectedCategories.includes(category.id))
-            .map((category, categoryIndex) => (
+          <div className="menu-container" style={{ 
+            overflow: 'visible',
+            height: 'auto',
+            position: 'relative'
+          }}>
+            {pageCategories.map((category, categoryIndex) => (
               <div key={category.id} 
                 style={{
                   marginBottom: '15mm',
@@ -94,9 +132,9 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                           fontWeight: 'bold',
                           fontSize: '12pt',
                           width: 'auto',
-                          whiteSpace: 'normal', // Modificato a normal per permettere il wrapping
+                          whiteSpace: 'normal',
                           marginRight: '10px',
-                          maxWidth: '60%' // Limitata la larghezza massima
+                          maxWidth: '60%'
                         }} className="item-title">
                           {product[`title_${language}`] || product.title}
                         </div>
@@ -164,8 +202,9 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                 </div>
               </div>
             ))}
+          </div>
         </div>
-      </div>
+      ))}
           
       {/* Pagina degli allergeni */}
       {printAllergens && allergens.length > 0 && (
