@@ -45,18 +45,20 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
                   )}
                 </div>
                 
-                {/* Colonna 3b - Titolo */}
-                <div>
-                  <h3 className="font-medium">{allergen.title}</h3>
+                <div className="flex flex-col">
+                  {/* Colonna 3b - Titolo */}
+                  <div>
+                    <h3 className="font-medium">{allergen.title}</h3>
+                  </div>
+                  
+                  {/* Seconda riga - Descrizione allineata con il titolo */}
+                  {allergen.description && (
+                    <div>
+                      <p className="text-sm text-gray-500">{allergen.description}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              {/* Seconda riga - Descrizione */}
-              {allergen.description && (
-                <div>
-                  <p className="text-sm text-gray-500">{allergen.description}</p>
-                </div>
-              )}
             </div>
             
             {/* Colonna 2a - Azioni */}
