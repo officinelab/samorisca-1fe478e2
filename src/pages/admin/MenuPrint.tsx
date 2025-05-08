@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -410,7 +409,7 @@ const MenuPrint = () => {
     return printContentRef.current.scrollHeight;
   };
 
-  // Visualizza i limiti pagina A4 in modo più evidente
+  // Visualizza i limiti pagina A4 in modo molto più evidente
   const renderPageBoundaries = () => {
     if (!showPageBoundaries) return null;
     
@@ -422,27 +421,27 @@ const MenuPrint = () => {
         {Array.from({ length: pageCount }).map((_, index) => (
           <div 
             key={index} 
-            className="relative mx-auto"
+            className="relative mx-auto mb-16"
             style={{ 
               width: `${A4_WIDTH_MM * MM_TO_PX_FACTOR}px`, 
               height: `${A4_HEIGHT_MM * MM_TO_PX_FACTOR}px`,
-              marginBottom: '40px', // Spazio maggiore tra le pagine per visualizzare chiaramente l'interruzione
+              marginBottom: '60px', // Spazio maggiore tra le pagine per visualizzare chiaramente l'interruzione
             }}
           >
-            {/* Sfondo pagina A4 con ombra */}
+            {/* Bordo foglio A4 - Molto più visibile */}
             <div 
-              className="absolute border-2 border-dashed border-gray-400 bg-white"
+              className="absolute border-4 border-dashed border-red-400 bg-white"
               style={{ 
                 width: '100%', 
                 height: '100%',
-                boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
                 zIndex: -1
               }}
             >
               {/* Indicatore tipo di pagina e numero */}
               <div 
-                className="absolute top-4 left-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600 font-semibold"
-                style={{ opacity: 0.8 }}
+                className="absolute top-4 left-4 bg-red-50 px-3 py-2 rounded-md text-sm text-red-800 font-semibold"
+                style={{ opacity: 0.9 }}
               >
                 {index === 0 ? 'Copertina' : 
                  (printAllergens && index === pageCount - 1) ? 'Allergeni' : `Contenuto ${index}`}
@@ -450,24 +449,26 @@ const MenuPrint = () => {
               
               {/* Indicatore numero pagina */}
               <div 
-                className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600 font-semibold"
-                style={{ opacity: 0.8 }}
+                className="absolute bottom-4 right-4 bg-red-50 px-3 py-2 rounded-md text-sm text-red-800 font-semibold"
+                style={{ opacity: 0.9 }}
               >
                 Pagina {index + 1} di {pageCount}
               </div>
+              
+              {/* Margini sicuri area di stampa - visualizzati come linee tratteggiate */}
+              <div className="absolute border-2 border-blue-300 border-dashed m-8 inset-0"></div>
             </div>
             
             {/* Linea di interruzione pagina con sfondo colorato più evidente */}
             <div 
-              className="absolute -bottom-[20px] left-0 right-0 h-[20px] flex items-center justify-center"
+              className="absolute -bottom-10 left-0 right-0 h-12 flex flex-col items-center justify-center"
               style={{ 
                 zIndex: 20,
               }}
             >
-              <div className="w-full h-[3px] border-b-[3px] border-dashed border-red-500 relative">
-                <div className="absolute right-0 -top-[18px] bg-red-100 text-red-800 px-3 py-1 text-sm font-bold rounded-md shadow-sm">
-                  Fine pagina {index + 1}
-                </div>
+              <div className="w-full h-1 border-b-4 border-dashed border-red-500 relative mb-1"></div>
+              <div className="bg-red-100 text-red-800 px-4 py-2 text-sm font-bold rounded-md shadow-sm">
+                FINE PAGINA {index + 1} - INIZIO PAGINA {index + 2}
               </div>
             </div>
           </div>
@@ -491,10 +492,11 @@ const MenuPrint = () => {
           height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
-          margin: '0 auto',
+          margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
           pageBreakAfter: 'always',
           breakAfter: 'page',
-          marginBottom: showPageBoundaries ? '40px' : '0',
+          border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+          boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
         }}>
           <div className="cover-page" style={{
             display: 'flex',
@@ -523,10 +525,11 @@ const MenuPrint = () => {
           height: `${A4_HEIGHT_MM}mm`,
           padding: '20mm 15mm',
           boxSizing: 'border-box',
-          margin: '0 auto',
+          margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
           pageBreakAfter: 'always',
           breakAfter: 'page',
-          marginBottom: showPageBoundaries ? '40px' : '0',
+          border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+          boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
         }}>
           <div className="menu-container">
             {categories
@@ -645,7 +648,8 @@ const MenuPrint = () => {
             margin: '0 auto',
             pageBreakAfter: 'avoid',
             breakAfter: 'avoid',
-            marginBottom: showPageBoundaries ? '40px' : '0',
+            border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+            boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
           }}>
             <div className="allergens-section" style={{
               marginTop: '0',
@@ -711,10 +715,11 @@ const MenuPrint = () => {
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
-        margin: '0 auto',
+        margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
         pageBreakAfter: 'always',
         breakAfter: 'page',
-        marginBottom: showPageBoundaries ? '40px' : '0',
+        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
         <div style={{
           display: 'flex',
@@ -743,10 +748,11 @@ const MenuPrint = () => {
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
-        margin: '0 auto',
+        margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
         pageBreakAfter: 'always',
         breakAfter: 'page',
-        marginBottom: showPageBoundaries ? '40px' : '0',
+        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
         <div style={{marginBottom: '40px'}}>
           {categories
@@ -870,7 +876,8 @@ const MenuPrint = () => {
           margin: '0 auto',
           pageBreakAfter: 'avoid',
           breakAfter: 'avoid',
-          marginBottom: showPageBoundaries ? '40px' : '0',
+          border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+          boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
         }}>
           <div style={{
             marginTop: '0',
@@ -936,10 +943,11 @@ const MenuPrint = () => {
         height: `${A4_HEIGHT_MM}mm`,
         padding: '20mm 15mm',
         boxSizing: 'border-box',
-        margin: '0 auto',
+        margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
         pageBreakAfter: 'always',
         breakAfter: 'page',
-        marginBottom: showPageBoundaries ? '40px' : '0',
+        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
         <div style={{
           display: 'flex',
@@ -974,7 +982,8 @@ const MenuPrint = () => {
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        marginBottom: showPageBoundaries ? '40px' : '0',
+        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
         <div style={{
           display: 'grid',
