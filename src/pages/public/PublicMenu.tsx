@@ -250,6 +250,134 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const ProductCard = ({ product }: { product: ProductType }) => {
     const isMobileView = isMobile || deviceView === 'mobile';
     
+    if (isMobileView) {
+      return (
+        <div className="border-b border-gray-300 pb-4 mb-4 flex items-center justify-between">
+          <div className="pr-4 flex-1">
+            <h2 className="font-bold text-black text-base leading-5 mb-1">
+              {product.title}
+            </h2>
+            {product.description && (
+              <p className="text-gray-600 text-sm leading-5 mb-1 truncate max-w-[calc(100%-120px)]">
+                {product.description}
+              </p>
+            )}
+            
+            {product.allergens && product.allergens.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {product.allergens.map(allergen => (
+                  <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
+                    {allergen.number}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            <p className="text-gray-800 text-base leading-5">
+              {!product.has_multiple_prices ? (
+                `${product.price_standard?.toFixed(2)} €`
+              ) : (
+                "Prezzi variabili"
+              )}
+            </p>
+          </div>
+          
+          <div className="relative w-28 h-28 flex-shrink-0 rounded-md overflow-hidden">
+            {product.image_url ? (
+              <img 
+                src={product.image_url} 
+                alt={product.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400 text-xs">Nessuna immagine</span>
+              </div>
+            )}
+            
+            {!product.has_multiple_prices ? (
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute bottom-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center text-primary shadow-md hover:bg-gray-100 p-0"
+                onClick={() => addToCart(product)}
+              >
+                <Plus size={20} />
+              </Button>
+            ) : (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute bottom-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center text-primary shadow-md hover:bg-gray-100 p-0"
+                  >
+                    <Plus size={20} />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-auto max-h-[50vh]">
+                  <SheetHeader className="text-left pb-2">
+                    <SheetTitle>{product.title}</SheetTitle>
+                  </SheetHeader>
+                  <div className="space-y-4 py-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-between"
+                      onClick={() => {
+                        addToCart(product);
+                        document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
+                          new MouseEvent('click', { bubbles: true })
+                        );
+                      }}
+                    >
+                      Standard: {product.price_standard?.toFixed(2)} €
+                      <Plus size={16} />
+                    </Button>
+                    
+                    {product.price_variant_1_name && product.price_variant_1_value && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-between"
+                        onClick={() => {
+                          addToCart(product, product.price_variant_1_name, product.price_variant_1_value);
+                          document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
+                            new MouseEvent('click', { bubbles: true })
+                          );
+                        }}
+                      >
+                        {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
+                        <Plus size={16} />
+                      </Button>
+                    )}
+                    
+                    {product.price_variant_2_name && product.price_variant_2_value && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-between"
+                        onClick={() => {
+                          addToCart(product, product.price_variant_2_name, product.price_variant_2_value);
+                          document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
+                            new MouseEvent('click', { bubbles: true })
+                          );
+                        }}
+                      >
+                        {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                        <Plus size={16} />
+                      </Button>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // Desktop version
     return (
       <Card horizontal className="overflow-hidden h-full">
         {product.image_url ? (
@@ -257,10 +385,9 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             src={product.image_url} 
             alt={product.title}
             className="w-1/6 h-auto"
-            square={isMobileView}
           />
         ) : (
-          <div className={`w-1/6 bg-gray-100 flex items-center justify-center ${isMobileView ? "aspect-square" : "min-h-[150px]"}`}>
+          <div className="w-1/6 bg-gray-100 flex items-center justify-center min-h-[150px]">
             <span className="text-gray-400">Nessuna immagine</span>
           </div>
         )}
@@ -329,11 +456,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           ) : (
             <Button 
               variant="outline" 
-              size={isMobileView ? "icon" : "sm"} 
-              className={`${!isMobileView ? "w-full justify-between" : ""} mt-2 ml-auto flex`}
+              size="sm" 
+              className="w-full justify-between mt-2"
               onClick={() => addToCart(product)}
             >
-              {!isMobileView && "Aggiungi"}
+              Aggiungi
               <Plus size={16} />
             </Button>
           )}

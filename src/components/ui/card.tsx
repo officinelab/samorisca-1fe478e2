@@ -80,15 +80,15 @@ CardFooter.displayName = "CardFooter"
 
 const CardImage = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string; square?: boolean }
->(({ className, src, alt, square, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string; square?: boolean; overlay?: boolean }
+>(({ className, src, alt, square, overlay, ...props }, ref) => (
   <div 
     ref={ref} 
     className={cn("relative", className)} 
     {...props}
   >
     {src && square ? (
-      <div className="aspect-square">
+      <div className={cn("aspect-square", overlay && "rounded-md overflow-hidden")}>
         <AspectRatio ratio={1/1}>
           <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
         </AspectRatio>
@@ -96,6 +96,7 @@ const CardImage = React.forwardRef<
     ) : src ? (
       <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
     ) : null}
+    {overlay && props.children}
   </div>
 ))
 CardImage.displayName = "CardImage"
