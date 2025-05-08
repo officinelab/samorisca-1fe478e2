@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -249,16 +248,19 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 
   // Componente per la card del prodotto
   const ProductCard = ({ product }: { product: ProductType }) => {
+    const isMobileView = isMobile || deviceView === 'mobile';
+    
     return (
       <Card horizontal className="overflow-hidden h-full">
         {product.image_url ? (
           <CardImage 
             src={product.image_url} 
             alt={product.title}
-            className="w-1/6 h-auto min-h-[150px]"
+            className="w-1/6 h-auto"
+            square={isMobileView}
           />
         ) : (
-          <div className="w-1/6 bg-gray-100 flex items-center justify-center min-h-[150px]">
+          <div className={`w-1/6 bg-gray-100 flex items-center justify-center ${isMobileView ? "aspect-square" : "min-h-[150px]"}`}>
             <span className="text-gray-400">Nessuna immagine</span>
           </div>
         )}
@@ -327,11 +329,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           ) : (
             <Button 
               variant="outline" 
-              size="sm" 
-              className="w-full justify-between mt-2"
+              size={isMobileView ? "icon" : "sm"} 
+              className={`${!isMobileView ? "w-full justify-between" : ""} mt-2 ml-auto flex`}
               onClick={() => addToCart(product)}
             >
-              Aggiungi
+              {!isMobileView && "Aggiungi"}
               <Plus size={16} />
             </Button>
           )}

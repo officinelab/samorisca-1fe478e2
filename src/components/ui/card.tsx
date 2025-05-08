@@ -1,6 +1,6 @@
 
 import * as React from "react"
-
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
@@ -80,14 +80,22 @@ CardFooter.displayName = "CardFooter"
 
 const CardImage = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string }
->(({ className, src, alt, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string; square?: boolean }
+>(({ className, src, alt, square, ...props }, ref) => (
   <div 
     ref={ref} 
     className={cn("relative", className)} 
     {...props}
   >
-    {src && <img src={src} alt={alt || ""} className="h-full w-full object-cover" />}
+    {src && square ? (
+      <div className="aspect-square">
+        <AspectRatio ratio={1/1}>
+          <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
+        </AspectRatio>
+      </div>
+    ) : src ? (
+      <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
+    ) : null}
   </div>
 ))
 CardImage.displayName = "CardImage"
