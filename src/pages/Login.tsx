@@ -55,7 +55,7 @@ const Login = () => {
             <img 
               src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" 
               alt="Sa Morisca Logo" 
-              className="h-32 w-auto" 
+              className="h-42 w-auto" 
             />
           </div>
           <CardTitle className="text-xl font-bold">Sa Morisca Menu</CardTitle>
