@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Allergen } from '@/types/database';
 
@@ -20,7 +19,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
-    padding: '20mm 15mm 50mm 15mm', // Aumentato il padding bottom a 50mm (5cm)
+    padding: '20mm 15mm 80mm 15mm', // Aumentato il padding bottom a 80mm (8cm)
     boxSizing: 'border-box' as const,
     margin: '0 auto',
     pageBreakAfter: 'avoid' as const,
