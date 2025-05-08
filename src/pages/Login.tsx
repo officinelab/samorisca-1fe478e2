@@ -53,9 +53,9 @@ const Login = () => {
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/placeholder.svg" 
+              src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" 
               alt="Sa Morisca Logo" 
-              className="h-24 w-auto" 
+              className="h-32 w-auto" 
             />
           </div>
           <CardTitle className="text-xl font-bold">Sa Morisca Menu</CardTitle>
