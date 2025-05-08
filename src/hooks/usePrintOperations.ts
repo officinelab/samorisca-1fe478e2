@@ -46,6 +46,7 @@ export const usePrintOperations = () => {
               box-sizing: border-box;
               page-break-after: always;
               position: relative;
+              overflow: visible;
             }
             
             .page:last-of-type {
@@ -55,11 +56,13 @@ export const usePrintOperations = () => {
             .menu-container {
               margin: 0 auto;
               max-width: 100%;
+              overflow: visible;
             }
             
             .category {
               margin-bottom: 15mm;
               break-inside: avoid;
+              page-break-inside: avoid;
             }
             
             .category-title {
@@ -74,6 +77,7 @@ export const usePrintOperations = () => {
             .menu-item {
               margin-bottom: 5mm;
               break-inside: avoid;
+              page-break-inside: avoid;
             }
             
             .item-header {
@@ -87,8 +91,12 @@ export const usePrintOperations = () => {
               font-weight: bold;
               font-size: 12pt;
               width: auto;
-              white-space: nowrap;
+              white-space: normal;
               margin-right: 10px;
+              max-width: 60%;
+              overflow-wrap: break-word;
+              word-wrap: break-word;
+              hyphens: auto;
             }
             
             .item-allergens {
@@ -118,7 +126,10 @@ export const usePrintOperations = () => {
               font-style: italic;
               margin-top: 2mm;
               width: auto;
-              max-width: calc(100% - 20px);
+              max-width: 95%;
+              overflow-wrap: break-word;
+              word-wrap: break-word;
+              hyphens: auto;
             }
             
             .allergens-section {

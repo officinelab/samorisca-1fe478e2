@@ -41,21 +41,27 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
       <div className="page bg-white relative" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm 80mm 15mm', // Aumentato il padding bottom a 80mm (8cm)
+        padding: '20mm 15mm 20mm 15mm', // Ridotto il padding bottom a 20mm
         boxSizing: 'border-box',
-        margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
+        margin: '0 auto 60px auto',
         pageBreakAfter: 'always',
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
-        <div style={{marginBottom: '40px', overflow: 'visible'}}>
+        <div style={{
+          marginBottom: '40px', 
+          overflow: 'visible',
+          maxHeight: `${A4_HEIGHT_MM - 40}mm`, // Altezza massima del contenuto
+          position: 'relative'
+        }}>
           {categories
             .filter(category => selectedCategories.includes(category.id))
             .map(category => (
               <div key={category.id} style={{
                 marginBottom: '40px',
                 breakInside: 'avoid',
+                pageBreakInside: 'avoid',
               }}>
                 <div style={{
                   display: 'flex',
@@ -88,6 +94,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                       borderBottom: '1px solid #f3f4f6',
                       paddingBottom: '16px',
                       breakInside: 'avoid',
+                      pageBreakInside: 'avoid',
                     }}>
                       <div style={{
                         display: 'flex',
@@ -98,8 +105,8 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                         <h3 style={{
                           fontSize: '18px',
                           fontWeight: '600',
-                          maxWidth: '70%', // Limita la larghezza del titolo
-                          whiteSpace: 'normal', // Consente il wrapping del testo
+                          maxWidth: '70%',
+                          whiteSpace: 'normal', // Modificato a normal per permettere il wrapping
                         }}>{product[`title_${language}`] || product.title}</h3>
                         <div style={{
                           marginLeft: '16px',
@@ -117,10 +124,11 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                         <p style={{
                           color: '#4b5563',
                           marginBottom: '8px',
-                          overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
-                          wordWrap: 'break-word', // Supporto per browser più vecchi
-                          wordBreak: 'normal', // Non spezza parole a meno che non sia necessario
-                          hyphens: 'auto' // Aggiunge trattini quando necessario
+                          overflowWrap: 'break-word',
+                          wordWrap: 'break-word',
+                          wordBreak: 'normal',
+                          hyphens: 'auto',
+                          maxWidth: '95%' // Limitata la larghezza massima
                         }}>{product[`description_${language}`] || product.description}</p>
                       )}
                       
@@ -166,18 +174,6 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
               </div>
             ))}
         </div>
-        
-        {/* Indicatore di margine inferiore */}
-        <div style={{
-          position: 'absolute',
-          bottom: '0',
-          left: '0',
-          width: '100%',
-          height: '80mm',
-          borderTop: showPageBoundaries ? '1px dashed #cccccc' : 'none',
-          opacity: showPageBoundaries ? 0.5 : 0,
-          pointerEvents: 'none',
-        }} />
       </div>
       
       {/* Pagina allergeni */}

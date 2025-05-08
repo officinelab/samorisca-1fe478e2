@@ -41,15 +41,19 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       <div className="page relative bg-white" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm 80mm 15mm', // Aumentato il padding bottom a 80mm (8cm)
+        padding: '20mm 15mm 20mm 15mm', // Ridotto il padding bottom a 20mm
         boxSizing: 'border-box',
-        margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
+        margin: '0 auto 60px auto',
         pageBreakAfter: 'always',
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}>
-        <div className="menu-container" style={{ overflow: 'visible' }}>
+        <div className="menu-container" style={{ 
+          overflow: 'visible',
+          maxHeight: `${A4_HEIGHT_MM - 40}mm`, // Altezza massima del contenuto
+          position: 'relative'
+        }}>
           {categories
             .filter(category => selectedCategories.includes(category.id))
             .map((category, categoryIndex) => (
@@ -57,6 +61,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                 style={{
                   marginBottom: '15mm',
                   breakInside: 'avoid',
+                  pageBreakInside: 'avoid',
                 }} 
                 className="category">
                 <h2 style={{
@@ -76,6 +81,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                       style={{
                         marginBottom: '5mm',
                         breakInside: 'avoid',
+                        pageBreakInside: 'avoid',
                       }} 
                       className="menu-item">
                       <div style={{
@@ -88,8 +94,9 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                           fontWeight: 'bold',
                           fontSize: '12pt',
                           width: 'auto',
-                          whiteSpace: 'nowrap',
-                          marginRight: '10px'
+                          whiteSpace: 'normal', // Modificato a normal per permettere il wrapping
+                          marginRight: '10px',
+                          maxWidth: '60%' // Limitata la larghezza massima
                         }} className="item-title">
                           {product[`title_${language}`] || product.title}
                         </div>
@@ -125,12 +132,12 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                           fontSize: '10pt',
                           fontStyle: 'italic',
                           marginTop: '2mm',
-                          width: 'auto',
-                          maxWidth: 'calc(100% - 20px)',
-                          overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
-                          wordWrap: 'break-word', // Supporto per browser più vecchi
-                          wordBreak: 'normal', // Non spezza parole a meno che non sia necessario
-                          hyphens: 'auto' // Aggiunge trattini quando necessario
+                          width: '100%',
+                          maxWidth: '95%',
+                          overflowWrap: 'break-word',
+                          wordWrap: 'break-word',
+                          wordBreak: 'normal',
+                          hyphens: 'auto'
                         }} className="item-description">
                           {product[`description_${language}`] || product.description}
                         </div>
@@ -158,17 +165,6 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               </div>
             ))}
         </div>
-        {/* Indicatore di margine inferiore */}
-        <div style={{
-          position: 'absolute',
-          bottom: '0',
-          left: '0',
-          width: '100%',
-          height: '80mm',
-          borderTop: showPageBoundaries ? '1px dashed #cccccc' : 'none',
-          opacity: showPageBoundaries ? 0.5 : 0,
-          pointerEvents: 'none',
-        }} />
       </div>
           
       {/* Pagina degli allergeni */}

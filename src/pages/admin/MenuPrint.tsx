@@ -86,8 +86,8 @@ const MenuPrint = () => {
       <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
         <div className="border rounded-md overflow-visible shadow print:border-0 print:shadow-none relative">
-          <ScrollArea className="h-[60vh] print:h-auto">
-            <div className="bg-white print:p-0 relative" ref={printContentRef}>
+          <ScrollArea className="h-[70vh] print:h-auto">
+            <div id="print-content" className="bg-white print:p-0 relative" ref={printContentRef}>
               <MenuLayoutSelector
                 selectedLayout={selectedLayout}
                 A4_WIDTH_MM={A4_WIDTH_MM}
@@ -158,10 +158,19 @@ const MenuPrint = () => {
           }
           .category, .menu-item {
             break-inside: avoid;
+            page-break-inside: avoid;
             overflow: visible;
           }
           .allergen-item {
             break-inside: avoid;
+          }
+
+          /* Assicurarsi che tutti i contenuti siano visibili */
+          .item-title, .item-description {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
           }
         }
       `}
