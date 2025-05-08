@@ -248,239 +248,96 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 
   // Componente per la card del prodotto
   const ProductCard = ({ product }: { product: ProductType }) => {
-    const isMobileView = deviceView === 'mobile' || (!isPreview && isMobile);
+    const isMobileView = isMobile || deviceView === 'mobile';
     
-    if (isMobileView) {
-      return (
-        <div className="border-b border-gray-300 pb-4 mb-4 flex items-center justify-between">
-          <div className="pr-4 flex-1">
-            <h2 className="font-bold text-black text-base leading-5 mb-1">
+    return (
+      <Card horizontal className="overflow-hidden h-full">
+        {product.image_url ? (
+          <CardImage 
+            src={product.image_url} 
+            alt={product.title}
+            className="w-1/6 h-auto"
+            square={isMobileView}
+          />
+        ) : (
+          <div className={`w-1/6 bg-gray-100 flex items-center justify-center ${isMobileView ? "aspect-square" : "min-h-[150px]"}`}>
+            <span className="text-gray-400">Nessuna immagine</span>
+          </div>
+        )}
+        
+        <CardContent className="flex-1 p-4">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="font-medium text-lg">
               {product.title}
-            </h2>
-            {product.description && (
-              <p className="text-gray-600 text-sm leading-5 mb-1">
-                {product.description}
-              </p>
-            )}
+            </h3>
             
-            {product.allergens && product.allergens.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {product.allergens.map(allergen => (
-                  <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
-                    {allergen.number}
-                  </Badge>
-                ))}
-              </div>
+            {!product.has_multiple_prices && (
+              <span className="font-medium">{product.price_standard?.toFixed(2)} €</span>
             )}
-            
-            <p className="text-gray-800 text-base leading-5">
-              {!product.has_multiple_prices ? (
-                `${product.price_standard?.toFixed(2)} €`
-              ) : (
-                "Prezzi variabili"
-              )}
-            </p>
           </div>
           
-          <div className="relative w-28 h-28 flex-shrink-0 rounded-md overflow-hidden">
-            {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.title}
-                className="w-full h-full object-cover"
-                width={112}
-                height={112}
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400 text-xs">Nessuna immagine</span>
-              </div>
-            )}
-            
-            {!product.has_multiple_prices ? (
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute bottom-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center text-primary shadow-md hover:bg-gray-100 p-0"
+          {product.description && (
+            <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+          )}
+          
+          {product.allergens && product.allergens.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {product.allergens.map(allergen => (
+                <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
+                  {allergen.number}
+                </Badge>
+              ))}
+            </div>
+          )}
+          
+          {product.has_multiple_prices ? (
+            <div className="space-y-2 mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-between"
                 onClick={() => addToCart(product)}
               >
-                <Plus size={20} />
+                Standard: {product.price_standard?.toFixed(2)} €
+                <Plus size={16} />
               </Button>
-            ) : (
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute bottom-3 right-3 bg-white rounded-full w-10 h-10 flex items-center justify-center text-primary shadow-md hover:bg-gray-100 p-0"
-                  >
-                    <Plus size={20} />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="h-auto max-h-[50vh]">
-                  <SheetHeader className="text-left pb-2">
-                    <SheetTitle>{product.title}</SheetTitle>
-                  </SheetHeader>
-                  <div className="space-y-4 py-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full justify-between"
-                      onClick={() => {
-                        addToCart(product);
-                        document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
-                          new MouseEvent('click', { bubbles: true })
-                        );
-                      }}
-                    >
-                      Standard: {product.price_standard?.toFixed(2)} €
-                      <Plus size={16} />
-                    </Button>
-                    
-                    {product.price_variant_1_name && product.price_variant_1_value && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full justify-between"
-                        onClick={() => {
-                          addToCart(product, product.price_variant_1_name, product.price_variant_1_value);
-                          document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
-                            new MouseEvent('click', { bubbles: true })
-                          );
-                        }}
-                      >
-                        {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
-                        <Plus size={16} />
-                      </Button>
-                    )}
-                    
-                    {product.price_variant_2_name && product.price_variant_2_value && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full justify-between"
-                        onClick={() => {
-                          addToCart(product, product.price_variant_2_name, product.price_variant_2_value);
-                          document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
-                            new MouseEvent('click', { bubbles: true })
-                          );
-                        }}
-                      >
-                        {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
-                        <Plus size={16} />
-                      </Button>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            )}
-          </div>
-        </div>
-      );
-    }
-    
-    // Desktop version
-    return (
-      <Card className="mb-4 overflow-hidden">
-        <div className="flex">
-          <div className="w-1/6 min-w-[150px]">
-            {product.image_url ? (
-              <img 
-                src={product.image_url} 
-                alt={product.title}
-                className="w-full h-full object-cover min-h-[150px]"
-              />
-            ) : (
-              <div className="w-full bg-gray-100 flex items-center justify-center min-h-[150px]">
-                <span className="text-gray-400">Nessuna immagine</span>
-              </div>
-            )}
-          </div>
-          
-          <CardContent className="flex-1 p-4">
-            <div className="flex justify-between items-start mb-1">
-              <h3 className="font-medium text-lg">
-                {product.title}
-              </h3>
               
-              {!product.has_multiple_prices && (
-                <span className="font-medium">{product.price_standard?.toFixed(2)} €</span>
-              )}
-            </div>
-            
-            {product.description && (
-              <p className="text-gray-600 text-sm mb-2">{product.description}</p>
-            )}
-            
-            {product.allergens && product.allergens.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-3">
-                {product.allergens.map(allergen => (
-                  <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
-                    {allergen.number}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            
-            {product.has_multiple_prices ? (
-              <div className="space-y-2 mt-3">
+              {product.price_variant_1_name && product.price_variant_1_value && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-between"
-                  onClick={() => addToCart(product)}
+                  onClick={() => addToCart(product, product.price_variant_1_name, product.price_variant_1_value)}
                 >
-                  Standard: {product.price_standard?.toFixed(2)} €
+                  {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
                   <Plus size={16} />
                 </Button>
-                
-                {product.price_variant_1_name && product.price_variant_1_value && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-between"
-                    onClick={() => {
-                      addToCart(product, product.price_variant_1_name, product.price_variant_1_value);
-                      document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
-                        new MouseEvent('click', { bubbles: true })
-                      );
-                    }}
-                  >
-                    {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
-                    <Plus size={16} />
-                  </Button>
-                )}
-                
-                {product.price_variant_2_name && product.price_variant_2_value && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full justify-between"
-                    onClick={() => {
-                      addToCart(product, product.price_variant_2_name, product.price_variant_2_value);
-                      document.querySelector('[data-radix-collection-item]')?.dispatchEvent(
-                        new MouseEvent('click', { bubbles: true })
-                      );
-                    }}
-                  >
-                    {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
-                    <Plus size={16} />
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full justify-between mt-2"
-                onClick={() => addToCart(product)}
-              >
-                Aggiungi
-                <Plus size={16} />
-              </Button>
-            )}
-          </CardContent>
-        </div>
+              )}
+              
+              {product.price_variant_2_name && product.price_variant_2_value && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-between"
+                  onClick={() => addToCart(product, product.price_variant_2_name, product.price_variant_2_value)}
+                >
+                  {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                  <Plus size={16} />
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button 
+              variant="outline" 
+              size={isMobileView ? "icon" : "sm"} 
+              className={`${!isMobileView ? "w-full justify-between" : ""} mt-2 ml-auto flex`}
+              onClick={() => addToCart(product)}
+            >
+              {!isMobileView && "Aggiungi"}
+              <Plus size={16} />
+            </Button>
+          )}
+        </CardContent>
       </Card>
     );
   };
@@ -621,7 +478,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       </header>
 
       <div className="container max-w-5xl mx-auto px-4 py-6">
-        <div className={`${deviceView === 'desktop' ? 'grid grid-cols-4 gap-6' : ''}`}>
+        <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'}`}>
           {/* Categorie (Sidebar su desktop) */}
           <div className={`${deviceView === 'desktop' ? '' : 'mb-4'}`}>
             <div className="sticky top-20">
@@ -662,8 +519,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 
           {/* Menu principale */}
           <div className={deviceView === 'desktop' ? 'col-span-3' : ''}>
-            {isPreview ? (
-              <div className="space-y-10">
+            <ScrollArea ref={menuRef} className="h-[calc(100vh-140px)]">
+              <div className="space-y-10 pb-16">
                 {categories.map((category) => (
                   <section key={category.id} id={`category-${category.id}`} className="scroll-mt-20">
                     <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
@@ -729,76 +586,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   )}
                 </section>
               </div>
-            ) : (
-              <ScrollArea ref={menuRef} className="h-[calc(100vh-140px)]">
-                <div className="space-y-10 pb-16">
-                  {categories.map((category) => (
-                    <section key={category.id} id={`category-${category.id}`} className="scroll-mt-20">
-                      <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
-                      <div className="grid grid-cols-1 gap-4">
-                        {products[category.id]?.map((product) => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                      {products[category.id]?.length === 0 && (
-                        <p className="text-gray-500 text-center py-6">
-                          Nessun prodotto disponibile in questa categoria.
-                        </p>
-                      )}
-                    </section>
-                  ))}
-
-                  {isLoading && (
-                    <div className="space-y-8">
-                      <div>
-                        <Skeleton className="h-8 w-48 mb-4" />
-                        <div className="grid grid-cols-1 gap-4">
-                          <Skeleton className="h-52 w-full" />
-                          <Skeleton className="h-52 w-full" />
-                          <Skeleton className="h-52 w-full" />
-                          <Skeleton className="h-52 w-full" />
-                        </div>
-                      </div>
-                      <div>
-                        <Skeleton className="h-8 w-48 mb-4" />
-                        <div className="grid grid-cols-1 gap-4">
-                          <Skeleton className="h-52 w-full" />
-                          <Skeleton className="h-52 w-full" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Sezione allergeni */}
-                  <section className="pt-6 border-t">
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center mb-2"
-                      onClick={() => setShowAllergensInfo(!showAllergensInfo)}
-                    >
-                      <Info size={18} className="mr-2" />
-                      {showAllergensInfo ? "Nascondi informazioni allergeni" : "Mostra informazioni allergeni"}
-                    </Button>
-                    
-                    {showAllergensInfo && (
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <h3 className="font-semibold mb-2">Legenda Allergeni</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                          {allergens.map(allergen => (
-                            <div key={allergen.id} className="flex items-center">
-                              <Badge variant="outline" className="mr-2">
-                                {allergen.number}
-                              </Badge>
-                              <span className="text-sm">{allergen.title}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </section>
-                </div>
-              </ScrollArea>
-            )}
+            </ScrollArea>
           </div>
         </div>
       </div>
