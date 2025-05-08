@@ -48,6 +48,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+        overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
       }}>
         <div style={{marginBottom: '40px'}}>
           {categories
@@ -98,6 +99,8 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                         <h3 style={{
                           fontSize: '18px',
                           fontWeight: '600',
+                          maxWidth: '70%', // Limita la larghezza del titolo
+                          whiteSpace: 'normal', // Consente il wrapping del testo
                         }}>{product[`title_${language}`] || product.title}</h3>
                         <div style={{
                           marginLeft: '16px',
@@ -115,6 +118,10 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                         <p style={{
                           color: '#4b5563',
                           marginBottom: '8px',
+                          overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                          wordWrap: 'break-word', // Supporto per browser più vecchi
+                          wordBreak: 'normal', // Non spezza parole a meno che non sia necessario
+                          hyphens: 'auto' // Aggiunge trattini quando necessario
                         }}>{product[`description_${language}`] || product.description}</p>
                       )}
                       
@@ -135,7 +142,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                       )}
                       
                       {product.allergens && product.allergens.length > 0 && (
-                        <div style={{display: 'flex', marginTop: '4px'}}>
+                        <div style={{display: 'flex', marginTop: '4px', flexWrap: 'wrap'}}>
                           <div style={{
                             fontSize: '12px',
                             color: '#6b7280',
@@ -147,6 +154,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
                               borderRadius: '9999px',
                               padding: '0 8px',
                               marginLeft: '4px',
+                              marginBottom: '4px',
                             }}>
                               {allergen.number}
                             </span>

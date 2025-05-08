@@ -48,6 +48,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+        overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
       }}>
         <div className="menu-container">
           {categories
@@ -126,7 +127,11 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
                           fontStyle: 'italic',
                           marginTop: '2mm',
                           width: 'auto',
-                          maxWidth: 'calc(100% - 20px)'
+                          maxWidth: 'calc(100% - 20px)',
+                          overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                          wordWrap: 'break-word', // Supporto per browser più vecchi
+                          wordBreak: 'normal', // Non spezza parole a meno che non sia necessario
+                          hyphens: 'auto' // Aggiunge trattini quando necessario
                         }} className="item-description">
                           {product[`description_${language}`] || product.description}
                         </div>

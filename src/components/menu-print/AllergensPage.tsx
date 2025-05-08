@@ -27,6 +27,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
     breakAfter: 'avoid' as const,
     border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
     boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+    overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
   });
 
   // Contenuto specifico in base al layout
@@ -67,10 +68,15 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                     backgroundColor: '#f3f4f6',
                     fontWeight: '700',
                     fontSize: '18px',
+                    flexShrink: 0, // Impedisce la compressione del numero
+                    marginRight: '8px', // Aggiunto spazio tra il numero e il testo
                   }}>
                     {allergen.number}
                   </span>
-                  <div>
+                  <div style={{
+                    overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                    wordWrap: 'break-word',
+                  }}>
                     <span style={{fontWeight: '500'}}>{allergen.title}</span>
                     {allergen.description && (
                       <span style={{
@@ -106,6 +112,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                   flexDirection: 'column',
                   alignItems: 'center',
                   marginRight: '16px',
+                  flexShrink: 0, // Impedisce la compressione dell'icona
                 }}>
                   <div style={{
                     width: '40px',
@@ -139,7 +146,12 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                   )}
                 </div>
                 
-                <div>
+                <div style={{
+                  overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                  wordWrap: 'break-word',
+                  wordBreak: 'normal',
+                  hyphens: 'auto',
+                }}>
                   <h3 style={{
                     fontWeight: '600',
                     fontSize: '18px',
@@ -193,8 +205,13 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                     lineHeight: '20px',
                     marginRight: '8px',
                     fontWeight: 'bold',
+                    flexShrink: 0, // Impedisce la compressione del numero
                   }} className="allergen-number">{allergen.number}</span>
-                  <div style={{flex: 1}} className="allergen-content">
+                  <div style={{
+                    flex: 1,
+                    overflowWrap: 'break-word', // Forza il wrapping delle parole lunghe
+                    wordWrap: 'break-word',
+                  }} className="allergen-content">
                     <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
                     {allergen.description && (
                       <div style={{
