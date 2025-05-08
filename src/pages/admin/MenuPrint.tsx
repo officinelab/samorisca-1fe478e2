@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -602,7 +603,7 @@ const MenuPrint = () => {
                           <div style={{
                             fontSize: '10pt',
                             fontStyle: 'italic',
-                            margin-top: '2mm',
+                            marginTop: '2mm',
                             width: 'auto',
                             maxWidth: 'calc(100% - 20px)'
                           }} className="item-description">
@@ -679,7 +680,7 @@ const MenuPrint = () => {
                       borderRadius: '50%',
                       textAlign: 'center',
                       lineHeight: '20px',
-                      margin-right: '8px',
+                      marginRight: '8px',
                       fontWeight: 'bold'
                     }} className="allergen-number">{allergen.number}</span>
                     <div style={{flex: 1}} className="allergen-content">
