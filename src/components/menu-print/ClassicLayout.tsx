@@ -41,7 +41,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
       <div className="page relative bg-white" style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
-        padding: '20mm 15mm',
+        padding: '20mm 15mm 50mm 15mm', // Aumentato il padding bottom a 50mm (5cm)
         boxSizing: 'border-box',
         margin: '0 auto 60px auto', // Aumentato lo spazio sotto per rendere chiara la separazione
         pageBreakAfter: 'always',

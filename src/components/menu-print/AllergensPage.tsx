@@ -20,7 +20,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
-    padding: '20mm 15mm',
+    padding: '20mm 15mm 50mm 15mm', // Aumentato il padding bottom a 50mm (5cm)
     boxSizing: 'border-box' as const,
     margin: '0 auto',
     pageBreakAfter: 'avoid' as const,
