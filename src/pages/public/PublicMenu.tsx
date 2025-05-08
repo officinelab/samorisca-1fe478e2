@@ -12,6 +12,7 @@ import { AlertCircle, ShoppingCart, X, Plus, Minus, Info, ChevronUp } from "luci
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Allergen, Category as CategoryType, Product as ProductType } from "@/types/database";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Local interfaces for cart items
 interface CartItem {
@@ -45,6 +46,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const [showBackToTop, setShowBackToTop] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Gestisce lo scroll
   useEffect(() => {
@@ -516,7 +518,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                 {categories.map((category) => (
                   <section key={category.id} id={`category-${category.id}`} className="scroll-mt-20">
                     <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       {products[category.id]?.map((product) => (
                         <ProductCard key={product.id} product={product} />
                       ))}
@@ -533,7 +535,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   <div className="space-y-8">
                     <div>
                       <Skeleton className="h-8 w-48 mb-4" />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <Skeleton className="h-52 w-full" />
                         <Skeleton className="h-52 w-full" />
                         <Skeleton className="h-52 w-full" />
@@ -542,7 +544,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                     </div>
                     <div>
                       <Skeleton className="h-8 w-48 mb-4" />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <Skeleton className="h-52 w-full" />
                         <Skeleton className="h-52 w-full" />
                       </div>
