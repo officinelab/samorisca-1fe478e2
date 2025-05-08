@@ -288,6 +288,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                 src={product.image_url} 
                 alt={product.title}
                 className="w-full h-full object-cover"
+                width={112}
+                height={112}
               />
             ) : (
               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
