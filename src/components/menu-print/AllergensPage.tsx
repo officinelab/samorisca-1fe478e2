@@ -27,7 +27,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
     border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
     boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
     overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
-    position: 'relative',
+    position: 'relative' as const,
   });
 
   // Contenuto specifico in base al layout
@@ -240,7 +240,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
       
       {/* Indicatore di margine inferiore */}
       <div style={{
-        position: 'absolute',
+        position: 'absolute' as const,
         bottom: '0',
         left: '0',
         width: '100%',
