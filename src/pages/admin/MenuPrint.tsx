@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -385,12 +384,31 @@ const MenuPrint = () => {
     handlePrint();
   };
 
+  // Calcola il numero di pagine stimato in base al contenuto selezionato
+  const estimatePageCount = () => {
+    let count = 1; // Inizia con la pagina di copertina
+    
+    // Considera le categorie selezionate e il loro contenuto
+    if (selectedLayout !== "allergens") {
+      // Stima una pagina ogni 3-4 categorie a seconda del contenuto
+      const selectedCategoriesCount = selectedCategories.length;
+      count += Math.ceil(selectedCategoriesCount / 3);
+    }
+    
+    // Aggiungi una pagina per la tabella degli allergeni se necessario
+    if (printAllergens && allergens.length > 0) {
+      count += 1;
+    }
+    
+    return count;
+  };
+
   // Calcola il numero di pagine basato sul contenuto
   const renderPageBoundaries = () => {
     if (!showPageBoundaries) return null;
     
-    // Usiamo un placeholder con più pagine per la visualizzazione
-    const pageCount = 3; // Numero di pagine di esempio
+    // Usiamo un numero di pagine stimato in base al contenuto
+    const pageCount = estimatePageCount();
     
     return (
       <div className="pointer-events-none absolute inset-0">
@@ -401,7 +419,9 @@ const MenuPrint = () => {
             style={{ 
               width: `${A4_WIDTH_MM * MM_TO_PX_FACTOR}px`, 
               height: `${A4_HEIGHT_MM * MM_TO_PX_FACTOR}px`,
-              margin: 'auto',
+              margin: '0 auto',
+              position: 'relative',
+              marginBottom: '10px', // Spazio tra le pagine per rendere visibile il limite
             }}
           >
             {/* Bordo pagina A4 */}
@@ -413,31 +433,37 @@ const MenuPrint = () => {
                 boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
               }}
             >
+              {/* Indicatore tipo di pagina e numero */}
+              <div 
+                className="absolute top-4 left-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
+                style={{ opacity: 0.8 }}
+              >
+                {index === 0 ? 'Copertina' : 
+                 (printAllergens && index === pageCount - 1) ? 'Allergeni' : `Contenuto ${index}`}
+              </div>
+              
               {/* Indicatore numero pagina */}
-              {index > 0 && (
-                <div 
-                  className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
-                  style={{ opacity: 0.8 }}
-                >
-                  Pagina {index + 1}
-                </div>
-              )}
+              <div 
+                className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
+                style={{ opacity: 0.8 }}
+              >
+                Pagina {index + 1} di {pageCount}
+              </div>
             </div>
             
-            {/* Linea di separazione tra le pagine */}
-            {index < pageCount - 1 && (
-              <div 
-                className="absolute bottom-0 left-0 right-0 border-b-2 border-dashed border-red-400"
-                style={{ 
-                  transform: 'translateY(1px)',
-                  zIndex: 20,
-                }}
-              >
-                <div className="absolute right-0 top-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
-                  Fine pagina {index + 1}
-                </div>
+            {/* Indicatore fine pagina */}
+            <div 
+              className="absolute bottom-0 left-0 right-0"
+              style={{ 
+                borderBottom: '3px dashed red',
+                transform: 'translateY(1px)',
+                zIndex: 20,
+              }}
+            >
+              <div className="absolute right-0 bottom-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
+                Fine pagina {index + 1}
               </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
@@ -859,7 +885,7 @@ const MenuPrint = () => {
                     borderRadius: '9999px',
                     backgroundColor: '#f3f4f6',
                     fontWeight: '700',
-                    marginRight: '8px',
+                    fontSize: '18px',
                   }}>
                     {allergen.number}
                   </span>
