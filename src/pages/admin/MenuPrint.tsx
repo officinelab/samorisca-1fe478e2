@@ -389,51 +389,66 @@ const MenuPrint = () => {
   const renderPageBoundaries = () => {
     if (!showPageBoundaries) return null;
     
-    // Usiamo un placeholder con più pagine per la visualizzazione
-    const pageCount = 3; // Numero di pagine di esempio
+    // Calcoliamo il numero di pagine in base al tipo di layout
+    // Nella visualizzazione di anteprima, aggiungiamo un certo numero di pagine predefinito
+    let pageCount = 1; // Copertina
+    
+    if (selectedLayout === 'allergens') {
+      pageCount = 2; // Copertina + pagina allergeni
+    } else {
+      // Per il menu completo, calcoliamo pagine in base alle categorie selezionate
+      // Assumiamo che ogni 2-3 categorie occupino circa una pagina
+      const selectedCategoryCount = selectedCategories.length;
+      const categoriesPerPage = 2; // Stima di categorie per pagina
+      const menuPages = Math.ceil(selectedCategoryCount / categoriesPerPage);
+      
+      pageCount = 1 + menuPages + (printAllergens ? 1 : 0); // Copertina + pagine menu + pagina allergeni (opzionale)
+    }
     
     return (
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center">
         {Array.from({ length: pageCount }).map((_, index) => (
           <div 
             key={index} 
-            className="relative"
+            className="relative mb-8 shadow-md"
             style={{ 
               width: `${A4_WIDTH_MM * MM_TO_PX_FACTOR}px`, 
               height: `${A4_HEIGHT_MM * MM_TO_PX_FACTOR}px`,
-              margin: 'auto',
+              backgroundColor: 'rgba(255, 255, 255, 0.01)', // Quasi trasparente
             }}
           >
             {/* Bordo pagina A4 */}
             <div 
-              className="absolute border-2 border-dashed border-gray-400"
+              className="absolute border-2 border-dashed border-blue-400"
               style={{ 
                 width: '100%', 
                 height: '100%',
-                boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
               }}
             >
               {/* Indicatore numero pagina */}
-              {index > 0 && (
-                <div 
-                  className="absolute bottom-4 right-4 bg-gray-100 px-2 py-1 rounded-md text-sm text-gray-600"
-                  style={{ opacity: 0.8 }}
-                >
-                  Pagina {index + 1}
-                </div>
-              )}
+              <div 
+                className="absolute bottom-4 right-4 bg-blue-100 px-2 py-1 rounded-md text-sm text-blue-700 font-medium"
+                style={{ opacity: 0.9 }}
+              >
+                Pagina {index + 1} di {pageCount}
+              </div>
+            </div>
+            
+            {/* Etichetta per indicare il contenuto della pagina */}
+            <div className="absolute top-0 left-0 bg-blue-100 px-2 py-1 rounded-br-md text-sm text-blue-700 font-medium">
+              {index === 0 ? 'Copertina' : 
+                (index === pageCount - 1 && printAllergens && selectedLayout !== 'allergens') ? 'Allergeni' : 'Contenuto Menu'}
             </div>
             
             {/* Linea di separazione tra le pagine */}
             {index < pageCount - 1 && (
               <div 
-                className="absolute bottom-0 left-0 right-0 border-b-2 border-dashed border-red-400"
+                className="absolute bottom-0 left-0 right-0 border-b-4 border-dashed border-red-400 z-50"
                 style={{ 
-                  transform: 'translateY(1px)',
-                  zIndex: 20,
+                  transform: 'translateY(2px)',
                 }}
               >
-                <div className="absolute right-0 top-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
+                <div className="absolute right-0 bottom-0 bg-red-100 text-red-800 px-2 py-1 text-xs rounded-tl-md">
                   Fine pagina {index + 1}
                 </div>
               </div>
@@ -1115,13 +1130,13 @@ const MenuPrint = () => {
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
         <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none relative">
           <ScrollArea className="h-[60vh] print:h-auto">
-            <div className="bg-white print:p-0" ref={printContentRef}>
+            <div className="bg-white print:p-0 relative" ref={printContentRef}>
               {selectedLayout === "classic" && <ClassicLayout />}
               {selectedLayout === "modern" && <ModernLayout />}
               {selectedLayout === "allergens" && <AllergensTable />}
             </div>
-            {showPageBoundaries && renderPageBoundaries()}
           </ScrollArea>
+          {showPageBoundaries && renderPageBoundaries()}
         </div>
       </div>
 
