@@ -14,6 +14,15 @@ const ReorderingItem = ({ allergen, index, totalItems, onMove }: ReorderingItemP
     <div className="flex items-center justify-between bg-white p-3 rounded-md border">
       <div className="flex items-center gap-3">
         <span className="text-lg font-bold">{allergen.number}</span>
+        {allergen.icon_url && (
+          <div className="w-8 h-8 bg-gray-50 rounded overflow-hidden">
+            <img 
+              src={allergen.icon_url}
+              alt={`Icona per ${allergen.title}`}
+              className="w-full h-full object-contain"
+            />
+          </div>
+        )}
         <span className="font-medium">{allergen.title}</span>
       </div>
       <div className="flex space-x-1">

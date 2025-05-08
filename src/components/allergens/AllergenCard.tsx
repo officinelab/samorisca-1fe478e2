@@ -16,17 +16,50 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
       <CardContent className="p-0">
         <div className="p-4">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-800 font-bold">
-                {allergen.number}
-              </span>
-              <div>
-                <h3 className="font-medium">{allergen.title}</h3>
-                {allergen.description && (
-                  <p className="text-sm text-gray-500">{allergen.description}</p>
-                )}
+            {/* Colonna 1a - Informazioni allergene */}
+            <div className="flex-grow space-y-2">
+              {/* Prima riga con 3 colonne */}
+              <div className="grid grid-cols-12 gap-2 items-center">
+                {/* Colonna 1b - Numero */}
+                <div className="col-span-1">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-800 font-bold">
+                    {allergen.number}
+                  </span>
+                </div>
+                
+                {/* Colonna 2b - Icona */}
+                <div className="col-span-2">
+                  {allergen.icon_url && (
+                    <div className="w-10 h-10 bg-gray-50 rounded overflow-hidden">
+                      <img 
+                        src={allergen.icon_url}
+                        alt={`Icona per ${allergen.title}`}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  {!allergen.icon_url && (
+                    <div className="w-10 h-10 bg-gray-50 rounded flex items-center justify-center text-gray-300">
+                      <span className="text-xs">No icon</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Colonna 3b - Titolo */}
+                <div className="col-span-9">
+                  <h3 className="font-medium">{allergen.title}</h3>
+                </div>
               </div>
+              
+              {/* Seconda riga - Descrizione */}
+              {allergen.description && (
+                <div>
+                  <p className="text-sm text-gray-500">{allergen.description}</p>
+                </div>
+              )}
             </div>
+            
+            {/* Colonna 2a - Azioni */}
             <div className="flex space-x-1">
               <Button 
                 size="icon" 
@@ -44,18 +77,6 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
               </Button>
             </div>
           </div>
-          
-          {allergen.icon_url && (
-            <div className="mt-3 flex justify-start ml-11">
-              <div className="w-12 h-12 bg-gray-50 rounded overflow-hidden">
-                <img 
-                  src={allergen.icon_url}
-                  alt={`Icona per ${allergen.title}`}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
