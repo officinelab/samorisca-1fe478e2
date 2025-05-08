@@ -6,13 +6,15 @@ type CoverPageProps = {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   layoutType?: 'classic' | 'modern' | 'allergens';
+  restaurantLogo?: string | null;
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({ 
   A4_WIDTH_MM, 
   A4_HEIGHT_MM, 
   showPageBoundaries, 
-  layoutType = 'classic'
+  layoutType = 'classic',
+  restaurantLogo
 }) => {
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -39,7 +41,11 @@ const CoverPage: React.FC<CoverPageProps> = ({
             height: '100%',
             textAlign: 'center',
           }}>
-            <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{height: '96px', marginBottom: '32px'}} />
+            {restaurantLogo ? (
+              <img src={restaurantLogo} alt="Restaurant Logo" style={{height: '96px', marginBottom: '32px', objectFit: 'contain'}} />
+            ) : (
+              <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{height: '96px', marginBottom: '32px'}} />
+            )}
             <h1 style={{
               fontSize: '40px',
               fontWeight: '700', 
@@ -62,12 +68,22 @@ const CoverPage: React.FC<CoverPageProps> = ({
             height: '100%',
             textAlign: 'center',
           }}>
-            <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{
-              height: '80px',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              marginBottom: '32px',
-            }} />
+            {restaurantLogo ? (
+              <img src={restaurantLogo} alt="Restaurant Logo" style={{
+                height: '80px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                marginBottom: '32px',
+                objectFit: 'contain'
+              }} />
+            ) : (
+              <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{
+                height: '80px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                marginBottom: '32px',
+              }} />
+            )}
             <h1 style={{
               fontSize: '32px',
               fontWeight: '700',
@@ -91,7 +107,11 @@ const CoverPage: React.FC<CoverPageProps> = ({
             height: '100%',
             textAlign: 'center',
           }}>
-            <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
+            {restaurantLogo ? (
+              <img src={restaurantLogo} alt="Restaurant Logo" style={{ height: '100px', marginBottom: '30px', objectFit: 'contain' }} />
+            ) : (
+              <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
+            )}
             <div className="cover-title" style={{
               fontSize: '36pt',
               fontWeight: 'bold',
