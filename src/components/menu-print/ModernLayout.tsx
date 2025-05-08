@@ -14,6 +14,7 @@ type ModernLayoutProps = {
   language: string;
   allergens: Allergen[];
   printAllergens: boolean;
+  restaurantLogo?: string | null;
 };
 
 const ModernLayout: React.FC<ModernLayoutProps> = ({
@@ -26,6 +27,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
   language,
   allergens,
   printAllergens,
+  restaurantLogo,
 }) => {
   // Calcola se una categoria ha troppi elementi e dovrebbe iniziare in una nuova pagina
   const shouldStartNewPage = (category: Category, prevCategoryIndex: number) => {
@@ -74,6 +76,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType="modern"
+        restaurantLogo={restaurantLogo}
       />
 
       {/* Pagine di contenuto */}
@@ -223,6 +226,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
           showPageBoundaries={showPageBoundaries}
           allergens={allergens}
           layoutType="modern"
+          restaurantLogo={restaurantLogo}
         />
       )}
     </>

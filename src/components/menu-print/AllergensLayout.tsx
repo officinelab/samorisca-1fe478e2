@@ -9,13 +9,15 @@ type AllergensLayoutProps = {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   allergens: Allergen[];
+  restaurantLogo?: string | null;
 };
 
 const AllergensLayout: React.FC<AllergensLayoutProps> = ({
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
-  allergens
+  allergens,
+  restaurantLogo
 }) => {
   return (
     <>
@@ -25,6 +27,7 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType="allergens"
+        restaurantLogo={restaurantLogo}
       />
 
       {/* Pagina degli allergeni */}
@@ -34,6 +37,7 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
         showPageBoundaries={showPageBoundaries}
         allergens={allergens}
         layoutType="allergens"
+        restaurantLogo={restaurantLogo}
       />
     </>
   );

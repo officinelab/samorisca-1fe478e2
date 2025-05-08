@@ -16,6 +16,7 @@ type MenuLayoutSelectorProps = {
   language: string;
   allergens: Allergen[];
   printAllergens: boolean;
+  restaurantLogo?: string | null;
 };
 
 const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
@@ -29,6 +30,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   language,
   allergens,
   printAllergens,
+  restaurantLogo,
 }) => {
   switch (selectedLayout) {
     case "modern":
@@ -43,6 +45,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           language={language}
           allergens={allergens}
           printAllergens={printAllergens}
+          restaurantLogo={restaurantLogo}
         />
       );
     case "allergens":
@@ -52,6 +55,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           A4_HEIGHT_MM={A4_HEIGHT_MM}
           showPageBoundaries={showPageBoundaries}
           allergens={allergens}
+          restaurantLogo={restaurantLogo}
         />
       );
     case "classic":
@@ -67,6 +71,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           language={language}
           allergens={allergens}
           printAllergens={printAllergens}
+          restaurantLogo={restaurantLogo}
         />
       );
   }

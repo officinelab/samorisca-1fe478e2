@@ -8,15 +8,22 @@ export const useMenuData = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Record<string, Product[]>>({});
   const [allergens, setAllergens] = useState<Allergen[]>([]);
+  const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // Carica i dati
+  // Load data
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Carica categorie attive ordinate per display_order
+        // Load restaurant logo from local storage if available
+        const savedLogo = localStorage.getItem('restaurantLogo');
+        if (savedLogo) {
+          setRestaurantLogo(savedLogo);
+        }
+
+        // Load active categories ordered by display_order
         const { data: categoriesData, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
@@ -27,10 +34,10 @@ export const useMenuData = () => {
         const activeCategories = categoriesData?.filter(c => c.is_active) || [];
         setCategories(activeCategories);
         
-        // Seleziona tutte le categorie per default
+        // Select all categories by default
         setSelectedCategories(activeCategories.map(c => c.id));
         
-        // Carica prodotti per ogni categoria
+        // Load products for each category
         const productsMap: Record<string, Product[]> = {};
         
         for (const category of activeCategories) {
@@ -43,7 +50,7 @@ export const useMenuData = () => {
             
           if (productsError) throw productsError;
           
-          // Per ogni prodotto, carica gli allergeni associati
+          // For each product, load associated allergens
           const productsWithAllergens = await Promise.all(
             (productsData || []).map(async (product) => {
               const { data: productAllergens, error: allergensError } = await supabase
@@ -75,7 +82,7 @@ export const useMenuData = () => {
         
         setProducts(productsMap);
         
-        // Carica tutti gli allergeni
+        // Load all allergens
         const { data: allergensData, error: allergensError } = await supabase
           .from('allergens')
           .select('*')
@@ -95,7 +102,7 @@ export const useMenuData = () => {
     loadData();
   }, []);
 
-  // Gestisce il toggle delle categorie selezionate
+  // Handles toggling selected categories
   const handleCategoryToggle = (categoryId: string) => {
     if (selectedCategories.includes(categoryId)) {
       setSelectedCategories(selectedCategories.filter(id => id !== categoryId));
@@ -104,7 +111,7 @@ export const useMenuData = () => {
     }
   };
 
-  // Gestisce la selezione/deselezione di tutte le categorie
+  // Handles selecting/deselecting all categories
   const handleToggleAllCategories = () => {
     if (selectedCategories.length === categories.length) {
       setSelectedCategories([]);
@@ -113,10 +120,18 @@ export const useMenuData = () => {
     }
   };
 
+  // Update restaurant logo
+  const updateRestaurantLogo = (logoUrl: string) => {
+    setRestaurantLogo(logoUrl);
+    localStorage.setItem('restaurantLogo', logoUrl);
+  };
+
   return {
     categories,
     products,
     allergens,
+    restaurantLogo,
+    updateRestaurantLogo,
     isLoading,
     selectedCategories,
     setSelectedCategories,

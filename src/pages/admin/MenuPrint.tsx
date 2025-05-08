@@ -8,6 +8,7 @@ import PrintOptions from "@/components/menu-print/PrintOptions";
 import MenuLayoutSelector from "@/components/menu-print/MenuLayoutSelector";
 import PageBoundaries from "@/components/menu-print/PageBoundaries";
 import PageEstimator from "@/components/menu-print/PageEstimator";
+import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
 import { useMenuData } from "@/hooks/useMenuData";
 import { usePrintOperations } from "@/hooks/usePrintOperations";
 
@@ -24,7 +25,9 @@ const MenuPrint = () => {
     isLoading, 
     selectedCategories, 
     handleCategoryToggle, 
-    handleToggleAllCategories 
+    handleToggleAllCategories,
+    restaurantLogo,
+    updateRestaurantLogo
   } = useMenuData();
   
   const { printContentRef, handlePrint, handleDownloadPDF } = usePrintOperations();
@@ -64,7 +67,12 @@ const MenuPrint = () => {
 
       {/* Opzioni di stampa */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-6 space-y-4">
+          <RestaurantLogoUploader 
+            currentLogo={restaurantLogo} 
+            onLogoUploaded={updateRestaurantLogo} 
+          />
+
           <PrintOptions
             language={language}
             setLanguage={setLanguage}
@@ -99,6 +107,7 @@ const MenuPrint = () => {
                 language={language}
                 allergens={allergens}
                 printAllergens={printAllergens}
+                restaurantLogo={restaurantLogo}
               />
             </div>
             {showPageBoundaries && (

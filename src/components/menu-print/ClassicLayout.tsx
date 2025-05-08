@@ -14,6 +14,7 @@ type ClassicLayoutProps = {
   language: string;
   allergens: Allergen[];
   printAllergens: boolean;
+  restaurantLogo?: string | null;
 };
 
 const ClassicLayout: React.FC<ClassicLayoutProps> = ({
@@ -26,6 +27,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   language,
   allergens,
   printAllergens,
+  restaurantLogo,
 }) => {
   // Calcola se una categoria ha troppi elementi e dovrebbe iniziare in una nuova pagina
   const shouldStartNewPage = (category: Category, prevCategoryIndex: number) => {
@@ -74,6 +76,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType="classic"
+        restaurantLogo={restaurantLogo}
       />
 
       {/* Pagine di contenuto */}
@@ -214,6 +217,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           showPageBoundaries={showPageBoundaries}
           allergens={allergens}
           layoutType="classic"
+          restaurantLogo={restaurantLogo}
         />
       )}
     </>

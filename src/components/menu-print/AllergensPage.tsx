@@ -8,6 +8,7 @@ type AllergensPageProps = {
   showPageBoundaries: boolean;
   allergens: Allergen[];
   layoutType?: 'classic' | 'modern' | 'allergens';
+  restaurantLogo?: string | null;
 };
 
 const AllergensPage: React.FC<AllergensPageProps> = ({
@@ -15,7 +16,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   A4_HEIGHT_MM,
   showPageBoundaries,
   allergens,
-  layoutType = 'classic'
+  layoutType = 'classic',
+  restaurantLogo
 }) => {
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -42,6 +44,24 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             maxHeight: 'calc(100% - 80mm)',
             overflow: 'hidden',
           }}>
+            {restaurantLogo && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '24px',
+              }}>
+                <img 
+                  src={restaurantLogo}
+                  alt="Restaurant Logo"
+                  style={{
+                    maxHeight: '40mm',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
+            
             <h2 style={{
               fontSize: '21px',
               fontWeight: '700',
@@ -60,33 +80,63 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                   alignItems: 'center',
                   breakInside: 'avoid',
                 }}>
-                  <span style={{
+                  {/* Number, Icon, and Title on the same row */}
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '9999px',
-                    backgroundColor: '#f3f4f6',
-                    fontWeight: '700',
-                    fontSize: '18px',
-                    flexShrink: 0,
-                    marginRight: '8px',
+                    width: '100%',
                   }}>
-                    {allergen.number}
-                  </span>
-                  <div style={{
-                    overflowWrap: 'break-word',
-                    wordWrap: 'break-word',
-                  }}>
-                    <span style={{fontWeight: '500'}}>{allergen.title}</span>
-                    {allergen.description && (
-                      <span style={{
-                        fontSize: '14px',
-                        color: '#6b7280',
-                        marginLeft: '4px',
-                      }}>({allergen.description})</span>
+                    {/* Number */}
+                    <span style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '9999px',
+                      backgroundColor: '#f3f4f6',
+                      fontWeight: '700',
+                      fontSize: '18px',
+                      flexShrink: 0,
+                      marginRight: '8px',
+                    }}>
+                      {allergen.number}
+                    </span>
+                    
+                    {/* Icon (if available) */}
+                    {allergen.icon_url && (
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        marginRight: '8px',
+                        flexShrink: 0,
+                      }}>
+                        <img 
+                          src={allergen.icon_url}
+                          alt={`Icona per ${allergen.title}`}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                          }}
+                        />
+                      </div>
                     )}
+                    
+                    {/* Title and Description */}
+                    <div style={{
+                      overflowWrap: 'break-word',
+                      wordWrap: 'break-word',
+                    }}>
+                      <span style={{fontWeight: '500'}}>{allergen.title}</span>
+                      {allergen.description && (
+                        <span style={{
+                          fontSize: '14px',
+                          color: '#6b7280',
+                          marginLeft: '4px',
+                        }}>({allergen.description})</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -103,6 +153,24 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             maxHeight: 'calc(100% - 80mm)',
             overflow: 'hidden',
           }}>
+            {restaurantLogo && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '16px',
+              }}>
+                <img 
+                  src={restaurantLogo}
+                  alt="Restaurant Logo"
+                  style={{
+                    maxHeight: '40mm',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
+            
             {allergens.map((allergen) => (
               <div key={allergen.id} style={{
                 display: 'flex',
@@ -111,85 +179,78 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                 borderBottom: '1px solid #e5e7eb',
                 breakInside: 'avoid',
               }}>
-                {/* Colonna 1a - Informazioni allergene */}
-                <div style={{ flexGrow: 1 }}>
-                  {/* Prima riga con 3 colonne */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {/* Colonna 1b - Numero */}
-                    <div>
-                      <span style={{
+                {/* Number, Icon, and Title on the same row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%' }}>
+                  {/* Numero */}
+                  <div>
+                    <span style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '9999px',
+                      backgroundColor: '#f3f4f6',
+                      fontWeight: '700',
+                      fontSize: '16px',
+                      flexShrink: 0,
+                    }}>
+                      {allergen.number}
+                    </span>
+                  </div>
+                  
+                  {/* Icona */}
+                  <div style={{ marginLeft: '4px', marginRight: '4px' }}>
+                    {allergen.icon_url && (
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                      }}>
+                        <img 
+                          src={allergen.icon_url}
+                          alt={`Icona per ${allergen.title}`}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                          }}
+                        />
+                      </div>
+                    )}
+                    {!allergen.icon_url && (
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        backgroundColor: '#f9fafb',
+                        borderRadius: '4px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '9999px',
-                        backgroundColor: '#f3f4f6',
-                        fontWeight: '700',
-                        fontSize: '16px',
+                        color: '#d1d5db',
                       }}>
-                        {allergen.number}
-                      </span>
-                    </div>
-                    
-                    {/* Colonna 2b - Icona */}
-                    <div style={{ marginLeft: '4px', marginRight: '4px' }}>
-                      {allergen.icon_url && (
-                        <div style={{
-                          width: '32px',
-                          height: '32px',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '4px',
-                          overflow: 'hidden',
-                        }}>
-                          <img 
-                            src={allergen.icon_url}
-                            alt={`Icona per ${allergen.title}`}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'contain',
-                            }}
-                          />
-                        </div>
-                      )}
-                      {!allergen.icon_url && (
-                        <div style={{
-                          width: '32px',
-                          height: '32px',
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#d1d5db',
-                        }}>
-                          <span style={{ fontSize: '10px' }}>No icon</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      {/* Colonna 3b - Titolo */}
-                      <div>
-                        <h3 style={{
-                          fontWeight: '500',
-                          fontSize: '16px',
-                          margin: '0',
-                        }}>{allergen.title}</h3>
+                        <span style={{ fontSize: '10px' }}>No icon</span>
                       </div>
-                      
-                      {/* Seconda riga - Descrizione allineata con il titolo */}
-                      {allergen.description && (
-                        <div>
-                          <p style={{
-                            fontSize: '14px',
-                            color: '#6b7280',
-                            margin: '2px 0 0 0',
-                          }}>{allergen.description}</p>
-                        </div>
-                      )}
-                    </div>
+                    )}
+                  </div>
+                  
+                  {/* Titolo e Descrizione */}
+                  <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <h3 style={{
+                      fontWeight: '500',
+                      fontSize: '16px',
+                      margin: '0',
+                    }}>{allergen.title}</h3>
+                    
+                    {allergen.description && (
+                      <p style={{
+                        fontSize: '14px',
+                        color: '#6b7280',
+                        margin: '2px 0 0 0',
+                      }}>{allergen.description}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -207,6 +268,24 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             maxHeight: 'calc(100% - 80mm)',
             overflow: 'hidden',
           }}>
+            {restaurantLogo && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '24px',
+              }}>
+                <img 
+                  src={restaurantLogo}
+                  alt="Restaurant Logo"
+                  style={{
+                    maxHeight: '40mm',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
+            
             <h2 style={{
               fontSize: '14pt',
               fontWeight: 'bold',
@@ -228,8 +307,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                   breakInside: 'avoid',
                   padding: '5px 0',
                 }} className="allergen-item">
-                  {/* Layout simile ad AllergenCard */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%' }}>
                     {/* Numero */}
                     <span style={{
                       display: 'inline-block',
@@ -264,8 +342,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
                       </div>
                     )}
                     
-                    {/* Contenuto (titolo e descrizione) */}
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {/* Titolo e Descrizione */}
+                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                       <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
                       {allergen.description && (
                         <div style={{
