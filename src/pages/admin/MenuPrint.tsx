@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -1052,7 +1051,8 @@ const MenuPrint = () => {
       </div>
 
       {/* Stili per la stampa - visibili solo quando si stampa */}
-      <style jsx global>{`
+      <style>
+        {`
         @media print {
           @page {
             size: A4;
@@ -1099,7 +1099,8 @@ const MenuPrint = () => {
             break-inside: avoid;
           }
         }
-      `}</style>
+      `}
+      </style>
     </div>
   );
 };
