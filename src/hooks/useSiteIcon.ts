@@ -33,8 +33,8 @@ export const useSiteIcon = () => {
   const updateFavicon = (iconUrl: string) => {
     if (!iconUrl) return;
     
-    // Cerca un elemento link con rel="icon" esistente
-    let link: HTMLLinkElement | null = document.querySelector('link[rel="icon"]');
+    // Cerca un elemento link con rel="icon" esistente, usando un cast esplicito a HTMLLinkElement
+    let link: HTMLLinkElement | null = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
     
     // Se non esiste, creane uno nuovo
     if (!link) {

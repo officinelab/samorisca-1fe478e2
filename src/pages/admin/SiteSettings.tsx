@@ -14,7 +14,8 @@ const SiteSettings = () => {
   // Applica l'icona del sito all'avvio della pagina
   useEffect(() => {
     if (siteIcon) {
-      const link = document.querySelector('link[rel="icon"]') || document.createElement('link');
+      // Casting to HTMLLinkElement to fix TypeScript errors
+      const link = document.querySelector('link[rel="icon"]') as HTMLLinkElement || document.createElement('link');
       link.rel = 'icon';
       link.href = siteIcon;
       link.type = 'image/svg+xml';
