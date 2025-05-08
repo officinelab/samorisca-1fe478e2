@@ -50,7 +50,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
         overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
       }}>
-        <div style={{marginBottom: '40px'}}>
+        <div style={{marginBottom: '40px', maxHeight: 'calc(100% - 80mm)', overflow: 'hidden'}}>
           {// ... keep existing code (iterazione delle categorie e prodotti)
           categories
             .filter(category => selectedCategories.includes(category.id))
@@ -168,6 +168,18 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
               </div>
             ))}
         </div>
+        
+        {/* Indicatore di margine inferiore */}
+        <div style={{
+          position: 'absolute',
+          bottom: '0',
+          left: '0',
+          width: '100%',
+          height: '80mm',
+          borderTop: showPageBoundaries ? '1px dashed #cccccc' : 'none',
+          opacity: showPageBoundaries ? 0.5 : 0,
+          pointerEvents: 'none',
+        }} />
       </div>
       
       {/* Pagina allergeni */}

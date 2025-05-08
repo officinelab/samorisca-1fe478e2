@@ -27,6 +27,7 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
     border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
     boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
     overflow: 'hidden', // Impedisce che il contenuto ecceda i margini
+    position: 'relative',
   });
 
   // Contenuto specifico in base al layout
@@ -37,6 +38,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
           <div style={{
             marginTop: '0',
             paddingTop: '0',
+            maxHeight: 'calc(100% - 80mm)',
+            overflow: 'hidden',
           }}>
             <h2 style={{
               fontSize: '21px',
@@ -97,6 +100,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
             gap: '24px',
+            maxHeight: 'calc(100% - 80mm)',
+            overflow: 'hidden',
           }}>
             {allergens.map((allergen) => (
               <div key={allergen.id} style={{
@@ -173,6 +178,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
             marginTop: '0',
             borderTop: 'none',
             paddingTop: '0',
+            maxHeight: 'calc(100% - 80mm)',
+            overflow: 'hidden',
           }}>
             <h2 style={{
               fontSize: '14pt',
@@ -230,6 +237,18 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   return (
     <div className="page relative bg-white" style={getStyle()}>
       {renderContent()}
+      
+      {/* Indicatore di margine inferiore */}
+      <div style={{
+        position: 'absolute',
+        bottom: '0',
+        left: '0',
+        width: '100%',
+        height: '80mm',
+        borderTop: showPageBoundaries ? '1px dashed #cccccc' : 'none',
+        opacity: showPageBoundaries ? 0.5 : 0,
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 };
