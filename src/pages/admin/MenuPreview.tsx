@@ -1,11 +1,8 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import PublicMenu from "../public/PublicMenu";
 
@@ -48,9 +45,11 @@ const MenuPreview = () => {
           </div>
         </TabsContent>
         <TabsContent value="desktop" className="mt-4">
-          <div className="mx-auto max-w-4xl border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <PublicMenu isPreview={true} previewLanguage={language} deviceView="desktop" />
-          </div>
+          <Card className="mx-auto rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
+            <div className="h-full overflow-auto">
+              <PublicMenu isPreview={true} previewLanguage={language} deviceView="desktop" />
+            </div>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

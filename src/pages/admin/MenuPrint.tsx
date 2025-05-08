@@ -151,6 +151,13 @@ const MenuPrint = () => {
               margin: 0;
               padding: 0;
               font-family: 'Arial', sans-serif;
+              background-color: white;
+              width: 100%;
+              height: 100%;
+            }
+            
+            * {
+              box-sizing: border-box;
             }
             
             .page {
@@ -316,7 +323,7 @@ const MenuPrint = () => {
             }
             
             @media print {
-              body {
+              html, body {
                 width: 210mm;
                 height: 297mm;
               }
@@ -384,11 +391,26 @@ const MenuPrint = () => {
         fontFamily: 'Arial, sans-serif',
         margin: '0 auto',
         backgroundColor: 'white',
+        position: 'relative',
       }}>
-        <div className="cover-page">
+        <div className="cover-page" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          textAlign: 'center',
+        }}>
           <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{ height: '100px', marginBottom: '30px' }} />
-          <div className="cover-title">Sa Morisca</div>
-          <div className="cover-subtitle">Menu</div>
+          <div className="cover-title" style={{
+            fontSize: '36pt',
+            fontWeight: 'bold',
+            marginBottom: '10mm',
+          }}>Sa Morisca</div>
+          <div className="cover-subtitle" style={{
+            fontSize: '18pt',
+            marginBottom: '20mm',
+          }}>Menu</div>
         </div>
       </div>
 
@@ -400,7 +422,8 @@ const MenuPrint = () => {
         boxSizing: 'border-box',
         fontFamily: 'Arial, sans-serif',
         margin: '0 auto',
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        position: 'relative',
       }}>
         <div className="menu-container">
           {categories
@@ -486,7 +509,13 @@ const MenuPrint = () => {
                       )}
                       
                       {product.has_multiple_prices && (
-                        <div className="mt-1 text-sm flex justify-end space-x-4">
+                        <div style={{
+                          marginTop: '1mm',
+                          fontSize: '10pt',
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          gap: '1rem'
+                        }}>
                           {product.price_variant_1_name && (
                             <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
                           )}
@@ -512,9 +541,14 @@ const MenuPrint = () => {
           boxSizing: 'border-box',
           fontFamily: 'Arial, sans-serif',
           margin: '0 auto',
-          backgroundColor: 'white'
+          backgroundColor: 'white',
+          position: 'relative',
         }}>
-          <div className="allergens-section">
+          <div className="allergens-section" style={{
+            marginTop: '0',
+            borderTop: 'none',
+            paddingTop: '0',
+          }}>
             <h2 style={{
               fontSize: '14pt',
               fontWeight: 'bold',
@@ -574,39 +608,92 @@ const MenuPrint = () => {
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
+        position: 'relative',
       }}>
-        <div className="flex flex-col justify-center items-center h-full text-center">
-          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-24 mb-8" />
-          <h1 className="text-5xl font-bold mb-4">Sa Morisca</h1>
-          <p className="text-2xl text-gray-600">Menu</p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          textAlign: 'center',
+        }}>
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{height: '96px', marginBottom: '32px'}} />
+          <h1 style={{
+            fontSize: '40px',
+            fontWeight: '700', 
+            marginBottom: '16px',
+          }}>Sa Morisca</h1>
+          <p style={{
+            fontSize: '24px',
+            color: '#666',
+          }}>Menu</p>
         </div>
       </div>
 
       {/* Pagine di contenuto */}
-      <div className="page bg-white p-8" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
+        position: 'relative',
       }}>
-        <div className="space-y-10">
+        <div style={{marginBottom: '40px'}}>
           {categories
             .filter(category => selectedCategories.includes(category.id))
             .map(category => (
-              <div key={category.id} className="mb-10" style={{ breakInside: 'avoid' }}>
-                <div className="flex items-center mb-6">
-                  <div className="flex-1 border-b border-gray-300"></div>
-                  <h2 className="text-2xl font-bold px-4 uppercase">{category[`title_${language}`] || category.title}</h2>
-                  <div className="flex-1 border-b border-gray-300"></div>
+              <div key={category.id} style={{
+                marginBottom: '40px',
+                breakInside: 'avoid',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '24px',
+                }}>
+                  <div style={{
+                    flex: '1',
+                    borderBottom: '1px solid #d1d5db',
+                  }}></div>
+                  <h2 style={{
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    padding: '0 16px',
+                    textTransform: 'uppercase',
+                  }}>{category[`title_${language}`] || category.title}</h2>
+                  <div style={{
+                    flex: '1',
+                    borderBottom: '1px solid #d1d5db',
+                  }}></div>
                 </div>
                 
-                <div className="grid grid-cols-1 gap-6">
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr',
+                  gap: '24px',
+                }}>
                   {products[category.id]?.map(product => (
-                    <div key={product.id} className="border-b border-gray-100 pb-4" style={{ breakInside: 'avoid' }}>
-                      <div className="flex justify-between items-baseline mb-2">
-                        <h3 className="text-lg font-semibold">{product[`title_${language}`] || product.title}</h3>
-                        <div className="ml-4 font-medium">
+                    <div key={product.id} style={{
+                      borderBottom: '1px solid #f3f4f6',
+                      paddingBottom: '16px',
+                      breakInside: 'avoid',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        marginBottom: '8px',
+                      }}>
+                        <h3 style={{
+                          fontSize: '18px',
+                          fontWeight: '600',
+                        }}>{product[`title_${language}`] || product.title}</h3>
+                        <div style={{
+                          marginLeft: '16px',
+                          fontWeight: '500',
+                        }}>
                           {!product.has_multiple_prices ? (
                             <div>{product.price_standard} €</div>
                           ) : (
@@ -616,11 +703,19 @@ const MenuPrint = () => {
                       </div>
                       
                       {(product[`description_${language}`] || product.description) && (
-                        <p className="text-gray-600 mb-2">{product[`description_${language}`] || product.description}</p>
+                        <p style={{
+                          color: '#4b5563',
+                          marginBottom: '8px',
+                        }}>{product[`description_${language}`] || product.description}</p>
                       )}
                       
                       {product.has_multiple_prices && (
-                        <div className="flex justify-end space-x-4 text-sm">
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          gap: '16px',
+                          fontSize: '14px',
+                        }}>
                           {product.price_variant_1_name && (
                             <div>{product.price_variant_1_name}: {product.price_variant_1_value} €</div>
                           )}
@@ -631,10 +726,19 @@ const MenuPrint = () => {
                       )}
                       
                       {product.allergens && product.allergens.length > 0 && (
-                        <div className="flex mt-1">
-                          <div className="text-xs text-gray-500">Allergeni:</div>
+                        <div style={{display: 'flex', marginTop: '4px'}}>
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#6b7280',
+                          }}>Allergeni:</div>
                           {product.allergens.map(allergen => (
-                            <span key={allergen.id} className="text-xs bg-gray-100 rounded-full px-2 ml-1">
+                            <span key={allergen.id} style={{
+                              fontSize: '12px',
+                              backgroundColor: '#f3f4f6',
+                              borderRadius: '9999px',
+                              padding: '0 8px',
+                              marginLeft: '4px',
+                            }}>
                               {allergen.number}
                             </span>
                           ))}
@@ -650,26 +754,58 @@ const MenuPrint = () => {
       
       {/* Pagina allergeni */}
       {printAllergens && allergens.length > 0 && (
-        <div className="page bg-white p-8" style={{
+        <div className="page bg-white" style={{
           width: '210mm',
           height: '297mm',
           padding: '20mm 15mm',
           boxSizing: 'border-box',
           margin: '0 auto',
+          position: 'relative',
         }}>
-          <div className="mt-8 pt-8 border-t border-gray-300">
-            <h2 className="text-xl font-bold text-center mb-6">Allergeni</h2>
+          <div style={{
+            marginTop: '0',
+            paddingTop: '0',
+          }}>
+            <h2 style={{
+              fontSize: '21px',
+              fontWeight: '700',
+              textAlign: 'center',
+              marginBottom: '24px',
+            }}>Allergeni</h2>
             
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              columnGap: '24px',
+              rowGap: '16px',
+            }}>
               {allergens.map(allergen => (
-                <div key={allergen.id} className="flex items-center" style={{ breakInside: 'avoid' }}>
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 font-bold mr-2">
+                <div key={allergen.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  breakInside: 'avoid',
+                }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '9999px',
+                    backgroundColor: '#f3f4f6',
+                    fontWeight: '700',
+                    marginRight: '8px',
+                  }}>
                     {allergen.number}
                   </span>
                   <div>
-                    <span className="font-medium">{allergen.title}</span>
+                    <span style={{fontWeight: '500'}}>{allergen.title}</span>
                     {allergen.description && (
-                      <span className="text-sm text-gray-500 ml-1">({allergen.description})</span>
+                      <span style={{
+                        fontSize: '14px',
+                        color: '#6b7280',
+                        marginLeft: '4px',
+                      }}>({allergen.description})</span>
                     )}
                   </div>
                 </div>
@@ -691,50 +827,103 @@ const MenuPrint = () => {
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
+        position: 'relative',
       }}>
-        <div className="text-center" style={{
+        <div style={{
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           height: '100%',
+          textAlign: 'center',
         }}>
-          <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-20 mx-auto mb-8" />
-          <h1 className="text-4xl font-bold mb-4">Tabella Allergeni</h1>
-          <p className="text-xl text-gray-600">Sa Morisca Ristorante</p>
+          <img src="/placeholder.svg" alt="Sa Morisca Logo" style={{
+            height: '80px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            marginBottom: '32px',
+          }} />
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            marginBottom: '16px',
+          }}>Tabella Allergeni</h1>
+          <p style={{
+            fontSize: '21px',
+            color: '#6b7280',
+          }}>Sa Morisca Ristorante</p>
         </div>
       </div>
 
       {/* Pagina degli allergeni */}
-      <div className="page bg-white rounded-md p-8" style={{
+      <div className="page bg-white" style={{
         width: '210mm',
         height: '297mm',
         padding: '20mm 15mm',
         boxSizing: 'border-box',
         margin: '0 auto',
+        position: 'relative',
       }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {allergens.map((allergen, index) => (
-            <div key={allergen.id} className="flex items-start p-3 border-b" style={{ breakInside: 'avoid' }}>
-              <div className="flex flex-col items-center mr-4">
-                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 font-bold text-lg">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '24px',
+        }}>
+          {allergens.map((allergen) => (
+            <div key={allergen.id} style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              padding: '12px',
+              borderBottom: '1px solid #e5e7eb',
+              breakInside: 'avoid',
+            }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginRight: '16px',
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '9999px',
+                  backgroundColor: '#f3f4f6',
+                  fontWeight: '700',
+                  fontSize: '18px',
+                }}>
                   {allergen.number}
                 </div>
                 {allergen.icon_url && (
-                  <div className="w-12 h-12 mt-2">
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    marginTop: '8px',
+                  }}>
                     <img 
                       src={allergen.icon_url}
                       alt={`Icona ${allergen.title}`}
-                      className="w-full h-full object-contain"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
                     />
                   </div>
                 )}
               </div>
               
               <div>
-                <h3 className="font-semibold text-lg">{allergen.title}</h3>
+                <h3 style={{
+                  fontWeight: '600',
+                  fontSize: '18px',
+                }}>{allergen.title}</h3>
                 {allergen.description && (
-                  <p className="text-gray-600">{allergen.description}</p>
+                  <p style={{
+                    color: '#6b7280',
+                  }}>{allergen.description}</p>
                 )}
               </div>
             </div>
@@ -853,7 +1042,7 @@ const MenuPrint = () => {
         <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
         <div className="border rounded-md overflow-hidden shadow print:border-0 print:shadow-none">
           <ScrollArea className="h-[60vh] print:h-auto">
-            <div className="p-4 print:p-0" ref={printContentRef}>
+            <div className="bg-white print:p-0" ref={printContentRef}>
               {selectedLayout === "classic" && <ClassicLayout />}
               {selectedLayout === "modern" && <ModernLayout />}
               {selectedLayout === "allergens" && <AllergensTable />}
@@ -863,15 +1052,15 @@ const MenuPrint = () => {
       </div>
 
       {/* Stili per la stampa - visibili solo quando si stampa */}
-      <style>{`
+      <style jsx global>{`
         @media print {
           @page {
             size: A4;
             margin: 0;
           }
           html, body {
-            width: 100%;
-            height: 100%;
+            width: 210mm;
+            height: 297mm;
             margin: 0;
             padding: 0;
           }
@@ -893,6 +1082,22 @@ const MenuPrint = () => {
           .print-hidden {
             display: none !important;
           }
+          
+          /* Stile per il supporto corretto alla paginazione */
+          .page {
+            page-break-after: always;
+            break-after: page;
+          }
+          .page:last-of-type {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          .category, .menu-item {
+            break-inside: avoid;
+          }
+          .allergen-item {
+            break-inside: avoid;
+          }
         }
       `}</style>
     </div>
@@ -900,4 +1105,3 @@ const MenuPrint = () => {
 };
 
 export default MenuPrint;
-
