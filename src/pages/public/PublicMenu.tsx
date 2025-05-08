@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, ShoppingCart, X, Plus, Minus, Info, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(null);
   
   const menuRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -246,12 +248,72 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     }
   };
 
-  // Componente per la card del prodotto
-  const ProductCard = ({ product }: { product: ProductType }) => {
+  // Funzione per troncare il testo
+  const truncateText = (text: string | null, maxLength: number) => {
+    if (!text) return "";
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  // Componente per la card del prodotto in versione mobile
+  const ProductCardMobile = ({ product }: { product: ProductType }) => {
+    return (
+      <Card 
+        className="mb-4" 
+        clickable 
+        onClick={() => setSelectedProduct(product)}
+      >
+        <div className="p-4">
+          <div className="flex">
+            <div className="flex-1 pr-4">
+              <h3 className="font-bold text-lg mb-1">{product.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">
+                {truncateText(product.description, 110)}
+              </p>
+              
+              {product.allergens && product.allergens.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {product.allergens.map(allergen => (
+                    <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
+                      {allergen.number}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              <div className="font-medium">{product.price_standard?.toFixed(2)} €</div>
+            </div>
+            
+            <div className="relative">
+              <CardImage 
+                src={product.image_url} 
+                alt={product.title} 
+                mobileView
+              />
+              
+              <Button 
+                variant="default" 
+                size="icon"
+                className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 bg-green-500 hover:bg-green-600 shadow-md"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(product);
+                }}
+              >
+                <Plus size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  // Componente per la card del prodotto in versione desktop
+  const ProductCardDesktop = ({ product }: { product: ProductType }) => {
     const isMobileView = isMobile || deviceView === 'mobile';
     
     return (
-      <Card horizontal className="overflow-hidden h-full">
+      <Card horizontal className="overflow-hidden h-full" clickable onClick={() => setSelectedProduct(product)}>
         {product.image_url ? (
           <CardImage 
             src={product.image_url} 
@@ -296,7 +358,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                 variant="outline" 
                 size="sm" 
                 className="w-full justify-between"
-                onClick={() => addToCart(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(product);
+                }}
               >
                 Standard: {product.price_standard?.toFixed(2)} €
                 <Plus size={16} />
@@ -307,7 +372,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-between"
-                  onClick={() => addToCart(product, product.price_variant_1_name, product.price_variant_1_value)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(product, product.price_variant_1_name, product.price_variant_1_value);
+                  }}
                 >
                   {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
                   <Plus size={16} />
@@ -319,7 +387,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-between"
-                  onClick={() => addToCart(product, product.price_variant_2_name, product.price_variant_2_value)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(product, product.price_variant_2_name, product.price_variant_2_value);
+                  }}
                 >
                   {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
                   <Plus size={16} />
@@ -331,7 +402,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
               variant="outline" 
               size={isMobileView ? "icon" : "sm"} 
               className={`${!isMobileView ? "w-full justify-between" : ""} mt-2 ml-auto flex`}
-              onClick={() => addToCart(product)}
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(product);
+              }}
             >
               {!isMobileView && "Aggiungi"}
               <Plus size={16} />
@@ -526,7 +600,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                     <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
                     <div className="grid grid-cols-1 gap-4">
                       {products[category.id]?.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        (deviceView === 'mobile' || isMobile) ? (
+                          <ProductCardMobile key={product.id} product={product} />
+                        ) : (
+                          <ProductCardDesktop key={product.id} product={product} />
+                        )
                       ))}
                     </div>
                     {products[category.id]?.length === 0 && (
@@ -602,6 +680,86 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
           <ChevronUp size={24} />
         </Button>
       )}
+      
+      {/* Dialog per visualizzare i dettagli del prodotto */}
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+        <DialogContent className="sm:max-w-lg">
+          {selectedProduct && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selectedProduct.title}</DialogTitle>
+              </DialogHeader>
+              
+              <div className="grid gap-4 py-4">
+                {selectedProduct.image_url && (
+                  <div className="w-full h-48 relative rounded-md overflow-hidden">
+                    <img 
+                      src={selectedProduct.image_url} 
+                      alt={selectedProduct.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <h4 className="font-semibold mb-1">Descrizione</h4>
+                  <p className="text-gray-600">{selectedProduct.description || "Nessuna descrizione disponibile."}</p>
+                </div>
+                
+                {selectedProduct.allergens && selectedProduct.allergens.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-1">Allergeni</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.allergens.map(allergen => (
+                        <Badge key={allergen.id} variant="outline">
+                          {allergen.number} - {allergen.title}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div>
+                  <h4 className="font-semibold mb-1">Prezzo</h4>
+                  {selectedProduct.has_multiple_prices ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Standard</span>
+                        <span className="font-medium">{selectedProduct.price_standard?.toFixed(2)} €</span>
+                      </div>
+                      
+                      {selectedProduct.price_variant_1_name && selectedProduct.price_variant_1_value && (
+                        <div className="flex justify-between">
+                          <span>{selectedProduct.price_variant_1_name}</span>
+                          <span className="font-medium">{selectedProduct.price_variant_1_value?.toFixed(2)} €</span>
+                        </div>
+                      )}
+                      
+                      {selectedProduct.price_variant_2_name && selectedProduct.price_variant_2_value && (
+                        <div className="flex justify-between">
+                          <span>{selectedProduct.price_variant_2_name}</span>
+                          <span className="font-medium">{selectedProduct.price_variant_2_value?.toFixed(2)} €</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="font-medium">{selectedProduct.price_standard?.toFixed(2)} €</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button onClick={() => {
+                  addToCart(selectedProduct);
+                  setSelectedProduct(null);
+                }}>
+                  Aggiungi all'ordine <Plus className="ml-2" size={16} />
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       
       {/* Footer */}
       <footer className="bg-white border-t mt-auto py-4">

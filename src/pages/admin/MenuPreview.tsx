@@ -44,16 +44,12 @@ const MenuPreview = () => {
         </TabsList>
         <TabsContent value="mobile" className="mt-4">
           <div className="mx-auto max-w-md border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <div className="h-full overflow-y-auto">
-              <PublicMenu isPreview={true} previewLanguage={language} deviceView="mobile" />
-            </div>
+            <PublicMenu isPreview={true} previewLanguage={language} deviceView="mobile" />
           </div>
         </TabsContent>
         <TabsContent value="desktop" className="mt-4">
           <div className="mx-auto max-w-4xl border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <div className="h-full overflow-y-auto">
-              <PublicMenu isPreview={true} previewLanguage={language} deviceView="desktop" />
-            </div>
+            <PublicMenu isPreview={true} previewLanguage={language} deviceView="desktop" />
           </div>
         </TabsContent>
       </Tabs>

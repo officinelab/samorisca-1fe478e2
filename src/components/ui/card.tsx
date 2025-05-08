@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { horizontal?: boolean }
->(({ className, horizontal, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { horizontal?: boolean; clickable?: boolean }
+>(({ className, horizontal, clickable, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
       horizontal && "flex overflow-hidden",
+      clickable && "cursor-pointer hover:shadow-md transition-shadow",
       className
     )}
     {...props}
@@ -80,22 +81,36 @@ CardFooter.displayName = "CardFooter"
 
 const CardImage = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string; square?: boolean }
->(({ className, src, alt, square, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { src?: string; alt?: string; square?: boolean; mobileView?: boolean }
+>(({ className, src, alt, square, mobileView, ...props }, ref) => (
   <div 
     ref={ref} 
-    className={cn("relative", className)} 
+    className={cn(
+      "relative", 
+      mobileView ? "w-24 h-24 rounded-md overflow-hidden" : "", 
+      className
+    )} 
     {...props}
   >
-    {src && square ? (
-      <div className="aspect-square">
-        <AspectRatio ratio={1/1}>
+    {src ? (
+      <div className={mobileView ? "h-full w-full" : square ? "aspect-square" : ""}>
+        {square && !mobileView ? (
+          <AspectRatio ratio={1/1}>
+            <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
+          </AspectRatio>
+        ) : (
           <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
-        </AspectRatio>
+        )}
       </div>
-    ) : src ? (
-      <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
-    ) : null}
+    ) : (
+      <div className={cn(
+        "h-full w-full bg-gray-100 flex items-center justify-center",
+        square && !mobileView ? "aspect-square" : "",
+        mobileView ? "rounded-md" : ""
+      )}>
+        <span className="text-gray-400 text-xs">Nessuna immagine</span>
+      </div>
+    )}
   </div>
 ))
 CardImage.displayName = "CardImage"
