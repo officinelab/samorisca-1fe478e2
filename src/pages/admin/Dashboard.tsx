@@ -1,155 +1,91 @@
-import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/sonner";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  PlusCircle, 
-  Edit, 
-  Trash2, 
-  X, 
-  Check, 
-  Search, 
-  Eye,
-  EyeOff,
-  ChevronUp, 
-  ChevronDown,
-  Package,
-  Menu,
-  Settings,
-  Save,
-  ArrowLeft
-} from "lucide-react";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle 
-} from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Edit, Trash2, Plus, X, Upload, ArrowUp, ArrowDown } from "lucide-react";
 import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMenuData } from "@/hooks/useMenuData";
+import { DashboardHeader } from "@/components/dashboard/header";
+import { DashboardShell } from "@/components/dashboard/shell";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
-const Dashboard = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [allergens, setAllergens] = useState<Allergen[]>([]);
+// Schema di validazione per il form del prodotto
+const productFormSchema = z.object({
+  title: z.string().min(1, "Il titolo è obbligatorio"),
+  description: z.string().optional(),
+  image_url: z.string().optional().nullable(),
+  is_active: z.boolean().default(true),
+  price_standard: z.number().optional().nullable(),
+  has_multiple_prices: z.boolean().default(false),
+  price_variant_1_name: z.string().optional().nullable(),
+  price_variant_1_value: z.number().optional().nullable(),
+  price_variant_2_name: z.string().optional().nullable(),
+  price_variant_2_value: z.number().optional().nullable(),
+  has_price_suffix: z.boolean().default(false),
+  price_suffix: z.string().optional().nullable(),
+  label_id: z.string().optional().nullable(),
+});
+
+// Schema di validazione per il form della categoria
+const categoryFormSchema = z.object({
+  title: z.string().min(1, "Il titolo è obbligatorio"),
+  description: z.string().optional(),
+  image_url: z.string().optional().nullable(),
+  is_active: z.boolean().default(true),
+});
+
+export default function Dashboard() {
+  const { categories, allergens, labels, features } = useMenuData();
+  
+  const [selectedTab, setSelectedTab] = useState("products");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [showMobileCategories, setShowMobileCategories] = useState(true);
-  const [showMobileProducts, setShowMobileProducts] = useState(false);
-  const [showMobileDetail, setShowMobileDetail] = useState(false);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
+  const [selectedCategoryForEdit, setSelectedCategoryForEdit] = useState<Category | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
   
-  // Stati per i pannelli laterali
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  
-  const isMobile = useIsMobile();
-
-  // Carica le categorie, i prodotti e gli allergeni
+  // Carica i prodotti quando viene selezionata una categoria
   useEffect(() => {
-    loadCategories();
-    loadAllergens();
-  }, []);
-
-  // Carica le categorie
-  const loadCategories = async () => {
-    setIsLoadingCategories(true);
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      
-      setCategories(data || []);
-      
-      // Seleziona automaticamente la prima categoria se non è già selezionata
-      if (data && data.length > 0 && !selectedCategory) {
-        setSelectedCategory(data[0].id);
-        loadProducts(data[0].id);
-      } else if (selectedCategory) {
-        loadProducts(selectedCategory);
-      }
-    } catch (error) {
-      console.error('Errore nel caricamento delle categorie:', error);
-      toast.error("Errore nel caricamento delle categorie. Riprova più tardi.");
-    } finally {
-      setIsLoadingCategories(false);
+    if (selectedCategory) {
+      loadProducts(selectedCategory);
     }
-  };
-
-  // Carica gli allergeni
-  const loadAllergens = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('allergens')
-        .select('*')
-        .order('number', { ascending: true });
-
-      if (error) throw error;
-      setAllergens(data || []);
-    } catch (error) {
-      console.error('Errore nel caricamento degli allergeni:', error);
-      toast.error("Errore nel caricamento degli allergeni. Riprova più tardi.");
-    }
-  };
-
-  // Carica i prodotti per categoria
+  }, [selectedCategory]);
+  
+  // Carica i prodotti di una categoria
   const loadProducts = async (categoryId: string) => {
-    setIsLoadingProducts(true);
     try {
-      // Carica i prodotti
-      const { data: productsData, error: productsError } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select('*, label:label_id(*)')
         .eq('category_id', categoryId)
         .order('display_order', { ascending: true });
-
-      if (productsError) throw productsError;
       
-      // Per ogni prodotto, carica gli allergeni associati e le features
-      const productsWithDetails = await Promise.all(
-        (productsData || []).map(async (product) => {
-          // Load allergens
+      if (error) throw error;
+      
+      // Per ogni prodotto, carica gli allergeni associati
+      const productsWithAllergens = await Promise.all(
+        (data || []).map(async (product) => {
+          // Carica gli allergeni
           const { data: productAllergens, error: allergensError } = await supabase
             .from('product_allergens')
             .select('allergen_id')
@@ -157,20 +93,20 @@ const Dashboard = () => {
           
           if (allergensError) throw allergensError;
           
-          // Se ci sono allergeni, recupera i dettagli
           let productAllergensDetails: Allergen[] = [];
           if (productAllergens && productAllergens.length > 0) {
             const allergenIds = productAllergens.map(pa => pa.allergen_id);
             const { data: allergensDetails, error: detailsError } = await supabase
               .from('allergens')
               .select('*')
-              .in('id', allergenIds);
+              .in('id', allergenIds)
+              .order('number', { ascending: true });
             
             if (detailsError) throw detailsError;
             productAllergensDetails = allergensDetails || [];
           }
           
-          // Load features
+          // Carica le caratteristiche
           const { data: productFeatures, error: featuresError } = await supabase
             .from('product_to_features')
             .select('feature_id')
@@ -199,727 +135,206 @@ const Dashboard = () => {
         })
       );
       
-      setProducts(productsWithDetails);
-      // Reimposta il prodotto selezionato quando cambia la categoria
-      setSelectedProduct(null);
-      setIsEditing(false);
+      setProducts(productsWithAllergens);
     } catch (error) {
       console.error('Errore nel caricamento dei prodotti:', error);
       toast.error("Errore nel caricamento dei prodotti. Riprova più tardi.");
-    } finally {
-      setIsLoadingProducts(false);
     }
   };
-
-  // Gestisce la selezione di una categoria
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    loadProducts(categoryId);
-    
-    if (isMobile) {
-      setShowMobileCategories(false);
-      setShowMobileProducts(true);
-      setShowMobileDetail(false);
-    }
+  
+  // Ottiene il prodotto selezionato
+  const getSelectedProduct = () => {
+    return products.find(p => p.id === selectedProduct) || null;
   };
-
-  // Gestisce la selezione di un prodotto
-  const handleProductSelect = (productId: string) => {
-    setSelectedProduct(productId);
-    setIsEditing(false);
-    
-    if (isMobile) {
-      setShowMobileProducts(false);
-      setShowMobileDetail(true);
-    }
+  
+  // Conferma l'eliminazione di un prodotto
+  const confirmDeleteProduct = (productId: string) => {
+    setProductToDelete(productId);
+    setIsDeleteDialogOpen(true);
   };
-
-  // Cambia l'ordine di visualizzazione di una categoria
-  const handleCategoryReorder = async (categoryId: string, direction: 'up' | 'down') => {
-    // Trova l'indice della categoria corrente
-    const currentIndex = categories.findIndex(c => c.id === categoryId);
-    if (currentIndex === -1) return;
-
-    // Calcola il nuovo indice
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    // Verifica che il nuovo indice sia valido
-    if (newIndex < 0 || newIndex >= categories.length) return;
-    
-    // Crea una copia dell'array delle categorie
-    const updatedCategories = [...categories];
-    
-    // Recupera le categorie coinvolte
-    const category1 = updatedCategories[currentIndex];
-    const category2 = updatedCategories[newIndex];
-    
-    // Scambia gli ordini di visualizzazione
-    const tempOrder = category1.display_order;
-    category1.display_order = category2.display_order;
-    category2.display_order = tempOrder;
-    
-    // Aggiorna localmente l'array
-    [updatedCategories[currentIndex], updatedCategories[newIndex]] = 
-      [updatedCategories[newIndex], updatedCategories[currentIndex]];
-    
-    // Aggiorna lo stato
-    setCategories(updatedCategories);
+  
+  // Elimina un prodotto
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
     
     try {
-      // Aggiorna il database - ora includiamo tutti i campi richiesti
-      const updates = [
-        { 
-          id: category1.id, 
-          display_order: category1.display_order,
-          title: category1.title,
-          description: category1.description,
-          image_url: category1.image_url,
-          is_active: category1.is_active
-        },
-        { 
-          id: category2.id, 
-          display_order: category2.display_order,
-          title: category2.title,
-          description: category2.description,
-          image_url: category2.image_url,
-          is_active: category2.is_active
-        }
-      ];
+      // Prima elimina le relazioni con gli allergeni
+      const { error: allergensError } = await supabase
+        .from('product_allergens')
+        .delete()
+        .eq('product_id', productToDelete);
       
-      const { error } = await supabase
-        .from('categories')
-        .upsert(updates);
+      if (allergensError) throw allergensError;
       
-      if (error) throw error;
+      // Elimina le relazioni con le caratteristiche
+      const { error: featuresError } = await supabase
+        .from('product_to_features')
+        .delete()
+        .eq('product_id', productToDelete);
       
-    } catch (error) {
-      console.error('Errore nel riordinamento delle categorie:', error);
-      toast.error("Errore nel riordinamento delle categorie. Riprova più tardi.");
-      // Ricarica le categorie in caso di errore
-      loadCategories();
-    }
-  };
-
-  // Cambia l'ordine di visualizzazione di un prodotto
-  const handleProductReorder = async (productId: string, direction: 'up' | 'down') => {
-    // Trova l'indice del prodotto corrente
-    const currentIndex = products.findIndex(p => p.id === productId);
-    if (currentIndex === -1) return;
-
-    // Calcola il nuovo indice
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
-    // Verifica che il nuovo indice sia valido
-    if (newIndex < 0 || newIndex >= products.length) return;
-    
-    // Crea una copia dell'array dei prodotti
-    const updatedProducts = [...products];
-    
-    // Recupera i prodotti coinvolti
-    const product1 = updatedProducts[currentIndex];
-    const product2 = updatedProducts[newIndex];
-    
-    // Scambia gli ordini di visualizzazione
-    const tempOrder = product1.display_order;
-    product1.display_order = product2.display_order;
-    product2.display_order = tempOrder;
-    
-    // Aggiorna localmente l'array
-    [updatedProducts[currentIndex], updatedProducts[newIndex]] = 
-      [updatedProducts[newIndex], updatedProducts[currentIndex]];
-    
-    // Aggiorna lo stato
-    setProducts(updatedProducts);
-    
-    try {
-      // Aggiorna il database - ora includiamo tutti i campi richiesti
-      const updates = [
-        { 
-          id: product1.id, 
-          display_order: product1.display_order,
-          title: product1.title,
-          category_id: product1.category_id,
-          description: product1.description,
-          image_url: product1.image_url,
-          is_active: product1.is_active,
-          price_standard: product1.price_standard,
-          has_multiple_prices: product1.has_multiple_prices,
-          price_variant_1_name: product1.price_variant_1_name,
-          price_variant_1_value: product1.price_variant_1_value,
-          price_variant_2_name: product1.price_variant_2_name,
-          price_variant_2_value: product1.price_variant_2_value,
-          has_price_suffix: product1.has_price_suffix,
-          price_suffix: product1.price_suffix
-        },
-        { 
-          id: product2.id, 
-          display_order: product2.display_order,
-          title: product2.title,
-          category_id: product2.category_id,
-          description: product2.description,
-          image_url: product2.image_url,
-          is_active: product2.is_active,
-          price_standard: product2.price_standard,
-          has_multiple_prices: product2.has_multiple_prices,
-          price_variant_1_name: product2.price_variant_1_name,
-          price_variant_1_value: product2.price_variant_1_value,
-          price_variant_2_name: product2.price_variant_2_name,
-          price_variant_2_value: product2.price_variant_2_value,
-          has_price_suffix: product2.has_price_suffix,
-          price_suffix: product2.price_suffix
-        }
-      ];
+      if (featuresError) throw featuresError;
       
+      // Poi elimina il prodotto
       const { error } = await supabase
         .from('products')
-        .upsert(updates);
+        .delete()
+        .eq('id', productToDelete);
       
       if (error) throw error;
       
-    } catch (error) {
-      console.error('Errore nel riordinamento dei prodotti:', error);
-      toast.error("Errore nel riordinamento dei prodotti. Riprova più tardi.");
-      // Ricarica i prodotti in caso di errore
+      // Aggiorna la lista dei prodotti
       if (selectedCategory) {
-        loadProducts(selectedCategory);
+        await loadProducts(selectedCategory);
       }
+      
+      // Deseleziona il prodotto se era quello selezionato
+      if (selectedProduct === productToDelete) {
+        setSelectedProduct(null);
+      }
+      
+      toast.success("Prodotto eliminato con successo!");
+    } catch (error) {
+      console.error('Errore nell\'eliminazione del prodotto:', error);
+      toast.error("Errore nell'eliminazione del prodotto. Riprova più tardi.");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setProductToDelete(null);
     }
   };
-
-  // Aggiunge una nuova categoria
-  const handleAddCategory = async (categoryData: Partial<Category>) => {
+  
+  // Conferma l'eliminazione di una categoria
+  const confirmDeleteCategory = (categoryId: string) => {
+    setCategoryToDelete(categoryId);
+    setIsDeleteCategoryDialogOpen(true);
+  };
+  
+  // Elimina una categoria
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    
     try {
-      // Determina il prossimo display_order
-      const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
-      const nextOrder = maxOrder + 1;
+      // Verifica se ci sono prodotti associati
+      const { data: categoryProducts, error: checkError } = await supabase
+        .from('products')
+        .select('id')
+        .eq('category_id', categoryToDelete);
       
-      // Ensure title is provided (required by the database)
-      if (!categoryData.title) {
-        toast.error("Il titolo è obbligatorio");
+      if (checkError) throw checkError;
+      
+      if (categoryProducts && categoryProducts.length > 0) {
+        toast.error("Non è possibile eliminare una categoria con prodotti associati. Elimina prima i prodotti.");
         return;
       }
       
-      const categoryToInsert = {
-        title: categoryData.title,
-        description: categoryData.description || null,
-        image_url: categoryData.image_url || null,
-        is_active: categoryData.is_active !== undefined ? categoryData.is_active : true,
-        display_order: nextOrder
-      };
-      
-      const { data, error } = await supabase
-        .from('categories')
-        .insert([categoryToInsert])
-        .select();
-      
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        // Aggiorna lo stato locale
-        await loadCategories();
-        // Se non è selezionata alcuna categoria, seleziona quella appena creata
-        if (!selectedCategory) {
-          setSelectedCategory(data[0].id);
-          loadProducts(data[0].id);
-        }
-        toast.success("Categoria aggiunta con successo!");
-        setShowCategoryForm(false);
-      } 
-    } catch (error: any) {
-      console.error('Errore nell\'aggiunta della categoria:', error);
-      toast.error(`Errore nell'aggiunta della categoria: ${error.message || 'Riprova più tardi.'}`);
-    }
-  };
-
-  // Aggiorna una categoria esistente
-  const handleUpdateCategory = async (categoryId: string, categoryData: Partial<Category>) => {
-    try {
-      const { error } = await supabase
-        .from('categories')
-        .update(categoryData)
-        .eq('id', categoryId);
-      
-      if (error) throw error;
-      
-      // Aggiorna lo stato locale
-      await loadCategories();
-      
-      toast.success("Categoria aggiornata con successo!");
-      setShowCategoryForm(false);
-      setEditingCategory(null);
-    } catch (error) {
-      console.error('Errore nell\'aggiornamento della categoria:', error);
-      toast.error("Errore nell'aggiornamento della categoria. Riprova più tardi.");
-    }
-  };
-
-  // Elimina una categoria
-  const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questa categoria? Verranno eliminati anche tutti i prodotti associati.")) {
-      return;
-    }
-    
-    try {
+      // Elimina la categoria
       const { error } = await supabase
         .from('categories')
         .delete()
-        .eq('id', categoryId);
+        .eq('id', categoryToDelete);
       
       if (error) throw error;
       
-      // Aggiorna lo stato locale
-      await loadCategories();
+      // Se la categoria eliminata era quella selezionata, deselezionala
+      if (selectedCategory === categoryToDelete) {
+        setSelectedCategory(null);
+        setProducts([]);
+      }
       
       toast.success("Categoria eliminata con successo!");
     } catch (error) {
       console.error('Errore nell\'eliminazione della categoria:', error);
       toast.error("Errore nell'eliminazione della categoria. Riprova più tardi.");
+    } finally {
+      setIsDeleteCategoryDialogOpen(false);
+      setCategoryToDelete(null);
     }
   };
-
-  // Aggiunge un nuovo prodotto
-  const handleAddProduct = async (productData: Partial<Product>) => {
-    if (!selectedCategory) {
-      toast.error("Seleziona prima una categoria");
-      return;
-    }
-
+  
+  // Sposta un prodotto su o giù nell'ordine di visualizzazione
+  const moveProduct = async (productId: string, direction: 'up' | 'down') => {
     try {
-      // Determina il prossimo display_order
-      const maxOrder = Math.max(...products.map(p => p.display_order), 0);
-      const nextOrder = maxOrder + 1;
+      const currentIndex = products.findIndex(p => p.id === productId);
+      if (currentIndex === -1) return;
       
-      if (!productData.title) {
-        toast.error("Il titolo è obbligatorio");
-        return;
-      }
-      
-      // Estrai features e allergens prima di inserire il prodotto
-      const { features, allergens, ...productToInsert } = productData;
-      
-      // Handle the "none" value for label_id
-      if (productToInsert.label_id === "none") {
-        productToInsert.label_id = null;
-      }
-      
-      const productInsert = {
-        title: productToInsert.title,
-        description: productToInsert.description || null,
-        image_url: productToInsert.image_url || null,
-        category_id: selectedCategory,
-        is_active: productToInsert.is_active !== undefined ? productToInsert.is_active : true,
-        display_order: nextOrder,
-        price_standard: productToInsert.price_standard || 0,
-        has_multiple_prices: productToInsert.has_multiple_prices || false,
-        price_variant_1_name: productToInsert.price_variant_1_name || null,
-        price_variant_1_value: productToInsert.price_variant_1_value || null,
-        price_variant_2_name: productToInsert.price_variant_2_name || null,
-        price_variant_2_value: productToInsert.price_variant_2_value || null,
-        has_price_suffix: productToInsert.has_price_suffix || false,
-        price_suffix: productToInsert.price_suffix || null,
-        label_id: productToInsert.label_id || null
-      };
-      
-      const { data, error } = await supabase
-        .from('products')
-        .insert([productInsert])
-        .select();
-      
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        // Gestisci gli allergeni se presenti
-        const productAllergens = allergens || [];
-        if (productAllergens.length > 0) {
-          const allergenInserts = productAllergens.map(allergen => ({
-            product_id: data[0].id,
-            allergen_id: allergen.id,
-          }));
-
-          const { error: allergensError } = await supabase
-            .from('product_allergens')
-            .insert(allergenInserts);
-          
-          if (allergensError) throw allergensError;
-        }
-        
-        // Gestisci le caratteristiche se presenti
-        const productFeatures = features || [];
-        if (productFeatures.length > 0) {
-          const featureInserts = productFeatures.map(feature => ({
-            product_id: data[0].id,
-            feature_id: feature.id,
-          }));
-
-          const { error: featuresError } = await supabase
-            .from('product_to_features')
-            .insert(featureInserts);
-          
-          if (featuresError) throw featuresError;
-        }
-
-        // Aggiorna i prodotti
-        await loadProducts(selectedCategory);
-        setSelectedProduct(data[0].id);
-        toast.success("Prodotto aggiunto con successo!");
-        
-        if (isMobile) {
-          setShowMobileProducts(false);
-          setShowMobileDetail(true);
-        }
-      }
-    } catch (error: any) {
-      console.error('Errore nell\'aggiunta del prodotto:', error);
-      toast.error(`Errore nell'aggiunta del prodotto: ${error.message || 'Riprova più tardi.'}`);
-    }
-  };
-
-  // Aggiorna un prodotto esistente
-  const handleUpdateProduct = async (productId: string, productData: Partial<Product>) => {
-    try {
-      // Creiamo una copia dei dati del prodotto senza i campi allergens e features
-      const { allergens, features, ...productUpdateData } = productData;
-      
-      // Handle the "none" value for label_id
-      if (productUpdateData.label_id === "none") {
-        productUpdateData.label_id = null;
-      }
-      
-      // Aggiorniamo i dati del prodotto nella tabella products
-      const { error } = await supabase
-        .from('products')
-        .update(productUpdateData)
-        .eq('id', productId);
-      
-      if (error) throw error;
-      
-      // Gestisci gli allergeni separatamente se sono presenti
-      if (allergens !== undefined) {
-        // Rimuovi tutte le associazioni esistenti
-        const { error: deleteError } = await supabase
-          .from('product_allergens')
-          .delete()
-          .eq('product_id', productId);
-        
-        if (deleteError) throw deleteError;
-        
-        // Aggiungi le nuove associazioni se ce ne sono
-        if (allergens.length > 0) {
-          const allergenInserts = allergens.map(allergen => ({
-            product_id: productId,
-            allergen_id: allergen.id,
-          }));
-
-          const { error: insertError } = await supabase
-            .from('product_allergens')
-            .insert(allergenInserts);
-          
-          if (insertError) throw insertError;
-        }
-      }
-      
-      // Gestisci le caratteristiche separatamente se sono presenti
-      if (features !== undefined) {
-        // Rimuovi tutte le associazioni esistenti
-        const { error: deleteError } = await supabase
-          .from('product_to_features')
-          .delete()
-          .eq('product_id', productId);
-        
-        if (deleteError) throw deleteError;
-        
-        // Aggiungi le nuove associazioni se ce ne sono
-        if (features.length > 0) {
-          const featureInserts = features.map(feature => ({
-            product_id: productId,
-            feature_id: feature.id,
-          }));
-
-          const { error: insertError } = await supabase
-            .from('product_to_features')
-            .insert(featureInserts);
-          
-          if (insertError) throw insertError;
-        }
-      }
-      
-      // Aggiorna i prodotti
-      if (selectedCategory) {
-        await loadProducts(selectedCategory);
-      }
-      
-      // Riseleziona il prodotto aggiornato
-      setSelectedProduct(productId);
-      setIsEditing(false);
-      
-      toast.success("Prodotto aggiornato con successo!");
-    } catch (error) {
-      console.error('Errore nell\'aggiornamento del prodotto:', error);
-      toast.error("Errore nell'aggiornamento del prodotto. Riprova più tardi.");
-    }
-  };
-
-  // Elimina un prodotto
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questo prodotto?")) {
-      return;
-    }
-    
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
-      
-      if (error) throw error;
-      
-      // Aggiorna lo stato locale
-      if (selectedCategory) {
-        await loadProducts(selectedCategory);
-      }
-      
-      setSelectedProduct(null);
-      setIsEditing(false);
-      
-      toast.success("Prodotto eliminato con successo!");
-      
-      if (isMobile) {
-        setShowMobileProducts(true);
-        setShowMobileDetail(false);
-      }
-    } catch (error) {
-      console.error('Errore nell\'eliminazione del prodotto:', error);
-      toast.error("Errore nell'eliminazione del prodotto. Riprova più tardi.");
-    }
-  };
-
-  // Componente per il caricamento delle immagini
-  const ImageUploader = ({ 
-    currentImage, 
-    onImageUploaded, 
-    label = "Immagine"
-  }: { 
-    currentImage?: string | null, 
-    onImageUploaded: (url: string) => void,
-    label?: string 
-  }) => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      
-      if (!file.type.startsWith('image/')) {
-        toast.error("Per favore seleziona un'immagine valida");
-        return;
-      }
-      
-      setIsUploading(true);
-      
-      try {
-        const objectUrl = URL.createObjectURL(file);
-        setPreviewUrl(objectUrl);
-        
-        const filePath = `menu/${Date.now()}-${file.name}`;
-        const { data, error } = await supabase.storage
-          .from('menu-images')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-        
-        if (error) throw error;
-        
-        const { data: publicUrlData } = supabase.storage
-          .from('menu-images')
-          .getPublicUrl(data.path);
-        
-        onImageUploaded(publicUrlData.publicUrl);
-      } catch (error) {
-        console.error('Errore nel caricamento dell\'immagine:', error);
-        toast.error("Errore nel caricamento dell'immagine. Riprova più tardi.");
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
-    return (
-      <div className="space-y-2">
-        <Label>{label}</Label>
-        {previewUrl && (
-          <div className="relative w-full h-36 mb-2">
-            <img 
-              src={previewUrl} 
-              alt="Preview" 
-              className="w-full h-full object-cover rounded-md"
-            />
-          </div>
-        )}
-        <div className="flex items-center">
-          <Label 
-            htmlFor="image-upload" 
-            className="cursor-pointer border border-dashed border-gray-300 rounded-md px-4 py-2 w-full text-center hover:bg-gray-50"
-          >
-            {isUploading ? "Caricamento in corso..." : "Carica immagine"}
-          </Label>
-          <Input 
-            id="image-upload" 
-            type="file" 
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={isUploading}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  // Schema di validazione per il form categoria
-  const categoryFormSchema = z.object({
-    title: z.string().min(1, "Il nome è obbligatorio"),
-    description: z.string().optional(),
-    is_active: z.boolean().default(true),
-    image_url: z.string().optional().nullable(),
-  });
-
-  // Schema di validazione per il form prodotto
-  const productFormSchema = z.object({
-    title: z.string().min(1, "Il nome è obbligatorio"),
-    description: z.string().optional(),
-    is_active: z.boolean().default(true),
-    image_url: z.string().optional().nullable(),
-    price_standard: z.coerce.number().min(0, "Il prezzo deve essere maggiore o uguale a 0"),
-    has_multiple_prices: z.boolean().default(false),
-    price_variant_1_name: z.string().optional().nullable(),
-    price_variant_1_value: z.coerce.number().optional().nullable(),
-    price_variant_2_name: z.string().optional().nullable(),
-    price_variant_2_value: z.coerce.number().optional().nullable(),
-    has_price_suffix: z.boolean().default(false),
-    price_suffix: z.string().optional().nullable(),
-    label_id: z.string().optional().nullable(),
-  });
-
-  // Form categoria
-  const CategoryFormPanel = () => {
-    const isEditing = Boolean(editingCategory);
-    
-    const form = useForm<z.infer<typeof categoryFormSchema>>({
-      resolver: zodResolver(categoryFormSchema),
-      defaultValues: {
-        title: editingCategory?.title || "",
-        description: editingCategory?.description || "",
-        is_active: editingCategory?.is_active ?? true,
-        image_url: editingCategory?.image_url || null,
-      },
-    });
-    
-    const onSubmit = (values: z.infer<typeof categoryFormSchema>) => {
-      if (isEditing && editingCategory) {
-        handleUpdateCategory(editingCategory.id, values);
+      let swapIndex;
+      if (direction === 'up' && currentIndex > 0) {
+        swapIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < products.length - 1) {
+        swapIndex = currentIndex + 1;
       } else {
-        handleAddCategory(values);
+        return; // Non fare nulla se non è possibile spostare
       }
-    };
-
-    return (
-      <Sheet open={showCategoryForm} onOpenChange={setShowCategoryForm}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>{isEditing ? "Modifica Categoria" : "Nuova Categoria"}</SheetTitle>
-          </SheetHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome Categoria</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Nome categoria" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descrizione</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        placeholder="Descrizione della categoria"
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <ImageUploader
-                      currentImage={field.value || null}
-                      onImageUploaded={(url) => field.onChange(url)}
-                      label="Immagine Categoria"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel>Attiva</FormLabel>
-                      <FormDescription>
-                        Mostra questa categoria nel menu
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowCategoryForm(false);
-                    setEditingCategory(null);
-                  }}
-                >
-                  Annulla
-                </Button>
-                <Button type="submit">Salva</Button>
-              </div>
-            </form>
-          </Form>
-        </SheetContent>
-      </Sheet>
-    );
+      
+      const currentProduct = products[currentIndex];
+      const swapProduct = products[swapIndex];
+      
+      // Scambia gli ordini di visualizzazione
+      const { error: error1 } = await supabase
+        .from('products')
+        .update({ display_order: swapProduct.display_order })
+        .eq('id', currentProduct.id);
+      
+      if (error1) throw error1;
+      
+      const { error: error2 } = await supabase
+        .from('products')
+        .update({ display_order: currentProduct.display_order })
+        .eq('id', swapProduct.id);
+      
+      if (error2) throw error2;
+      
+      // Ricarica i prodotti
+      if (selectedCategory) {
+        await loadProducts(selectedCategory);
+      }
+    } catch (error) {
+      console.error('Errore nello spostamento del prodotto:', error);
+      toast.error("Errore nello spostamento del prodotto. Riprova più tardi.");
+    }
   };
-
-  // Form prodotto
+  
+  // Sposta una categoria su o giù nell'ordine di visualizzazione
+  const moveCategory = async (categoryId: string, direction: 'up' | 'down') => {
+    try {
+      const currentIndex = categories.findIndex(c => c.id === categoryId);
+      if (currentIndex === -1) return;
+      
+      let swapIndex;
+      if (direction === 'up' && currentIndex > 0) {
+        swapIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < categories.length - 1) {
+        swapIndex = currentIndex + 1;
+      } else {
+        return; // Non fare nulla se non è possibile spostare
+      }
+      
+      const currentCategory = categories[currentIndex];
+      const swapCategory = categories[swapIndex];
+      
+      // Scambia gli ordini di visualizzazione
+      const { error: error1 } = await supabase
+        .from('categories')
+        .update({ display_order: swapCategory.display_order })
+        .eq('id', currentCategory.id);
+      
+      if (error1) throw error1;
+      
+      const { error: error2 } = await supabase
+        .from('categories')
+        .update({ display_order: currentCategory.display_order })
+        .eq('id', swapCategory.id);
+      
+      if (error2) throw error2;
+      
+      // Ricarica le categorie (questo verrà gestito dal hook useMenuData)
+      toast.success("Ordine categorie aggiornato!");
+    } catch (error) {
+      console.error('Errore nello spostamento della categoria:', error);
+      toast.error("Errore nello spostamento della categoria. Riprova più tardi.");
+    }
+  };
+  
+  // Componente per il form del prodotto
   const ProductForm = ({ product, onSubmit }: { 
     product: Product | null, 
     onSubmit: (data: any) => void 
@@ -965,14 +380,15 @@ const Dashboard = () => {
       loadLabelsAndFeatures();
     }, []);
     
+    // Inizializza il form
     const form = useForm<z.infer<typeof productFormSchema>>({
       resolver: zodResolver(productFormSchema),
       defaultValues: {
         title: product?.title || "",
         description: product?.description || "",
-        is_active: product?.is_active ?? true,
-        image_url: product?.image_url || null,
-        price_standard: product?.price_standard || 0,
+        image_url: product?.image_url || "",
+        is_active: product?.is_active !== undefined ? product.is_active : true,
+        price_standard: product?.price_standard || null,
         has_multiple_prices: product?.has_multiple_prices || false,
         price_variant_1_name: product?.price_variant_1_name || "",
         price_variant_1_value: product?.price_variant_1_value || null,
@@ -980,10 +396,11 @@ const Dashboard = () => {
         price_variant_2_value: product?.price_variant_2_value || null,
         has_price_suffix: product?.has_price_suffix || false,
         price_suffix: product?.price_suffix || "",
-        label_id: product?.label_id || null,
+        label_id: product?.label_id || "none",
       },
     });
     
+    // Osserva il campo has_multiple_prices
     const hasMultiplePrices = form.watch("has_multiple_prices");
     const hasPriceSuffix = form.watch("has_price_suffix");
     
@@ -1004,7 +421,7 @@ const Dashboard = () => {
     };
     
     const handleFormSubmit = (values: z.infer<typeof productFormSchema>) => {
-      // Aggiungi gli allergeni e le caratteristiche ai valori del form
+      // Include both allergens and features in form submission data
       const productData = {
         ...values,
         allergens: selectedAllergens,
@@ -1013,7 +430,7 @@ const Dashboard = () => {
       
       onSubmit(productData);
     };
-
+  
     return (
       <div className="space-y-4">
         <Form {...form}>
@@ -1023,9 +440,9 @@ const Dashboard = () => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Prodotto</FormLabel>
+                  <FormLabel>Titolo prodotto</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Nome prodotto" />
+                    <Input placeholder="Inserisci il titolo del prodotto" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -1040,8 +457,8 @@ const Dashboard = () => {
                   <FormLabel>Descrizione</FormLabel>
                   <FormControl>
                     <Textarea 
+                      placeholder="Inserisci una descrizione (opzionale)" 
                       {...field} 
-                      placeholder="Descrizione del prodotto"
                       value={field.value || ""}
                     />
                   </FormControl>
@@ -1055,11 +472,17 @@ const Dashboard = () => {
               name="image_url"
               render={({ field }) => (
                 <FormItem>
-                  <ImageUploader
-                    currentImage={field.value || null}
-                    onImageUploaded={(url) => field.onChange(url)}
-                    label="Immagine Prodotto"
-                  />
+                  <FormLabel>URL immagine</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="URL dell'immagine (opzionale)" 
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Inserisci l'URL di un'immagine per il prodotto
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -1069,43 +492,23 @@ const Dashboard = () => {
               control={form.control}
               name="is_active"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Attivo</FormLabel>
-                    <FormDescription>
-                      Mostra questo prodotto nel menu
-                    </FormDescription>
-                  </div>
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
-                    <Switch
+                    <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Prodotto attivo</FormLabel>
+                    <FormDescription>
+                      Se selezionato, il prodotto sarà visibile nel menu
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="price_standard"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prezzo (€)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {/* Nuovo campo per l'etichetta prodotto */}
             <FormField
               control={form.control}
               name="label_id"
@@ -1122,7 +525,6 @@ const Dashboard = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Replace empty string with "none" as the value */}
                       <SelectItem value="none">Nessuna etichetta</SelectItem>
                       {productLabels.map((label) => (
                         <SelectItem key={label.id} value={label.id}>
@@ -1144,83 +546,69 @@ const Dashboard = () => {
               )}
             />
             
-            {/* Nuovo campo per il suffisso del prezzo */}
-            <FormField
-              control={form.control}
-              name="has_price_suffix"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Suffisso prezzo</FormLabel>
-                    <FormDescription>
-                      Aggiungi un suffisso al prezzo (es. "al kg", "/persona", ecc.)
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            {hasPriceSuffix && (
-              <FormField
-                control={form.control}
-                name="price_suffix"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Testo suffisso</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Es. al kg, /persona"
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            
-            <FormField
-              control={form.control}
-              name="has_multiple_prices"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Prezzi multipli</FormLabel>
-                    <FormDescription>
-                      Abilita diverse varianti di prezzo
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            {hasMultiplePrices && (
-              <div className="border rounded-md p-4 space-y-4 bg-gray-50">
-                <h4 className="font-medium">Varianti di prezzo</h4>
-                
+            <div className="space-y-4">
+              <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormField
+                  control={form.control}
+                  name="has_multiple_prices"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Prezzi multipli</FormLabel>
+                        <FormDescription>
+                          Se selezionato, puoi inserire fino a due varianti di prezzo
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              {!hasMultiplePrices ? (
+                <FormField
+                  control={form.control}
+                  name="price_standard"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Prezzo standard</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.01"
+                          placeholder="0.00" 
+                          {...field}
+                          value={field.value === null ? "" : field.value}
+                          onChange={(e) => {
+                            const value = e.target.value === "" ? null : parseFloat(e.target.value);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="price_variant_1_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Variante 1</FormLabel>
+                          <FormLabel>Nome variante 1</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Es. Bottiglia" value={field.value || ""} />
+                            <Input 
+                              placeholder="Es. Piccola" 
+                              {...field}
+                              value={field.value || ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1232,16 +620,16 @@ const Dashboard = () => {
                       name="price_variant_1_value"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Prezzo Variante 1 (€)</FormLabel>
+                          <FormLabel>Prezzo variante 1</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
+                            <Input 
+                              type="number" 
                               step="0.01"
-                              min="0"
+                              placeholder="0.00" 
                               {...field}
-                              value={field.value || ""}
+                              value={field.value === null ? "" : field.value}
                               onChange={(e) => {
-                                const value = e.target.value ? parseFloat(e.target.value) : null;
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
                                 field.onChange(value);
                               }}
                             />
@@ -1252,15 +640,19 @@ const Dashboard = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="price_variant_2_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome Variante 2</FormLabel>
+                          <FormLabel>Nome variante 2</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Es. Calice" value={field.value || ""} />
+                            <Input 
+                              placeholder="Es. Grande" 
+                              {...field}
+                              value={field.value || ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1272,16 +664,16 @@ const Dashboard = () => {
                       name="price_variant_2_value"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Prezzo Variante 2 (€)</FormLabel>
+                          <FormLabel>Prezzo variante 2</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
+                            <Input 
+                              type="number" 
                               step="0.01"
-                              min="0"
+                              placeholder="0.00" 
                               {...field}
-                              value={field.value || ""}
+                              value={field.value === null ? "" : field.value}
                               onChange={(e) => {
-                                const value = e.target.value ? parseFloat(e.target.value) : null;
+                                const value = e.target.value === "" ? null : parseFloat(e.target.value);
                                 field.onChange(value);
                               }}
                             />
@@ -1292,8 +684,51 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
+              )}
+              
+              <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormField
+                  control={form.control}
+                  name="has_price_suffix"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Suffisso prezzo</FormLabel>
+                        <FormDescription>
+                          Se selezionato, puoi aggiungere un suffisso al prezzo (es. "al kg")
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
               </div>
-            )}
+              
+              {hasPriceSuffix && (
+                <FormField
+                  control={form.control}
+                  name="price_suffix"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Suffisso prezzo</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Es. al kg" 
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
             
             <div className="space-y-2">
               <Label className="block">Allergeni</Label>
@@ -1316,22 +751,30 @@ const Dashboard = () => {
             
             {/* Caratteristiche prodotto */}
             <div className="space-y-2">
-              <Label className="block">Caratteristiche</Label>
+              <Label className="block">Caratteristiche prodotto</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {productFeatures.map((feature) => (
                   <div 
                     key={feature.id} 
-                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
+                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer flex items-center gap-1 ${
                       selectedFeatures.some(f => f.id === feature.id)
                         ? "bg-primary text-primary-foreground"
                         : "bg-white hover:bg-gray-50"
                     }`}
                     onClick={() => toggleFeature(feature)}
                   >
+                    {feature.icon_url && (
+                      <img src={feature.icon_url} alt={feature.title} className="w-4 h-4" />
+                    )}
                     {feature.title}
                   </div>
                 ))}
               </div>
+              {productFeatures.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Non ci sono caratteristiche disponibili. Aggiungile prima nella sezione Impostazioni Menu.
+                </p>
+              )}
             </div>
             
             <div className="flex justify-end space-x-2 pt-4">
@@ -1353,647 +796,904 @@ const Dashboard = () => {
       </div>
     );
   };
-
-  // Componente lista categorie
-  const CategoriesList = () => {
+  
+  // Componente per il form della categoria
+  const CategoryForm = ({ category, onSubmit }: { 
+    category: Category | null, 
+    onSubmit: (data: z.infer<typeof categoryFormSchema>) => void 
+  }) => {
+    const form = useForm<z.infer<typeof categoryFormSchema>>({
+      resolver: zodResolver(categoryFormSchema),
+      defaultValues: {
+        title: category?.title || "",
+        description: category?.description || "",
+        image_url: category?.image_url || "",
+        is_active: category?.is_active !== undefined ? category.is_active : true,
+      },
+    });
+  
     return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">Categorie</h2>
-          <Button onClick={() => {
-            setEditingCategory(null);
-            setShowCategoryForm(true);
-          }} size="sm">
-            <PlusCircle className="h-4 w-4 mr-2" /> Nuova
-          </Button>
-        </div>
-        
-        <ScrollArea className="flex-grow">
-          <div className="p-2">
-            {isLoadingCategories ? (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {categories.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Nessuna categoria trovata.<br />
-                    Crea una nuova categoria per iniziare.
-                  </div>
-                ) : (
-                  categories.map((category, index) => (
-                    <div
-                      key={category.id}
-                      className={`flex flex-col p-2 rounded-md cursor-pointer ${
-                        selectedCategory === category.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-gray-100"
-                      }`}
-                      onClick={() => handleCategorySelect(category.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {category.image_url ? (
-                            <div className="w-8 h-8 rounded-md overflow-hidden">
-                              <img
-                                src={category.image_url}
-                                alt={category.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
-                              <Package className="h-4 w-4" />
-                            </div>
-                          )}
-                          <span className="truncate max-w-[120px]">{category.title}</span>
-                        </div>
-                        
-                        {!category.is_active && (
-                          <span className="text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                            Disattivata
-                          </span>
-                        )}
-                      </div>
-                      
-                      {/* Azioni allineate a destra in una riga separata */}
-                      <div className="flex justify-end mt-2">
-                        {/* Bottoni per riordinare */}
-                        <div className="flex mr-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCategoryReorder(category.id, 'up');
-                            }}
-                            disabled={index === 0}
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCategoryReorder(category.id, 'down');
-                            }}
-                            disabled={index === categories.length - 1}
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingCategory(category);
-                            setShowCategoryForm(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCategory(category.id);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  };
-
-  // Componente lista prodotti
-  const ProductsList = () => {
-    // Funzione per filtrare i prodotti in base alla ricerca
-    const filteredProducts = products.filter(
-      product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    const handleBackToCategories = () => {
-      setShowMobileCategories(true);
-      setShowMobileProducts(false);
-    };
-    
-    return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-2"
-              onClick={handleBackToCategories}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <div className="flex-1">
-            <Input
-              placeholder="Cerca prodotti..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
-              icon={<Search className="h-4 w-4" />}
+      <div className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Titolo categoria</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Inserisci il titolo della categoria" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <Button
-            onClick={() => {
-              if (!selectedCategory) {
-                toast.error("Seleziona prima una categoria");
-                return;
-              }
-              
-              setSelectedProduct(null);
-              setIsEditing(true);
-              
-              if (isMobile) {
-                setShowMobileProducts(false);
-                setShowMobileDetail(true);
-              }
-            }}
-            size="sm"
-            className="ml-2"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" /> Nuovo
-          </Button>
-        </div>
-        
-        <ScrollArea className="flex-grow">
-          <div className="p-4">
-            {!selectedCategory ? (
-              <div className="text-center py-8 text-gray-500">
-                Seleziona una categoria per visualizzare i prodotti.
-              </div>
-            ) : isLoadingProducts ? (
-              <div className="space-y-4">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchQuery ? 
-                  "Nessun prodotto trovato per questa ricerca." : 
-                  "Nessun prodotto in questa categoria."}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredProducts.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className={`border rounded-md p-3 cursor-pointer transition-colors ${
-                      selectedProduct === product.id 
-                        ? "border-primary bg-primary/5" 
-                        : "hover:bg-gray-50"
-                    } ${!product.is_active ? "opacity-60" : ""}`}
-                    onClick={() => handleProductSelect(product.id)}
-                  >
-                    {/* Prima riga: informazioni del prodotto */}
-                    <div className="flex space-x-3">
-                      {/* Immagine del prodotto */}
-                      {product.image_url ? (
-                        <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                          <img
-                            src={product.image_url}
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md flex-shrink-0">
-                          <Package className="h-6 w-6 text-gray-400" />
-                        </div>
-                      )}
-                      
-                      {/* Informazioni sul prodotto */}
-                      <div className="flex-1">
-                        <h3 className="font-medium">{product.title}</h3>
-                        {product.description && (
-                          <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
-                        )}
-                        
-                        <div className="flex items-center mt-1 space-x-2">
-                          <span className="text-sm font-semibold">{product.price_standard} €</span>
-                          {product.has_price_suffix && product.price_suffix && (
-                            <span className="text-xs text-gray-500">{product.price_suffix}</span>
-                          )}
-                          
-                          {!product.is_active && (
-                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                              Non disponibile
-                            </span>
-                          )}
-                          
-                          {product.allergens && product.allergens.length > 0 && (
-                            <div className="flex space-x-1">
-                              {product.allergens.slice(0, 3).map((allergen) => (
-                                <span 
-                                  key={allergen.id}
-                                  className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
-                                >
-                                  {allergen.number}
-                                </span>
-                              ))}
-                              {product.allergens.length > 3 && (
-                                <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
-                                  +{product.allergens.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Seconda riga: azioni allineate a destra */}
-                    <div className="flex justify-end mt-2">
-                      {/* Bottoni per riordinare */}
-                      <div className="flex mr-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductReorder(product.id, 'up');
-                          }}
-                          disabled={index === 0}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductReorder(product.id, 'down');
-                          }}
-                          disabled={index === filteredProducts.length - 1}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProduct(product.id);
-                          setIsEditing(true);
-                          
-                          if (isMobile) {
-                            setShowMobileProducts(false);
-                            setShowMobileDetail(true);
-                          }
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteProduct(product.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrizione</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Inserisci una descrizione (opzionale)" 
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL immagine</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="URL dell'immagine (opzionale)" 
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Inserisci l'URL di un'immagine per la categoria
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="is_active"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Categoria attiva</FormLabel>
+                    <FormDescription>
+                      Se selezionato, la categoria sarà visibile nel menu
+                    </FormDescription>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  if (category) {
+                    setIsEditingCategory(false);
+                  } else {
+                    setIsAddingCategory(false);
+                  }
+                }}
+              >
+                Annulla
+              </Button>
+              <Button type="submit">Salva</Button>
+            </div>
+          </form>
+        </Form>
       </div>
     );
   };
+  
+  // Aggiunge una nuova categoria
+  const handleAddCategory = async (data: z.infer<typeof categoryFormSchema>) => {
+    try {
+      // Determina il prossimo display_order
+      const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
+      const nextOrder = maxOrder + 1;
+      
+      const { error } = await supabase
+        .from('categories')
+        .insert({
+          title: data.title,
+          description: data.description || null,
+          image_url: data.image_url || null,
+          is_active: data.is_active,
+          display_order: nextOrder
+        });
+      
+      if (error) throw error;
+      
+      // Azzera il form
+      setIsAddingCategory(false);
+      
+      toast.success("Categoria aggiunta con successo!");
+    } catch (error) {
+      console.error('Errore nell\'aggiunta della categoria:', error);
+      toast.error("Errore nell'aggiunta della categoria. Riprova più tardi.");
+    }
+  };
+  
+  // Aggiorna una categoria esistente
+  const handleUpdateCategory = async (data: z.infer<typeof categoryFormSchema>) => {
+    if (!selectedCategoryForEdit) return;
+    
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({
+          title: data.title,
+          description: data.description || null,
+          image_url: data.image_url || null,
+          is_active: data.is_active
+        })
+        .eq('id', selectedCategoryForEdit.id);
+      
+      if (error) throw error;
+      
+      // Azzera il form
+      setIsEditingCategory(false);
+      setSelectedCategoryForEdit(null);
+      
+      toast.success("Categoria aggiornata con successo!");
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento della categoria:', error);
+      toast.error("Errore nell'aggiornamento della categoria. Riprova più tardi.");
+    }
+  };
+  
+  // Aggiunge un nuovo prodotto
+  const handleAddProduct = async (productData: Partial<Product>) => {
+    if (!selectedCategory) {
+      toast.error("Seleziona prima una categoria");
+      return;
+    }
 
-  // Componente dettaglio prodotto
-  const ProductDetail = () => {
-    const product = products.find(p => p.id === selectedProduct);
-    
-    const handleBackToProducts = () => {
-      setShowMobileProducts(true);
-      setShowMobileDetail(false);
-    };
-    
-    if (!selectedProduct && !isEditing) {
-      return (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          Seleziona un prodotto per visualizzare i dettagli.
-        </div>
-      );
+    try {
+      // Determina il prossimo display_order
+      const maxOrder = Math.max(...products.map(p => p.display_order), 0);
+      const nextOrder = maxOrder + 1;
+      
+      if (!productData.title) {
+        toast.error("Il titolo è obbligatorio");
+        return;
+      }
+      
+      // Estrai features e allergens prima di inserire il prodotto
+      const { features, allergens, ...productToInsert } = productData;
+      
+      // Handle the "none" value for label_id
+      if (productToInsert.label_id === "none") {
+        productToInsert.label_id = null;
+      }
+      
+      const productInsert = {
+        title: productToInsert.title,
+        description: productToInsert.description || null,
+        image_url: productToInsert.image_url || null,
+        category_id: selectedCategory,
+        is_active: productToInsert.is_active !== undefined ? productToInsert.is_active : true,
+        display_order: nextOrder,
+        price_standard: productToInsert.price_standard || 0,
+        has_multiple_prices: productToInsert.has_multiple_prices || false,
+        price_variant_1_name: productToInsert.price_variant_1_name || null,
+        price_variant_1_value: productToInsert.price_variant_1_value || null,
+        price_variant_2_name: productToInsert.price_variant_2_name || null,
+        price_variant_2_value: productToInsert.price_variant_2_value || null,
+        has_price_suffix: productToInsert.has_price_suffix || false,
+        price_suffix: productToInsert.price_suffix || null,
+        label_id: productToInsert.label_id || null
+      };
+      
+      // Inserisci il nuovo prodotto
+      const { data: newProduct, error: productError } = await supabase
+        .from('products')
+        .insert(productInsert)
+        .select()
+        .single();
+      
+      if (productError) throw productError;
+      
+      // Se ci sono allergens selezionati, inseriscili
+      if (allergens && allergens.length > 0) {
+        const allergenInserts = allergens.map((allergen) => ({
+          product_id: newProduct.id,
+          allergen_id: allergen.id
+        }));
+        
+        const { error: allergensError } = await supabase
+          .from('product_allergens')
+          .insert(allergenInserts);
+        
+        if (allergensError) throw allergensError;
+      }
+      
+      // Se ci sono features selezionate, inseriscile
+      if (features && features.length > 0) {
+        const featureInserts = features.map((feature) => ({
+          product_id: newProduct.id,
+          feature_id: feature.id
+        }));
+        
+        const { error: featuresError } = await supabase
+          .from('product_to_features')
+          .insert(featureInserts);
+        
+        if (featuresError) throw featuresError;
+      }
+      
+      // Aggiorna la lista dei prodotti
+      await loadProducts(selectedCategory);
+      
+      // Azzera il form
+      setIsAdding(false);
+      
+      toast.success("Prodotto aggiunto con successo!");
+    } catch (error: any) {
+      console.error('Errore nell\'aggiunta del prodotto:', error);
+      toast.error(`Errore nell'aggiunta del prodotto: ${error.message || 'Riprova più tardi.'}`);
     }
-    
-    if (isEditing) {
-      return (
-        <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center p-4 border-b">
-            {isMobile && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="mr-2"
-                onClick={handleBackToProducts}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            )}
-            <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
-          </div>
-          
-          <ScrollArea className="flex-grow">
-            <div className="p-4">
-              <ProductForm 
-                product={product} 
-                onSubmit={(data) => {
-                  if (product) {
-                    handleUpdateProduct(product.id, data);
-                  } else {
-                    handleAddProduct(data);
-                  }
-                }} 
-              />
-            </div>
-          </ScrollArea>
-        </div>
-      );
+  };
+  
+  // Aggiorna un prodotto esistente
+  const handleUpdateProduct = async (productId: string, productData: Partial<Product>) => {
+    try {
+      // Creiamo una copia dei dati del prodotto senza i campi allergens e features
+      const { allergens, features, ...productUpdateData } = productData;
+      
+      // Handle the "none" value for label_id
+      if (productUpdateData.label_id === "none") {
+        productUpdateData.label_id = null;
+      }
+      
+      // Aggiorniamo i dati del prodotto nella tabella products
+      const { error } = await supabase
+        .from('products')
+        .update(productUpdateData)
+        .eq('id', productId);
+      
+      if (error) throw error;
+      
+      // Aggiorniamo gli allergeni: prima eliminiamo tutti quelli esistenti
+      const { error: deleteAllergensError } = await supabase
+        .from('product_allergens')
+        .delete()
+        .eq('product_id', productId);
+      
+      if (deleteAllergensError) throw deleteAllergensError;
+      
+      // Poi inseriamo i nuovi allergeni
+      if (allergens && allergens.length > 0) {
+        const allergenInserts = allergens.map((allergen) => ({
+          product_id: productId,
+          allergen_id: allergen.id
+        }));
+        
+        const { error: insertAllergensError } = await supabase
+          .from('product_allergens')
+          .insert(allergenInserts);
+        
+        if (insertAllergensError) throw insertAllergensError;
+      }
+      
+      // Aggiorniamo le caratteristiche: prima eliminiamo tutte quelle esistenti
+      const { error: deleteFeaturesError } = await supabase
+        .from('product_to_features')
+        .delete()
+        .eq('product_id', productId);
+      
+      if (deleteFeaturesError) throw deleteFeaturesError;
+      
+      // Poi inseriamo le nuove caratteristiche
+      if (features && features.length > 0) {
+        const featureInserts = features.map((feature) => ({
+          product_id: productId,
+          feature_id: feature.id
+        }));
+        
+        const { error: insertFeaturesError } = await supabase
+          .from('product_to_features')
+          .insert(featureInserts);
+        
+        if (insertFeaturesError) throw insertFeaturesError;
+      }
+      
+      // Aggiorna i prodotti
+      if (selectedCategory) {
+        await loadProducts(selectedCategory);
+      }
+      
+      // Riseleziona il prodotto aggiornato
+      setSelectedProduct(productId);
+      setIsEditing(false);
+      
+      toast.success("Prodotto aggiornato con successo!");
+    } catch (error) {
+      console.error('Errore nell\'aggiornamento del prodotto:', error);
+      toast.error("Errore nell'aggiornamento del prodotto. Riprova più tardi.");
     }
-    
-    if (!product) return null;
-    
+  };
+  
+  // Componente per visualizzare i dettagli di un prodotto
+  const ProductDetail = ({ product }: { product: Product }) => {
     return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-2"
-              onClick={handleBackToProducts}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
+      <div className="space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-xl font-medium">{product.title}</h3>
+            {product.description && (
+              <p className="text-muted-foreground mt-1">{product.description}</p>
+            )}
+          </div>
           <div className="flex space-x-2">
             <Button 
               size="sm" 
+              variant="outline"
               onClick={() => setIsEditing(true)}
             >
-              <Edit className="h-4 w-4 mr-2" /> Modifica
+              <Edit className="h-4 w-4 mr-2" />
+              Modifica
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive"
+              onClick={() => confirmDeleteProduct(product.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Elimina
             </Button>
           </div>
         </div>
         
-        <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-6">
-            {/* Intestazione prodotto */}
-            <div className="flex space-x-4">
-              {product.image_url ? (
-                <div className="w-32 h-32 rounded-md overflow-hidden">
-                  <img
-                    src={product.image_url}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-md">
-                  <Package className="h-10 w-10 text-gray-400" />
+        {/* Product image */}
+        {product.image_url && (
+          <div className="relative w-full h-40 bg-gray-100 rounded-md overflow-hidden">
+            <img 
+              src={product.image_url} 
+              alt={product.title} 
+              className="w-full h-full object-cover" 
+            />
+          </div>
+        )}
+  
+        {/* Product details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Dettagli prodotto</h4>
+            <div className="bg-gray-50 p-3 rounded-md">
+              <div className="flex justify-between py-1">
+                <span className="text-sm">Attivo</span>
+                <span className="text-sm font-medium">
+                  {product.is_active ? (
+                    <span className="text-green-600">Sì</span>
+                  ) : (
+                    <span className="text-red-600">No</span>
+                  )}
+                </span>
+              </div>
+              
+              {product.label && (
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-sm">Etichetta</span>
+                  <div className="flex items-center">
+                    {product.label.color && (
+                      <div 
+                        className="w-3 h-3 rounded-full mr-2" 
+                        style={{ backgroundColor: product.label.color }}
+                      />
+                    )}
+                    <span className="text-sm font-medium">{product.label.title}</span>
+                  </div>
                 </div>
               )}
-              
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold">{product.title}</h1>
-                    {product.label && (
-                      <span 
-                        className="px-2 py-0.5 rounded-full text-sm inline-block mt-1"
-                        style={{ 
-                          backgroundColor: product.label.color || '#e2e8f0',
-                          color: product.label.color ? '#fff' : '#000'
-                        }}
-                      >
-                        {product.label.title}
-                      </span>
-                    )}
-                  </div>
-                  {!product.is_active && (
-                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
-                      Non disponibile
-                    </span>
-                  )}
-                </div>
-                
-                {product.description && (
-                  <p className="text-gray-700 mt-2">{product.description}</p>
-                )}
-                
-                <div className="mt-4">
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-medium">Categoria: </span>
-                    <span className="ml-2">
-                      {categories.find(c => c.id === product.category_id)?.title || ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
-            
-            <Separator />
-            
-            {/* Prezzi */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-4">Prezzi</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Prezzo standard</span>
-                    <span className="font-semibold">
-                      {product.price_standard} €
-                      {product.has_price_suffix && product.price_suffix && (
-                        <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
-                      )}
-                    </span>
-                  </div>
-                  
-                  {product.has_multiple_prices && (
-                    <>
-                      {product.price_variant_1_name && (
-                        <div className="flex justify-between items-center">
-                          <span>{product.price_variant_1_name}</span>
-                          <span className="font-semibold">
-                            {product.price_variant_1_value} €
-                            {product.has_price_suffix && product.price_suffix && (
-                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
-                            )}
-                          </span>
-                        </div>
-                      )}
-                      
-                      {product.price_variant_2_name && (
-                        <div className="flex justify-between items-center">
-                          <span>{product.price_variant_2_name}</span>
-                          <span className="font-semibold">
-                            {product.price_variant_2_value} €
-                            {product.has_price_suffix && product.price_suffix && (
-                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
-                            )}
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Caratteristiche prodotto */}
-            {product.features && product.features.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-semibold mb-4">Caratteristiche</h3>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {product.features.map((feature) => (
-                      <div 
-                        key={feature.id}
-                        className="bg-gray-100 rounded-full px-3 py-1 flex items-center"
-                      >
-                        {feature.icon_url && (
-                          <img src={feature.icon_url} alt={feature.title} className="w-4 h-4 mr-1" />
-                        )}
-                        {feature.title}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            {/* Allergeni */}
-            {product.allergens && product.allergens.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-semibold mb-4">Allergeni</h3>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {product.allergens.map((allergen) => (
-                      <div 
-                        key={allergen.id}
-                        className="bg-gray-100 rounded-full px-3 py-1"
-                      >
-                        {allergen.number}: {allergen.title}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            {/* Info tecniche */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-4">Informazioni tecniche</h3>
-                
-                <Table>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">ID</TableCell>
-                      <TableCell>{product.id}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Ordine di visualizzazione</TableCell>
-                      <TableCell>{product.display_order}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Creato il</TableCell>
-                      <TableCell>
-                        {product.created_at && new Date(product.created_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Ultimo aggiornamento</TableCell>
-                      <TableCell>
-                        {product.updated_at && new Date(product.updated_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
           </div>
-        </ScrollArea>
+          
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Prezzi</h4>
+            <div className="bg-gray-50 p-3 rounded-md">
+              {!product.has_multiple_prices ? (
+                <div className="flex justify-between py-1">
+                  <span className="text-sm">Prezzo standard</span>
+                  <span className="text-sm font-medium">
+                    {product.price_standard !== null ? 
+                      `${product.price_standard}€${product.has_price_suffix && product.price_suffix ? ' ' + product.price_suffix : ''}` : 
+                      "-"
+                    }
+                  </span>
+                </div>
+              ) : (
+                <>
+                  {product.price_variant_1_name && (
+                    <div className="flex justify-between py-1">
+                      <span className="text-sm">{product.price_variant_1_name}</span>
+                      <span className="text-sm font-medium">
+                        {product.price_variant_1_value !== null ? 
+                          `${product.price_variant_1_value}€${product.has_price_suffix && product.price_suffix ? ' ' + product.price_suffix : ''}` : 
+                          "-"
+                        }
+                      </span>
+                    </div>
+                  )}
+                  {product.price_variant_2_name && (
+                    <div className="flex justify-between py-1">
+                      <span className="text-sm">{product.price_variant_2_name}</span>
+                      <span className="text-sm font-medium">
+                        {product.price_variant_2_value !== null ? 
+                          `${product.price_variant_2_value}€${product.has_price_suffix && product.price_suffix ? ' ' + product.price_suffix : ''}` : 
+                          "-"
+                        }
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Product allergens */}
+        {product.allergens && product.allergens.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Allergeni</h4>
+            <div className="flex flex-wrap gap-2">
+              {product.allergens.map((allergen) => (
+                <div 
+                  key={allergen.id} 
+                  className="px-3 py-1 rounded-full bg-gray-100 text-sm"
+                >
+                  {allergen.number}: {allergen.title}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Product features */}
+        {product.features && product.features.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Caratteristiche</h4>
+            <div className="flex flex-wrap gap-2">
+              {product.features.map((feature) => (
+                <div 
+                  key={feature.id} 
+                  className="px-3 py-1 rounded-full bg-gray-100 text-sm flex items-center gap-1"
+                >
+                  {feature.icon_url && (
+                    <img src={feature.icon_url} alt={feature.title} className="w-4 h-4" />
+                  )}
+                  {feature.title}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
-
-  // Layout mobile
-  const MobileLayout = () => {
-    if (showMobileCategories) {
-      return <CategoriesList />;
-    } else if (showMobileProducts) {
-      return <ProductsList />;
-    } else if (showMobileDetail) {
-      return <ProductDetail />;
-    }
-    
-    // Default fallback
-    return <CategoriesList />;
-  };
-
-  // Layout desktop
-  const DesktopLayout = () => (
-    <div className="grid grid-cols-12 h-full divide-x">
-      <div className="col-span-2 h-full border-r">
-        <CategoriesList />
-      </div>
-      
-      <div className="col-span-5 h-full border-r">
-        <ProductsList />
-      </div>
-      
-      <div className="col-span-5 h-full">
-        <ProductDetail />
-      </div>
-    </div>
-  );
-
+  
   return (
-    <div className="h-[calc(100vh-4rem)]">
-      {isMobile ? <MobileLayout /> : <DesktopLayout />}
+    <DashboardShell>
+      <DashboardHeader
+        heading="Dashboard"
+        text="Gestisci il tuo menu, le categorie e i prodotti."
+      />
+      <Tabs defaultValue="products" value={selectedTab} onValueChange={setSelectedTab}>
+        <TabsList>
+          <TabsTrigger value="products">Prodotti</TabsTrigger>
+          <TabsTrigger value="categories">Categorie</TabsTrigger>
+          <TabsTrigger value="settings">Impostazioni Menu</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="products" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Colonna categorie */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Categorie</CardTitle>
+                <CardDescription>
+                  Seleziona una categoria per visualizzare i prodotti
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[500px]">
+                  <div className="space-y-2">
+                    {categories.map((category) => (
+                      <div 
+                        key={category.id}
+                        className={`p-3 rounded-md cursor-pointer flex justify-between items-center ${
+                          selectedCategory === category.id 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-gray-100"
+                        }`}
+                        onClick={() => setSelectedCategory(category.id)}
+                      >
+                        <div className="flex items-center">
+                          {!category.is_active && (
+                            <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                          )}
+                          <span>{category.title}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+            
+            {/* Colonna prodotti */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Prodotti</CardTitle>
+                  <CardDescription>
+                    {selectedCategory 
+                      ? `${products.length} prodotti in questa categoria` 
+                      : "Seleziona una categoria"}
+                  </CardDescription>
+                </div>
+                {selectedCategory && (
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      setIsAdding(true);
+                      setSelectedProduct(null);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuovo
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                {selectedCategory ? (
+                  <ScrollArea className="h-[500px]">
+                    <div className="space-y-2">
+                      {products.map((product) => (
+                        <div 
+                          key={product.id}
+                          className={`p-3 rounded-md cursor-pointer ${
+                            selectedProduct === product.id 
+                              ? "bg-primary text-primary-foreground" 
+                              : "hover:bg-gray-100"
+                          }`}
+                          onClick={() => {
+                            setSelectedProduct(product.id);
+                            setIsAdding(false);
+                            setIsEditing(false);
+                          }}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center">
+                              {!product.is_active && (
+                                <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                              )}
+                              <span>{product.title}</span>
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveProduct(product.id, 'up');
+                                }}
+                              >
+                                <ArrowUp className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveProduct(product.id, 'down');
+                                }}
+                              >
+                                <ArrowDown className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          {product.label && (
+                            <div className="flex items-center mt-1">
+                              {product.label.color && (
+                                <div 
+                                  className="w-2 h-2 rounded-full mr-1" 
+                                  style={{ backgroundColor: product.label.color }}
+                                />
+                              )}
+                              <span className="text-xs">{product.label.title}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {products.length === 0 && (
+                        <div className="text-center py-4 text-muted-foreground">
+                          Nessun prodotto in questa categoria
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    Seleziona una categoria per visualizzare i prodotti
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            {/* Colonna dettagli/modifica */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {isAdding 
+                    ? "Nuovo prodotto" 
+                    : isEditing 
+                      ? "Modifica prodotto" 
+                      : selectedProduct 
+                        ? "Dettagli prodotto" 
+                        : "Seleziona un prodotto"}
+                </CardTitle>
+                <CardDescription>
+                  {isAdding 
+                    ? "Aggiungi un nuovo prodotto alla categoria selezionata" 
+                    : isEditing 
+                      ? "Modifica i dettagli del prodotto" 
+                      : selectedProduct 
+                        ? "Visualizza i dettagli del prodotto selezionato" 
+                        : "Seleziona un prodotto per visualizzarne i dettagli"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[500px]">
+                  {isAdding && (
+                    <ProductForm 
+                      product={null} 
+                      onSubmit={handleAddProduct} 
+                    />
+                  )}
+                  {isEditing && selectedProduct && (
+                    <ProductForm 
+                      product={getSelectedProduct()} 
+                      onSubmit={(data) => handleUpdateProduct(selectedProduct, data)} 
+                    />
+                  )}
+                  {!isAdding && !isEditing && selectedProduct && getSelectedProduct() && (
+                    <ProductDetail product={getSelectedProduct()!} />
+                  )}
+                  {!isAdding && !isEditing && !selectedProduct && (
+                    <div className="text-center py-4 text-muted-foreground">
+                      Seleziona un prodotto per visualizzarne i dettagli o aggiungi un nuovo prodotto
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="categories" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Gestione Categorie</h2>
+            <Button onClick={() => setIsAddingCategory(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nuova Categoria
+            </Button>
+          </div>
+          
+          {isAddingCategory && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Nuova Categoria</CardTitle>
+                <CardDescription>Aggiungi una nuova categoria al menu</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategoryForm 
+                  category={null} 
+                  onSubmit={handleAddCategory} 
+                />
+              </CardContent>
+            </Card>
+          )}
+          
+          {isEditingCategory && selectedCategoryForEdit && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Modifica Categoria</CardTitle>
+                <CardDescription>Modifica i dettagli della categoria</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategoryForm 
+                  category={selectedCategoryForEdit} 
+                  onSubmit={handleUpdateCategory} 
+                />
+              </CardContent>
+            </Card>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((category) => (
+              <Card key={category.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="flex items-center">
+                      {!category.is_active && (
+                        <div className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                      )}
+                      {category.title}
+                    </CardTitle>
+                    <div className="flex space-x-1">
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8"
+                        onClick={() => moveCategory(category.id, 'up')}
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8"
+                        onClick={() => moveCategory(category.id, 'down')}
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {category.description && (
+                    <CardDescription>{category.description}</CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  {category.image_url && (
+                    <div className="relative w-full h-32 bg-gray-100 rounded-md overflow-hidden mb-4">
+                      <img 
+                        src={category.image_url} 
+                        alt={category.title} 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  )}
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategoryForEdit(category);
+                        setIsEditingCategory(true);
+                        setIsAddingCategory(false);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Modifica
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => confirmDeleteCategory(category.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Elimina
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <h2 className="text-2xl font-bold">Impostazioni Menu</h2>
+          <p className="text-muted-foreground">
+            Gestisci le impostazioni generali del menu, come etichette, allergeni e caratteristiche dei prodotti.
+          </p>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="text-xl font-medium">Etichette Prodotti</h3>
+            <p className="text-muted-foreground">
+              Le etichette ti permettono di evidenziare prodotti speciali nel menu (es. "Novità", "Consigliato", ecc.)
+            </p>
+            
+            {/* Qui andrebbe il componente per gestire le etichette */}
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="text-xl font-medium">Allergeni</h3>
+            <p className="text-muted-foreground">
+              Gestisci l'elenco degli allergeni che possono essere associati ai prodotti
+            </p>
+            
+            {/* Qui andrebbe il componente per gestire gli allergeni */}
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-4">
+            <h3 className="text-xl font-medium">Caratteristiche Prodotti</h3>
+            <p className="text-muted-foreground">
+              Gestisci le caratteristiche che possono essere associate ai prodotti (es. "Piccante", "Vegetariano", ecc.)
+            </p>
+            
+            {/* Qui andrebbe il componente per gestire le caratteristiche */}
+          </div>
+        </TabsContent>
+      </Tabs>
       
-      {/* Form pannelli laterali */}
-      <CategoryFormPanel />
-    </div>
+      {/* Dialog di conferma eliminazione prodotto */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questo prodotto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata. Il prodotto verrà rimosso permanentemente dal menu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteProduct}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Dialog di conferma eliminazione categoria */}
+      <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questa categoria?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata. La categoria verrà rimossa permanentemente dal menu.
+              Non è possibile eliminare categorie che contengono prodotti.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteCategory}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DashboardShell>
   );
-};
-
-export default Dashboard;
+}
