@@ -284,7 +284,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
     return (
       <div className="rounded-md border p-4">
         <h2 className="text-xl font-semibold mb-4">{formTitle}</h2>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-4">
           {/* Nome Prodotto */}
           <FormField
             form={form}
@@ -336,7 +336,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
             name="label_id"
             label="Etichetta prodotto"
           >
-            <Select>
+            <Select onValueChange={value => form.setValue('label_id', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleziona un'etichetta" />
               </SelectTrigger>
@@ -536,11 +536,11 @@ const Dashboard: React.FC<DashboardProps> = () => {
             <Button variant="outline" type="button" onClick={onCancel}>
               Annulla
             </Button>
-            <Button type="submit">
+            <Button type="button" onClick={form.handleSubmit(onSubmit)}>
               Salva
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     );
   };
