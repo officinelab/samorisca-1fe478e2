@@ -145,8 +145,11 @@ const ProductFeaturesManager = () => {
     
     try {
       // Aggiorna tutti i display_order nel database
+      // CORREZIONE: Includi tutti i campi necessari incluso il titolo
       const updates = updatedFeatures.map(feature => ({
         id: feature.id,
+        title: feature.title,
+        icon_url: feature.icon_url,
         display_order: feature.display_order,
         updated_at: new Date().toISOString()
       }));

@@ -145,8 +145,11 @@ const ProductLabelsManager = () => {
     
     try {
       // Aggiorna tutti i display_order nel database
+      // CORREZIONE: Includi tutti i campi necessari incluso il titolo
       const updates = updatedLabels.map(label => ({
         id: label.id,
+        title: label.title,
+        color: label.color,
         display_order: label.display_order,
         updated_at: new Date().toISOString()
       }));
