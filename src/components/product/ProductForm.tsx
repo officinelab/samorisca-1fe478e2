@@ -42,7 +42,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
         
         {/* Product Label Selection */}
         <ProductLabelSelect form={form} labels={labels} />
-
+        
         {/* Feature Selection */}
         <FeaturesSelector
           selectedFeatureIds={selectedFeatures}
