@@ -86,7 +86,7 @@ export const useMenuData = () => {
                 const allergenIds = productAllergens.map(pa => pa.allergen_id);
                 const { data: allergensDetails, error: detailsError } = await supabase
                   .from('allergens')
-                  .select('*')
+                  .select('*')  // CORREZIONE: Selezioniamo tutti i campi anziché solo id, number, title
                   .in('id', allergenIds)
                   .order('number', { ascending: true });
                 
