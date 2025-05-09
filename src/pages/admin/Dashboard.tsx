@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,10 +50,17 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Category, Product, Allergen } from "@/types/database";
+import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Dashboard = () => {
@@ -134,15 +140,16 @@ const Dashboard = () => {
       // Carica i prodotti
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*')
+        .select('*, label:label_id(*)')
         .eq('category_id', categoryId)
         .order('display_order', { ascending: true });
 
       if (productsError) throw productsError;
       
-      // Per ogni prodotto, carica gli allergeni associati
-      const productsWithAllergens = await Promise.all(
+      // Per ogni prodotto, carica gli allergeni associati e le features
+      const productsWithDetails = await Promise.all(
         (productsData || []).map(async (product) => {
+          // Load allergens
           const { data: productAllergens, error: allergensError } = await supabase
             .from('product_allergens')
             .select('allergen_id')
@@ -163,11 +170,36 @@ const Dashboard = () => {
             productAllergensDetails = allergensDetails || [];
           }
           
-          return { ...product, allergens: productAllergensDetails } as Product;
+          // Load features
+          const { data: productFeatures, error: featuresError } = await supabase
+            .from('product_to_features')
+            .select('feature_id')
+            .eq('product_id', product.id);
+          
+          if (featuresError) throw featuresError;
+          
+          let productFeaturesDetails: ProductFeature[] = [];
+          if (productFeatures && productFeatures.length > 0) {
+            const featureIds = productFeatures.map(pf => pf.feature_id);
+            const { data: featuresDetails, error: detailsError } = await supabase
+              .from('product_features')
+              .select('*')
+              .in('id', featureIds)
+              .order('display_order', { ascending: true });
+            
+            if (detailsError) throw detailsError;
+            productFeaturesDetails = featuresDetails || [];
+          }
+          
+          return { 
+            ...product, 
+            allergens: productAllergensDetails,
+            features: productFeaturesDetails
+          } as Product;
         })
       );
       
-      setProducts(productsWithAllergens);
+      setProducts(productsWithDetails);
       // Reimposta il prodotto selezionato quando cambia la categoria
       setSelectedProduct(null);
       setIsEditing(false);
@@ -462,35 +494,39 @@ const Dashboard = () => {
         return;
       }
       
-      const productToInsert = {
-        title: productData.title,
-        description: productData.description || null,
-        image_url: productData.image_url || null,
+      // Estrai features e allergens prima di inserire il prodotto
+      const { features, allergens, ...productToInsert } = productData;
+      
+      const productInsert = {
+        title: productToInsert.title,
+        description: productToInsert.description || null,
+        image_url: productToInsert.image_url || null,
         category_id: selectedCategory,
-        is_active: productData.is_active !== undefined ? productData.is_active : true,
+        is_active: productToInsert.is_active !== undefined ? productToInsert.is_active : true,
         display_order: nextOrder,
-        price_standard: productData.price_standard || 0,
-        has_multiple_prices: productData.has_multiple_prices || false,
-        price_variant_1_name: productData.price_variant_1_name || null,
-        price_variant_1_value: productData.price_variant_1_value || null,
-        price_variant_2_name: productData.price_variant_2_name || null,
-        price_variant_2_value: productData.price_variant_2_value || null,
-        has_price_suffix: productData.has_price_suffix || false,
-        price_suffix: productData.price_suffix || null
+        price_standard: productToInsert.price_standard || 0,
+        has_multiple_prices: productToInsert.has_multiple_prices || false,
+        price_variant_1_name: productToInsert.price_variant_1_name || null,
+        price_variant_1_value: productToInsert.price_variant_1_value || null,
+        price_variant_2_name: productToInsert.price_variant_2_name || null,
+        price_variant_2_value: productToInsert.price_variant_2_value || null,
+        has_price_suffix: productToInsert.has_price_suffix || false,
+        price_suffix: productToInsert.price_suffix || null,
+        label_id: productToInsert.label_id || null
       };
       
       const { data, error } = await supabase
         .from('products')
-        .insert([productToInsert])
+        .insert([productInsert])
         .select();
       
       if (error) throw error;
       
       if (data && data.length > 0) {
         // Gestisci gli allergeni se presenti
-        const allergens = productData.allergens || [];
-        if (allergens.length > 0) {
-          const allergenInserts = allergens.map(allergen => ({
+        const productAllergens = allergens || [];
+        if (productAllergens.length > 0) {
+          const allergenInserts = productAllergens.map(allergen => ({
             product_id: data[0].id,
             allergen_id: allergen.id,
           }));
@@ -500,6 +536,21 @@ const Dashboard = () => {
             .insert(allergenInserts);
           
           if (allergensError) throw allergensError;
+        }
+        
+        // Gestisci le caratteristiche se presenti
+        const productFeatures = features || [];
+        if (productFeatures.length > 0) {
+          const featureInserts = productFeatures.map(feature => ({
+            product_id: data[0].id,
+            feature_id: feature.id,
+          }));
+
+          const { error: featuresError } = await supabase
+            .from('product_to_features')
+            .insert(featureInserts);
+          
+          if (featuresError) throw featuresError;
         }
 
         // Aggiorna i prodotti
@@ -521,8 +572,8 @@ const Dashboard = () => {
   // Aggiorna un prodotto esistente
   const handleUpdateProduct = async (productId: string, productData: Partial<Product>) => {
     try {
-      // Creiamo una copia dei dati del prodotto senza il campo allergens
-      const { allergens, ...productUpdateData } = productData;
+      // Creiamo una copia dei dati del prodotto senza i campi allergens e features
+      const { allergens, features, ...productUpdateData } = productData;
       
       // Aggiorniamo i dati del prodotto nella tabella products
       const { error } = await supabase
@@ -552,6 +603,31 @@ const Dashboard = () => {
           const { error: insertError } = await supabase
             .from('product_allergens')
             .insert(allergenInserts);
+          
+          if (insertError) throw insertError;
+        }
+      }
+      
+      // Gestisci le caratteristiche separatamente se sono presenti
+      if (features !== undefined) {
+        // Rimuovi tutte le associazioni esistenti
+        const { error: deleteError } = await supabase
+          .from('product_to_features')
+          .delete()
+          .eq('product_id', productId);
+        
+        if (deleteError) throw deleteError;
+        
+        // Aggiungi le nuove associazioni se ce ne sono
+        if (features.length > 0) {
+          const featureInserts = features.map(feature => ({
+            product_id: productId,
+            feature_id: feature.id,
+          }));
+
+          const { error: insertError } = await supabase
+            .from('product_to_features')
+            .insert(featureInserts);
           
           if (insertError) throw insertError;
         }
@@ -712,6 +788,7 @@ const Dashboard = () => {
     price_variant_2_value: z.coerce.number().optional().nullable(),
     has_price_suffix: z.boolean().default(false),
     price_suffix: z.string().optional().nullable(),
+    label_id: z.string().optional().nullable(),
   });
 
   // Form categoria
@@ -841,6 +918,43 @@ const Dashboard = () => {
       product?.allergens || []
     );
     
+    const [selectedFeatures, setSelectedFeatures] = useState<ProductFeature[]>(
+      product?.features || []
+    );
+    
+    // Carica le etichette prodotto e le caratteristiche
+    const [productLabels, setProductLabels] = useState<ProductLabel[]>([]);
+    const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
+    
+    useEffect(() => {
+      const loadLabelsAndFeatures = async () => {
+        try {
+          // Carica le etichette
+          const { data: labelsData, error: labelsError } = await supabase
+            .from('product_labels')
+            .select('*')
+            .order('display_order', { ascending: true });
+            
+          if (labelsError) throw labelsError;
+          setProductLabels(labelsData || []);
+          
+          // Carica le caratteristiche
+          const { data: featuresData, error: featuresError } = await supabase
+            .from('product_features')
+            .select('*')
+            .order('display_order', { ascending: true });
+            
+          if (featuresError) throw featuresError;
+          setProductFeatures(featuresData || []);
+        } catch (error) {
+          console.error('Errore nel caricamento delle etichette e caratteristiche:', error);
+          toast.error("Errore nel caricamento delle opzioni. Riprova più tardi.");
+        }
+      };
+      
+      loadLabelsAndFeatures();
+    }, []);
+    
     const form = useForm<z.infer<typeof productFormSchema>>({
       resolver: zodResolver(productFormSchema),
       defaultValues: {
@@ -856,6 +970,7 @@ const Dashboard = () => {
         price_variant_2_value: product?.price_variant_2_value || null,
         has_price_suffix: product?.has_price_suffix || false,
         price_suffix: product?.price_suffix || "",
+        label_id: product?.label_id || null,
       },
     });
     
@@ -870,11 +985,20 @@ const Dashboard = () => {
       }
     };
     
+    const toggleFeature = (feature: ProductFeature) => {
+      if (selectedFeatures.some(f => f.id === feature.id)) {
+        setSelectedFeatures(selectedFeatures.filter(f => f.id !== feature.id));
+      } else {
+        setSelectedFeatures([...selectedFeatures, feature]);
+      }
+    };
+    
     const handleFormSubmit = (values: z.infer<typeof productFormSchema>) => {
-      // Aggiungi gli allergeni ai valori del form
+      // Aggiungi gli allergeni e le caratteristiche ai valori del form
       const productData = {
         ...values,
-        allergens: selectedAllergens
+        allergens: selectedAllergens,
+        features: selectedFeatures
       };
       
       onSubmit(productData);
@@ -966,6 +1090,44 @@ const Dashboard = () => {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Nuovo campo per l'etichetta prodotto */}
+            <FormField
+              control={form.control}
+              name="label_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Etichetta prodotto</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange}
+                    defaultValue={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona un'etichetta" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Nessuna etichetta</SelectItem>
+                      {productLabels.map((label) => (
+                        <SelectItem key={label.id} value={label.id}>
+                          <div className="flex items-center">
+                            {label.color && (
+                              <div 
+                                className="w-3 h-3 rounded-full mr-2" 
+                                style={{ backgroundColor: label.color }}
+                              />
+                            )}
+                            {label.title}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -1136,6 +1298,26 @@ const Dashboard = () => {
                     onClick={() => toggleAllergen(allergen)}
                   >
                     {allergen.number}: {allergen.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Caratteristiche prodotto */}
+            <div className="space-y-2">
+              <Label className="block">Caratteristiche</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {productFeatures.map((feature) => (
+                  <div 
+                    key={feature.id} 
+                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
+                      selectedFeatures.some(f => f.id === feature.id)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-white hover:bg-gray-50"
+                    }`}
+                    onClick={() => toggleFeature(feature)}
+                  >
+                    {feature.title}
                   </div>
                 ))}
               </div>
@@ -1597,7 +1779,20 @@ const Dashboard = () => {
               
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-2xl font-bold">{product.title}</h1>
+                  <div>
+                    <h1 className="text-2xl font-bold">{product.title}</h1>
+                    {product.label && (
+                      <span 
+                        className="px-2 py-0.5 rounded-full text-sm inline-block mt-1"
+                        style={{ 
+                          backgroundColor: product.label.color || '#e2e8f0',
+                          color: product.label.color ? '#fff' : '#000'
+                        }}
+                      >
+                        {product.label.title}
+                      </span>
+                    )}
+                  </div>
                   {!product.is_active && (
                     <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
                       Non disponibile
@@ -1668,6 +1863,29 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Caratteristiche prodotto */}
+            {product.features && product.features.length > 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-xl font-semibold mb-4">Caratteristiche</h3>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {product.features.map((feature) => (
+                      <div 
+                        key={feature.id}
+                        className="bg-gray-100 rounded-full px-3 py-1 flex items-center"
+                      >
+                        {feature.icon_url && (
+                          <img src={feature.icon_url} alt={feature.title} className="w-4 h-4 mr-1" />
+                        )}
+                        {feature.title}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
             {/* Allergeni */}
             {product.allergens && product.allergens.length > 0 && (

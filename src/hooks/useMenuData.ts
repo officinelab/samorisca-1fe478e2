@@ -70,7 +70,7 @@ export const useMenuData = () => {
             
           if (productsError) throw productsError;
           
-          // For each product, load associated allergens and features
+          // Per each product, load associated allergens and features
           const productsWithDetails = await Promise.all(
             (productsData || []).map(async (product) => {
               // Load allergens
