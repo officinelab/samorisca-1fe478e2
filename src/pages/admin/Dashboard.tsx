@@ -497,6 +497,11 @@ const Dashboard = () => {
       // Estrai features e allergens prima di inserire il prodotto
       const { features, allergens, ...productToInsert } = productData;
       
+      // Handle the "none" value for label_id
+      if (productToInsert.label_id === "none") {
+        productToInsert.label_id = null;
+      }
+      
       const productInsert = {
         title: productToInsert.title,
         description: productToInsert.description || null,
@@ -574,6 +579,11 @@ const Dashboard = () => {
     try {
       // Creiamo una copia dei dati del prodotto senza i campi allergens e features
       const { allergens, features, ...productUpdateData } = productData;
+      
+      // Handle the "none" value for label_id
+      if (productUpdateData.label_id === "none") {
+        productUpdateData.label_id = null;
+      }
       
       // Aggiorniamo i dati del prodotto nella tabella products
       const { error } = await supabase
@@ -1104,7 +1114,7 @@ const Dashboard = () => {
                   <FormLabel>Etichetta prodotto</FormLabel>
                   <Select 
                     onValueChange={field.onChange}
-                    defaultValue={field.value || undefined}
+                    value={field.value || undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -1112,7 +1122,8 @@ const Dashboard = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Nessuna etichetta</SelectItem>
+                      {/* Replace empty string with "none" as the value */}
+                      <SelectItem value="none">Nessuna etichetta</SelectItem>
                       {productLabels.map((label) => (
                         <SelectItem key={label.id} value={label.id}>
                           <div className="flex items-center">
