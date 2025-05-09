@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -43,6 +44,8 @@ const productSchema = z.object({
   is_active: z.boolean().default(true).optional(),
 })
 
+type ProductFormValues = z.infer<typeof productSchema>;
+
 const Dashboard: React.FC<DashboardProps> = () => {
   const {
     categories,
@@ -65,7 +68,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
   const [newProductFeatures, setNewProductFeatures] = useState<ProductFeature[] | null>(null);
   const [editProductFeatures, setEditProductFeatures] = useState<ProductFeature[] | null>(null);
 
-  const newProductForm = useForm<z.infer<typeof productSchema>>({
+  const newProductForm = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       category_id: "",
@@ -85,9 +88,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
     },
   });
 
-  const editProductForm = useForm<z.infer<typeof productSchema>>({
+  const editProductForm = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: editingProduct || {
+    defaultValues: {
       category_id: "",
       title: "",
       description: "",
@@ -103,12 +106,19 @@ const Dashboard: React.FC<DashboardProps> = () => {
       price_variant_2_value: "",
       is_active: true,
     },
-    values: editingProduct
   });
 
   useEffect(() => {
     if (editingProduct) {
-      editProductForm.reset(editingProduct);
+      // Converti i valori numerici in stringhe per il form
+      const formValues: ProductFormValues = {
+        ...editingProduct,
+        price_standard: editingProduct.price_standard?.toString() || "",
+        price_variant_1_value: editingProduct.price_variant_1_value?.toString() || "",
+        price_variant_2_value: editingProduct.price_variant_2_value?.toString() || "",
+      };
+      
+      editProductForm.reset(formValues);
       setEditProductImage(editingProduct.image_url || null);
       
       // Carica gli allergeni associati al prodotto in modifica
@@ -172,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
     setEditingProduct(null);
   };
 
-  const handleEditProductSubmit = async (values: z.infer<typeof productSchema>) => {
+  const handleEditProductSubmit = async (values: ProductFormValues) => {
     if (!selectedProduct) return;
     
     try {
@@ -183,10 +193,10 @@ const Dashboard: React.FC<DashboardProps> = () => {
         ...values,
         title: values.title || '',
         image_url: editProductImage,
-        price_standard: Number(values.price_standard || 0),
-        price_variant_1_value: Number(values.price_variant_1_value || 0),
-        price_variant_2_value: Number(values.price_variant_2_value || 0),
-        updated_at: new Date()
+        price_standard: values.price_standard ? Number(values.price_standard) : null,
+        price_variant_1_value: values.price_variant_1_value ? Number(values.price_variant_1_value) : null,
+        price_variant_2_value: values.price_variant_2_value ? Number(values.price_variant_2_value) : null,
+        updated_at: new Date().toISOString()  // Conversione a stringa
       };
       
       // Aggiorna il prodotto esistente
@@ -535,7 +545,7 @@ const Dashboard: React.FC<DashboardProps> = () => {
     );
   };
 
-  const handleNewProductSubmit = async (values: z.infer<typeof productSchema>) => {
+  const handleNewProductSubmit = async (values: ProductFormValues) => {
     try {
       setIsSubmitting(true);
       
@@ -544,9 +554,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
         ...values,
         title: values.title || '',
         image_url: newProductImage,
-        price_standard: Number(values.price_standard || 0),
-        price_variant_1_value: Number(values.price_variant_1_value || 0),
-        price_variant_2_value: Number(values.price_variant_2_value || 0),
+        price_standard: values.price_standard ? Number(values.price_standard) : null,
+        price_variant_1_value: values.price_variant_1_value ? Number(values.price_variant_1_value) : null,
+        price_variant_2_value: values.price_variant_2_value ? Number(values.price_variant_2_value) : null,
         display_order: 0
       };
       
