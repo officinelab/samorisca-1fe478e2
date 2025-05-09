@@ -116,15 +116,33 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
       const productData = formValuesToProduct(values, product?.id);
       
       // Inserisce o aggiorna il prodotto
-      const operation = product?.id ? "update" : "insert";
-      const { data: savedProduct, error } = await supabase
-        .from("products")
-        [operation](productData, { onConflict: product?.id ? "id" : undefined });
+      let savedProduct;
+      let productId;
       
-      if (error) throw error;
-      
-      // Ottiene l'ID del prodotto salvato
-      const productId = operation === "update" ? product.id : savedProduct?.[0]?.id;
+      if (product?.id) {
+        // Aggiornamento prodotto esistente
+        const { data, error } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", product.id)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        savedProduct = data;
+        productId = product.id;
+      } else {
+        // Inserimento nuovo prodotto
+        const { data, error } = await supabase
+          .from("products")
+          .insert(productData)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        savedProduct = data;
+        productId = savedProduct?.id;
+      }
       
       if (!productId) throw new Error("Impossibile ottenere l'ID del prodotto");
       
