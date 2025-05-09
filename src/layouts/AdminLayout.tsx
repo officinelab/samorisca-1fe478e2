@@ -10,7 +10,8 @@ import {
   Printer, 
   Menu as MenuIcon, 
   LogOut,
-  X
+  X,
+  Settings
 } from "lucide-react";
 
 const AdminLayout = () => {
@@ -26,6 +27,7 @@ const AdminLayout = () => {
   const navItems = [
     { to: "/admin/dashboard", icon: <LayoutDashboard className="mr-2 h-5 w-5" />, label: "Gestione Menu" },
     { to: "/admin/allergens", icon: <AlertTriangle className="mr-2 h-5 w-5" />, label: "Tabella Allergeni" },
+    { to: "/admin/settings", icon: <Settings className="mr-2 h-5 w-5" />, label: "Impostazioni Menu" },
     { to: "/admin/preview", icon: <Eye className="mr-2 h-5 w-5" />, label: "Anteprima Menu" },
     { to: "/admin/print", icon: <Printer className="mr-2 h-5 w-5" />, label: "Stampa Menu" },
   ];

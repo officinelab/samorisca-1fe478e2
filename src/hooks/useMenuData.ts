@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
-import { Category, Product, Allergen } from "@/types/database";
+import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 
 export const useMenuData = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Record<string, Product[]>>({});
   const [allergens, setAllergens] = useState<Allergen[]>([]);
+  const [labels, setLabels] = useState<ProductLabel[]>([]);
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -36,6 +38,24 @@ export const useMenuData = () => {
         
         // Select all categories by default
         setSelectedCategories(activeCategories.map(c => c.id));
+
+        // Load product labels
+        const { data: labelsData, error: labelsError } = await supabase
+          .from('product_labels')
+          .select('*')
+          .order('display_order', { ascending: true });
+          
+        if (labelsError) throw labelsError;
+        setLabels(labelsData || []);
+
+        // Load product features
+        const { data: featuresData, error: featuresError } = await supabase
+          .from('product_features')
+          .select('*')
+          .order('display_order', { ascending: true });
+          
+        if (featuresError) throw featuresError;
+        setFeatures(featuresData || []);
         
         // Load products for each category
         const productsMap: Record<string, Product[]> = {};
@@ -43,16 +63,17 @@ export const useMenuData = () => {
         for (const category of activeCategories) {
           const { data: productsData, error: productsError } = await supabase
             .from('products')
-            .select('*')
+            .select('*, label:label_id(*)')
             .eq('category_id', category.id)
             .eq('is_active', true)
             .order('display_order', { ascending: true });
             
           if (productsError) throw productsError;
           
-          // For each product, load associated allergens
-          const productsWithAllergens = await Promise.all(
+          // For each product, load associated allergens and features
+          const productsWithDetails = await Promise.all(
             (productsData || []).map(async (product) => {
+              // Load allergens
               const { data: productAllergens, error: allergensError } = await supabase
                 .from('product_allergens')
                 .select('allergen_id')
@@ -60,7 +81,7 @@ export const useMenuData = () => {
               
               if (allergensError) throw allergensError;
               
-              let productAllergensDetails: { id: string; number: number; title: string }[] = [];
+              let productAllergensDetails: Allergen[] = [];
               if (productAllergens && productAllergens.length > 0) {
                 const allergenIds = productAllergens.map(pa => pa.allergen_id);
                 const { data: allergensDetails, error: detailsError } = await supabase
@@ -72,12 +93,37 @@ export const useMenuData = () => {
                 if (detailsError) throw detailsError;
                 productAllergensDetails = allergensDetails || [];
               }
+
+              // Load features
+              const { data: productFeatures, error: featuresError } = await supabase
+                .from('product_to_features')
+                .select('feature_id')
+                .eq('product_id', product.id);
               
-              return { ...product, allergens: productAllergensDetails } as Product;
+              if (featuresError) throw featuresError;
+              
+              let productFeaturesDetails: ProductFeature[] = [];
+              if (productFeatures && productFeatures.length > 0) {
+                const featureIds = productFeatures.map(pf => pf.feature_id);
+                const { data: featuresDetails, error: detailsError } = await supabase
+                  .from('product_features')
+                  .select('*')
+                  .in('id', featureIds)
+                  .order('display_order', { ascending: true });
+                
+                if (detailsError) throw detailsError;
+                productFeaturesDetails = featuresDetails || [];
+              }
+              
+              return { 
+                ...product, 
+                allergens: productAllergensDetails,
+                features: productFeaturesDetails
+              } as Product;
             })
           );
           
-          productsMap[category.id] = productsWithAllergens;
+          productsMap[category.id] = productsWithDetails;
         }
         
         setProducts(productsMap);
@@ -130,6 +176,8 @@ export const useMenuData = () => {
     categories,
     products,
     allergens,
+    labels,
+    features,
     restaurantLogo,
     updateRestaurantLogo,
     isLoading,

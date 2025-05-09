@@ -21,6 +21,24 @@ export interface Category {
   updated_at?: string;
 }
 
+export interface ProductLabel {
+  id: string;
+  title: string;
+  color: string | null;
+  display_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProductFeature {
+  id: string;
+  title: string;
+  icon_url: string | null;
+  display_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Product {
   id: string;
   category_id: string;
@@ -37,9 +55,12 @@ export interface Product {
   price_variant_2_value?: number | null;
   has_price_suffix?: boolean | null;
   price_suffix?: string | null;
+  label_id?: string | null;
   created_at?: string;
   updated_at?: string;
   allergens?: Allergen[];
+  features?: ProductFeature[];
+  label?: ProductLabel;
 }
 
 export interface ProductAllergen {
@@ -54,4 +75,10 @@ export interface ProductPrice {
   name: string | null;
   price: number;
   display_order: number;
+}
+
+export interface ProductToFeature {
+  id: string;
+  product_id: string;
+  feature_id: string;
 }
