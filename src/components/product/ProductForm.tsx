@@ -39,7 +39,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {/* Basic Product Information */}
         <ProductBasicInfo form={form} />
-
+        
         {/* Product Label Selection */}
         <ProductLabelSelect form={form} labels={labels} />
 
