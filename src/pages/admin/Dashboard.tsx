@@ -1031,41 +1031,8 @@ const Dashboard = () => {
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrizione</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      placeholder="Descrizione del prodotto"
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="image_url"
-              render={({ field }) => (
-                <FormItem>
-                  <ImageUploader
-                    currentImage={field.value || null}
-                    onImageUploaded={(url) => field.onChange(url)}
-                    label="Immagine Prodotto"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
+
+              <FormField
               control={form.control}
               name="is_active"
               render={({ field }) => (
@@ -1088,6 +1055,62 @@ const Dashboard = () => {
             
             <FormField
               control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrizione</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Descrizione del prodotto"
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             {/* Caratteristiche prodotto */}
+            <div className="space-y-2">
+              <Label className="block">Caratteristiche</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {productFeatures.map((feature) => (
+                  <div 
+                    key={feature.id} 
+                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
+                      selectedFeatures.some(f => f.id === feature.id)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-white hover:bg-gray-50"
+                    }`}
+                    onClick={() => toggleFeature(feature)}
+                  >
+                    {feature.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+                {/* Inserimento immagine */}
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <ImageUploader
+                    currentImage={field.value || null}
+                    onImageUploaded={(url) => field.onChange(url)}
+                    label="Immagine Prodotto"
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+          
+              {/* Prezzo Standard */}
+            <FormField
+              control={form.control}
               name="price_standard"
               render={({ field }) => (
                 <FormItem>
@@ -1105,46 +1128,8 @@ const Dashboard = () => {
               )}
             />
             
-            {/* Nuovo campo per l'etichetta prodotto */}
-            <FormField
-              control={form.control}
-              name="label_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Etichetta prodotto</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange}
-                    value={field.value || undefined}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona un'etichetta" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {/* Replace empty string with "none" as the value */}
-                      <SelectItem value="none">Nessuna etichetta</SelectItem>
-                      {productLabels.map((label) => (
-                        <SelectItem key={label.id} value={label.id}>
-                          <div className="flex items-center">
-                            {label.color && (
-                              <div 
-                                className="w-3 h-3 rounded-full mr-2" 
-                                style={{ backgroundColor: label.color }}
-                              />
-                            )}
-                            {label.title}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {/* Nuovo campo per il suffisso del prezzo */}
+                       
+            {/* Suffisso del prezzo */}
             <FormField
               control={form.control}
               name="has_price_suffix"
@@ -1185,6 +1170,45 @@ const Dashboard = () => {
                 )}
               />
             )}
+
+             {/* Etichetta prodotto */}
+            <FormField
+              control={form.control}
+              name="label_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Etichetta prodotto</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleziona un'etichetta" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {/* Replace empty string with "none" as the value */}
+                      <SelectItem value="none">Nessuna etichetta</SelectItem>
+                      {productLabels.map((label) => (
+                        <SelectItem key={label.id} value={label.id}>
+                          <div className="flex items-center">
+                            {label.color && (
+                              <div 
+                                className="w-3 h-3 rounded-full mr-2" 
+                                style={{ backgroundColor: label.color }}
+                              />
+                            )}
+                            {label.title}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}
@@ -1314,25 +1338,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Caratteristiche prodotto */}
-            <div className="space-y-2">
-              <Label className="block">Caratteristiche</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {productFeatures.map((feature) => (
-                  <div 
-                    key={feature.id} 
-                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
-                      selectedFeatures.some(f => f.id === feature.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white hover:bg-gray-50"
-                    }`}
-                    onClick={() => toggleFeature(feature)}
-                  >
-                    {feature.title}
-                  </div>
-                ))}
-              </div>
-            </div>
+           
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
