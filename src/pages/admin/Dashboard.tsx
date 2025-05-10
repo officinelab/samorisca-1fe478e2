@@ -504,9 +504,8 @@ const Dashboard = () => {
       
       const productInsert = {
         title: productToInsert.title,
-        image_url: productToInsert.image_url || null,
         description: productToInsert.description || null,
-    
+        image_url: productToInsert.image_url || null,
         category_id: selectedCategory,
         is_active: productToInsert.is_active !== undefined ? productToInsert.is_active : true,
         display_order: nextOrder,
