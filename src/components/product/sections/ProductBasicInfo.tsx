@@ -86,7 +86,8 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
                   field.onChange(url);
                 }}
                 label="Carica immagine del prodotto"
-                bucketName="products"
+                bucketName="menu-images"
+                folderPath="products"
               />
             </FormControl>
             <FormMessage />
