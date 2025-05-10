@@ -14,7 +14,7 @@ interface FeaturesSelectorProps {
 const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
+  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds || []));
 
   // Carica le caratteristiche dei prodotti
   useEffect(() => {
@@ -40,7 +40,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
 
   // Aggiorna la selezione quando cambiano le caratteristiche selezionate dall'esterno
   useEffect(() => {
-    setSelected(new Set(selectedFeatureIds));
+    // Ensure selectedFeatureIds is always an array before creating a Set
+    setSelected(new Set(selectedFeatureIds || []));
   }, [selectedFeatureIds]);
 
   // Toggle per selezionare/deselezionare una caratteristica
