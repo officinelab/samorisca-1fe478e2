@@ -64,6 +64,7 @@ export const useProductData = (product?: Product) => {
             
           if (data) {
             const featureIds = data.map(item => item.feature_id);
+            console.log("Caratteristiche caricate dal DB:", featureIds);
             setSelectedFeatures(featureIds);
           }
         } catch (error) {
@@ -72,20 +73,24 @@ export const useProductData = (product?: Product) => {
       };
       
       fetchProductFeatures();
+    } else {
+      // Reset features when no product is selected
+      setSelectedFeatures([]);
     }
   }, [product?.id]);
 
-  // Assicurati che setSelectedFeatures non causi aggiornamenti multipli
+  // Versione stabile di setSelectedFeatures che evita re-render non necessari
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
     setSelectedFeatures(prevFeatures => {
-      // Se sono uguali, non aggiornare lo stato per evitare re-render inutili
-      if (
-        prevFeatures.length === features.length && 
-        prevFeatures.every(f => features.includes(f))
-      ) {
+      // Confronto profondo degli array per evitare aggiornamenti non necessari
+      if (prevFeatures.length === features.length && 
+          prevFeatures.every(f => features.includes(f)) &&
+          features.every(f => prevFeatures.includes(f))) {
+        console.log("Evitato aggiornamento non necessario delle caratteristiche");
         return prevFeatures;
       }
-      return features;
+      console.log("Aggiornamento caratteristiche:", features);
+      return [...features]; // Clona l'array per essere sicuri di avere un nuovo riferimento
     });
   }, []);
   

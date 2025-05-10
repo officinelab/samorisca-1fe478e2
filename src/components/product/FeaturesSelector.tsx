@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,8 +14,15 @@ interface FeaturesSelectorProps {
 const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds || []));
-  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Usando useRef per evitare re-render quando stiamo solo confrontando array
+  const selectedRef = useRef<string[]>(selectedFeatureIds || []);
+  
+  // Stato locale della selezione che verrà sincronizzato con selectedFeatureIds
+  const [selected, setSelected] = useState<string[]>(selectedFeatureIds || []);
+  
+  // Flag per prevenire aggiornamenti ciclici
+  const isUpdatingRef = useRef(false);
 
   // Carica le caratteristiche dei prodotti
   useEffect(() => {
@@ -39,40 +46,49 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     fetchFeatures();
   }, []);
 
-  // Aggiorna la selezione quando cambiano le caratteristiche selezionate dall'esterno
-  // ma solo se non siamo in fase di aggiornamento da un'azione dell'utente
+  // Aggiorna la selezione locale quando cambiano le prop esterne
   useEffect(() => {
-    if (!isUpdating) {
-      setSelected(new Set(selectedFeatureIds || []));
+    // Evita aggiornamenti in ciclo
+    if (isUpdatingRef.current) {
+      return;
     }
-  }, [selectedFeatureIds, isUpdating]);
 
-  // Toggle per selezionare/deselezionare una caratteristica
-  const toggleFeature = (featureId: string) => {
-    // Segnaliamo che stiamo aggiornando, per evitare che l'useEffect si attivi
-    setIsUpdating(true);
+    // Controlla se gli array sono effettivamente diversi per evitare cicli
+    const areDifferent = selectedFeatureIds.length !== selectedRef.current.length ||
+      selectedFeatureIds.some(id => !selectedRef.current.includes(id));
+      
+    if (areDifferent) {
+      console.log("Aggiornamento selezione da prop:", selectedFeatureIds);
+      selectedRef.current = [...selectedFeatureIds];
+      setSelected([...selectedFeatureIds]);
+    }
+  }, [selectedFeatureIds]);
+
+  // Funzione per gestire il cambiamento di selezione
+  const handleToggleFeature = (featureId: string) => {
+    // Imposta il flag per prevenire aggiornamenti ciclici
+    isUpdatingRef.current = true;
     
-    // Crea una nuova copia del Set per non modificare direttamente lo stato
-    const newSelected = new Set(selected);
-    
-    if (newSelected.has(featureId)) {
-      newSelected.delete(featureId);
+    // Calcola la nuova selezione
+    let newSelected;
+    if (selected.includes(featureId)) {
+      newSelected = selected.filter(id => id !== featureId);
     } else {
-      newSelected.add(featureId);
+      newSelected = [...selected, featureId];
     }
     
-    // Prima aggiorniamo lo stato locale
+    // Aggiorna lo stato locale
     setSelected(newSelected);
+    selectedRef.current = newSelected;
     
-    // Notifichiamo il componente genitore con la nuova selezione
-    const newSelection = Array.from(newSelected);
+    // Notifica il componente padre
+    console.log("Notifica cambiamento:", newSelected);
+    onChange(newSelected);
     
-    // Utilizziamo setTimeout per spezzare il ciclo di rendering
+    // Resetta il flag dopo un periodo per consentire che il rendering sia completato
     setTimeout(() => {
-      onChange(newSelection);
-      // Resettiamo l'indicatore di aggiornamento
-      setIsUpdating(false);
-    }, 0);
+      isUpdatingRef.current = false;
+    }, 50);
   };
 
   return (
@@ -88,16 +104,22 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
               key={feature.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
+                selected.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => toggleFeature(feature.id)}
+              onClick={() => handleToggleFeature(feature.id)}
             >
               <Checkbox 
-                checked={selected.has(feature.id)} 
-                onCheckedChange={() => toggleFeature(feature.id)} 
+                checked={selected.includes(feature.id)}
                 id={`feature-${feature.id}`}
+                // Rimuoviamo l'evento onChange dal checkbox per evitare doppi eventi
+                // L'evento è già gestito dal click sul div contenitore
               />
-              <span className="text-sm">{feature.title}</span>
+              <label 
+                htmlFor={`feature-${feature.id}`}
+                className="text-sm cursor-pointer flex-1"
+              >
+                {feature.title}
+              </label>
             </div>
           ))}
         </div>
