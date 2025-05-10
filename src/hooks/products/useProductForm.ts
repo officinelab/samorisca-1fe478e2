@@ -96,6 +96,8 @@ export const useProductForm = (product?: Product, onSave?: (productData: Partial
 
   // Handle form submission
   const handleSubmit = async (values: ProductFormValues) => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     setIsSubmitting(true);
     
     try {
@@ -177,8 +179,13 @@ export const useProductForm = (product?: Product, onSave?: (productData: Partial
       
       toast.success(product?.id ? "Prodotto aggiornato con successo" : "Prodotto creato con successo");
       
-      // Pass the product data to the onSave callback
-      if (onSave) onSave(savedProduct || productData);
+      // Pass the product data to the onSave callback, but after the state updates are complete
+      if (onSave) {
+        // Use setTimeout to break the synchronous rendering cycle
+        setTimeout(() => {
+          onSave(savedProduct || productData);
+        }, 0);
+      }
     } catch (error: any) {
       console.error("Errore durante il salvataggio del prodotto:", error);
       toast.error(`Errore: ${error.message || "Si è verificato un errore durante il salvataggio"}`);
