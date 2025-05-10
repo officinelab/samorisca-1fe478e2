@@ -1,6 +1,6 @@
 
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +38,9 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
             <div className="space-y-0.5">
               <FormLabel>Stato Attivo</FormLabel>
+              <FormDescription>
+                Mostra questo prodotto nel menu
+              </FormDescription>
             </div>
             <FormControl>
               <Switch
