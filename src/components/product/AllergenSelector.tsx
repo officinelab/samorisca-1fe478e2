@@ -20,7 +20,7 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
   };
 
   return (
-    <CollapsibleSection title="Allergeni">
+    <CollapsibleSection title="Allergeni" defaultOpen={false}>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>
       ) : allergens.length === 0 ? (

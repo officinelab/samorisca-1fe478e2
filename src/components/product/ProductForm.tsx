@@ -37,13 +37,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Basic Product Information */}
+        {/* Basic Product Information - Order: Name, Active, Description, Image */}
         <ProductBasicInfo form={form} />
         
         {/* Product Label Selection */}
         <ProductLabelSelect form={form} labels={labels} />
         
-        {/* Feature Selection */}
+        {/* Feature Selection - Now as collapsible */}
         <FeaturesSelector
           selectedFeatureIds={selectedFeatures}
           onChange={setSelectedFeatures}
@@ -56,7 +56,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
           hasMultiplePrices={hasMultiplePrices}
         />
 
-        {/* Allergen Selection */}
+        {/* Allergen Selection - Now as collapsible */}
         <AllergenSelector
           selectedAllergenIds={selectedAllergens}
           onChange={setSelectedAllergens}

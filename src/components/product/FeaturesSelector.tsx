@@ -58,7 +58,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
   };
 
   return (
-    <CollapsibleSection title="Caratteristiche">
+    <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>
       ) : features.length === 0 ? (
