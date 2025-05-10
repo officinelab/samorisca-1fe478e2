@@ -46,7 +46,9 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
 
   // Toggle per selezionare/deselezionare una caratteristica
   const toggleFeature = (featureId: string) => {
+    // Crea una nuova copia del Set per non modificare direttamente lo stato
     const newSelected = new Set(selected);
+    
     if (newSelected.has(featureId)) {
       newSelected.delete(featureId);
     } else {
@@ -56,9 +58,11 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     // Prima aggiorniamo lo stato locale
     setSelected(newSelected);
     
-    // Poi notifichiamo il componente genitore
-    const newSelection = Array.from(newSelected);
-    onChange(newSelection);
+    // Notifichiamo il componente genitore con la nuova selezione
+    // Use setTimeout to break the rendering cycle and prevent infinite loop
+    setTimeout(() => {
+      onChange(Array.from(newSelected));
+    }, 0);
   };
 
   return (
@@ -81,6 +85,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
               <Checkbox 
                 checked={selected.has(feature.id)} 
                 onCheckedChange={() => toggleFeature(feature.id)} 
+                id={`feature-${feature.id}`}
               />
               <span className="text-sm">{feature.title}</span>
             </div>
