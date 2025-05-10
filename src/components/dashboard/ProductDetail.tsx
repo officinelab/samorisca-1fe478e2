@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -61,7 +60,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           <div className="p-4">
             <ProductForm
               product={product}
-              onSave={(productData) => onSaveProduct(productData)}
+              onSave={onSaveProduct}
               onCancel={onCancelEditing}
             />
           </div>

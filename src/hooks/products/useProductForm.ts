@@ -7,7 +7,8 @@ import { Product, ProductLabel } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
-export const useProductForm = (product?: Product, onSave?: () => void) => {
+// Update the function signature to accept onSave with product data parameter
+export const useProductForm = (product?: Product, onSave?: (productData: Partial<Product>) => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [labels, setLabels] = useState<ProductLabel[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
@@ -176,7 +177,8 @@ export const useProductForm = (product?: Product, onSave?: () => void) => {
       
       toast.success(product?.id ? "Prodotto aggiornato con successo" : "Prodotto creato con successo");
       
-      if (onSave) onSave();
+      // Pass the product data to the onSave callback
+      if (onSave) onSave(savedProduct || productData);
     } catch (error: any) {
       console.error("Errore durante il salvataggio del prodotto:", error);
       toast.error(`Errore: ${error.message || "Si è verificato un errore durante il salvataggio"}`);

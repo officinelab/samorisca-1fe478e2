@@ -16,7 +16,8 @@ import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
-  onSave?: () => void;
+  // Update the onSave type to accept product data
+  onSave?: (productData: Partial<Product>) => void;
   onCancel?: () => void;
 }
 
