@@ -49,6 +49,9 @@ export const useProductData = (product?: Product) => {
       };
       
       fetchProductAllergens();
+    } else {
+      // Reset allergens when no product is selected
+      setSelectedAllergens([]);
     }
   }, [product?.id]);
   
@@ -79,18 +82,16 @@ export const useProductData = (product?: Product) => {
     }
   }, [product?.id]);
 
-  // Versione stabile di setSelectedFeatures che evita re-render non necessari
+  // Funzione stabile per aggiornare selectedFeatures evitando cicli di aggiornamento
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
     setSelectedFeatures(prevFeatures => {
-      // Confronto profondo degli array per evitare aggiornamenti non necessari
+      // Skip update if arrays are identical
       if (prevFeatures.length === features.length && 
           prevFeatures.every(f => features.includes(f)) &&
           features.every(f => prevFeatures.includes(f))) {
-        console.log("Evitato aggiornamento non necessario delle caratteristiche");
         return prevFeatures;
       }
-      console.log("Aggiornamento caratteristiche:", features);
-      return [...features]; // Clona l'array per essere sicuri di avere un nuovo riferimento
+      return features;
     });
   }, []);
   

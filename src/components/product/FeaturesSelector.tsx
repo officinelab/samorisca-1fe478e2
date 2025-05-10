@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,18 +11,14 @@ interface FeaturesSelectorProps {
   onChange: (featureIds: string[]) => void;
 }
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ 
+  selectedFeatureIds, 
+  onChange 
+}) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Usando useRef per evitare re-render quando stiamo solo confrontando array
-  const selectedRef = useRef<string[]>(selectedFeatureIds || []);
-  
-  // Stato locale della selezione che verrà sincronizzato con selectedFeatureIds
-  const [selected, setSelected] = useState<string[]>(selectedFeatureIds || []);
-  
-  // Flag per prevenire aggiornamenti ciclici
-  const isUpdatingRef = useRef(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Carica le caratteristiche dei prodotti
   useEffect(() => {
@@ -46,49 +42,32 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     fetchFeatures();
   }, []);
 
-  // Aggiorna la selezione locale quando cambiano le prop esterne
+  // Sincronizza la selezione con i prop esterni, ma solo quando non siamo in fase di elaborazione
   useEffect(() => {
-    // Evita aggiornamenti in ciclo
-    if (isUpdatingRef.current) {
-      return;
-    }
-
-    // Controlla se gli array sono effettivamente diversi per evitare cicli
-    const areDifferent = selectedFeatureIds.length !== selectedRef.current.length ||
-      selectedFeatureIds.some(id => !selectedRef.current.includes(id));
-      
-    if (areDifferent) {
-      console.log("Aggiornamento selezione da prop:", selectedFeatureIds);
-      selectedRef.current = [...selectedFeatureIds];
+    if (!isProcessing && JSON.stringify(selectedFeatureIds) !== JSON.stringify(selected)) {
       setSelected([...selectedFeatureIds]);
     }
-  }, [selectedFeatureIds]);
+  }, [selectedFeatureIds, isProcessing]);
 
-  // Funzione per gestire il cambiamento di selezione
+  // Funzione per gestire il cambiamento di selezione in modo sicuro
   const handleToggleFeature = (featureId: string) => {
-    // Imposta il flag per prevenire aggiornamenti ciclici
-    isUpdatingRef.current = true;
+    if (isProcessing) return;
+    
+    setIsProcessing(true);
     
     // Calcola la nuova selezione
-    let newSelected;
-    if (selected.includes(featureId)) {
-      newSelected = selected.filter(id => id !== featureId);
-    } else {
-      newSelected = [...selected, featureId];
-    }
+    const newSelected = selected.includes(featureId)
+      ? selected.filter(id => id !== featureId)
+      : [...selected, featureId];
     
     // Aggiorna lo stato locale
     setSelected(newSelected);
-    selectedRef.current = newSelected;
     
-    // Notifica il componente padre
-    console.log("Notifica cambiamento:", newSelected);
-    onChange(newSelected);
-    
-    // Resetta il flag dopo un periodo per consentire che il rendering sia completato
+    // Notifica il componente padre con un timeout per evitare cicli di aggiornamento
     setTimeout(() => {
-      isUpdatingRef.current = false;
-    }, 50);
+      onChange(newSelected);
+      setIsProcessing(false);
+    }, 0);
   };
 
   return (
@@ -111,8 +90,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
               <Checkbox 
                 checked={selected.includes(feature.id)}
                 id={`feature-${feature.id}`}
-                // Rimuoviamo l'evento onChange dal checkbox per evitare doppi eventi
-                // L'evento è già gestito dal click sul div contenitore
+                readOnly
               />
               <label 
                 htmlFor={`feature-${feature.id}`}
