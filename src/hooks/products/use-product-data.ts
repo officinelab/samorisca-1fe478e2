@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductLabel } from "@/types/database";
 
@@ -10,6 +10,7 @@ export const useProductData = (product?: Product) => {
   const [labels, setLabels] = useState<ProductLabel[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const featuresUpdatingRef = useRef(false);
   
   // Load product labels
   useEffect(() => {
@@ -82,15 +83,31 @@ export const useProductData = (product?: Product) => {
     }
   }, [product?.id]);
 
-  // Funzione stabile per aggiornare selectedFeatures evitando cicli di aggiornamento
+  /**
+   * Helper function to check if two arrays contain the same elements
+   * regardless of order
+   */
+  const areArraysEqual = (arr1: string[], arr2: string[]): boolean => {
+    if (arr1.length !== arr2.length) return false;
+    const set1 = new Set(arr1);
+    return arr2.every(item => set1.has(item));
+  };
+
+  // Stable function to update selectedFeatures without causing infinite loops
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
+    if (featuresUpdatingRef.current) return;
+    
+    featuresUpdatingRef.current = true;
+    
     setSelectedFeatures(prevFeatures => {
-      // Skip update if arrays are identical
-      if (prevFeatures.length === features.length && 
-          prevFeatures.every(f => features.includes(f)) &&
-          features.every(f => prevFeatures.includes(f))) {
+      // Skip update if arrays contain the same elements
+      if (areArraysEqual(prevFeatures, features)) {
+        featuresUpdatingRef.current = false;
         return prevFeatures;
       }
+      
+      console.log("Updating features:", features);
+      featuresUpdatingRef.current = false;
       return features;
     });
   }, []);

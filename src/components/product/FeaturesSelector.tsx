@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,9 +18,10 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const lastSelectedRef = useRef<string[]>([]);
+  const isUpdatingRef = useRef(false);
 
-  // Carica le caratteristiche dei prodotti
+  // Load product features
   useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
@@ -42,32 +43,33 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Sincronizza la selezione con i prop esterni, ma solo quando non siamo in fase di elaborazione
+  // Update local state when props change, but only if we're not in the middle of updating
   useEffect(() => {
-    if (!isProcessing && JSON.stringify(selectedFeatureIds) !== JSON.stringify(selected)) {
+    if (!isUpdatingRef.current && 
+        JSON.stringify(lastSelectedRef.current) !== JSON.stringify(selectedFeatureIds)) {
+      lastSelectedRef.current = [...selectedFeatureIds];
       setSelected([...selectedFeatureIds]);
     }
-  }, [selectedFeatureIds, isProcessing]);
+  }, [selectedFeatureIds]);
 
-  // Funzione per gestire il cambiamento di selezione in modo sicuro
+  // Handle feature toggle
   const handleToggleFeature = (featureId: string) => {
-    if (isProcessing) return;
+    if (isUpdatingRef.current) return;
     
-    setIsProcessing(true);
+    isUpdatingRef.current = true;
     
-    // Calcola la nuova selezione
     const newSelected = selected.includes(featureId)
       ? selected.filter(id => id !== featureId)
       : [...selected, featureId];
     
-    // Aggiorna lo stato locale
     setSelected(newSelected);
+    lastSelectedRef.current = newSelected;
     
-    // Notifica il componente padre con un timeout per evitare cicli di aggiornamento
-    setTimeout(() => {
+    // Use requestAnimationFrame to defer the parent update
+    requestAnimationFrame(() => {
       onChange(newSelected);
-      setIsProcessing(false);
-    }, 0);
+      isUpdatingRef.current = false;
+    });
   };
 
   return (
