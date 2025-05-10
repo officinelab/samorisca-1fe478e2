@@ -38,7 +38,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     fetchFeatures();
   }, []);
 
-  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
+  // Aggiorna la selezione quando cambiano le caratteristiche selezionate dall'esterno
   useEffect(() => {
     setSelected(new Set(selectedFeatureIds));
   }, [selectedFeatureIds]);
@@ -51,10 +51,13 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     } else {
       newSelected.add(featureId);
     }
+    
+    // Prima aggiorniamo lo stato locale
     setSelected(newSelected);
+    
+    // Poi notifichiamo il componente genitore
     const newSelection = Array.from(newSelected);
     onChange(newSelection);
-    return newSelection;
   };
 
   return (
