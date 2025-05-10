@@ -61,7 +61,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           <div className="p-4">
             <ProductForm
               product={product}
-              onSave={onSaveProduct}
+              onSave={(productData) => onSaveProduct(productData)}
               onCancel={onCancelEditing}
             />
           </div>
