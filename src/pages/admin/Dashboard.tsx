@@ -1,5 +1,5 @@
 
-import { Product } from "@/types/database";
+import { Product, Category } from "@/types/database";
 import { useCategories } from "@/hooks/dashboard/useCategories";
 import { useProducts } from "@/hooks/dashboard/useProducts";
 import { useDashboardState } from "@/hooks/dashboard/useDashboardState";
