@@ -9,7 +9,7 @@ export const useProductLoader = () => {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   // Load products for a category
-  const loadProducts = useCallback(async (categoryId: string) => {
+  const loadProducts = useCallback(async (categoryId: string): Promise<Product[] | void> => {
     if (!categoryId) return;
     
     setIsLoadingProducts(true);

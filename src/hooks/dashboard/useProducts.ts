@@ -54,7 +54,7 @@ export const useProducts = (categoryId: string | null) => {
     }
     // Reset selection when category changes
     setIsEditing(false);
-  }, [categoryId, loadProducts]);
+  }, [categoryId, loadProducts, setIsEditing]);
 
   // Get filtered products
   const filteredProducts = filterProducts(products);

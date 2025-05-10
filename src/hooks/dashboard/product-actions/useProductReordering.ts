@@ -4,7 +4,11 @@ import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useProductReordering = (products: Product[], loadProducts: (categoryId: string) => Promise<void>, categoryId: string | null) => {
+export const useProductReordering = (
+  products: Product[], 
+  loadProducts: (categoryId: string) => Promise<Product[] | void>, 
+  categoryId: string | null
+) => {
   // Reorder a product
   const reorderProduct = useCallback(async (productId: string, direction: 'up' | 'down') => {
     // Find the index of the current product

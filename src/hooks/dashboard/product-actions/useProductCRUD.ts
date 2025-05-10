@@ -1,10 +1,14 @@
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useProductCRUD = (categoryId: string | null, loadProducts: (categoryId: string) => Promise<void>, selectProduct: (productId: string) => void) => {
+export const useProductCRUD = (
+  categoryId: string | null, 
+  loadProducts: (categoryId: string) => Promise<Product[] | void>, 
+  selectProduct: (productId: string) => void
+) => {
   // Add a new product
   const addProduct = useCallback(async (productData: Partial<Product>) => {
     if (!categoryId) {
