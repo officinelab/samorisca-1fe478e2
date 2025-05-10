@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductLabel } from "@/types/database";
 
@@ -74,12 +74,26 @@ export const useProductData = (product?: Product) => {
       fetchProductFeatures();
     }
   }, [product?.id]);
+
+  // Assicurati che setSelectedFeatures non causi aggiornamenti multipli
+  const setSelectedFeaturesStable = useCallback((features: string[]) => {
+    setSelectedFeatures(prevFeatures => {
+      // Se sono uguali, non aggiornare lo stato per evitare re-render inutili
+      if (
+        prevFeatures.length === features.length && 
+        prevFeatures.every(f => features.includes(f))
+      ) {
+        return prevFeatures;
+      }
+      return features;
+    });
+  }, []);
   
   return {
     labels,
     selectedAllergens,
     setSelectedAllergens,
     selectedFeatures,
-    setSelectedFeatures
+    setSelectedFeatures: setSelectedFeaturesStable
   };
 };

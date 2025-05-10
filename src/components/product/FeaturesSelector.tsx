@@ -15,6 +15,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds || []));
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Carica le caratteristiche dei prodotti
   useEffect(() => {
@@ -39,13 +40,18 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
   }, []);
 
   // Aggiorna la selezione quando cambiano le caratteristiche selezionate dall'esterno
+  // ma solo se non siamo in fase di aggiornamento da un'azione dell'utente
   useEffect(() => {
-    // Ensure selectedFeatureIds is always an array before creating a Set
-    setSelected(new Set(selectedFeatureIds || []));
-  }, [selectedFeatureIds]);
+    if (!isUpdating) {
+      setSelected(new Set(selectedFeatureIds || []));
+    }
+  }, [selectedFeatureIds, isUpdating]);
 
   // Toggle per selezionare/deselezionare una caratteristica
   const toggleFeature = (featureId: string) => {
+    // Segnaliamo che stiamo aggiornando, per evitare che l'useEffect si attivi
+    setIsUpdating(true);
+    
     // Crea una nuova copia del Set per non modificare direttamente lo stato
     const newSelected = new Set(selected);
     
@@ -59,9 +65,13 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     setSelected(newSelected);
     
     // Notifichiamo il componente genitore con la nuova selezione
-    // Use setTimeout to break the rendering cycle and prevent infinite loop
+    const newSelection = Array.from(newSelected);
+    
+    // Utilizziamo setTimeout per spezzare il ciclo di rendering
     setTimeout(() => {
-      onChange(Array.from(newSelected));
+      onChange(newSelection);
+      // Resettiamo l'indicatore di aggiornamento
+      setIsUpdating(false);
     }, 0);
   };
 
