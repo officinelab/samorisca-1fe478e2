@@ -90,7 +90,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
               <Checkbox 
                 checked={selected.includes(feature.id)}
                 id={`feature-${feature.id}`}
-                readOnly
+                onCheckedChange={() => {}}
               />
               <label 
                 htmlFor={`feature-${feature.id}`}
