@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { loadLayouts } from "../storage/layoutStorage";
+import { loadLayouts } from "../storage";
 import { toast } from "@/components/ui/sonner";
 
 /**
