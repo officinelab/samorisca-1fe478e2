@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Category, Product, Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CoverPage from './CoverPage';
 import AllergensPage from './AllergensPage';
 
@@ -15,6 +16,7 @@ type ModernLayoutProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const ModernLayout: React.FC<ModernLayoutProps> = ({
@@ -28,6 +30,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
+  customLayout
 }) => {
   // Calcola se una categoria ha troppi elementi e dovrebbe iniziare in una nuova pagina
   const shouldStartNewPage = (category: Category, prevCategoryIndex: number) => {
@@ -227,6 +230,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
           allergens={allergens}
           layoutType="modern"
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       )}
     </>
