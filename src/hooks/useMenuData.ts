@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Category, Product } from "@/types/database";
-import * as dataFetchers from "./menu/menuDataFetchers";
+import { supabase } from "@/integrations/supabase/client";
 import { getStoredLogo, setStoredLogo } from "./menu/menuStorage";
 import { useCategorySelection } from "./menu/useCategorySelection";
 
@@ -40,50 +40,89 @@ export const useMenuData = () => {
         setRestaurantLogo(savedLogo);
       }
 
-      // Load categories
-      const categoriesData = await dataFetchers.fetchCategories();
+      // Carica le categorie, i prodotti e gli allergeni in parallelo
+      const [categoriesResult, allAllergens, labelsResult, featuresResult] = await Promise.all([
+        // 1. Carica le categorie attive ordinate per display_order
+        supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+          
+        // 2. Carica tutti gli allergeni
+        supabase
+          .from('allergens')
+          .select('*')
+          .order('number', { ascending: true }),
+          
+        // 3. Carica tutte le etichette
+        supabase
+          .from('product_labels')
+          .select('*')
+          .order('display_order', { ascending: true }),
+          
+        // 4. Carica tutte le caratteristiche
+        supabase
+          .from('product_features')
+          .select('*')
+          .order('display_order', { ascending: true })
+      ]);
+
+      // Gestisci eventuali errori nelle query
+      if (categoriesResult.error) throw categoriesResult.error;
+      if (allAllergens.error) throw allAllergens.error;
+      if (labelsResult.error) throw labelsResult.error;
+      if (featuresResult.error) throw featuresResult.error;
+
+      const categoriesData = categoriesResult.data || [];
       setCategories(categoriesData);
       initializeSelectedCategories(categoriesData);
+      setAllergensData(allAllergens.data || []);
+      setLabels(labelsResult.data || []);
+      setFeatures(featuresResult.data || []);
 
-      // Load labels
-      const labelsData = await dataFetchers.fetchLabels();
-      setLabels(labelsData);
-
-      // Load features
-      const featuresData = await dataFetchers.fetchFeatures();
-      setFeatures(featuresData);
-      
-      // Load products for each category
-      const productsMap: Record<string, Product[]> = {};
-      
-      for (const category of categoriesData) {
-        const productsData = await dataFetchers.fetchProductsByCategory(category.id);
+      // Ottieni tutti i prodotti in un'unica query
+      if (categoriesData.length > 0) {
+        const categoryIds = categoriesData.map(cat => cat.id);
         
-        // For each product, load associated allergens and features
-        const productsWithDetails = await Promise.all(
-          productsData.map(async (product) => {
-            // Load allergens for the product
-            const productAllergensDetails = await dataFetchers.fetchProductAllergens(product.id);
-            
-            // Load features for the product
-            const productFeaturesDetails = await dataFetchers.fetchProductFeatures(product.id);
-            
-            return { 
-              ...product, 
-              allergens: productAllergensDetails,
-              features: productFeaturesDetails
-            } as Product;
-          })
+        const { data: allProducts, error: productsError } = await supabase
+          .from('products')
+          .select('*, label:label_id(*)')
+          .in('category_id', categoryIds)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+          
+        if (productsError) throw productsError;
+        
+        // Ottieni tutte le relazioni prodotti-allergeni in un'unica query
+        const { data: allProductAllergens, error: allergensError } = await supabase
+          .from('product_allergens')
+          .select('product_id, allergen_id');
+          
+        if (allergensError) throw allergensError;
+        
+        // Ottieni tutte le relazioni prodotti-caratteristiche in un'unica query
+        const { data: allProductFeatures, error: featuresError } = await supabase
+          .from('product_to_features')
+          .select('product_id, feature_id');
+          
+        if (featuresError) throw featuresError;
+        
+        // Crea una mappa per un accesso più rapido
+        const allergensByProductId = groupByProductId(allProductAllergens || []);
+        const featuresByProductId = groupByProductId(allProductFeatures || []);
+        
+        // Organizza i prodotti per categoria e aggiungi i dettagli
+        const productsByCategory = organizeProductsByCategory(
+          allProducts || [],
+          allergensByProductId,
+          featuresByProductId,
+          allAllergens.data || [],
+          featuresResult.data || []
         );
         
-        productsMap[category.id] = productsWithDetails;
+        setProducts(productsByCategory);
       }
-      
-      setProducts(productsMap);
-      
-      // Load all allergens
-      const allergensData = await dataFetchers.fetchAllAllergens();
-      setAllergens(allergensData);
       
     } catch (error) {
       console.error('Errore nel caricamento dei dati:', error);
@@ -92,6 +131,69 @@ export const useMenuData = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Utility per raggruppare per product_id
+  const groupByProductId = (items: any[]) => {
+    const result: Record<string, any[]> = {};
+    for (const item of items) {
+      if (!result[item.product_id]) {
+        result[item.product_id] = [];
+      }
+      result[item.product_id].push(item);
+    }
+    return result;
+  };
+
+  // Organizza i prodotti per categoria e aggiungi i dettagli sugli allergeni e caratteristiche
+  const organizeProductsByCategory = (
+    products: any[],
+    allergensByProductId: Record<string, any[]>,
+    featuresByProductId: Record<string, any[]>,
+    allAllergensData: any[],
+    allFeaturesData: any[]
+  ) => {
+    const result: Record<string, Product[]> = {};
+    
+    // Crea mappe per un accesso più veloce
+    const allergensMap = allAllergensData.reduce((acc, allergen) => {
+      acc[allergen.id] = allergen;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    const featuresMap = allFeaturesData.reduce((acc, feature) => {
+      acc[feature.id] = feature;
+      return acc;
+    }, {} as Record<string, any>);
+    
+    // Organizza i prodotti per categoria
+    for (const product of products) {
+      if (!result[product.category_id]) {
+        result[product.category_id] = [];
+      }
+      
+      // Aggiungi gli allergeni al prodotto
+      const productAllergens = allergensByProductId[product.id] || [];
+      const allergenDetails = productAllergens
+        .map(item => allergensMap[item.allergen_id])
+        .filter(Boolean)
+        .sort((a, b) => a.number - b.number);
+      
+      // Aggiungi le caratteristiche al prodotto
+      const productFeatures = featuresByProductId[product.id] || [];
+      const featureDetails = productFeatures
+        .map(item => featuresMap[item.feature_id])
+        .filter(Boolean)
+        .sort((a, b) => a.display_order - b.display_order);
+      
+      result[product.category_id].push({
+        ...product,
+        allergens: allergenDetails,
+        features: featureDetails
+      });
+    }
+    
+    return result;
   };
 
   // Update restaurant logo

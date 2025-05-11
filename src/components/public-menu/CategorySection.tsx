@@ -31,39 +31,46 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   return (
     <section id={`category-${category.id}`} className="scroll-mt-20">
       <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
-      <div className="grid grid-cols-1 gap-4">
-        {products?.map(product => {
-          // Add default image if needed
-          const productWithDefaultImage = {
-            ...product,
-            image_url: product.image_url || siteSettings.defaultProductImage
-          };
-          
-          return deviceView === 'mobile' || isMobile ? (
-            <ProductCardMobile 
-              key={product.id} 
-              product={productWithDefaultImage} 
-              onProductSelect={onSelectProduct}
-              addToCart={addToCart}
-              deviceView={deviceView}
-              truncateText={truncateText}
-            />
-          ) : (
-            <ProductCardDesktop 
-              key={product.id} 
-              product={productWithDefaultImage} 
-              onProductSelect={onSelectProduct}
-              addToCart={addToCart}
-              deviceView={deviceView}
-              truncateText={truncateText}
-            />
-          );
-        })}
-      </div>
-      {products?.length === 0 && (
-        <p className="text-gray-500 text-center py-6">
-          Nessun prodotto disponibile in questa categoria.
-        </p>
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {products?.length > 0 ? products.map(product => {
+            // Add default image if needed
+            const productWithDefaultImage = {
+              ...product,
+              image_url: product.image_url || siteSettings.defaultProductImage
+            };
+            
+            return deviceView === 'mobile' || isMobile ? (
+              <ProductCardMobile 
+                key={product.id} 
+                product={productWithDefaultImage} 
+                onProductSelect={onSelectProduct}
+                addToCart={addToCart}
+                deviceView={deviceView}
+                truncateText={truncateText}
+              />
+            ) : (
+              <ProductCardDesktop 
+                key={product.id} 
+                product={productWithDefaultImage} 
+                onProductSelect={onSelectProduct}
+                addToCart={addToCart}
+                deviceView={deviceView}
+                truncateText={truncateText}
+              />
+            );
+          }) : (
+            <p className="text-gray-500 text-center py-6">
+              Nessun prodotto disponibile in questa categoria.
+            </p>
+          )}
+        </div>
       )}
     </section>
   );
