@@ -5,7 +5,7 @@ type PageContainerProps = {
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   children: ReactNode;
 };
 
@@ -44,6 +44,14 @@ const PageContainer: React.FC<PageContainerProps> = ({
           display: 'flex',
           flexDirection: 'column' as const,
           gap: '24px',
+          maxHeight: 'calc(100% - 80mm)',
+          overflow: 'hidden',
+        };
+      case 'custom':
+        return {
+          display: 'flex',
+          flexDirection: 'column' as const,
+          gap: '16px',
           maxHeight: 'calc(100% - 80mm)',
           overflow: 'hidden',
         };

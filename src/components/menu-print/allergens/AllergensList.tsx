@@ -5,7 +5,7 @@ import AllergenItem from './AllergenItem';
 
 type AllergensListProps = {
   allergens: Allergen[];
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
 };
 
 const AllergensList: React.FC<AllergensListProps> = ({ allergens, layoutType }) => {
@@ -22,6 +22,12 @@ const AllergensList: React.FC<AllergensListProps> = ({ allergens, layoutType }) 
           display: 'flex',
           flexDirection: 'column' as const,
           gap: '0px',
+        };
+      case 'custom':
+        return {
+          display: 'flex',
+          flexDirection: 'column' as const,
+          gap: '12px',
         };
       case 'classic':
       default:

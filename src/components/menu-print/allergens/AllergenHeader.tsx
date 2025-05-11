@@ -2,7 +2,7 @@
 import React from 'react';
 
 type AllergenHeaderProps = {
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
 };
 
@@ -59,6 +59,38 @@ const AllergenHeader: React.FC<AllergenHeaderProps> = ({ layoutType, restaurantL
                 />
               </div>
             )}
+          </>
+        );
+        
+      case 'custom':
+        return (
+          <>
+            {restaurantLogo && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '20px',
+              }}>
+                <img 
+                  src={restaurantLogo}
+                  alt="Restaurant Logo"
+                  style={{
+                    maxHeight: '40mm',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
+            
+            <h2 style={{
+              fontSize: '16pt',
+              fontWeight: 'bold',
+              marginBottom: '5mm',
+              textTransform: 'uppercase',
+            }}>
+              Tabella Allergeni
+            </h2>
           </>
         );
         

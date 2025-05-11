@@ -4,7 +4,7 @@ import { Allergen } from '@/types/database';
 
 type AllergenItemProps = {
   allergen: Allergen;
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
 };
 
 const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layoutType }) => {
@@ -156,6 +156,63 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layoutType }) => 
                   color: '#6b7280',
                   margin: '2px 0 0 0',
                 }}>{allergen.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    
+    case 'custom':
+      return (
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          breakInside: 'avoid',
+          padding: '6px 0',
+        }} className="allergen-item">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+            {/* Numero */}
+            <span style={{
+              display: 'inline-block',
+              width: '24px',
+              height: '24px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '50%',
+              textAlign: 'center',
+              lineHeight: '24px',
+              fontWeight: 'bold',
+              flexShrink: 0,
+            }} className="allergen-number">{allergen.number}</span>
+            
+            {/* Icona (opzionale) */}
+            {allergen.icon_url && (
+              <div style={{
+                width: '26px',
+                height: '26px',
+                marginLeft: '4px',
+                marginRight: '4px',
+                flexShrink: 0,
+              }}>
+                <img 
+                  src={allergen.icon_url}
+                  alt={`Icona per ${allergen.title}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* Titolo e Descrizione */}
+            <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <div style={{fontWeight: 'bold'}} className="allergen-title">{allergen.title}</div>
+              {allergen.description && (
+                <div style={{
+                  fontSize: '10pt',
+                  color: '#555',
+                }} className="allergen-description">{allergen.description}</div>
               )}
             </div>
           </div>
