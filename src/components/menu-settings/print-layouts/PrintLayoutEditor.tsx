@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +24,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ElementEditor from "./ElementEditor";
 import { useForm } from "react-hook-form";
@@ -91,12 +92,74 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     }));
   };
 
-  const handlePageMarginChange = (field: keyof PrintLayout["page"], value: number) => {
+  const handlePageMarginChange = (field: keyof PageMargins, value: number) => {
     setEditedLayout(prev => ({
       ...prev,
       page: {
         ...prev.page,
-        [field]: value
+        [field]: value,
+        // Se non stiamo usando margini distinti, aggiorniamo anche i margini per pagine pari e dispari
+        ...((!prev.page.useDistinctMarginsForPages) ? {
+          oddPages: {
+            ...prev.page.oddPages,
+            [field]: value
+          },
+          evenPages: {
+            ...prev.page.evenPages,
+            [field]: value
+          }
+        } : {})
+      }
+    }));
+  };
+
+  const handleOddPageMarginChange = (field: keyof PageMargins, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        oddPages: {
+          ...prev.page.oddPages,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleEvenPageMarginChange = (field: keyof PageMargins, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        evenPages: {
+          ...prev.page.evenPages,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleToggleDistinctMargins = (useDistinct: boolean) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        useDistinctMarginsForPages: useDistinct,
+        // Se disabilitiamo i margini distinti, sincronizziamo i margini
+        ...((!useDistinct) ? {
+          oddPages: {
+            marginTop: prev.page.marginTop,
+            marginRight: prev.page.marginRight,
+            marginBottom: prev.page.marginBottom,
+            marginLeft: prev.page.marginLeft
+          },
+          evenPages: {
+            marginTop: prev.page.marginTop,
+            marginRight: prev.page.marginRight,
+            marginBottom: prev.page.marginBottom,
+            marginLeft: prev.page.marginLeft
+          }
+        } : {})
       }
     }));
   };
@@ -253,53 +316,181 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
           </TabsContent>
 
           <TabsContent value="pagina" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="margin-top">Margine superiore (mm)</Label>
-                <Input
-                  id="margin-top"
-                  type="number"
-                  min={0}
-                  value={editedLayout.page.marginTop}
-                  onChange={(e) => handlePageMarginChange("marginTop", parseInt(e.target.value))}
-                  className="mt-1"
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="p-4 border rounded-md">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium">Margini generali</h3>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="use-distinct-margins"
+                      checked={editedLayout.page.useDistinctMarginsForPages}
+                      onCheckedChange={handleToggleDistinctMargins}
+                    />
+                    <Label htmlFor="use-distinct-margins">
+                      Usa margini distinti per pagine pari e dispari
+                    </Label>
+                  </div>
+                </div>
 
-              <div>
-                <Label htmlFor="margin-right">Margine destro (mm)</Label>
-                <Input
-                  id="margin-right"
-                  type="number"
-                  min={0}
-                  value={editedLayout.page.marginRight}
-                  onChange={(e) => handlePageMarginChange("marginRight", parseInt(e.target.value))}
-                  className="mt-1"
-                />
-              </div>
+                {!editedLayout.page.useDistinctMarginsForPages ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="margin-top">Margine superiore (mm)</Label>
+                      <Input
+                        id="margin-top"
+                        type="number"
+                        min={0}
+                        value={editedLayout.page.marginTop}
+                        onChange={(e) => handlePageMarginChange("marginTop", parseInt(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
 
-              <div>
-                <Label htmlFor="margin-bottom">Margine inferiore (mm)</Label>
-                <Input
-                  id="margin-bottom"
-                  type="number"
-                  min={0}
-                  value={editedLayout.page.marginBottom}
-                  onChange={(e) => handlePageMarginChange("marginBottom", parseInt(e.target.value))}
-                  className="mt-1"
-                />
-              </div>
+                    <div>
+                      <Label htmlFor="margin-right">Margine destro (mm)</Label>
+                      <Input
+                        id="margin-right"
+                        type="number"
+                        min={0}
+                        value={editedLayout.page.marginRight}
+                        onChange={(e) => handlePageMarginChange("marginRight", parseInt(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
 
-              <div>
-                <Label htmlFor="margin-left">Margine sinistro (mm)</Label>
-                <Input
-                  id="margin-left"
-                  type="number"
-                  min={0}
-                  value={editedLayout.page.marginLeft}
-                  onChange={(e) => handlePageMarginChange("marginLeft", parseInt(e.target.value))}
-                  className="mt-1"
-                />
+                    <div>
+                      <Label htmlFor="margin-bottom">Margine inferiore (mm)</Label>
+                      <Input
+                        id="margin-bottom"
+                        type="number"
+                        min={0}
+                        value={editedLayout.page.marginBottom}
+                        onChange={(e) => handlePageMarginChange("marginBottom", parseInt(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="margin-left">Margine sinistro (mm)</Label>
+                      <Input
+                        id="margin-left"
+                        type="number"
+                        min={0}
+                        value={editedLayout.page.marginLeft}
+                        onChange={(e) => handlePageMarginChange("marginLeft", parseInt(e.target.value))}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-base font-medium mb-2">Margini pagine dispari (1, 3, 5, ...)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                          <Label htmlFor="odd-margin-top">Superiore (mm)</Label>
+                          <Input
+                            id="odd-margin-top"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.oddPages.marginTop}
+                            onChange={(e) => handleOddPageMarginChange("marginTop", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="odd-margin-right">Destro (mm)</Label>
+                          <Input
+                            id="odd-margin-right"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.oddPages.marginRight}
+                            onChange={(e) => handleOddPageMarginChange("marginRight", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="odd-margin-bottom">Inferiore (mm)</Label>
+                          <Input
+                            id="odd-margin-bottom"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.oddPages.marginBottom}
+                            onChange={(e) => handleOddPageMarginChange("marginBottom", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="odd-margin-left">Sinistro (mm)</Label>
+                          <Input
+                            id="odd-margin-left"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.oddPages.marginLeft}
+                            onChange={(e) => handleOddPageMarginChange("marginLeft", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-base font-medium mb-2">Margini pagine pari (2, 4, 6, ...)</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                          <Label htmlFor="even-margin-top">Superiore (mm)</Label>
+                          <Input
+                            id="even-margin-top"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.evenPages.marginTop}
+                            onChange={(e) => handleEvenPageMarginChange("marginTop", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="even-margin-right">Destro (mm)</Label>
+                          <Input
+                            id="even-margin-right"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.evenPages.marginRight}
+                            onChange={(e) => handleEvenPageMarginChange("marginRight", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="even-margin-bottom">Inferiore (mm)</Label>
+                          <Input
+                            id="even-margin-bottom"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.evenPages.marginBottom}
+                            onChange={(e) => handleEvenPageMarginChange("marginBottom", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="even-margin-left">Sinistro (mm)</Label>
+                          <Input
+                            id="even-margin-left"
+                            type="number"
+                            min={0}
+                            value={editedLayout.page.evenPages.marginLeft}
+                            onChange={(e) => handleEvenPageMarginChange("marginLeft", parseInt(e.target.value))}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>

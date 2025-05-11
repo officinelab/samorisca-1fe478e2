@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { PrintLayout } from "@/types/printLayout";
+import { PrintLayout, PageMargins } from "@/types/printLayout";
 
 // Layout predefiniti
 const defaultLayouts: PrintLayout[] = [
@@ -74,7 +73,20 @@ const defaultLayouts: PrintLayout[] = [
       marginTop: 20,
       marginRight: 15,
       marginBottom: 20,
-      marginLeft: 15
+      marginLeft: 15,
+      useDistinctMarginsForPages: false,
+      oddPages: {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      },
+      evenPages: {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      }
     }
   },
   {
@@ -147,7 +159,20 @@ const defaultLayouts: PrintLayout[] = [
       marginTop: 25,
       marginRight: 20,
       marginBottom: 25,
-      marginLeft: 20
+      marginLeft: 20,
+      useDistinctMarginsForPages: false,
+      oddPages: {
+        marginTop: 25,
+        marginRight: 20,
+        marginBottom: 25,
+        marginLeft: 20
+      },
+      evenPages: {
+        marginTop: 25,
+        marginRight: 20,
+        marginBottom: 25,
+        marginLeft: 20
+      }
     }
   },
   {
@@ -220,7 +245,20 @@ const defaultLayouts: PrintLayout[] = [
       marginTop: 20,
       marginRight: 15,
       marginBottom: 20,
-      marginLeft: 15
+      marginLeft: 15,
+      useDistinctMarginsForPages: false,
+      oddPages: {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      },
+      evenPages: {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      }
     }
   }
 ];
@@ -301,13 +339,39 @@ export const useMenuLayouts = () => {
 
   // Aggiorna un layout esistente
   const updateLayout = (updatedLayout: PrintLayout) => {
+    // Assicurati che i margini delle pagine pari e dispari siano sincronizzati
+    // se l'opzione useDistinctMarginsForPages è disabilitata
+    let finalLayout = { ...updatedLayout };
+    
+    if (!finalLayout.page.useDistinctMarginsForPages) {
+      // Se non si usano margini distinti, sincronizza i valori dei margini
+      finalLayout = {
+        ...finalLayout,
+        page: {
+          ...finalLayout.page,
+          oddPages: {
+            marginTop: finalLayout.page.marginTop,
+            marginRight: finalLayout.page.marginRight,
+            marginBottom: finalLayout.page.marginBottom,
+            marginLeft: finalLayout.page.marginLeft
+          },
+          evenPages: {
+            marginTop: finalLayout.page.marginTop,
+            marginRight: finalLayout.page.marginRight,
+            marginBottom: finalLayout.page.marginBottom,
+            marginLeft: finalLayout.page.marginLeft
+          }
+        }
+      };
+    }
+
     const updatedLayouts = layouts.map(layout => {
-      if (layout.id === updatedLayout.id) {
-        return updatedLayout;
+      if (layout.id === finalLayout.id) {
+        return finalLayout;
       }
       
       // Se l'layout aggiornato è impostato come predefinito, rimuovi il flag dagli altri
-      if (updatedLayout.isDefault && layout.isDefault) {
+      if (finalLayout.isDefault && layout.isDefault) {
         return { ...layout, isDefault: false };
       }
       
@@ -316,8 +380,8 @@ export const useMenuLayouts = () => {
     
     saveLayouts(updatedLayouts);
     
-    if (updatedLayout.isDefault || (activeLayout && activeLayout.id === updatedLayout.id)) {
-      setActiveLayout(updatedLayout);
+    if (finalLayout.isDefault || (activeLayout && activeLayout.id === finalLayout.id)) {
+      setActiveLayout(finalLayout);
     }
   };
 

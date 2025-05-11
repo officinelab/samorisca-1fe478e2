@@ -50,11 +50,26 @@ const ElementEditor = ({ element, onChange, onMarginChange }: ElementEditorProps
             <SelectContent>
               {fontFamilies.map((font) => (
                 <SelectItem key={font} value={font}>
-                  {font}
+                  <span style={{ fontFamily: font }}>{font}</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          
+          {/* Preview del font selezionato */}
+          <div 
+            className="mt-2 p-2 border rounded-md"
+            style={{ 
+              fontFamily: element.fontFamily, 
+              fontSize: `${element.fontSize}pt`,
+              fontWeight: element.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: element.fontStyle === 'italic' ? 'italic' : 'normal',
+              color: element.fontColor,
+              textAlign: element.alignment as any
+            }}
+          >
+            Anteprima del testo
+          </div>
         </div>
 
         <div>

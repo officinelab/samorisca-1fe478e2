@@ -16,6 +16,13 @@ export type PrintLayoutElementConfig = {
   };
 }
 
+export type PageMargins = {
+  marginTop: number;
+  marginRight: number;
+  marginBottom: number;
+  marginLeft: number;
+};
+
 export type PrintLayout = {
   id: string;
   name: string;
@@ -34,10 +41,9 @@ export type PrintLayout = {
     betweenProducts: number;
     categoryTitleBottomMargin: number;
   };
-  page: {
-    marginTop: number;
-    marginRight: number;
-    marginBottom: number;
-    marginLeft: number;
+  page: PageMargins & {
+    useDistinctMarginsForPages: boolean;
+    oddPages: PageMargins;
+    evenPages: PageMargins;
   };
 }

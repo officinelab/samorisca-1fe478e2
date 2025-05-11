@@ -64,18 +64,56 @@ const PrintLayoutPreview: React.FC<PrintLayoutPreviewProps> = ({ layout }) => {
     } as React.CSSProperties;
   };
 
+  // Determina i margini della pagina in base a pari/dispari
+  const getPageMargins = (pageIndex: number) => {
+    // Prendiamo sempre i margini generali a meno che non sia esplicitamente attivata l'opzione per i margini distinti
+    if (!layout.page.useDistinctMarginsForPages) {
+      return {
+        marginTop: `${layout.page.marginTop}mm`,
+        marginRight: `${layout.page.marginRight}mm`,
+        marginBottom: `${layout.page.marginBottom}mm`,
+        marginLeft: `${layout.page.marginLeft}mm`,
+      };
+    }
+    
+    // Pagina dispari (1, 3, 5, ...)
+    if (pageIndex % 2 === 0) {
+      return {
+        marginTop: `${layout.page.oddPages.marginTop}mm`,
+        marginRight: `${layout.page.oddPages.marginRight}mm`,
+        marginBottom: `${layout.page.oddPages.marginBottom}mm`,
+        marginLeft: `${layout.page.oddPages.marginLeft}mm`,
+      };
+    }
+    // Pagina pari (2, 4, 6, ...)
+    else {
+      return {
+        marginTop: `${layout.page.evenPages.marginTop}mm`,
+        marginRight: `${layout.page.evenPages.marginRight}mm`,
+        marginBottom: `${layout.page.evenPages.marginBottom}mm`,
+        marginLeft: `${layout.page.evenPages.marginLeft}mm`,
+      };
+    }
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
         <h3 className="text-lg font-medium mb-4">Anteprima Layout: {layout.name}</h3>
+        
+        {/* Pagina 1 (dispari) */}
         <div className="border rounded-md p-4 bg-white mb-4">
-          <ScrollArea className="h-[500px]">
-            <div className="menu-preview" style={{
-              padding: `${layout.page.marginTop}mm ${layout.page.marginRight}mm ${layout.page.marginBottom}mm ${layout.page.marginLeft}mm`,
-            }}>
+          <div className="mb-2 text-sm text-muted-foreground">
+            Pagina 1 (dispari)
+            {layout.page.useDistinctMarginsForPages && 
+              <span className="font-medium ml-2">- Margini Dispari</span>
+            }
+          </div>
+          <ScrollArea className="h-[300px]">
+            <div className="menu-preview" style={getPageMargins(0)}>
               {sampleCategories.map((category, categoryIndex) => (
                 <div 
-                  key={category.id} 
+                  key={`odd-${category.id}`} 
                   style={{ 
                     marginBottom: `${layout.spacing.betweenCategories}mm`
                   }}
@@ -89,9 +127,9 @@ const PrintLayoutPreview: React.FC<PrintLayoutPreviewProps> = ({ layout }) => {
                     </h2>
                   )}
                   
-                  {sampleProducts[category.id].map((product, productIndex) => (
+                  {sampleProducts[category.id].slice(0, 1).map((product, productIndex) => (
                     <div 
-                      key={product.id} 
+                      key={`odd-${product.id}`} 
                       style={{
                         marginBottom: `${layout.spacing.betweenProducts}mm`
                       }}
@@ -152,20 +190,101 @@ const PrintLayoutPreview: React.FC<PrintLayoutPreviewProps> = ({ layout }) => {
                           {product.description}
                         </div>
                       )}
-                      
-                      {layout.elements.priceVariants.visible && product.has_multiple_prices && (
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+        
+        {/* Pagina 2 (pari) */}
+        <div className="border rounded-md p-4 bg-white mb-4">
+          <div className="mb-2 text-sm text-muted-foreground">
+            Pagina 2 (pari)
+            {layout.page.useDistinctMarginsForPages && 
+              <span className="font-medium ml-2">- Margini Pari</span>
+            }
+          </div>
+          <ScrollArea className="h-[300px]">
+            <div className="menu-preview" style={getPageMargins(1)}>
+              {sampleCategories.map((category, categoryIndex) => (
+                <div 
+                  key={`even-${category.id}`} 
+                  style={{ 
+                    marginBottom: `${layout.spacing.betweenCategories}mm`
+                  }}
+                >
+                  {layout.elements.category.visible && (
+                    <h2 style={{
+                      ...getElementStyle(layout.elements.category),
+                      marginBottom: `${layout.spacing.categoryTitleBottomMargin}mm`
+                    }}>
+                      {category.title}
+                    </h2>
+                  )}
+                  
+                  {sampleProducts[category.id].slice(-1).map((product, productIndex) => (
+                    <div 
+                      key={`even-${product.id}`} 
+                      style={{
+                        marginBottom: `${layout.spacing.betweenProducts}mm`
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        width: '100%'
+                      }}>
+                        {layout.elements.title.visible && (
+                          <div style={{
+                            ...getElementStyle(layout.elements.title),
+                            width: 'auto',
+                            marginRight: '10px',
+                            maxWidth: '60%'
+                          }}>
+                            {product.title}
+                          </div>
+                        )}
+                        
+                        {layout.elements.allergensList.visible && product.allergens && product.allergens.length > 0 && (
+                          <div style={{
+                            ...getElementStyle(layout.elements.allergensList),
+                            width: 'auto',
+                            whiteSpace: 'nowrap',
+                            marginRight: '10px'
+                          }}>
+                            {product.allergens.map(allergen => allergen.number).join(", ")}
+                          </div>
+                        )}
+                        
                         <div style={{
-                          ...getElementStyle(layout.elements.priceVariants),
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          gap: '1rem'
+                          flexGrow: 1,
+                          position: 'relative',
+                          top: '-3px',
+                          borderBottom: '1px dotted #000'
+                        }}></div>
+                        
+                        {layout.elements.price.visible && (
+                          <div style={{
+                            ...getElementStyle(layout.elements.price),
+                            width: 'auto',
+                            whiteSpace: 'nowrap',
+                            marginLeft: '10px'
+                          }}>
+                            € {product.price_standard}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {layout.elements.description.visible && product.description && (
+                        <div style={{
+                          ...getElementStyle(layout.elements.description),
+                          maxWidth: '95%',
+                          width: '100%'
                         }}>
-                          {product.price_variant_1_name && (
-                            <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
-                          )}
-                          {product.price_variant_2_name && (
-                            <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
-                          )}
+                          {product.description}
                         </div>
                       )}
                     </div>
