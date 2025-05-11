@@ -5,6 +5,45 @@ import { LAYOUTS_STORAGE_KEY } from "./constants";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 
+// Type for Supabase response
+type PrintLayoutRow = {
+  id: string;
+  name: string;
+  type: string;
+  is_default: boolean;
+  elements: string | object;
+  spacing: string | object;
+  page: string | object;
+  created_at?: string;
+  updated_at?: string;
+};
+
+// Convert Supabase row to PrintLayout
+const mapRowToLayout = (row: PrintLayoutRow): PrintLayout => {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type as PrintLayout['type'],
+    isDefault: row.is_default,
+    elements: typeof row.elements === 'string' ? JSON.parse(row.elements) : row.elements,
+    spacing: typeof row.spacing === 'string' ? JSON.parse(row.spacing) : row.spacing,
+    page: typeof row.page === 'string' ? JSON.parse(row.page) : row.page
+  } as PrintLayout;
+};
+
+// Convert PrintLayout to Supabase row format
+const mapLayoutToRow = (layout: PrintLayout): Omit<PrintLayoutRow, 'created_at' | 'updated_at'> => {
+  return {
+    id: layout.id,
+    name: layout.name,
+    type: layout.type,
+    is_default: layout.isDefault,
+    elements: layout.elements,
+    spacing: layout.spacing,
+    page: layout.page
+  };
+};
+
 // Carica i layout salvati da Supabase o quelli predefiniti
 export const loadLayouts = async (): Promise<{ 
   layouts: PrintLayout[]; 
@@ -13,9 +52,9 @@ export const loadLayouts = async (): Promise<{
 }> => {
   try {
     // Prima prova a caricare i layout da Supabase
-    const { data: supabaseLayouts, error } = await supabase
+    const { data, error } = await supabase
       .from('print_layouts')
-      .select('*');
+      .select('*') as { data: PrintLayoutRow[] | null, error: any };
 
     if (error) {
       console.error("Errore nel recupero dei layout da Supabase:", error);
@@ -23,20 +62,9 @@ export const loadLayouts = async (): Promise<{
     }
     
     // Se ci sono layout salvati su Supabase
-    if (supabaseLayouts && supabaseLayouts.length > 0) {
-      // Converti i dati JSON in oggetti JavaScript
-      const parsedLayouts = supabaseLayouts.map(layout => {
-        // Assicurati che i campi necessari siano presenti e convertiti correttamente
-        return {
-          id: layout.id,
-          name: layout.name,
-          type: layout.type,
-          isDefault: layout.is_default,
-          elements: typeof layout.elements === 'string' ? JSON.parse(layout.elements) : layout.elements,
-          spacing: typeof layout.spacing === 'string' ? JSON.parse(layout.spacing) : layout.spacing,
-          page: typeof layout.page === 'string' ? JSON.parse(layout.page) : layout.page
-        } as PrintLayout;
-      });
+    if (data && data.length > 0) {
+      // Converti i dati in oggetti PrintLayout
+      const parsedLayouts = data.map(mapRowToLayout);
       
       const defaultLayout = parsedLayouts.find((layout) => layout.isDefault) || parsedLayouts[0];
       
@@ -112,21 +140,13 @@ export const saveLayouts = async (
     localStorage.setItem(LAYOUTS_STORAGE_KEY, JSON.stringify(layouts));
     
     // Prepara i dati da salvare su Supabase
-    const supabaseLayouts = layouts.map(layout => ({
-      id: layout.id,
-      name: layout.name,
-      type: layout.type,
-      is_default: layout.isDefault,
-      elements: layout.elements,
-      spacing: layout.spacing,
-      page: layout.page
-    }));
+    const supabaseLayouts = layouts.map(mapLayoutToRow);
     
     // Pulisci la tabella dei layout
     const { error: deleteError } = await supabase
       .from('print_layouts')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // elimina tutto
+      .neq('id', '00000000-0000-0000-0000-000000000000') as { error: any };
     
     if (deleteError) {
       console.error("Errore durante la pulizia della tabella layout:", deleteError);
@@ -139,7 +159,7 @@ export const saveLayouts = async (
     // Inserisci i nuovi layout
     const { error: insertError } = await supabase
       .from('print_layouts')
-      .insert(supabaseLayouts);
+      .insert(supabaseLayouts) as { error: any };
     
     if (insertError) {
       console.error("Errore durante l'inserimento dei layout:", insertError);
@@ -163,29 +183,26 @@ export const saveLayouts = async (
 const migrateLayoutsToSupabase = async (layouts: PrintLayout[]) => {
   try {
     // Prepara i dati da salvare su Supabase
-    const supabaseLayouts = layouts.map(layout => ({
-      id: layout.id,
-      name: layout.name,
-      type: layout.type,
-      is_default: layout.isDefault,
-      elements: layout.elements,
-      spacing: layout.spacing,
-      page: layout.page
-    }));
+    const supabaseLayouts = layouts.map(mapLayoutToRow);
     
     // Pulisci la tabella
-    await supabase
+    const { error: deleteError } = await supabase
       .from('print_layouts')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+      .neq('id', '00000000-0000-0000-0000-000000000000') as { error: any };
+    
+    if (deleteError) {
+      console.error("Errore durante la pulizia della tabella layout:", deleteError);
+      return;
+    }
     
     // Inserisci i layout
-    const { error } = await supabase
+    const { error: insertError } = await supabase
       .from('print_layouts')
-      .insert(supabaseLayouts);
+      .insert(supabaseLayouts) as { error: any };
     
-    if (error) {
-      console.error("Errore durante la migrazione dei layout a Supabase:", error);
+    if (insertError) {
+      console.error("Errore durante la migrazione dei layout a Supabase:", insertError);
     }
   } catch (err) {
     console.error("Errore durante la migrazione dei layout:", err);

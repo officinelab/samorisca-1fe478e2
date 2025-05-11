@@ -67,12 +67,16 @@ const PrintOptions = ({
     if (!layoutId) return; // Ensure we have a valid layoutId
     
     try {
-      changeActiveLayout(layoutId);
+      // Find the selected layout first
       const layout = layouts.find(l => l.id === layoutId);
       if (layout) {
+        changeActiveLayout(layoutId);
         setSelectedLayout(layout.type);
+        setOpen(false);
+      } else {
+        console.error("Layout non trovato:", layoutId);
+        toast.error("Layout selezionato non trovato");
       }
-      setOpen(false);
     } catch (err) {
       console.error("Errore durante il cambio del layout:", err);
       toast.error("Si è verificato un errore durante la selezione del layout");

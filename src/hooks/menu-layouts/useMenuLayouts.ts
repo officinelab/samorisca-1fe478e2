@@ -96,7 +96,7 @@ export const useMenuLayouts = () => {
   };
 
   // Elimina un layout
-  const deleteLayout = async (layoutId: string) => {
+  const deleteLayout = async (layoutId: string): Promise<boolean> => {
     // Non permettere l'eliminazione se è l'unico layout rimasto
     if (layouts.length <= 1) {
       setError("Non puoi eliminare l'unico layout disponibile.");
@@ -124,13 +124,12 @@ export const useMenuLayouts = () => {
       }
       
       toast.success("Layout eliminato con successo");
+      return true;
     } else {
       setError(saveError);
       toast.error(saveError || "Errore durante l'eliminazione del layout");
       return false;
     }
-    
-    return true;
   };
 
   // Imposta un layout come predefinito
