@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/sonner";
 
 interface PrintOptionsProps {
   language: string;
@@ -53,18 +54,29 @@ const PrintOptions = ({
   handleToggleAllCategories,
 }: PrintOptionsProps) => {
   const [open, setOpen] = useState(false);
-  const { layouts = [], activeLayout, changeActiveLayout } = useMenuLayouts();
+  const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
+  
+  useEffect(() => {
+    if (error) {
+      toast.error("Errore nel caricamento dei layout: " + error);
+    }
+  }, [error]);
   
   // Seleziona il layout basato sul layout attivo o su quello selezionato
   const handleLayoutChange = (layoutId: string) => {
     if (!layoutId) return; // Ensure we have a valid layoutId
     
-    changeActiveLayout(layoutId);
-    const layout = layouts.find(l => l.id === layoutId);
-    if (layout) {
-      setSelectedLayout(layout.type);
+    try {
+      changeActiveLayout(layoutId);
+      const layout = layouts.find(l => l.id === layoutId);
+      if (layout) {
+        setSelectedLayout(layout.type);
+      }
+      setOpen(false);
+    } catch (err) {
+      console.error("Errore durante il cambio del layout:", err);
+      toast.error("Si è verificato un errore durante la selezione del layout");
     }
-    setOpen(false);
   };
 
   return (
@@ -98,8 +110,13 @@ const PrintOptions = ({
                 role="combobox"
                 aria-expanded={open}
                 className="w-full justify-between"
+                disabled={isLoading}
               >
-                {activeLayout ? activeLayout.name : "Seleziona layout..."}
+                {isLoading 
+                  ? "Caricamento..." 
+                  : activeLayout 
+                    ? activeLayout.name 
+                    : "Seleziona layout..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>

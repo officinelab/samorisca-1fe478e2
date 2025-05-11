@@ -2,25 +2,60 @@
 import { PrintLayout } from "@/types/printLayout";
 import { defaultLayouts } from "./defaultLayouts";
 import { LAYOUTS_STORAGE_KEY } from "./constants";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 
-// Carica i layout salvati o quelli predefiniti
-export const loadLayouts = (): { 
+// Carica i layout salvati da Supabase o quelli predefiniti
+export const loadLayouts = async (): Promise<{ 
   layouts: PrintLayout[]; 
   defaultLayout: PrintLayout | null;
   error: string | null;
-} => {
+}> => {
   try {
+    // Prima prova a caricare i layout da Supabase
+    const { data: supabaseLayouts, error } = await supabase
+      .from('print_layouts')
+      .select('*');
+
+    if (error) {
+      console.error("Errore nel recupero dei layout da Supabase:", error);
+      throw error;
+    }
+    
+    // Se ci sono layout salvati su Supabase
+    if (supabaseLayouts && supabaseLayouts.length > 0) {
+      // Converti i dati JSON in oggetti JavaScript
+      const parsedLayouts = supabaseLayouts.map(layout => ({
+        ...layout,
+        elements: typeof layout.elements === 'string' ? JSON.parse(layout.elements) : layout.elements,
+        spacing: typeof layout.spacing === 'string' ? JSON.parse(layout.spacing) : layout.spacing,
+        page: typeof layout.page === 'string' ? JSON.parse(layout.page) : layout.page
+      }));
+      
+      const defaultLayout = parsedLayouts.find((layout: PrintLayout) => layout.is_default || layout.isDefault) || parsedLayouts[0];
+      
+      return {
+        layouts: parsedLayouts,
+        defaultLayout,
+        error: null
+      };
+    } 
+    
+    // Fallback su localStorage se non ci sono layout su Supabase
     const savedLayouts = localStorage.getItem(LAYOUTS_STORAGE_KEY);
     
     if (savedLayouts) {
       const parsedLayouts = JSON.parse(savedLayouts);
       
-      // Ensure we have a valid array
+      // Assicurati che abbiamo un array valido
       if (!Array.isArray(parsedLayouts) || parsedLayouts.length === 0) {
-        throw new Error("Invalid layouts data structure");
+        throw new Error("Struttura dati layout non valida");
       }
       
       const defaultLayout = parsedLayouts.find((layout: PrintLayout) => layout.isDefault) || parsedLayouts[0];
+      
+      // Salva questi layout su Supabase per il futuro
+      migrateLayoutsToSupabase(parsedLayouts);
       
       return {
         layouts: parsedLayouts,
@@ -30,6 +65,9 @@ export const loadLayouts = (): {
     } else {
       // Se non ci sono layout salvati, usa quelli predefiniti
       const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0];
+      
+      // Salva i layout predefiniti su Supabase
+      migrateLayoutsToSupabase(defaultLayouts);
       
       return {
         layouts: defaultLayouts,
@@ -51,20 +89,49 @@ export const loadLayouts = (): {
   }
 };
 
-// Salva i layout in localStorage
-export const saveLayouts = (
+// Salva i layout in Supabase
+export const saveLayouts = async (
   layouts: PrintLayout[]
-): { success: boolean; error: string | null } => {
+): Promise<{ success: boolean; error: string | null }> => {
   try {
-    // Ensure we're not saving null or undefined
+    // Assicurati che non stiamo salvando null o undefined
     if (!layouts) {
       return { 
         success: false, 
-        error: "Cannot save null or undefined layouts" 
+        error: "Impossibile salvare layout null o undefined" 
       };
     }
     
+    // Backup su localStorage
     localStorage.setItem(LAYOUTS_STORAGE_KEY, JSON.stringify(layouts));
+    
+    // Pulisci la tabella dei layout (alternativa più sicura sarebbe fare upsert per ogni layout)
+    const { error: deleteError } = await supabase
+      .from('print_layouts')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // elimina tutto
+    
+    if (deleteError) {
+      console.error("Errore durante la pulizia della tabella layout:", deleteError);
+      return { 
+        success: false, 
+        error: "Si è verificato un errore durante il salvataggio dei layout." 
+      };
+    }
+    
+    // Inserisci i nuovi layout
+    const { error: insertError } = await supabase
+      .from('print_layouts')
+      .insert(layouts);
+    
+    if (insertError) {
+      console.error("Errore durante l'inserimento dei layout:", insertError);
+      return { 
+        success: false, 
+        error: "Si è verificato un errore durante il salvataggio dei layout." 
+      };
+    }
+    
     return { success: true, error: null };
   } catch (err) {
     console.error("Errore durante il salvataggio dei layout:", err);
@@ -72,5 +139,27 @@ export const saveLayouts = (
       success: false, 
       error: "Si è verificato un errore durante il salvataggio dei layout." 
     };
+  }
+};
+
+// Funzione per migrare i layout dal localStorage a Supabase
+const migrateLayoutsToSupabase = async (layouts: PrintLayout[]) => {
+  try {
+    // Pulisci la tabella
+    await supabase
+      .from('print_layouts')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+    
+    // Inserisci i layout
+    const { error } = await supabase
+      .from('print_layouts')
+      .insert(layouts);
+    
+    if (error) {
+      console.error("Errore durante la migrazione dei layout a Supabase:", error);
+    }
+  } catch (err) {
+    console.error("Errore durante la migrazione dei layout:", err);
   }
 };

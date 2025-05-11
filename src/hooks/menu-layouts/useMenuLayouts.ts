@@ -8,6 +8,7 @@ import {
   cloneExistingLayout,
   syncPageMargins
 } from "./layoutOperations";
+import { toast } from "@/components/ui/sonner";
 
 export const useMenuLayouts = () => {
   const [layouts, setLayouts] = useState<PrintLayout[]>([]);
@@ -15,25 +16,34 @@ export const useMenuLayouts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carica i layout salvati o quelli predefiniti
+  // Carica i layout salvati da Supabase o quelli predefiniti
   useEffect(() => {
-    setIsLoading(true);
-    try {
-      const { layouts: loadedLayouts, defaultLayout, error: loadError } = loadLayouts();
-      
-      setLayouts(loadedLayouts || []);
-      setActiveLayout(defaultLayout);
-      setError(loadError);
-    } catch (e) {
-      console.error("Error loading layouts:", e);
-      setError("Failed to load layouts");
-    } finally {
-      setIsLoading(false);
-    }
+    const fetchLayouts = async () => {
+      setIsLoading(true);
+      try {
+        const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
+        
+        setLayouts(loadedLayouts || []);
+        setActiveLayout(defaultLayout);
+        
+        if (loadError) {
+          setError(loadError);
+          toast.error(loadError);
+        }
+      } catch (e) {
+        console.error("Error loading layouts:", e);
+        setError("Failed to load layouts");
+        toast.error("Errore nel caricamento dei layout");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLayouts();
   }, []);
 
   // Aggiunge un nuovo layout
-  const addLayout = (newLayout: Omit<PrintLayout, "id">) => {
+  const addLayout = async (newLayout: Omit<PrintLayout, "id">) => {
     const id = Date.now().toString();
     const layoutWithId = { ...newLayout, id };
     
@@ -47,7 +57,7 @@ export const useMenuLayouts = () => {
     }
     
     const newLayouts = [...updatedLayouts, layoutWithId];
-    const { success, error: saveError } = saveLayouts(newLayouts);
+    const { success, error: saveError } = await saveLayouts(newLayouts);
     
     if (success) {
       setLayouts(newLayouts);
@@ -55,17 +65,20 @@ export const useMenuLayouts = () => {
       if (newLayout.isDefault) {
         setActiveLayout(layoutWithId as PrintLayout);
       }
+      
+      toast.success("Layout aggiunto con successo");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante l'aggiunta del layout");
     }
     
     return layoutWithId;
   };
 
   // Aggiorna un layout esistente
-  const updateLayout = (updatedLayout: PrintLayout) => {
+  const updateLayout = async (updatedLayout: PrintLayout) => {
     const updatedLayouts = updateLayoutInList(layouts, updatedLayout);
-    const { success, error: saveError } = saveLayouts(updatedLayouts);
+    const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
@@ -74,16 +87,20 @@ export const useMenuLayouts = () => {
       if (finalLayout.isDefault || (activeLayout && activeLayout.id === finalLayout.id)) {
         setActiveLayout(finalLayout);
       }
+      
+      toast.success("Layout aggiornato con successo");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante l'aggiornamento del layout");
     }
   };
 
   // Elimina un layout
-  const deleteLayout = (layoutId: string) => {
+  const deleteLayout = async (layoutId: string) => {
     // Non permettere l'eliminazione se è l'unico layout rimasto
     if (layouts.length <= 1) {
       setError("Non puoi eliminare l'unico layout disponibile.");
+      toast.error("Non puoi eliminare l'unico layout disponibile");
       return false;
     }
     
@@ -95,7 +112,7 @@ export const useMenuLayouts = () => {
       updatedLayouts[0].isDefault = true;
     }
     
-    const { success, error: saveError } = saveLayouts(updatedLayouts);
+    const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
@@ -105,8 +122,11 @@ export const useMenuLayouts = () => {
         const newActiveLayout = updatedLayouts.find(layout => layout.isDefault) || updatedLayouts[0];
         setActiveLayout(newActiveLayout);
       }
+      
+      toast.success("Layout eliminato con successo");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante l'eliminazione del layout");
       return false;
     }
     
@@ -114,13 +134,13 @@ export const useMenuLayouts = () => {
   };
 
   // Imposta un layout come predefinito
-  const setDefaultLayout = (layoutId: string) => {
+  const setDefaultLayout = async (layoutId: string) => {
     const updatedLayouts = layouts.map(layout => ({
       ...layout,
       isDefault: layout.id === layoutId
     }));
     
-    const { success, error: saveError } = saveLayouts(updatedLayouts);
+    const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
@@ -129,27 +149,33 @@ export const useMenuLayouts = () => {
       if (newDefaultLayout) {
         setActiveLayout(newDefaultLayout);
       }
+      
+      toast.success("Layout impostato come predefinito");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante l'impostazione del layout predefinito");
     }
   };
 
   // Clona un layout esistente
-  const cloneLayout = (layoutId: string) => {
+  const cloneLayout = async (layoutId: string) => {
     const clonedLayout = cloneExistingLayout(layoutId, layouts);
     
     if (!clonedLayout) {
       setError("Layout non trovato.");
+      toast.error("Layout non trovato");
       return null;
     }
     
     const updatedLayouts = [...layouts, clonedLayout];
-    const { success, error: saveError } = saveLayouts(updatedLayouts);
+    const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
+      toast.success("Layout clonato con successo");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante la clonazione del layout");
       return null;
     }
     
@@ -165,16 +191,18 @@ export const useMenuLayouts = () => {
   };
 
   // Crea un nuovo layout da zero
-  const createNewLayout = (name: string) => {
+  const createNewLayout = async (name: string) => {
     const newLayout = createNewLayoutFromTemplate(name, layouts);
     const updatedLayouts = [...layouts, newLayout];
     
-    const { success, error: saveError } = saveLayouts(updatedLayouts);
+    const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
+      toast.success("Nuovo layout creato con successo");
     } else {
       setError(saveError);
+      toast.error(saveError || "Errore durante la creazione del nuovo layout");
     }
     
     return newLayout;
