@@ -20,7 +20,7 @@ export const loadLayouts = async (): Promise<{
       const validatedLayouts = (savedLayouts as PrintLayout[]).map(ensureValidPageMargins);
       
       // Find default layout
-      const defaultLayout = validatedLayouts.find((layout) => layout.isDefault) || validatedLayouts[0];
+      const defaultLayout = validatedLayouts.find((layout) => layout.isDefault) || validatedLayouts[0] || null;
       
       return {
         layouts: validatedLayouts,
@@ -29,7 +29,7 @@ export const loadLayouts = async (): Promise<{
       };
     } else {
       // If no valid layouts are saved, use defaults
-      const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0];
+      const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0] || null;
       
       // Save the default layouts to localStorage for future use
       saveLayoutsToStorage(defaultLayouts);
@@ -44,7 +44,7 @@ export const loadLayouts = async (): Promise<{
     console.error("Errore durante il caricamento dei layout:", err);
     
     // Fallback to default layouts
-    const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0];
+    const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0] || null;
     
     return {
       layouts: defaultLayouts,

@@ -20,6 +20,7 @@ export const useLayoutStorage = () => {
       try {
         const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
         
+        // Ensure layouts is always an array
         setLayouts(loadedLayouts || []);
         setActiveLayout(defaultLayout || null);
         

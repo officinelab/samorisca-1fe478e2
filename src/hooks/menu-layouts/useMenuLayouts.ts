@@ -46,7 +46,8 @@ export const useMenuLayouts = () => {
   };
 
   return {
-    layouts,
+    // Garantisce che layouts sia sempre un array, anche se è undefined
+    layouts: layouts || [],
     activeLayout,
     isLoading,
     error,
