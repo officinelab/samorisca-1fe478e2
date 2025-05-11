@@ -57,6 +57,8 @@ const PrintOptions = ({
   
   // Seleziona il layout basato sul layout attivo o su quello selezionato
   const handleLayoutChange = (layoutId: string) => {
+    if (!layoutId) return; // Ensure we have a valid layoutId
+    
     changeActiveLayout(layoutId);
     const layout = layouts.find(l => l.id === layoutId);
     if (layout) {

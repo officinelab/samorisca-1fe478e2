@@ -18,12 +18,18 @@ export const useMenuLayouts = () => {
   // Carica i layout salvati o quelli predefiniti
   useEffect(() => {
     setIsLoading(true);
-    const { layouts: loadedLayouts, defaultLayout, error: loadError } = loadLayouts();
-    
-    setLayouts(loadedLayouts);
-    setActiveLayout(defaultLayout);
-    setError(loadError);
-    setIsLoading(false);
+    try {
+      const { layouts: loadedLayouts, defaultLayout, error: loadError } = loadLayouts();
+      
+      setLayouts(loadedLayouts || []);
+      setActiveLayout(defaultLayout);
+      setError(loadError);
+    } catch (e) {
+      console.error("Error loading layouts:", e);
+      setError("Failed to load layouts");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   // Aggiunge un nuovo layout

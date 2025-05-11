@@ -14,6 +14,12 @@ export const loadLayouts = (): {
     
     if (savedLayouts) {
       const parsedLayouts = JSON.parse(savedLayouts);
+      
+      // Ensure we have a valid array
+      if (!Array.isArray(parsedLayouts) || parsedLayouts.length === 0) {
+        throw new Error("Invalid layouts data structure");
+      }
+      
       const defaultLayout = parsedLayouts.find((layout: PrintLayout) => layout.isDefault) || parsedLayouts[0];
       
       return {
@@ -50,6 +56,14 @@ export const saveLayouts = (
   layouts: PrintLayout[]
 ): { success: boolean; error: string | null } => {
   try {
+    // Ensure we're not saving null or undefined
+    if (!layouts) {
+      return { 
+        success: false, 
+        error: "Cannot save null or undefined layouts" 
+      };
+    }
+    
     localStorage.setItem(LAYOUTS_STORAGE_KEY, JSON.stringify(layouts));
     return { success: true, error: null };
   } catch (err) {
