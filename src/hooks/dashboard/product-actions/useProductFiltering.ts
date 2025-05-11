@@ -7,6 +7,10 @@ export const useProductFiltering = () => {
 
   // Filter products based on search query
   const filterProducts = useCallback((products: Product[]): Product[] => {
+    if (!searchQuery.trim()) {
+      return products;
+    }
+    
     return products.filter(
       product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );

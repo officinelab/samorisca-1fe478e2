@@ -13,16 +13,19 @@ export const useProducts = (categoryId: string | null) => {
   const [searchQuery, setSearchQuery] = useState("");
   
   // Load products for the selected category
-  const { products, isLoadingProducts, loadProducts } = useProductLoader(categoryId);
+  const { products, isLoadingProducts, loadProducts } = useProductLoader();
   
   // Product selection
   const { selectedProductId, selectProduct } = useProductSelection();
   
   // Product filtering
-  const { filteredProducts } = useProductFiltering(products, searchQuery);
+  const { searchQuery: filterSearchQuery, setSearchQuery: setFilterSearchQuery, filterProducts } = useProductFiltering();
+  
+  // Apply filtering to products
+  const filteredProducts = filterProducts(products);
   
   // Product reordering
-  const { reorderProduct } = useProductReordering(categoryId, loadProducts);
+  const { reorderProduct } = useProductReordering(products, loadProducts, categoryId);
   
   // Product CRUD operations
   const { addProduct, updateProduct, deleteProduct } = useProductCRUD(
@@ -46,7 +49,20 @@ export const useProducts = (categoryId: string | null) => {
     selectProduct("");
     setIsEditing(false);
     setSearchQuery("");
-  }, [categoryId, selectProduct]);
+    setFilterSearchQuery("");
+  }, [categoryId, selectProduct, setFilterSearchQuery]);
+
+  // Sync local search query with the filtering hook's search query
+  useEffect(() => {
+    setFilterSearchQuery(searchQuery);
+  }, [searchQuery, setFilterSearchQuery]);
+
+  // Load products when category changes
+  useEffect(() => {
+    if (categoryId) {
+      loadProducts(categoryId);
+    }
+  }, [categoryId, loadProducts]);
 
   return {
     filteredProducts,
