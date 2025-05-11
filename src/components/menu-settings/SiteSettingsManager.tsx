@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,24 +9,22 @@ import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUpload
 import ImageUploader from "@/components/ImageUploader";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSiteIcon } from "@/hooks/useSiteIcon";
-
 const SiteSettingsManager = () => {
-  const { 
-    siteSettings, 
-    updateSidebarLogo, 
-    updateMenuLogo, 
-    updateRestaurantName, 
+  const {
+    siteSettings,
+    updateSidebarLogo,
+    updateMenuLogo,
+    updateRestaurantName,
     updateFooterText,
     updateDefaultProductImage,
     isLoading
   } = useSiteSettings();
-
-  const { iconUrl, updateSiteIcon } = useSiteIcon();
-
+  const {
+    iconUrl,
+    updateSiteIcon
+  } = useSiteIcon();
   const [restaurantName, setRestaurantName] = useState(siteSettings?.restaurantName || "Sa Morisca");
-  const [footerText, setFooterText] = useState(
-    siteSettings?.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`
-  );
+  const [footerText, setFooterText] = useState(siteSettings?.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`);
 
   // Aggiorniamo i campi quando i dati vengono caricati
   useEffect(() => {
@@ -38,25 +35,18 @@ const SiteSettingsManager = () => {
       setFooterText(siteSettings.footerText);
     }
   }, [siteSettings]);
-
   const handleRestaurantNameSave = () => {
     updateRestaurantName(restaurantName);
   };
-
   const handleFooterTextSave = () => {
     updateFooterText(footerText);
   };
-
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-12">
+    return <div className="flex items-center justify-center p-12">
         <p className="text-muted-foreground">Caricamento impostazioni in corso...</p>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Logo e Immagini</CardTitle>
@@ -64,19 +54,10 @@ const SiteSettingsManager = () => {
         <CardContent className="space-y-6">
           {/* Logo Sidebar */}
           <div className="space-y-2">
-            <Label>Logo Sidebar</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Questo logo viene visualizzato nella barra laterale dell'area amministrativa
-            </p>
+            
+            
             <div className="max-w-xs">
-              <RestaurantLogoUploader
-                currentLogo={siteSettings?.sidebarLogo}
-                onLogoUploaded={updateSidebarLogo}
-                title="Logo Sidebar"
-                description="Carica il logo che apparirà nella sidebar amministrativa"
-                defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"
-                uploadPath="restaurant/sidebar-logo"
-              />
+              <RestaurantLogoUploader currentLogo={siteSettings?.sidebarLogo} onLogoUploaded={updateSidebarLogo} title="Logo Sidebar" description="Carica il logo che apparirà nella sidebar amministrativa" defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" uploadPath="restaurant/sidebar-logo" />
             </div>
           </div>
           
@@ -84,19 +65,10 @@ const SiteSettingsManager = () => {
           
           {/* Logo Menu */}
           <div className="space-y-2">
-            <Label>Logo Menu</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Questo logo viene visualizzato nella pagina del menu pubblico
-            </p>
+            
+            
             <div className="max-w-xs">
-              <RestaurantLogoUploader
-                currentLogo={siteSettings?.menuLogo}
-                onLogoUploaded={updateMenuLogo}
-                title="Logo Menu"
-                description="Carica il logo che apparirà nella pagina del menu pubblico"
-                defaultPreview="/placeholder.svg"
-                uploadPath="restaurant/menu-logo"
-              />
+              <RestaurantLogoUploader currentLogo={siteSettings?.menuLogo} onLogoUploaded={updateMenuLogo} title="Logo Menu" description="Carica il logo che apparirà nella pagina del menu pubblico" defaultPreview="/placeholder.svg" uploadPath="restaurant/menu-logo" />
             </div>
           </div>
           
@@ -109,14 +81,7 @@ const SiteSettingsManager = () => {
               Questa icona appare nella scheda del browser (favicon)
             </p>
             <div className="max-w-xs">
-              <RestaurantLogoUploader
-                currentLogo={iconUrl}
-                onLogoUploaded={updateSiteIcon}
-                title="Icona del Sito"
-                description="Carica l'icona che apparirà come favicon del sito"
-                defaultPreview="/placeholder.svg"
-                uploadPath="site/favicon"
-              />
+              <RestaurantLogoUploader currentLogo={iconUrl} onLogoUploaded={updateSiteIcon} title="Icona del Sito" description="Carica l'icona che apparirà come favicon del sito" defaultPreview="/placeholder.svg" uploadPath="site/favicon" />
             </div>
           </div>
           
@@ -129,15 +94,7 @@ const SiteSettingsManager = () => {
               Questa immagine viene visualizzata per i prodotti senza un'immagine specifica
             </p>
             <div className="max-w-xs">
-              <ImageUploader
-                id="default-product-image"
-                bucketName="menu-images"
-                folderPath="products/default"
-                currentImage={siteSettings?.defaultProductImage}
-                onImageUploaded={updateDefaultProductImage}
-                label="Carica immagine"
-                defaultPreview="/placeholder.svg"
-              />
+              <ImageUploader id="default-product-image" bucketName="menu-images" folderPath="products/default" currentImage={siteSettings?.defaultProductImage} onImageUploaded={updateDefaultProductImage} label="Carica immagine" defaultPreview="/placeholder.svg" />
             </div>
           </div>
         </CardContent>
@@ -155,13 +112,7 @@ const SiteSettingsManager = () => {
               Questo nome viene visualizzato nella pagina del menu pubblico
             </p>
             <div className="flex items-center gap-2">
-              <Input
-                id="restaurant-name"
-                value={restaurantName}
-                onChange={(e) => setRestaurantName(e.target.value)}
-                placeholder="Nome del locale"
-                className="max-w-xs"
-              />
+              <Input id="restaurant-name" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} placeholder="Nome del locale" className="max-w-xs" />
               <Button onClick={handleRestaurantNameSave}>Salva</Button>
             </div>
           </div>
@@ -175,20 +126,12 @@ const SiteSettingsManager = () => {
               Questo testo viene visualizzato nel footer della pagina del menu pubblico
             </p>
             <div className="flex items-center gap-2">
-              <Input
-                id="footer-text"
-                value={footerText}
-                onChange={(e) => setFooterText(e.target.value)}
-                placeholder="Testo del footer"
-                className="max-w-md"
-              />
+              <Input id="footer-text" value={footerText} onChange={e => setFooterText(e.target.value)} placeholder="Testo del footer" className="max-w-md" />
               <Button onClick={handleFooterTextSave}>Salva</Button>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default SiteSettingsManager;
