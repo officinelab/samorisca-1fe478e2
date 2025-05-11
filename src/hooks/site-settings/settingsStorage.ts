@@ -49,6 +49,11 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
       }
     }
     
+    // Trigger an event after successful save to Supabase
+    window.dispatchEvent(new CustomEvent('siteSettingsSaved', {
+      detail: { key, value }
+    }));
+    
     return true;
   } catch (err) {
     console.error(`Error saving setting ${key}:`, err);
@@ -58,6 +63,7 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
 
 /**
  * Load settings from Supabase or fallback to localStorage
+ * All site settings (including restaurant name and footer text) are stored in the site_settings table in Supabase
  */
 export const loadSettings = async (): Promise<SiteSettings | null> => {
   try {

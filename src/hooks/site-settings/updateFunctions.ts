@@ -8,6 +8,11 @@ import { saveSetting } from "./settingsStorage";
 export const updateSidebarLogo = (logoUrl: string): boolean => {
   console.log("Updating sidebar logo:", logoUrl);
   if (saveSetting('sidebarLogo', logoUrl)) {
+    // Force an event dispatch to notify components that depend on this setting
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'sidebarLogo', value: logoUrl } 
+    }));
+    
     toast.success("Logo della sidebar aggiornato");
     return true;
   }
@@ -20,6 +25,10 @@ export const updateSidebarLogo = (logoUrl: string): boolean => {
 export const updateMenuLogo = (logoUrl: string): boolean => {
   console.log("Updating menu logo:", logoUrl);
   if (saveSetting('menuLogo', logoUrl)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'menuLogo', value: logoUrl } 
+    }));
+    
     toast.success("Logo del menu aggiornato");
     return true;
   }
@@ -31,6 +40,10 @@ export const updateMenuLogo = (logoUrl: string): boolean => {
  */
 export const updateRestaurantName = (name: string): boolean => {
   if (saveSetting('restaurantName', name)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'restaurantName', value: name } 
+    }));
+    
     toast.success("Nome del ristorante aggiornato");
     return true;
   }
@@ -42,6 +55,10 @@ export const updateRestaurantName = (name: string): boolean => {
  */
 export const updateFooterText = (text: string): boolean => {
   if (saveSetting('footerText', text)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'footerText', value: text } 
+    }));
+    
     toast.success("Testo del footer aggiornato");
     return true;
   }
@@ -54,6 +71,10 @@ export const updateFooterText = (text: string): boolean => {
 export const updateDefaultProductImage = (imageUrl: string): boolean => {
   console.log("Updating default product image:", imageUrl);
   if (saveSetting('defaultProductImage', imageUrl)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'defaultProductImage', value: imageUrl } 
+    }));
+    
     toast.success("Immagine predefinita per i prodotti aggiornata");
     return true;
   }

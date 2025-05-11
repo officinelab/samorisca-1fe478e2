@@ -54,6 +54,7 @@ const AdminLayout = () => {
                 onLogout={handleLogout} 
                 navItems={navItems}
                 sidebarLogo={siteSettings?.sidebarLogo} 
+                key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
               />
             </div>
           </div>
@@ -66,6 +67,7 @@ const AdminLayout = () => {
           onLogout={handleLogout} 
           navItems={navItems} 
           sidebarLogo={siteSettings?.sidebarLogo}
+          key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
         />
       </div>
 
@@ -118,6 +120,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
             alt="Logo" 
             className="h-21 w-auto max-w-full" 
             onError={handleLogoError}
+            key={sidebarLogo} // Add key to force re-render when logo changes
           />
         ) : (
           <img 

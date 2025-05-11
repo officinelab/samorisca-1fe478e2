@@ -35,6 +35,22 @@ export const useSiteSettings = () => {
     };
 
     fetchSettings();
+    
+    // Listen for settings updates from other components
+    const handleSettingsUpdate = (event: CustomEvent) => {
+      const { key, value } = event.detail;
+      setSiteSettings(prev => ({
+        ...prev,
+        [key]: value
+      }));
+    };
+    
+    // Add event listener for settings updates
+    window.addEventListener('siteSettingsUpdated', handleSettingsUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate as EventListener);
+    };
   }, []);
 
   return {
