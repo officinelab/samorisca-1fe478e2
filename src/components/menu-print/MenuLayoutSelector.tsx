@@ -36,70 +36,34 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   const { activeLayout } = useMenuLayouts();
   
   // Use selected layout as fallback if activeLayout is not available
-  const effectiveLayoutType = activeLayout ? activeLayout.type : selectedLayout;
+  // Ensure we always have a valid layout type
+  const effectiveLayoutType = activeLayout?.type || selectedLayout || "classic";
+  
+  const commonProps = {
+    A4_WIDTH_MM,
+    A4_HEIGHT_MM,
+    showPageBoundaries,
+    categories,
+    products,
+    selectedCategories,
+    language,
+    allergens,
+    printAllergens,
+    restaurantLogo,
+    customLayout: activeLayout || null
+  };
   
   switch (effectiveLayoutType) {
     case "modern":
-      return (
-        <ModernLayout
-          A4_WIDTH_MM={A4_WIDTH_MM}
-          A4_HEIGHT_MM={A4_HEIGHT_MM}
-          showPageBoundaries={showPageBoundaries}
-          categories={categories}
-          products={products}
-          selectedCategories={selectedCategories}
-          language={language}
-          allergens={allergens}
-          printAllergens={printAllergens}
-          restaurantLogo={restaurantLogo}
-          customLayout={activeLayout}
-        />
-      );
+      return <ModernLayout {...commonProps} />;
     case "allergens":
-      return (
-        <AllergensLayout
-          A4_WIDTH_MM={A4_WIDTH_MM}
-          A4_HEIGHT_MM={A4_HEIGHT_MM}
-          showPageBoundaries={showPageBoundaries}
-          allergens={allergens}
-          restaurantLogo={restaurantLogo}
-          customLayout={activeLayout}
-        />
-      );
+      return <AllergensLayout {...commonProps} />;
     case "custom":
       // For custom layouts, use ClassicLayout as base
-      return (
-        <ClassicLayout
-          A4_WIDTH_MM={A4_WIDTH_MM}
-          A4_HEIGHT_MM={A4_HEIGHT_MM}
-          showPageBoundaries={showPageBoundaries}
-          categories={categories}
-          products={products}
-          selectedCategories={selectedCategories}
-          language={language}
-          allergens={allergens}
-          printAllergens={printAllergens}
-          restaurantLogo={restaurantLogo}
-          customLayout={activeLayout}
-        />
-      );
+      return <ClassicLayout {...commonProps} />;
     case "classic":
     default:
-      return (
-        <ClassicLayout
-          A4_WIDTH_MM={A4_WIDTH_MM}
-          A4_HEIGHT_MM={A4_HEIGHT_MM}
-          showPageBoundaries={showPageBoundaries}
-          categories={categories}
-          products={products}
-          selectedCategories={selectedCategories}
-          language={language}
-          allergens={allergens}
-          printAllergens={printAllergens}
-          restaurantLogo={restaurantLogo}
-          customLayout={activeLayout}
-        />
-      );
+      return <ClassicLayout {...commonProps} />;
   }
 };
 

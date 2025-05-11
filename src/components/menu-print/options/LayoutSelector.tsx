@@ -29,6 +29,8 @@ export const LayoutSelector = ({
 }: LayoutSelectorProps) => {
   const [open, setOpen] = useState(false);
   const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
+  
+  // Create a safe version of layouts that's always a valid array
   const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -36,8 +38,12 @@ export const LayoutSelector = ({
       toast.error("Errore nel caricamento dei layout: " + error);
     }
     
-    // Ensure layouts is always an array even if undefined or null
-    setSafeLayouts(Array.isArray(layouts) ? layouts : []);
+    // Make sure layouts is always an array even if undefined
+    if (Array.isArray(layouts)) {
+      setSafeLayouts(layouts);
+    } else {
+      setSafeLayouts([]);
+    }
   }, [error, layouts]);
 
   // Select layout based on active layout or selected layout

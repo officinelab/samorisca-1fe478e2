@@ -20,9 +20,12 @@ export const useLayoutStorage = () => {
       try {
         const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
         
-        // Ensure layouts is always an array
-        setLayouts(loadedLayouts || []);
-        setActiveLayout(defaultLayout || null);
+        // Always ensure layouts is an array
+        const safeLayouts = Array.isArray(loadedLayouts) ? loadedLayouts : [];
+        setLayouts(safeLayouts);
+        
+        // Make sure defaultLayout exists
+        setActiveLayout(defaultLayout || (safeLayouts.length > 0 ? safeLayouts[0] : null));
         
         if (loadError) {
           setError(loadError);
@@ -32,6 +35,9 @@ export const useLayoutStorage = () => {
         console.error("Error loading layouts:", e);
         setError("Failed to load layouts");
         toast.error("Errore nel caricamento dei layout");
+        
+        // Set empty array as fallback
+        setLayouts([]);
       } finally {
         setIsLoading(false);
       }
