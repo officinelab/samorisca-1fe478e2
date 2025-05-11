@@ -53,7 +53,7 @@ const PrintOptions = ({
   handleToggleAllCategories,
 }: PrintOptionsProps) => {
   const [open, setOpen] = useState(false);
-  const { layouts, activeLayout, changeActiveLayout } = useMenuLayouts();
+  const { layouts = [], activeLayout, changeActiveLayout } = useMenuLayouts();
   
   // Seleziona il layout basato sul layout attivo o su quello selezionato
   const handleLayoutChange = (layoutId: string) => {
@@ -106,7 +106,7 @@ const PrintOptions = ({
                 <CommandInput placeholder="Cerca layout..." />
                 <CommandEmpty>Nessun layout trovato.</CommandEmpty>
                 <CommandGroup>
-                  {layouts.map((layout) => (
+                  {layouts && layouts.length > 0 ? layouts.map((layout) => (
                     <CommandItem
                       key={layout.id}
                       value={layout.name}
@@ -123,7 +123,9 @@ const PrintOptions = ({
                         <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
                       )}
                     </CommandItem>
-                  ))}
+                  )) : (
+                    <CommandItem disabled>Nessun layout disponibile</CommandItem>
+                  )}
                 </CommandGroup>
               </Command>
             </PopoverContent>
