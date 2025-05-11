@@ -1,36 +1,8 @@
 
 import { PrintLayout, PageMargins } from "@/types/printLayout";
 import { defaultLayouts } from "./defaultLayouts";
-import { saveLayouts } from "./layoutStorage";
-
-// Ensure all layout objects have properly initialized page margin properties
-const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
-  // Set default values if not present
-  const pageWithDefaults = {
-    marginTop: layout.page.marginTop || 20,
-    marginRight: layout.page.marginRight || 15,
-    marginBottom: layout.page.marginBottom || 20,
-    marginLeft: layout.page.marginLeft || 15,
-    useDistinctMarginsForPages: layout.page.useDistinctMarginsForPages || false,
-    oddPages: layout.page.oddPages || {
-      marginTop: layout.page.marginTop || 20,
-      marginRight: layout.page.marginRight || 15,
-      marginBottom: layout.page.marginBottom || 20,
-      marginLeft: layout.page.marginLeft || 15
-    },
-    evenPages: layout.page.evenPages || {
-      marginTop: layout.page.marginTop || 20,
-      marginRight: layout.page.marginRight || 15,
-      marginBottom: layout.page.marginBottom || 20,
-      marginLeft: layout.page.marginLeft || 15
-    }
-  };
-
-  return {
-    ...layout,
-    page: pageWithDefaults
-  };
-};
+import { saveLayouts } from "./storage/layoutStorage";
+import { ensureValidPageMargins } from "./storage/layoutValidator";
 
 // Aggiorna i margini di pagina in base alle impostazioni
 export const syncPageMargins = (layout: PrintLayout): PrintLayout => {

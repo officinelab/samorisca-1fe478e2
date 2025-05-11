@@ -59,3 +59,7 @@ export const loadRestaurantLogo = async (): Promise<string | null> => {
     return null;
   }
 };
+
+// These functions are kept for compatibility with useRestaurantLogo.ts
+export const getStoredLogo = loadRestaurantLogo;
+export const setStoredLogo = saveRestaurantLogo;
