@@ -1,196 +1,41 @@
 
 import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/sonner";
-import { SiteSettings, SiteSettingRecord } from "@/types/siteSettings";
-import { supabase } from "@/integrations/supabase/client";
+import { SiteSettings } from "./site-settings/types";
+import { loadSettings, saveSetting } from "./site-settings/settingsStorage";
+import { defaultSettings } from "./site-settings/defaultSettings";
+import {
+  updateSidebarLogo,
+  updateMenuLogo,
+  updateRestaurantName,
+  updateFooterText,
+  updateDefaultProductImage
+} from "./site-settings/updateFunctions";
 
-// Default settings
-const defaultSettings: SiteSettings = {
-  sidebarLogo: null,
-  menuLogo: null,
-  restaurantName: "Sa Morisca",
-  footerText: `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`,
-  defaultProductImage: null,
-  siteName: "Sa Morisca",
-  siteDescription: "Ristorante Sa Morisca",
-};
-
-// Storage key per localStorage fallback
-const STORAGE_KEY = 'site_settings';
-
+/**
+ * Hook to manage site settings
+ */
 export const useSiteSettings = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carica le impostazioni da Supabase o localStorage come fallback
+  // Load settings on component mount
   useEffect(() => {
-    const loadSettings = async () => {
+    const fetchSettings = async () => {
       try {
         setIsLoading(true);
+        const loadedSettings = await loadSettings();
         
-        // Prima prova a caricare da Supabase
-        const { data: supabaseSettings, error } = await supabase
-          .from('site_settings')
-          .select('*');
-        
-        if (error) {
-          console.error("Error loading settings from Supabase:", error);
-          throw error;
-        }
-        
-        if (supabaseSettings && supabaseSettings.length > 0) {
-          // Converti gli elementi dal formato database al formato dell'applicazione
-          const settingsObject: SiteSettings = {};
-          
-          supabaseSettings.forEach((record: SiteSettingRecord) => {
-            settingsObject[record.key] = record.value;
-          });
-          
-          console.log("Loaded site settings from Supabase:", settingsObject);
-          
-          setSiteSettings({
-            ...defaultSettings,
-            ...settingsObject
-          });
-        } else {
-          // Fallback su localStorage
-          const savedSettings = localStorage.getItem(STORAGE_KEY);
-          
-          if (savedSettings) {
-            const parsedSettings = JSON.parse(savedSettings);
-            console.log("Loaded site settings from localStorage:", parsedSettings);
-            
-            setSiteSettings({
-              ...defaultSettings,
-              ...parsedSettings
-            });
-            
-            // Migra le impostazioni da localStorage a Supabase
-            try {
-              const keys = Object.keys(parsedSettings);
-              for (const key of keys) {
-                await saveSetting(key, parsedSettings[key]);
-              }
-              console.log("Settings migrated from localStorage to Supabase");
-            } catch (migrateError) {
-              console.error("Failed to migrate settings:", migrateError);
-            }
-          } else {
-            console.log("No settings found, using defaults:", defaultSettings);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading site settings:", err);
-        
-        // Fallback finale su localStorage
-        try {
-          const savedSettings = localStorage.getItem(STORAGE_KEY);
-          if (savedSettings) {
-            const parsedSettings = JSON.parse(savedSettings);
-            console.log("Fallback to localStorage settings:", parsedSettings);
-            
-            setSiteSettings({
-              ...defaultSettings,
-              ...parsedSettings
-            });
-          }
-        } catch (localErr) {
-          console.error("Error loading from localStorage:", localErr);
-        }
+        setSiteSettings({
+          ...defaultSettings,
+          ...(loadedSettings || {})
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadSettings();
+    fetchSettings();
   }, []);
-
-  // Funzione per salvare un'impostazione in Supabase e aggiornare lo stato locale
-  const saveSetting = async (key: string, value: any): Promise<boolean> => {
-    try {
-      console.log(`Saving setting ${key}:`, value);
-      
-      // Aggiorna lo stato locale
-      setSiteSettings(prevSettings => {
-        const updatedSettings = { ...prevSettings, [key]: value };
-        
-        // Salva anche su localStorage come backup
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
-        
-        return updatedSettings;
-      });
-
-      // Verifica se l'impostazione esiste già
-      const { data: existingSettings } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', key);
-      
-      // Se esiste, aggiorna, altrimenti inserisci
-      if (existingSettings && existingSettings.length > 0) {
-        const { error } = await supabase
-          .from('site_settings')
-          .update({ 
-            value, 
-            updated_at: new Date().toISOString()
-          })
-          .eq('key', key);
-          
-        if (error) {
-          console.error(`Error updating setting ${key}:`, error);
-          return false;
-        }
-      } else {
-        const { error } = await supabase
-          .from('site_settings')
-          .insert([{ key, value }]);
-          
-        if (error) {
-          console.error(`Error inserting setting ${key}:`, error);
-          return false;
-        }
-      }
-      
-      return true;
-    } catch (err) {
-      console.error(`Error saving setting ${key}:`, err);
-      return false;
-    }
-  };
-
-  // Update functions for specific settings
-  const updateSidebarLogo = (logoUrl: string) => {
-    console.log("Updating sidebar logo:", logoUrl);
-    if (saveSetting('sidebarLogo', logoUrl)) {
-      toast.success("Logo della sidebar aggiornato");
-    }
-  };
-
-  const updateMenuLogo = (logoUrl: string) => {
-    console.log("Updating menu logo:", logoUrl);
-    if (saveSetting('menuLogo', logoUrl)) {
-      toast.success("Logo del menu aggiornato");
-    }
-  };
-
-  const updateRestaurantName = (name: string) => {
-    if (saveSetting('restaurantName', name)) {
-      toast.success("Nome del ristorante aggiornato");
-    }
-  };
-
-  const updateFooterText = (text: string) => {
-    if (saveSetting('footerText', text)) {
-      toast.success("Testo del footer aggiornato");
-    }
-  };
-
-  const updateDefaultProductImage = (imageUrl: string) => {
-    console.log("Updating default product image:", imageUrl);
-    if (saveSetting('defaultProductImage', imageUrl)) {
-      toast.success("Immagine predefinita per i prodotti aggiornata");
-    }
-  };
 
   return {
     siteSettings,
