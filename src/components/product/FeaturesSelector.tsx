@@ -11,15 +11,12 @@ interface FeaturesSelectorProps {
   onChange: (featureIds: string[]) => void;
 }
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ 
-  selectedFeatureIds, 
-  onChange 
-}) => {
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
 
-  // Load product features
+  // Carica le caratteristiche dei prodotti
   useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
@@ -41,24 +38,23 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Update local state when props change
+  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
   useEffect(() => {
-    console.log("FeatureSelector: Updating selected features from props", selectedFeatureIds);
-    setSelected(selectedFeatureIds || []);
+    setSelected(new Set(selectedFeatureIds));
   }, [selectedFeatureIds]);
 
-  // Handle feature toggle
-  const handleFeatureToggle = (featureId: string) => {
-    console.log("Toggle caratteristica:", featureId);
-    console.log("Stato corrente caratteristiche:", selected);
-    
-    const newSelection = selected.includes(featureId)
-      ? selected.filter(id => id !== featureId)
-      : [...selected, featureId];
-    
-    console.log("Nuova selezione caratteristiche:", newSelection);
-    setSelected(newSelection);
+  // Toggle per selezionare/deselezionare una caratteristica
+  const toggleFeature = (featureId: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(featureId)) {
+      newSelected.delete(featureId);
+    } else {
+      newSelected.add(featureId);
+    }
+    setSelected(newSelected);
+    const newSelection = Array.from(newSelected);
     onChange(newSelection);
+    return newSelection;
   };
 
   return (
@@ -69,31 +65,22 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
         <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {features.map((feature) => {
-            const isSelected = selected.includes(feature.id);
-            return (
-              <div
-                key={feature.id}
-                className={cn(
-                  "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                  isSelected ? "border-primary bg-muted/50" : "border-input"
-                )}
-                onClick={() => handleFeatureToggle(feature.id)}
-              >
-                <Checkbox 
-                  checked={isSelected}
-                  id={`feature-${feature.id}`}
-                  onCheckedChange={() => handleFeatureToggle(feature.id)}
-                />
-                <label 
-                  htmlFor={`feature-${feature.id}`}
-                  className="text-sm cursor-pointer flex-1"
-                >
-                  {feature.title}
-                </label>
-              </div>
-            );
-          })}
+          {features.map((feature) => (
+            <div
+              key={feature.id}
+              className={cn(
+                "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+                selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
+              )}
+              onClick={() => toggleFeature(feature.id)}
+            >
+              <Checkbox 
+                checked={selected.has(feature.id)} 
+                onCheckedChange={() => toggleFeature(feature.id)} 
+              />
+              <span className="text-sm">{feature.title}</span>
+            </div>
+          ))}
         </div>
       )}
     </CollapsibleSection>

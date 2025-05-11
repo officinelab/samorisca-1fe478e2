@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,11 +18,6 @@ const AllergenForm = ({ initialData, onSubmit, onCancel }: AllergenFormProps) =>
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [iconUrl, setIconUrl] = useState<string | null>(initialData?.icon_url || null);
-
-  // Creare una funzione wrapper memoizzata che gestisce l'aggiornamento dell'icona
-  const handleIconUpload = useCallback((url: string) => {
-    setIconUrl(url);
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +68,7 @@ const AllergenForm = ({ initialData, onSubmit, onCancel }: AllergenFormProps) =>
       
       <IconUploader 
         currentIcon={iconUrl} 
-        onIconUploaded={handleIconUpload} 
+        onIconUploaded={setIconUrl} 
       />
       
       <div className="flex justify-end space-x-2 pt-2">

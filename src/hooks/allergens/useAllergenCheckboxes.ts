@@ -1,14 +1,13 @@
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Allergen } from "@/types/database";
 import { fetchAllergens } from "./allergensService";
 
-// Hook ottimizzato per gestire la lista di allergeni selezionabili
+// Hook per gestire la lista di allergeni selezionabili
 export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>([...selectedAllergenIds]);
-  const processingRef = useRef(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set(selectedAllergenIds));
   
   // Carica la lista di allergeni
   useEffect(() => {
@@ -27,51 +26,28 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
     loadAllergens();
   }, []);
   
-  // Aggiorna la selezione quando cambiano gli allergeni selezionati dall'esterno
+  // Aggiorna la selezione quando cambiano gli allergeni selezionati
   useEffect(() => {
-    // Confronto degli array usando Set per evitare problemi di ordinamento
-    const currentSet = new Set(selectedAllergenIds);
-    const selectedSet = new Set(selected);
-    
-    // Verifica se i due set sono diversi
-    if (currentSet.size !== selectedSet.size || 
-        ![...currentSet].every(id => selectedSet.has(id))) {
-      console.log("Aggiornamento selezione allergeni:", { da: selected, a: selectedAllergenIds });
-      setSelected([...selectedAllergenIds]);
-    }
-  }, [selectedAllergenIds, selected]);
+    setSelected(new Set(selectedAllergenIds));
+  }, [selectedAllergenIds]);
 
-  // Funzione ottimizzata per gestire il toggle degli allergeni
-  const toggleAllergen = useCallback((allergenId: string, onChange: (selection: string[]) => void) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
-    
-    setSelected(current => {
-      const newSelection = [...current];
-      const index = newSelection.indexOf(allergenId);
-      
-      if (index >= 0) {
-        newSelection.splice(index, 1);
-      } else {
-        newSelection.push(allergenId);
-      }
-      
-      console.log("Toggle allergene:", { allergenId, risultato: newSelection });
-      
-      // Uso di requestAnimationFrame per garantire che gli aggiornamenti dello stato avvengano nel contesto giusto
-      requestAnimationFrame(() => {
-        onChange(newSelection);
-        processingRef.current = false;
-      });
-      
-      return newSelection;
-    });
-  }, []);
+  // Toggle per selezionare/deselezionare un allergene
+  const toggleAllergen = (allergenId: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(allergenId)) {
+      newSelected.delete(allergenId);
+    } else {
+      newSelected.add(allergenId);
+    }
+    setSelected(newSelected);
+    return Array.from(newSelected);
+  };
 
   return {
     allergens,
     isLoading,
     selected,
-    toggleAllergen
+    toggleAllergen,
+    selectedAllergens: Array.from(selected)
   };
 };

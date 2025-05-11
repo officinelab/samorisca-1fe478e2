@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Form } from "@/components/ui/form";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
@@ -16,7 +16,7 @@ import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
-  onSave?: (productData: Partial<Product>) => void;
+  onSave?: () => void;
   onCancel?: () => void;
 }
 
@@ -33,13 +33,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     setSelectedFeatures,
     handleSubmit
   } = useProductForm(product, onSave);
-
-  // Log form state changes for debugging
-  useEffect(() => {
-    console.log("ProductForm rendered with product:", product?.id || "new product");
-    console.log("Selected allergens:", selectedAllergens);
-    console.log("Selected features:", selectedFeatures);
-  }, [product?.id, selectedAllergens, selectedFeatures]);
 
   return (
     <Form {...form}>
