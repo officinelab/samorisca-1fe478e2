@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductLabel } from "@/types/database";
 
 /**
- * Hook to load product-related data (labels, allergens, features)
+ * Hook ottimizzato per caricare dati relativi ai prodotti (etichette, allergeni, caratteristiche)
  */
 export const useProductData = (product?: Product) => {
   const [labels, setLabels] = useState<ProductLabel[]>([]);
@@ -68,7 +68,6 @@ export const useProductData = (product?: Product) => {
             
           if (data) {
             const featureIds = data.map(item => item.feature_id);
-            console.log("Caratteristiche caricate dal DB:", featureIds);
             setSelectedFeatures(featureIds);
           }
         } catch (error) {
@@ -89,18 +88,31 @@ export const useProductData = (product?: Product) => {
     
     isUpdatingRef.current = true;
     
-    // Confrontiamo le selezioni come stringhe per evitare problemi di referenza
-    const currentStr = JSON.stringify([...selectedAllergens].sort());
-    const newStr = JSON.stringify([...allergens].sort());
+    const currentSet = new Set(selectedAllergens);
+    const newSet = new Set(allergens);
     
-    if (currentStr !== newStr) {
-      setSelectedAllergens(allergens);
-      console.log("Allergeni aggiornati:", allergens);
+    // Confronto rapido basato su dimensione
+    if (currentSet.size !== newSet.size) {
+      setSelectedAllergens([...allergens]);
+    } else {
+      // Controllo approfondito se le dimensioni sono uguali
+      let isDifferent = false;
+      for (const item of newSet) {
+        if (!currentSet.has(item)) {
+          isDifferent = true;
+          break;
+        }
+      }
+      
+      if (isDifferent) {
+        setSelectedAllergens([...allergens]);
+      }
     }
     
-    setTimeout(() => {
+    // Utilizziamo requestAnimationFrame invece di setTimeout per garantire sincronizzazione con il rendering
+    requestAnimationFrame(() => {
       isUpdatingRef.current = false;
-    }, 0);
+    });
   }, [selectedAllergens]);
 
   // Funzione sicura per l'aggiornamento delle caratteristiche
@@ -109,18 +121,31 @@ export const useProductData = (product?: Product) => {
     
     isUpdatingRef.current = true;
     
-    // Confrontiamo le selezioni come stringhe per evitare problemi di referenza
-    const currentStr = JSON.stringify([...selectedFeatures].sort());
-    const newStr = JSON.stringify([...features].sort());
+    const currentSet = new Set(selectedFeatures);
+    const newSet = new Set(features);
     
-    if (currentStr !== newStr) {
-      setSelectedFeatures(features);
-      console.log("Caratteristiche aggiornate:", features);
+    // Confronto rapido basato su dimensione
+    if (currentSet.size !== newSet.size) {
+      setSelectedFeatures([...features]);
+    } else {
+      // Controllo approfondito se le dimensioni sono uguali
+      let isDifferent = false;
+      for (const item of newSet) {
+        if (!currentSet.has(item)) {
+          isDifferent = true;
+          break;
+        }
+      }
+      
+      if (isDifferent) {
+        setSelectedFeatures([...features]);
+      }
     }
     
-    setTimeout(() => {
+    // Utilizziamo requestAnimationFrame invece di setTimeout
+    requestAnimationFrame(() => {
       isUpdatingRef.current = false;
-    }, 0);
+    });
   }, [selectedFeatures]);
 
   return {

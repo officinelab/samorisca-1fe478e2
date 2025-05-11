@@ -11,29 +11,11 @@ interface AllergenSelectorProps {
 }
 
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
-  const isProcessingRef = useRef(false);
-  const { allergens, isLoading, selected } = useAllergenCheckboxes(selectedAllergenIds);
+  const { allergens, isLoading, selected, toggleAllergen } = useAllergenCheckboxes(selectedAllergenIds);
 
+  // Gestore ottimizzato per il toggle degli allergeni
   const handleAllergenToggle = (allergenId: string) => {
-    if (isProcessingRef.current) return;
-    
-    isProcessingRef.current = true;
-    
-    // Utilizziamo una funzione pura per calcolare il nuovo stato
-    const newSelection = Array.from(selected).slice(); // Crea una copia
-    const index = newSelection.indexOf(allergenId);
-    
-    if (index >= 0) {
-      newSelection.splice(index, 1); // Rimuove l'allergene
-    } else {
-      newSelection.push(allergenId); // Aggiunge l'allergene
-    }
-    
-    // Utilizziamo setTimeout per uscire dall'attuale ciclo di rendering
-    setTimeout(() => {
-      onChange(newSelection);
-      isProcessingRef.current = false;
-    }, 0);
+    toggleAllergen(allergenId, onChange);
   };
 
   return (

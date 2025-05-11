@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +18,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
-  const isUpdatingRef = useRef(false);
+  const processingRef = useRef(false);
   const prevSelectedRef = useRef<string[]>([]);
 
   // Load product features
@@ -43,42 +43,59 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Update local state when props change, using safe string comparison
+  // Update local state when props change, using Sets for efficient comparison
   useEffect(() => {
-    if (isUpdatingRef.current) return;
+    if (processingRef.current) return;
     
-    const currentSelectedStr = JSON.stringify([...selectedFeatureIds].sort());
-    const prevSelectedStr = JSON.stringify([...prevSelectedRef.current].sort());
+    const currentSet = new Set(selectedFeatureIds);
+    const localSet = new Set(selected);
     
-    if (currentSelectedStr !== prevSelectedStr) {
+    // Se le dimensioni sono diverse, sicuramente sono diversi
+    if (currentSet.size !== localSet.size) {
+      prevSelectedRef.current = [...selectedFeatureIds];
+      setSelected([...selectedFeatureIds]);
+      return;
+    }
+    
+    // Verifichiamo se tutti gli elementi di currentSet sono in localSet
+    let isDifferent = false;
+    for (const item of currentSet) {
+      if (!localSet.has(item)) {
+        isDifferent = true;
+        break;
+      }
+    }
+    
+    if (isDifferent) {
       prevSelectedRef.current = [...selectedFeatureIds];
       setSelected([...selectedFeatureIds]);
     }
-  }, [selectedFeatureIds]);
+  }, [selectedFeatureIds, selected]);
 
-  // Handle feature toggle with safe update pattern
-  const handleToggleFeature = (featureId: string) => {
-    if (isUpdatingRef.current) return;
+  // Handle feature toggle with optimized update pattern
+  const toggleFeature = useCallback((featureId: string) => {
+    if (processingRef.current) return;
+    processingRef.current = true;
     
-    isUpdatingRef.current = true;
-    
-    // Creiamo una nuova selezione in modo puro
-    let newSelected: string[];
-    if (selected.includes(featureId)) {
-      newSelected = selected.filter(id => id !== featureId);
-    } else {
-      newSelected = [...selected, featureId];
-    }
-    
-    setSelected(newSelected);
-    prevSelectedRef.current = newSelected;
-    
-    // Utilizziamo setTimeout per uscire dall'attuale ciclo di rendering
-    setTimeout(() => {
-      onChange(newSelected);
-      isUpdatingRef.current = false;
-    }, 0);
-  };
+    setSelected(current => {
+      const newSelection = [...current];
+      const index = newSelection.indexOf(featureId);
+      
+      if (index >= 0) {
+        newSelection.splice(index, 1);
+      } else {
+        newSelection.push(featureId);
+      }
+      
+      // Utilizziamo requestAnimationFrame per uscire dal ciclo di rendering corrente
+      requestAnimationFrame(() => {
+        onChange(newSelection);
+        processingRef.current = false;
+      });
+      
+      return newSelection;
+    });
+  }, [onChange]);
 
   return (
     <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
@@ -97,7 +114,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
                   "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                   isSelected ? "border-primary bg-muted/50" : "border-input"
                 )}
-                onClick={() => handleToggleFeature(feature.id)}
+                onClick={() => toggleFeature(feature.id)}
               >
                 <Checkbox 
                   checked={isSelected}
