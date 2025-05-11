@@ -10,7 +10,7 @@ export const useProductData = (product?: Product) => {
   const [labels, setLabels] = useState<ProductLabel[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const featuresUpdatingRef = useRef(false);
+  const isUpdatingRef = useRef(false);
   
   // Load product labels
   useEffect(() => {
@@ -83,39 +83,50 @@ export const useProductData = (product?: Product) => {
     }
   }, [product?.id]);
 
-  /**
-   * Helper function to check if two arrays contain the same elements
-   * regardless of order
-   */
-  const areArraysEqual = (arr1: string[], arr2: string[]): boolean => {
-    if (arr1.length !== arr2.length) return false;
-    const set1 = new Set(arr1);
-    return arr2.every(item => set1.has(item));
-  };
+  // Funzione sicura per l'aggiornamento degli allergeni
+  const setSelectedAllergensStable = useCallback((allergens: string[]) => {
+    if (isUpdatingRef.current) return;
+    
+    isUpdatingRef.current = true;
+    
+    // Confrontiamo le selezioni come stringhe per evitare problemi di referenza
+    const currentStr = JSON.stringify([...selectedAllergens].sort());
+    const newStr = JSON.stringify([...allergens].sort());
+    
+    if (currentStr !== newStr) {
+      setSelectedAllergens(allergens);
+      console.log("Allergeni aggiornati:", allergens);
+    }
+    
+    setTimeout(() => {
+      isUpdatingRef.current = false;
+    }, 0);
+  }, [selectedAllergens]);
 
-  // Stable function to update selectedFeatures without causing infinite loops
+  // Funzione sicura per l'aggiornamento delle caratteristiche
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
-    if (featuresUpdatingRef.current) return;
+    if (isUpdatingRef.current) return;
     
-    featuresUpdatingRef.current = true;
+    isUpdatingRef.current = true;
     
-    setSelectedFeatures(prevFeatures => {
-      // Skip update if arrays contain the same elements
-      if (areArraysEqual(prevFeatures, features)) {
-        featuresUpdatingRef.current = false;
-        return prevFeatures;
-      }
-      
-      console.log("Updating features:", features);
-      featuresUpdatingRef.current = false;
-      return features;
-    });
-  }, []);
-  
+    // Confrontiamo le selezioni come stringhe per evitare problemi di referenza
+    const currentStr = JSON.stringify([...selectedFeatures].sort());
+    const newStr = JSON.stringify([...features].sort());
+    
+    if (currentStr !== newStr) {
+      setSelectedFeatures(features);
+      console.log("Caratteristiche aggiornate:", features);
+    }
+    
+    setTimeout(() => {
+      isUpdatingRef.current = false;
+    }, 0);
+  }, [selectedFeatures]);
+
   return {
     labels,
     selectedAllergens,
-    setSelectedAllergens,
+    setSelectedAllergens: setSelectedAllergensStable,
     selectedFeatures,
     setSelectedFeatures: setSelectedFeaturesStable
   };

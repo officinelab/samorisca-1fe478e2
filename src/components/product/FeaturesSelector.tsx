@@ -18,8 +18,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
-  const lastSelectedRef = useRef<string[]>([]);
   const isUpdatingRef = useRef(false);
+  const prevSelectedRef = useRef<string[]>([]);
 
   // Load product features
   useEffect(() => {
@@ -43,33 +43,41 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Update local state when props change, but only if we're not in the middle of updating
+  // Update local state when props change, using safe string comparison
   useEffect(() => {
-    if (!isUpdatingRef.current && 
-        JSON.stringify(lastSelectedRef.current) !== JSON.stringify(selectedFeatureIds)) {
-      lastSelectedRef.current = [...selectedFeatureIds];
+    if (isUpdatingRef.current) return;
+    
+    const currentSelectedStr = JSON.stringify([...selectedFeatureIds].sort());
+    const prevSelectedStr = JSON.stringify([...prevSelectedRef.current].sort());
+    
+    if (currentSelectedStr !== prevSelectedStr) {
+      prevSelectedRef.current = [...selectedFeatureIds];
       setSelected([...selectedFeatureIds]);
     }
   }, [selectedFeatureIds]);
 
-  // Handle feature toggle
+  // Handle feature toggle with safe update pattern
   const handleToggleFeature = (featureId: string) => {
     if (isUpdatingRef.current) return;
     
     isUpdatingRef.current = true;
     
-    const newSelected = selected.includes(featureId)
-      ? selected.filter(id => id !== featureId)
-      : [...selected, featureId];
+    // Creiamo una nuova selezione in modo puro
+    let newSelected: string[];
+    if (selected.includes(featureId)) {
+      newSelected = selected.filter(id => id !== featureId);
+    } else {
+      newSelected = [...selected, featureId];
+    }
     
     setSelected(newSelected);
-    lastSelectedRef.current = newSelected;
+    prevSelectedRef.current = newSelected;
     
-    // Use requestAnimationFrame to defer the parent update
-    requestAnimationFrame(() => {
+    // Utilizziamo setTimeout per uscire dall'attuale ciclo di rendering
+    setTimeout(() => {
       onChange(newSelected);
       isUpdatingRef.current = false;
-    });
+    }, 0);
   };
 
   return (
@@ -80,28 +88,31 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
         <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {features.map((feature) => (
-            <div
-              key={feature.id}
-              className={cn(
-                "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selected.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
-              )}
-              onClick={() => handleToggleFeature(feature.id)}
-            >
-              <Checkbox 
-                checked={selected.includes(feature.id)}
-                id={`feature-${feature.id}`}
-                onCheckedChange={() => {}}
-              />
-              <label 
-                htmlFor={`feature-${feature.id}`}
-                className="text-sm cursor-pointer flex-1"
+          {features.map((feature) => {
+            const isSelected = selected.includes(feature.id);
+            return (
+              <div
+                key={feature.id}
+                className={cn(
+                  "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+                  isSelected ? "border-primary bg-muted/50" : "border-input"
+                )}
+                onClick={() => handleToggleFeature(feature.id)}
               >
-                {feature.title}
-              </label>
-            </div>
-          ))}
+                <Checkbox 
+                  checked={isSelected}
+                  id={`feature-${feature.id}`}
+                  onCheckedChange={() => {}}
+                />
+                <label 
+                  htmlFor={`feature-${feature.id}`}
+                  className="text-sm cursor-pointer flex-1"
+                >
+                  {feature.title}
+                </label>
+              </div>
+            );
+          })}
         </div>
       )}
     </CollapsibleSection>

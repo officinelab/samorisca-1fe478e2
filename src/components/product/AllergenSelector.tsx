@@ -11,20 +11,29 @@ interface AllergenSelectorProps {
 }
 
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
-  const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
   const isProcessingRef = useRef(false);
+  const { allergens, isLoading, selected } = useAllergenCheckboxes(selectedAllergenIds);
 
   const handleAllergenToggle = (allergenId: string) => {
     if (isProcessingRef.current) return;
     
     isProcessingRef.current = true;
     
-    // Utilizza requestAnimationFrame per differire l'aggiornamento al parent
-    requestAnimationFrame(() => {
-      const newSelection = toggleAllergen(allergenId);
+    // Utilizziamo una funzione pura per calcolare il nuovo stato
+    const newSelection = Array.from(selected).slice(); // Crea una copia
+    const index = newSelection.indexOf(allergenId);
+    
+    if (index >= 0) {
+      newSelection.splice(index, 1); // Rimuove l'allergene
+    } else {
+      newSelection.push(allergenId); // Aggiunge l'allergene
+    }
+    
+    // Utilizziamo setTimeout per uscire dall'attuale ciclo di rendering
+    setTimeout(() => {
       onChange(newSelection);
       isProcessingRef.current = false;
-    });
+    }, 0);
   };
 
   return (
@@ -35,25 +44,28 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
         <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {allergens.map((allergen) => (
-            <div
-              key={allergen.id}
-              className={cn(
-                "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selected.has(allergen.id) ? "border-primary bg-muted/50" : "border-input"
-              )}
-              onClick={() => handleAllergenToggle(allergen.id)}
-            >
-              <Checkbox 
-                checked={selected.has(allergen.id)}
-                id={`allergen-${allergen.id}`}
-                onCheckedChange={() => {}} 
-              />
-              <span className="text-sm">
-                {allergen.number && `${allergen.number}. `}{allergen.title}
-              </span>
-            </div>
-          ))}
+          {allergens.map((allergen) => {
+            const isSelected = selected.includes(allergen.id);
+            return (
+              <div
+                key={allergen.id}
+                className={cn(
+                  "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+                  isSelected ? "border-primary bg-muted/50" : "border-input"
+                )}
+                onClick={() => handleAllergenToggle(allergen.id)}
+              >
+                <Checkbox 
+                  checked={isSelected}
+                  id={`allergen-${allergen.id}`}
+                  onCheckedChange={() => {}} 
+                />
+                <span className="text-sm">
+                  {allergen.number && `${allergen.number}. `}{allergen.title}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </CollapsibleSection>
