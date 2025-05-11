@@ -16,7 +16,7 @@ export const useMenuLayouts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carica i layout salvati da Supabase o quelli predefiniti
+  // Carica i layout salvati dal localStorage o quelli predefiniti
   useEffect(() => {
     const fetchLayouts = async () => {
       setIsLoading(true);

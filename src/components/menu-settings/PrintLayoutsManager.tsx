@@ -77,12 +77,10 @@ const PrintLayoutsManager = () => {
   const handleCreateLayout = async (name: string) => {
     try {
       const newLayout = await createNewLayout(name);
-      if (newLayout) {
-        setSelectedLayout(newLayout);
-        setIsCreateDialogOpen(false);
-        setEditorTab("modifica");
-        toast.success("Layout creato con successo");
-      }
+      setSelectedLayout(newLayout);
+      setIsCreateDialogOpen(false);
+      setEditorTab("modifica");
+      toast.success("Layout creato con successo");
     } catch (error) {
       console.error("Errore durante la creazione del layout:", error);
       toast.error("Errore durante la creazione del layout");
