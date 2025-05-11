@@ -3,6 +3,7 @@ import React from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import ProductItem from './ProductItem';
+import { getElementStyle } from '../utils/styleUtils';
 
 interface CategoryGroupProps {
   category: Category;
@@ -17,27 +18,6 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
   language, 
   customLayout 
 }) => {
-  // Utility function for generating element styles from config
-  const getElementStyle = (config: PrintLayout["elements"]["category"] | undefined, defaultStyle: React.CSSProperties = {}) => {
-    if (!config) return defaultStyle;
-    
-    return {
-      ...defaultStyle,
-      fontFamily: config.fontFamily,
-      fontSize: `${config.fontSize}pt`,
-      color: config.fontColor,
-      fontWeight: config.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: config.fontStyle === 'italic' ? 'italic' : 'normal',
-      textAlign: config.alignment,
-      marginTop: `${config.margin.top}mm`,
-      marginRight: `${config.margin.right}mm`,
-      marginBottom: `${config.margin.bottom}mm`,
-      marginLeft: `${config.margin.left}mm`,
-      visibility: config.visible ? 'visible' : 'hidden',
-      display: config.visible ? 'block' : 'none',
-    } as React.CSSProperties;
-  };
-
   return (
     <div key={category.id} 
       style={{

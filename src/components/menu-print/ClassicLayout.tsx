@@ -5,7 +5,7 @@ import { PrintLayout } from '@/types/printLayout';
 import CoverPage from './CoverPage';
 import AllergensPage from './AllergensPage';
 import ContentPage from './classic/ContentPage';
-import PageOrganizer from './classic/PageOrganizer';
+import { usePageOrganizer } from './classic/PageOrganizer';
 
 type ClassicLayoutProps = {
   A4_WIDTH_MM: number;
@@ -34,8 +34,8 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   restaurantLogo,
   customLayout
 }) => {
-  // Use PageOrganizer to group categories into pages
-  const { pages } = PageOrganizer({ 
+  // Use our hook to organize categories into pages
+  const pages = usePageOrganizer({ 
     categories, 
     products, 
     selectedCategories 
