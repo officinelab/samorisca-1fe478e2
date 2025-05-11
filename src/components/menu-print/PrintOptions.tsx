@@ -1,28 +1,8 @@
 
-import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Category } from "@/types/database";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { toast } from "@/components/ui/sonner";
+import { BasicOptions } from "./options/BasicOptions";
+import { CategoriesOptions } from "./options/CategoriesOptions";
 
 interface PrintOptionsProps {
   language: string;
@@ -53,53 +33,6 @@ const PrintOptions = ({
   handleCategoryToggle,
   handleToggleAllCategories,
 }: PrintOptionsProps) => {
-  const [open, setOpen] = useState(false);
-  const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
-  
-  // Inizializzare sempre safeLayouts come un array vuoto
-  const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
-  
-  useEffect(() => {
-    if (error) {
-      toast.error("Errore nel caricamento dei layout: " + error);
-    }
-    
-    // Aggiorna safeLayouts solo quando layouts è definito
-    if (layouts && Array.isArray(layouts)) {
-      setSafeLayouts(layouts);
-    } else {
-      setSafeLayouts([]); // Assicuriamoci che sia sempre un array
-    }
-  }, [error, layouts]);
-
-  // Seleziona il layout basato sul layout attivo o su quello selezionato
-  const handleLayoutChange = (layoutId: string) => {
-    if (!layoutId) return; // Ensure we have a valid layoutId
-    
-    try {
-      // Find the selected layout first
-      const layout = safeLayouts.find(l => l.id === layoutId);
-      if (layout) {
-        changeActiveLayout(layoutId);
-        setSelectedLayout(layout.type);
-        setOpen(false);
-      } else {
-        console.error("Layout non trovato:", layoutId);
-        toast.error("Layout selezionato non trovato");
-      }
-    } catch (err) {
-      console.error("Errore durante il cambio del layout:", err);
-      toast.error("Si è verificato un errore durante la selezione del layout");
-    }
-  };
-
-  // Determiniamo il testo da mostrare nel pulsante del layout
-  const getLayoutButtonText = () => {
-    if (isLoading) return "Caricamento...";
-    if (activeLayout) return activeLayout.name;
-    return "Seleziona layout...";
-  };
-
   return (
     <Tabs defaultValue="basic" className="w-full">
       <TabsList>
@@ -107,119 +40,26 @@ const PrintOptions = ({
         <TabsTrigger value="categories">Categorie</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="basic" className="space-y-4 pt-4">
-        <div>
-          <div className="text-sm font-medium mb-2">Lingua</div>
-          <RadioGroup value={language} onValueChange={setLanguage} className="flex gap-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="it" id="r1" />
-              <Label htmlFor="r1">Italiano</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="en" id="r2" />
-              <Label htmlFor="r2">Inglese</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div>
-          <div className="text-sm font-medium mb-2">Layout</div>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between"
-                disabled={isLoading}
-              >
-                {getLayoutButtonText()}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            {/* Renderizziamo il PopoverContent solo quando abbiamo dati validi */}
-            {safeLayouts.length > 0 && (
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Cerca layout..." />
-                  <CommandEmpty>Nessun layout trovato.</CommandEmpty>
-                  <CommandGroup>
-                    {safeLayouts.map((layout) => (
-                      <CommandItem
-                        key={layout.id}
-                        value={layout.id}
-                        onSelect={() => handleLayoutChange(layout.id)}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {layout.name}
-                        {layout.isDefault && (
-                          <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
-                        )}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            )}
-          </Popover>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Stampa allergeni</span>
-            <span className="text-sm text-gray-500">Aggiunge una pagina con la legenda degli allergeni</span>
-          </div>
-          <Switch 
-            checked={printAllergens} 
-            onCheckedChange={setPrintAllergens} 
-            id="print-allergens" 
-          />
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">Mostra bordi pagina</span>
-            <span className="text-sm text-gray-500">Visualizza i bordi delle pagine nell'anteprima</span>
-          </div>
-          <Switch 
-            checked={showPageBoundaries} 
-            onCheckedChange={setShowPageBoundaries} 
-            id="show-boundaries" 
-          />
-        </div>
+      <TabsContent value="basic">
+        <BasicOptions
+          language={language}
+          setLanguage={setLanguage}
+          selectedLayout={selectedLayout}
+          setSelectedLayout={setSelectedLayout}
+          printAllergens={printAllergens}
+          setPrintAllergens={setPrintAllergens}
+          showPageBoundaries={showPageBoundaries}
+          setShowPageBoundaries={setShowPageBoundaries}
+        />
       </TabsContent>
 
-      <TabsContent value="categories" className="pt-4">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="select-all" className="text-sm font-medium">Seleziona/Deseleziona tutte</Label>
-            <Checkbox 
-              id="select-all"
-              checked={selectedCategories.length === categories.length}
-              onCheckedChange={handleToggleAllCategories}
-            />
-          </div>
-
-          <div className="border rounded-md p-3">
-            <div className="space-y-3">
-              {categories.map(category => (
-                <div key={category.id} className="flex items-center justify-between">
-                  <Label htmlFor={`category-${category.id}`} className="text-sm">{category.title}</Label>
-                  <Checkbox 
-                    id={`category-${category.id}`}
-                    checked={selectedCategories.includes(category.id)}
-                    onCheckedChange={() => handleCategoryToggle(category.id)}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <TabsContent value="categories">
+        <CategoriesOptions
+          categories={categories}
+          selectedCategories={selectedCategories}
+          handleCategoryToggle={handleCategoryToggle}
+          handleToggleAllCategories={handleToggleAllCategories}
+        />
       </TabsContent>
     </Tabs>
   );
