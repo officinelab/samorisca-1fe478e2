@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 type CoverPageProps = {
@@ -126,6 +127,12 @@ const CoverPage: React.FC<CoverPageProps> = ({
               maxWidth: '100%',
               maxHeight: '100%',
               objectFit: 'contain',
+            }}
+            onError={(e) => {
+              console.error("Error loading restaurant logo:", e);
+              const target = e.target as HTMLImageElement;
+              target.onerror = null;
+              target.src = '/placeholder.svg';
             }}
           />
         </div>

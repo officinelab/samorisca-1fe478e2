@@ -41,38 +41,47 @@ const SiteSettings = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <h3 className="text-lg font-medium mb-4">Logo Menu</h3>
-                <RestaurantLogoUploader 
-                  currentLogo={siteSettings.menuLogo} 
-                  onLogoUploaded={updateMenuLogo}
-                  title="Logo del Menu"
-                  description="Questo logo appare nella pagina del menu pubblico"
-                />
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Logo Menu</h3>
+                <p className="text-sm text-muted-foreground">Questo logo appare nella pagina del menu pubblico</p>
+                <div className="bg-slate-50 p-4 rounded-md border">
+                  <RestaurantLogoUploader 
+                    currentLogo={siteSettings.menuLogo} 
+                    onLogoUploaded={updateMenuLogo}
+                    title="Logo del Menu"
+                    description="Questo logo appare nella pagina del menu pubblico"
+                  />
+                </div>
               </div>
               
-              <div>
-                <h3 className="text-lg font-medium mb-4">Icona del Sito</h3>
-                <SVGIconUploader
-                  currentIcon={siteIcon}
-                  onIconUploaded={updateSiteIcon}
-                />
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Icona del Sito</h3>
+                <p className="text-sm text-muted-foreground">Questa icona appare nella scheda del browser</p>
+                <div className="bg-slate-50 p-4 rounded-md border">
+                  <SVGIconUploader
+                    currentIcon={siteIcon}
+                    onIconUploaded={updateSiteIcon}
+                  />
+                </div>
               </div>
             </div>
             
             <Separator className="my-6" />
             
             <div className="grid gap-6 sm:grid-cols-2">
-              <div>
-                <h3 className="text-lg font-medium mb-4">Immagine Predefinita Prodotti</h3>
-                <ImageUploader
-                  id="default-product-image"
-                  bucketName="menu-images"
-                  folderPath="products/default"
-                  currentImage={siteSettings.defaultProductImage}
-                  onImageUploaded={updateDefaultProductImage}
-                  label="Immagine predefinita per prodotti"
-                />
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Immagine Predefinita Prodotti</h3>
+                <p className="text-sm text-muted-foreground">Questa immagine viene utilizzata per prodotti senza un'immagine specifica</p>
+                <div className="bg-slate-50 p-4 rounded-md border">
+                  <ImageUploader
+                    id="default-product-image"
+                    bucketName="menu-images"
+                    folderPath="products/default"
+                    currentImage={siteSettings.defaultProductImage}
+                    onImageUploaded={updateDefaultProductImage}
+                    label="Immagine predefinita per prodotti"
+                  />
+                </div>
               </div>
             </div>
           </CardContent>

@@ -24,11 +24,23 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 bg-white shadow-sm z-30">
       <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <img 
-            src={siteSettings.menuLogo || "/placeholder.svg"} 
-            alt={siteSettings.restaurantName || "Sa Morisca"} 
-            className="h-10 w-auto" 
-          />
+          {siteSettings.menuLogo ? (
+            <img 
+              src={siteSettings.menuLogo} 
+              alt={siteSettings.restaurantName || "Sa Morisca"} 
+              className="h-10 w-auto object-contain"
+              onError={(e) => {
+                console.error("Error loading menu logo:", e);
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/placeholder.svg";
+              }}
+            />
+          ) : (
+            <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
+              <span className="text-sm font-bold">{(siteSettings.restaurantName || "SM").substring(0, 2)}</span>
+            </div>
+          )}
           <h1 className="text-xl font-bold ml-2">{siteSettings.restaurantName || "Sa Morisca"}</h1>
         </div>
         

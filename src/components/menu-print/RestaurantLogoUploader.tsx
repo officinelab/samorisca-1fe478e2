@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface RestaurantLogoUploaderProps {
   currentLogo?: string | null;
@@ -21,6 +22,7 @@ export const RestaurantLogoUploader = ({
 }: RestaurantLogoUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogo || null);
+  const [imageError, setImageError] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,6 +35,7 @@ export const RestaurantLogoUploader = ({
     }
     
     setIsUploading(true);
+    setImageError(false);
     
     try {
       console.log("Uploading logo to Supabase Storage");
@@ -76,23 +79,37 @@ export const RestaurantLogoUploader = ({
 
   const handleRemoveLogo = () => {
     setPreviewUrl(null);
+    setImageError(false);
     onLogoUploaded('');
+    toast.success("Logo rimosso con successo");
+  };
+
+  const handleImageError = () => {
+    console.error("Error loading logo preview image");
+    setImageError(true);
   };
 
   return (
     <div className="space-y-4">
       <Label>{title}</Label>
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      {previewUrl ? (
-        <div className="space-y-2">
-          <div className="relative w-40 h-40 mx-auto">
+      
+      {(previewUrl && !imageError) ? (
+        <div className="space-y-4">
+          <div className="relative w-40 h-40 bg-gray-100 rounded border flex items-center justify-center overflow-hidden">
             <img 
               src={previewUrl} 
               alt="Logo Preview" 
-              className="w-full h-full object-contain"
+              className="max-w-full max-h-full object-contain"
+              onError={handleImageError}
             />
+            {isUploading && (
+              <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
           </div>
-          <div className="flex justify-center gap-2">
+          <div className="flex gap-2">
             <Button 
               variant="outline" 
               size="sm"
@@ -113,12 +130,22 @@ export const RestaurantLogoUploader = ({
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <Label 
-            htmlFor="logo-upload" 
+          <div 
             className="cursor-pointer border border-dashed border-gray-300 rounded-md p-10 w-full text-center hover:bg-gray-50"
+            onClick={() => document.getElementById('logo-upload')?.click()}
           >
-            {isUploading ? "Caricamento in corso..." : "Carica il logo del ristorante"}
-          </Label>
+            {isUploading ? (
+              <div className="flex flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                <span>Caricamento in corso...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-gray-500">Clicca per caricare il logo</span>
+                <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, GIF</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
       <Input 
