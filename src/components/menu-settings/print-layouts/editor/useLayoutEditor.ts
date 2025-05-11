@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
+import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 
 // Helper to ensure page margins are properly initialized
 const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
@@ -159,7 +160,9 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
   };
 
   const handleSave = () => {
-    onSave(editedLayout);
+    // Assicurati che il layout abbia tutti i margini sincronizzati correttamente prima di salvare
+    const finalLayout = syncPageMargins(editedLayout);
+    onSave(finalLayout);
   };
 
   return {

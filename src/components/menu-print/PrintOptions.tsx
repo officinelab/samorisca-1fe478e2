@@ -111,7 +111,7 @@ const PrintOptions = ({
                   {layouts && layouts.length > 0 ? layouts.map((layout) => (
                     <CommandItem
                       key={layout.id}
-                      value={layout.name}
+                      value={layout.id}
                       onSelect={() => handleLayoutChange(layout.id)}
                     >
                       <Check
