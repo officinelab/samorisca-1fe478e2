@@ -13,6 +13,13 @@ export const getCoverPageStyles = (): string => {
       text-align: center;
     }
 
+    .cover-page-logo {
+      max-width: 80%;
+      max-height: 150px;
+      object-fit: contain;
+      margin-bottom: 15mm;
+    }
+
     .cover-title {
       font-size: 36pt;
       font-weight: bold;

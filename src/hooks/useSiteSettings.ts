@@ -128,17 +128,27 @@ export const useSiteSettings = () => {
       
       // Se esiste, aggiorna, altrimenti inserisci
       if (existingSettings && existingSettings.length > 0) {
-        await supabase
+        const { error } = await supabase
           .from('site_settings')
           .update({ 
             value, 
             updated_at: new Date().toISOString()
           })
           .eq('key', key);
+          
+        if (error) {
+          console.error(`Error updating setting ${key}:`, error);
+          return false;
+        }
       } else {
-        await supabase
+        const { error } = await supabase
           .from('site_settings')
           .insert([{ key, value }]);
+          
+        if (error) {
+          console.error(`Error inserting setting ${key}:`, error);
+          return false;
+        }
       }
       
       return true;
