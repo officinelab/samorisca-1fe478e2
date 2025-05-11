@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import ImagePreview from "./logo-uploader/ImagePreview";
+import LogoActions from "./logo-uploader/LogoActions";
+import { uploadLogoToStorage, validateImageFile } from "./logo-uploader/LogoUploaderUtils";
 
 interface RestaurantLogoUploaderProps {
   currentLogo?: string | null;
@@ -42,9 +43,7 @@ export const RestaurantLogoUploader = ({
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("Per favore seleziona un'immagine valida");
+    if (!validateImageFile(file)) {
       return;
     }
     
@@ -52,40 +51,17 @@ export const RestaurantLogoUploader = ({
     setImageError(false);
     
     try {
-      console.log(`Uploading logo to Supabase Storage at path: ${uploadPath}`);
-      
       // Create local preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
       
-      // Upload image to Supabase Storage with a specific path for each logo type
-      const filePath = `${uploadPath}-${Date.now()}.${file.name.split('.').pop()}`;
-      const { data, error } = await supabase.storage
-        .from('menu-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      // Upload to storage
+      const publicUrl = await uploadLogoToStorage(file, uploadPath);
       
-      if (error) {
-        console.error("Logo upload error:", error);
-        throw error;
+      if (publicUrl) {
+        onLogoUploaded(publicUrl);
+        toast.success("Logo caricato con successo");
       }
-      
-      console.log("Logo upload successful:", data);
-      
-      // Get public URL of the image
-      const { data: publicUrlData } = supabase.storage
-        .from('menu-images')
-        .getPublicUrl(data.path);
-      
-      console.log("Logo public URL:", publicUrlData.publicUrl);
-      
-      onLogoUploaded(publicUrlData.publicUrl);
-      toast.success("Logo caricato con successo");
-    } catch (error) {
-      console.error('Errore nel caricamento del logo:', error);
-      toast.error("Errore nel caricamento del logo. Riprova più tardi.");
     } finally {
       setIsUploading(false);
     }
@@ -102,6 +78,12 @@ export const RestaurantLogoUploader = ({
     console.error("Error loading logo preview image");
     setImageError(true);
   };
+
+  const triggerFileInput = () => {
+    document.getElementById('logo-upload')?.click();
+  };
+
+  const hasLogo = previewUrl !== null && !imageError;
 
   return (
     <div className="space-y-4">
@@ -123,65 +105,27 @@ export const RestaurantLogoUploader = ({
               </div>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => document.getElementById('logo-upload')?.click()}
-              disabled={isUploading}
-            >
-              Cambia Logo
-            </Button>
-            <Button 
-              variant="destructive" 
-              size="sm"
-              onClick={handleRemoveLogo}
-              disabled={isUploading}
-            >
-              Rimuovi Logo
-            </Button>
-          </div>
+          
+          <LogoActions
+            isUploading={isUploading}
+            hasLogo={hasLogo}
+            onRemove={handleRemoveLogo}
+            triggerFileInput={triggerFileInput}
+          />
         </div>
       ) : (
         <div className="flex flex-col items-center">
           <div 
             className="cursor-pointer border border-dashed border-gray-300 rounded-md p-10 w-full text-center hover:bg-gray-50"
-            onClick={() => document.getElementById('logo-upload')?.click()}
+            onClick={triggerFileInput}
           >
-            {isUploading ? (
-              <div className="flex flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                <span>Caricamento in corso...</span>
-              </div>
-            ) : imageError ? (
-              <div className="flex flex-col items-center justify-center">
-                <img 
-                  src={defaultPreview} 
-                  alt="Fallback Logo" 
-                  className="max-w-full max-h-24 object-contain mb-2" 
-                />
-                <span className="text-gray-500">Errore di caricamento. Clicca per caricare nuovo logo</span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center">
-                {currentLogo ? (
-                  <img 
-                    src={currentLogo} 
-                    alt="Logo Preview" 
-                    className="max-w-full max-h-24 object-contain mb-2" 
-                    onError={handleImageError}
-                  />
-                ) : (
-                  <img 
-                    src={defaultPreview} 
-                    alt="Default Logo" 
-                    className="max-w-full max-h-24 object-contain mb-2" 
-                  />
-                )}
-                <span className="text-gray-500">Clicca per caricare il logo</span>
-                <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, GIF</span>
-              </div>
-            )}
+            <ImagePreview
+              previewUrl={imageError ? null : previewUrl}
+              isUploading={isUploading}
+              onError={handleImageError}
+              defaultPreview={defaultPreview}
+              altText="Logo Preview"
+            />
           </div>
         </div>
       )}
