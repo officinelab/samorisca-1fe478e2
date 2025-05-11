@@ -1,6 +1,6 @@
 
 import { PrintLayout } from "@/types/printLayout";
-import { defaultLayouts } from "../defaultLayouts";
+import { defaultLayouts } from "../utils/defaultLayouts";
 import { getLayoutsFromStorage, saveLayoutsToStorage } from "./localStorageManager";
 import { validateLayouts, ensureValidPageMargins } from "./layoutValidator";
 
