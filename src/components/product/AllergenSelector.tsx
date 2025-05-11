@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Allergen } from "@/types/database";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";

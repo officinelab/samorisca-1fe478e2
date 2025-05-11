@@ -43,11 +43,17 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
     return Array.from(newSelected);
   };
 
+  // Ottieni gli allergeni completi (con tutti i dati) dalla selezione IDs
+  const getSelectedFullAllergens = () => {
+    return allergens.filter(allergen => selected.has(allergen.id));
+  };
+
   return {
     allergens,
     isLoading,
     selected,
     toggleAllergen,
-    selectedAllergens: Array.from(selected)
+    selectedAllergens: Array.from(selected),
+    selectedFullAllergens: getSelectedFullAllergens()
   };
 };
