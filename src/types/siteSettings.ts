@@ -25,3 +25,11 @@ export interface SiteSettings {
   defaultProductImage?: string;
   [key: string]: any;
 }
+
+export interface SiteSettingRecord {
+  id: string;
+  key: string;
+  value: any;
+  created_at?: string;
+  updated_at?: string;
+}
