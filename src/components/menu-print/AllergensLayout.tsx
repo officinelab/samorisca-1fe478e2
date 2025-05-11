@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CoverPage from './CoverPage';
 import AllergensPage from './AllergensPage';
 
@@ -10,6 +11,7 @@ type AllergensLayoutProps = {
   showPageBoundaries: boolean;
   allergens: Allergen[];
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const AllergensLayout: React.FC<AllergensLayoutProps> = ({
@@ -17,7 +19,8 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
   A4_HEIGHT_MM,
   showPageBoundaries,
   allergens,
-  restaurantLogo
+  restaurantLogo,
+  customLayout
 }) => {
   return (
     <>
@@ -38,6 +41,7 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
         allergens={allergens}
         layoutType="allergens"
         restaurantLogo={restaurantLogo}
+        customLayout={customLayout}
       />
     </>
   );

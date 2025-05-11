@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { useLocation } from "react-router-dom";
 import ProductLabelsManager from "@/components/menu-settings/ProductLabelsManager";
 import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesManager";
+import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import Allergens from "./Allergens";
 
 const MenuSettings = () => {
@@ -31,6 +32,7 @@ const MenuSettings = () => {
           <TabsTrigger value="labels">Etichette Prodotto</TabsTrigger>
           <TabsTrigger value="features">Caratteristiche Prodotto</TabsTrigger>
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
+          <TabsTrigger value="layouts">Layouts</TabsTrigger>
         </TabsList>
         
         <TabsContent value="labels" className="space-y-4">
@@ -58,6 +60,15 @@ const MenuSettings = () => {
           </p>
           <Separator className="my-4" />
           <Allergens />
+        </TabsContent>
+
+        <TabsContent value="layouts" className="space-y-4">
+          <h2 className="text-xl font-semibold">Layout di Stampa</h2>
+          <p className="text-muted-foreground">
+            Personalizza i layout di stampa del menu con diversi stili, formati e caratteri.
+          </p>
+          <Separator className="my-4" />
+          <PrintLayoutsManager />
         </TabsContent>
       </Tabs>
     </div>

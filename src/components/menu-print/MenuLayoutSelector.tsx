@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Category, Product, Allergen } from "@/types/database";
+import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import ClassicLayout from "./ClassicLayout";
 import ModernLayout from "./ModernLayout";
 import AllergensLayout from "./AllergensLayout";
@@ -32,7 +33,12 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
-  switch (selectedLayout) {
+  const { layouts, activeLayout } = useMenuLayouts();
+  
+  // Usa il layout attivo se disponibile, altrimenti usa il layout selezionato
+  const effectiveLayoutType = activeLayout ? activeLayout.type : selectedLayout;
+  
+  switch (effectiveLayoutType) {
     case "modern":
       return (
         <ModernLayout
@@ -46,6 +52,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           allergens={allergens}
           printAllergens={printAllergens}
           restaurantLogo={restaurantLogo}
+          customLayout={activeLayout}
         />
       );
     case "allergens":
@@ -56,6 +63,24 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           showPageBoundaries={showPageBoundaries}
           allergens={allergens}
           restaurantLogo={restaurantLogo}
+          customLayout={activeLayout}
+        />
+      );
+    case "custom":
+      // Per layout personalizzati, usa il layout ClassicLayout come base
+      return (
+        <ClassicLayout
+          A4_WIDTH_MM={A4_WIDTH_MM}
+          A4_HEIGHT_MM={A4_HEIGHT_MM}
+          showPageBoundaries={showPageBoundaries}
+          categories={categories}
+          products={products}
+          selectedCategories={selectedCategories}
+          language={language}
+          allergens={allergens}
+          printAllergens={printAllergens}
+          restaurantLogo={restaurantLogo}
+          customLayout={activeLayout}
         />
       );
     case "classic":
@@ -72,6 +97,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
           allergens={allergens}
           printAllergens={printAllergens}
           restaurantLogo={restaurantLogo}
+          customLayout={activeLayout}
         />
       );
   }
