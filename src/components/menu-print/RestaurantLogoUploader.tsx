@@ -13,6 +13,7 @@ interface RestaurantLogoUploaderProps {
   title?: string;
   description?: string;
   defaultPreview?: string;
+  uploadPath?: string;
 }
 
 export const RestaurantLogoUploader = ({ 
@@ -20,7 +21,8 @@ export const RestaurantLogoUploader = ({
   onLogoUploaded,
   title = "Logo del Ristorante", 
   description,
-  defaultPreview = "/placeholder.svg"
+  defaultPreview = "/placeholder.svg",
+  uploadPath = "restaurant/logo"
 }: RestaurantLogoUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -50,14 +52,14 @@ export const RestaurantLogoUploader = ({
     setImageError(false);
     
     try {
-      console.log("Uploading logo to Supabase Storage");
+      console.log(`Uploading logo to Supabase Storage at path: ${uploadPath}`);
       
       // Create local preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
       
-      // Upload image to Supabase Storage
-      const filePath = `restaurant/logo-${Date.now()}.${file.name.split('.').pop()}`;
+      // Upload image to Supabase Storage with a specific path for each logo type
+      const filePath = `${uploadPath}-${Date.now()}.${file.name.split('.').pop()}`;
       const { data, error } = await supabase.storage
         .from('menu-images')
         .upload(filePath, file, {

@@ -102,14 +102,30 @@ interface SidebarContentProps {
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navItems, sidebarLogo }) => {
+  const [logoError, setLogoError] = useState(false);
+  
+  const handleLogoError = () => {
+    console.error("Error loading sidebar logo");
+    setLogoError(true);
+  };
+
   return (
     <div className="h-full flex flex-col py-4">
       <div className="px-6 py-4 flex items-center justify-center">
-        <img 
-          src={sidebarLogo || "/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"} 
-          alt="Logo" 
-          className="h-21 w-auto" 
-        />
+        {sidebarLogo && !logoError ? (
+          <img 
+            src={sidebarLogo} 
+            alt="Logo" 
+            className="h-21 w-auto max-w-full" 
+            onError={handleLogoError}
+          />
+        ) : (
+          <img 
+            src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" 
+            alt="Default Logo" 
+            className="h-21 w-auto" 
+          />
+        )}
       </div>
 
       <div className="flex-1 px-4 mt-6">

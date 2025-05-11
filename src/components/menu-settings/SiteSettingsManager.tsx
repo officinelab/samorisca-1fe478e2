@@ -66,15 +66,16 @@ const SiteSettingsManager = () => {
           <div className="space-y-2">
             <Label>Logo Sidebar</Label>
             <p className="text-sm text-muted-foreground mb-2">
-              Questo logo viene visualizzato nella barra laterale dell'applicazione
+              Questo logo viene visualizzato nella barra laterale dell'area amministrativa
             </p>
             <div className="max-w-xs">
               <RestaurantLogoUploader
                 currentLogo={siteSettings.sidebarLogo}
                 onLogoUploaded={updateSidebarLogo}
                 title="Logo Sidebar"
-                description="Carica il logo che apparirà nella sidebar"
+                description="Carica il logo che apparirà nella sidebar amministrativa"
                 defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"
+                uploadPath="restaurant/sidebar-logo"
               />
             </div>
           </div>
@@ -92,8 +93,9 @@ const SiteSettingsManager = () => {
                 currentLogo={siteSettings.menuLogo}
                 onLogoUploaded={updateMenuLogo}
                 title="Logo Menu"
-                description="Carica il logo che apparirà nella pagina del menu"
+                description="Carica il logo che apparirà nella pagina del menu pubblico"
                 defaultPreview="/placeholder.svg"
+                uploadPath="restaurant/menu-logo"
               />
             </div>
           </div>
