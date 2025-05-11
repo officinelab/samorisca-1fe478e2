@@ -6,7 +6,7 @@ import {
   createNewLayoutFromTemplate,
   cloneExistingLayout,
   syncPageMargins
-} from "../utils/layoutOperations";
+} from "../utils/operations";
 import { toast } from "@/components/ui/sonner";
 
 /**
