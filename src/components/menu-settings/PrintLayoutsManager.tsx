@@ -46,12 +46,17 @@ const PrintLayoutsManager = () => {
     setSelectedLayout(updatedLayout);
   };
 
-  const handleCloneLayout = (layoutId: string) => {
-    const clonedLayout = cloneLayout(layoutId);
-    if (clonedLayout) {
-      toast.success("Layout clonato con successo");
-      setSelectedLayout(clonedLayout);
-      setEditorTab("modifica");
+  const handleCloneLayout = async (layoutId: string) => {
+    try {
+      const clonedLayout = await cloneLayout(layoutId);
+      if (clonedLayout) {
+        toast.success("Layout clonato con successo");
+        setSelectedLayout(clonedLayout);
+        setEditorTab("modifica");
+      }
+    } catch (error) {
+      console.error("Errore durante la clonazione del layout:", error);
+      toast.error("Errore durante la clonazione del layout");
     }
   };
 
@@ -69,12 +74,17 @@ const PrintLayoutsManager = () => {
     toast.success("Layout impostato come predefinito");
   };
 
-  const handleCreateLayout = (name: string) => {
-    const newLayout = createNewLayout(name);
-    setSelectedLayout(newLayout);
-    setIsCreateDialogOpen(false);
-    setEditorTab("modifica");
-    toast.success("Layout creato con successo");
+  const handleCreateLayout = async (name: string) => {
+    try {
+      const newLayout = await createNewLayout(name);
+      setSelectedLayout(newLayout);
+      setIsCreateDialogOpen(false);
+      setEditorTab("modifica");
+      toast.success("Layout creato con successo");
+    } catch (error) {
+      console.error("Errore durante la creazione del layout:", error);
+      toast.error("Errore durante la creazione del layout");
+    }
   };
 
   if (isLoading) {

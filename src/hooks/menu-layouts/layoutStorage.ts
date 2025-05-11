@@ -25,14 +25,20 @@ export const loadLayouts = async (): Promise<{
     // Se ci sono layout salvati su Supabase
     if (supabaseLayouts && supabaseLayouts.length > 0) {
       // Converti i dati JSON in oggetti JavaScript
-      const parsedLayouts = supabaseLayouts.map(layout => ({
-        ...layout,
-        elements: typeof layout.elements === 'string' ? JSON.parse(layout.elements) : layout.elements,
-        spacing: typeof layout.spacing === 'string' ? JSON.parse(layout.spacing) : layout.spacing,
-        page: typeof layout.page === 'string' ? JSON.parse(layout.page) : layout.page
-      }));
+      const parsedLayouts = supabaseLayouts.map(layout => {
+        // Assicurati che i campi necessari siano presenti e convertiti correttamente
+        return {
+          id: layout.id,
+          name: layout.name,
+          type: layout.type,
+          isDefault: layout.is_default,
+          elements: typeof layout.elements === 'string' ? JSON.parse(layout.elements) : layout.elements,
+          spacing: typeof layout.spacing === 'string' ? JSON.parse(layout.spacing) : layout.spacing,
+          page: typeof layout.page === 'string' ? JSON.parse(layout.page) : layout.page
+        } as PrintLayout;
+      });
       
-      const defaultLayout = parsedLayouts.find((layout: PrintLayout) => layout.is_default || layout.isDefault) || parsedLayouts[0];
+      const defaultLayout = parsedLayouts.find((layout) => layout.isDefault) || parsedLayouts[0];
       
       return {
         layouts: parsedLayouts,
@@ -55,7 +61,7 @@ export const loadLayouts = async (): Promise<{
       const defaultLayout = parsedLayouts.find((layout: PrintLayout) => layout.isDefault) || parsedLayouts[0];
       
       // Salva questi layout su Supabase per il futuro
-      migrateLayoutsToSupabase(parsedLayouts);
+      await migrateLayoutsToSupabase(parsedLayouts);
       
       return {
         layouts: parsedLayouts,
@@ -67,7 +73,7 @@ export const loadLayouts = async (): Promise<{
       const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0];
       
       // Salva i layout predefiniti su Supabase
-      migrateLayoutsToSupabase(defaultLayouts);
+      await migrateLayoutsToSupabase(defaultLayouts);
       
       return {
         layouts: defaultLayouts,
@@ -105,7 +111,18 @@ export const saveLayouts = async (
     // Backup su localStorage
     localStorage.setItem(LAYOUTS_STORAGE_KEY, JSON.stringify(layouts));
     
-    // Pulisci la tabella dei layout (alternativa più sicura sarebbe fare upsert per ogni layout)
+    // Prepara i dati da salvare su Supabase
+    const supabaseLayouts = layouts.map(layout => ({
+      id: layout.id,
+      name: layout.name,
+      type: layout.type,
+      is_default: layout.isDefault,
+      elements: layout.elements,
+      spacing: layout.spacing,
+      page: layout.page
+    }));
+    
+    // Pulisci la tabella dei layout
     const { error: deleteError } = await supabase
       .from('print_layouts')
       .delete()
@@ -122,7 +139,7 @@ export const saveLayouts = async (
     // Inserisci i nuovi layout
     const { error: insertError } = await supabase
       .from('print_layouts')
-      .insert(layouts);
+      .insert(supabaseLayouts);
     
     if (insertError) {
       console.error("Errore durante l'inserimento dei layout:", insertError);
@@ -145,6 +162,17 @@ export const saveLayouts = async (
 // Funzione per migrare i layout dal localStorage a Supabase
 const migrateLayoutsToSupabase = async (layouts: PrintLayout[]) => {
   try {
+    // Prepara i dati da salvare su Supabase
+    const supabaseLayouts = layouts.map(layout => ({
+      id: layout.id,
+      name: layout.name,
+      type: layout.type,
+      is_default: layout.isDefault,
+      elements: layout.elements,
+      spacing: layout.spacing,
+      page: layout.page
+    }));
+    
     // Pulisci la tabella
     await supabase
       .from('print_layouts')
@@ -154,7 +182,7 @@ const migrateLayoutsToSupabase = async (layouts: PrintLayout[]) => {
     // Inserisci i layout
     const { error } = await supabase
       .from('print_layouts')
-      .insert(layouts);
+      .insert(supabaseLayouts);
     
     if (error) {
       console.error("Errore durante la migrazione dei layout a Supabase:", error);

@@ -43,9 +43,9 @@ export const useMenuLayouts = () => {
   }, []);
 
   // Aggiunge un nuovo layout
-  const addLayout = async (newLayout: Omit<PrintLayout, "id">) => {
+  const addLayout = async (newLayout: Omit<PrintLayout, "id">): Promise<PrintLayout> => {
     const id = Date.now().toString();
-    const layoutWithId = { ...newLayout, id };
+    const layoutWithId = { ...newLayout, id } as PrintLayout;
     
     // Se è impostato come predefinito, rimuovi il flag dagli altri
     let updatedLayouts = [...layouts];
@@ -63,7 +63,7 @@ export const useMenuLayouts = () => {
       setLayouts(newLayouts);
       
       if (newLayout.isDefault) {
-        setActiveLayout(layoutWithId as PrintLayout);
+        setActiveLayout(layoutWithId);
       }
       
       toast.success("Layout aggiunto con successo");
@@ -158,7 +158,7 @@ export const useMenuLayouts = () => {
   };
 
   // Clona un layout esistente
-  const cloneLayout = async (layoutId: string) => {
+  const cloneLayout = async (layoutId: string): Promise<PrintLayout | null> => {
     const clonedLayout = cloneExistingLayout(layoutId, layouts);
     
     if (!clonedLayout) {
@@ -173,13 +173,12 @@ export const useMenuLayouts = () => {
     if (success) {
       setLayouts(updatedLayouts);
       toast.success("Layout clonato con successo");
+      return clonedLayout;
     } else {
       setError(saveError);
       toast.error(saveError || "Errore durante la clonazione del layout");
       return null;
     }
-    
-    return clonedLayout;
   };
 
   // Cambia il layout attivo
@@ -191,7 +190,7 @@ export const useMenuLayouts = () => {
   };
 
   // Crea un nuovo layout da zero
-  const createNewLayout = async (name: string) => {
+  const createNewLayout = async (name: string): Promise<PrintLayout> => {
     const newLayout = createNewLayoutFromTemplate(name, layouts);
     const updatedLayouts = [...layouts, newLayout];
     

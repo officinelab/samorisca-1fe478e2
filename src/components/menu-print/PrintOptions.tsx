@@ -61,7 +61,7 @@ const PrintOptions = ({
       toast.error("Errore nel caricamento dei layout: " + error);
     }
   }, [error]);
-  
+
   // Seleziona il layout basato sul layout attivo o su quello selezionato
   const handleLayoutChange = (layoutId: string) => {
     if (!layoutId) return; // Ensure we have a valid layoutId
@@ -125,7 +125,7 @@ const PrintOptions = ({
                 <CommandInput placeholder="Cerca layout..." />
                 <CommandEmpty>Nessun layout trovato.</CommandEmpty>
                 <CommandGroup>
-                  {layouts && layouts.length > 0 ? layouts.map((layout) => (
+                  {layouts && layouts.map((layout) => (
                     <CommandItem
                       key={layout.id}
                       value={layout.id}
@@ -142,9 +142,7 @@ const PrintOptions = ({
                         <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
                       )}
                     </CommandItem>
-                  )) : (
-                    <CommandItem disabled>Nessun layout disponibile</CommandItem>
-                  )}
+                  ))}
                 </CommandGroup>
               </Command>
             </PopoverContent>
