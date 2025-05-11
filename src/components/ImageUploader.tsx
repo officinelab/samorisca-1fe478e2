@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Upload, Loader2 } from "lucide-react";
@@ -15,6 +15,7 @@ interface ImageUploaderProps {
   maxSizeInMB?: number;
   allowedTypes?: string[];
   id?: string;
+  defaultPreview?: string;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -25,12 +26,23 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   folderPath = "uploads",
   maxSizeInMB = 5,
   allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"],
-  id = "imageUpload"
+  id = "imageUpload",
+  defaultPreview = "/placeholder.svg"
 }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(currentImage);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // Convert MB to bytes
+  
+  // Carica l'immagine corrente all'inizializzazione del componente
+  useEffect(() => {
+    if (currentImage) {
+      setImageUrl(currentImage);
+      setImageError(false);
+    } else {
+      setImageUrl(null);
+    }
+  }, [currentImage]);
   
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,9 +164,31 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
                 <span>Caricamento in corso...</span>
               </div>
+            ) : imageError ? (
+              <div className="flex flex-col items-center justify-center">
+                <img 
+                  src={defaultPreview} 
+                  alt="Default" 
+                  className="h-12 w-auto mb-2" 
+                />
+                <span className="text-sm text-gray-500">Errore di caricamento. Clicca per selezionare un'immagine</span>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center">
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                {currentImage ? (
+                  <img 
+                    src={currentImage} 
+                    alt="Current" 
+                    className="h-12 w-auto mb-2 object-contain" 
+                    onError={handleImageError}
+                  />
+                ) : (
+                  <img 
+                    src={defaultPreview} 
+                    alt="Default" 
+                    className="h-12 w-auto mb-2" 
+                  />
+                )}
                 <span className="text-sm text-gray-500">Clicca per selezionare un'immagine</span>
                 <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, GIF</span>
               </div>

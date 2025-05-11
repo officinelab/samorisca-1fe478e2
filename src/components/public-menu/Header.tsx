@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,23 +18,27 @@ export const Header: React.FC<HeaderProps> = ({
   cartItemsCount,
   openCart
 }) => {
+  const [logoError, setLogoError] = useState(false);
   const { siteSettings } = useSiteSettings();
+
+  const handleLogoError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error("Error loading menu logo:", e);
+    setLogoError(true);
+    const target = e.target as HTMLImageElement;
+    target.onerror = null;
+    target.src = "/placeholder.svg";
+  };
 
   return (
     <header className="sticky top-0 bg-white shadow-sm z-30">
       <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          {siteSettings.menuLogo ? (
+          {siteSettings.menuLogo && !logoError ? (
             <img 
               src={siteSettings.menuLogo} 
               alt={siteSettings.restaurantName || "Sa Morisca"} 
               className="h-10 w-auto object-contain"
-              onError={(e) => {
-                console.error("Error loading menu logo:", e);
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = "/placeholder.svg";
-              }}
+              onError={handleLogoError}
             />
           ) : (
             <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">

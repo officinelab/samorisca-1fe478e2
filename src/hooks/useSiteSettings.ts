@@ -46,6 +46,8 @@ export const useSiteSettings = () => {
             settingsObject[record.key] = record.value;
           });
           
+          console.log("Loaded site settings from Supabase:", settingsObject);
+          
           setSiteSettings({
             ...defaultSettings,
             ...settingsObject
@@ -56,6 +58,8 @@ export const useSiteSettings = () => {
           
           if (savedSettings) {
             const parsedSettings = JSON.parse(savedSettings);
+            console.log("Loaded site settings from localStorage:", parsedSettings);
+            
             setSiteSettings({
               ...defaultSettings,
               ...parsedSettings
@@ -71,6 +75,8 @@ export const useSiteSettings = () => {
             } catch (migrateError) {
               console.error("Failed to migrate settings:", migrateError);
             }
+          } else {
+            console.log("No settings found, using defaults:", defaultSettings);
           }
         }
       } catch (err) {
@@ -80,9 +86,12 @@ export const useSiteSettings = () => {
         try {
           const savedSettings = localStorage.getItem(STORAGE_KEY);
           if (savedSettings) {
+            const parsedSettings = JSON.parse(savedSettings);
+            console.log("Fallback to localStorage settings:", parsedSettings);
+            
             setSiteSettings({
               ...defaultSettings,
-              ...JSON.parse(savedSettings)
+              ...parsedSettings
             });
           }
         } catch (localErr) {
@@ -99,6 +108,8 @@ export const useSiteSettings = () => {
   // Funzione per salvare un'impostazione in Supabase e aggiornare lo stato locale
   const saveSetting = async (key: string, value: any): Promise<boolean> => {
     try {
+      console.log(`Saving setting ${key}:`, value);
+      
       // Aggiorna lo stato locale
       setSiteSettings(prevSettings => {
         const updatedSettings = { ...prevSettings, [key]: value };
@@ -139,12 +150,14 @@ export const useSiteSettings = () => {
 
   // Update functions for specific settings
   const updateSidebarLogo = (logoUrl: string) => {
+    console.log("Updating sidebar logo:", logoUrl);
     if (saveSetting('sidebarLogo', logoUrl)) {
       toast.success("Logo della sidebar aggiornato");
     }
   };
 
   const updateMenuLogo = (logoUrl: string) => {
+    console.log("Updating menu logo:", logoUrl);
     if (saveSetting('menuLogo', logoUrl)) {
       toast.success("Logo del menu aggiornato");
     }
@@ -163,6 +176,7 @@ export const useSiteSettings = () => {
   };
 
   const updateDefaultProductImage = (imageUrl: string) => {
+    console.log("Updating default product image:", imageUrl);
     if (saveSetting('defaultProductImage', imageUrl)) {
       toast.success("Immagine predefinita per i prodotti aggiornata");
     }

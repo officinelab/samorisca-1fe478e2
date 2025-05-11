@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,29 @@ interface RestaurantLogoUploaderProps {
   onLogoUploaded: (url: string) => void;
   title?: string;
   description?: string;
+  defaultPreview?: string;
 }
 
 export const RestaurantLogoUploader = ({ 
   currentLogo, 
   onLogoUploaded,
   title = "Logo del Ristorante", 
-  description
+  description,
+  defaultPreview = "/placeholder.svg"
 }: RestaurantLogoUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogo || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+
+  // Carica l'immagine corrente all'avvio
+  useEffect(() => {
+    if (currentLogo) {
+      setPreviewUrl(currentLogo);
+      setImageError(false);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [currentLogo]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -139,8 +151,31 @@ export const RestaurantLogoUploader = ({
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
                 <span>Caricamento in corso...</span>
               </div>
+            ) : imageError ? (
+              <div className="flex flex-col items-center justify-center">
+                <img 
+                  src={defaultPreview} 
+                  alt="Fallback Logo" 
+                  className="max-w-full max-h-24 object-contain mb-2" 
+                />
+                <span className="text-gray-500">Errore di caricamento. Clicca per caricare nuovo logo</span>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center">
+                {currentLogo ? (
+                  <img 
+                    src={currentLogo} 
+                    alt="Logo Preview" 
+                    className="max-w-full max-h-24 object-contain mb-2" 
+                    onError={handleImageError}
+                  />
+                ) : (
+                  <img 
+                    src={defaultPreview} 
+                    alt="Default Logo" 
+                    className="max-w-full max-h-24 object-contain mb-2" 
+                  />
+                )}
                 <span className="text-gray-500">Clicca per caricare il logo</span>
                 <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, GIF</span>
               </div>

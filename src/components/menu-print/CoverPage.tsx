@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 type CoverPageProps = {
   A4_WIDTH_MM: number; 
@@ -16,6 +16,8 @@ const CoverPage: React.FC<CoverPageProps> = ({
   layoutType,
   restaurantLogo
 }) => {
+  const [imageError, setImageError] = useState(false);
+  
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
@@ -110,9 +112,14 @@ const CoverPage: React.FC<CoverPageProps> = ({
     }
   };
 
+  const handleImageError = () => {
+    console.error("Error loading restaurant logo in CoverPage");
+    setImageError(true);
+  };
+
   return (
     <div className="page cover-page bg-white" style={getPageStyle()}>
-      {restaurantLogo ? (
+      {(restaurantLogo && !imageError) ? (
         <div style={{
           maxWidth: '80%',
           maxHeight: '50%',
@@ -128,12 +135,7 @@ const CoverPage: React.FC<CoverPageProps> = ({
               maxHeight: '100%',
               objectFit: 'contain',
             }}
-            onError={(e) => {
-              console.error("Error loading restaurant logo:", e);
-              const target = e.target as HTMLImageElement;
-              target.onerror = null;
-              target.src = '/placeholder.svg';
-            }}
+            onError={handleImageError}
           />
         </div>
       ) : (

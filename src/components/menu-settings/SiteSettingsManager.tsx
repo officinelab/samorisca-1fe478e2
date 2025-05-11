@@ -18,7 +18,8 @@ const SiteSettingsManager = () => {
     updateMenuLogo, 
     updateRestaurantName, 
     updateFooterText,
-    updateDefaultProductImage
+    updateDefaultProductImage,
+    isLoading
   } = useSiteSettings();
 
   const [restaurantName, setRestaurantName] = useState(siteSettings.restaurantName || "Sa Morisca");
@@ -46,6 +47,14 @@ const SiteSettingsManager = () => {
     toast.success("Testo del footer aggiornato");
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <p className="text-muted-foreground">Caricamento impostazioni in corso...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -65,6 +74,7 @@ const SiteSettingsManager = () => {
                 onLogoUploaded={updateSidebarLogo}
                 title="Logo Sidebar"
                 description="Carica il logo che apparirà nella sidebar"
+                defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"
               />
             </div>
           </div>
@@ -83,6 +93,7 @@ const SiteSettingsManager = () => {
                 onLogoUploaded={updateMenuLogo}
                 title="Logo Menu"
                 description="Carica il logo che apparirà nella pagina del menu"
+                defaultPreview="/placeholder.svg"
               />
             </div>
           </div>
@@ -98,9 +109,12 @@ const SiteSettingsManager = () => {
             <div className="max-w-xs">
               <ImageUploader
                 id="default-product-image"
+                bucketName="menu-images"
+                folderPath="products/default"
                 currentImage={siteSettings.defaultProductImage}
                 onImageUploaded={updateDefaultProductImage}
                 label="Carica immagine"
+                defaultPreview="/placeholder.svg"
               />
             </div>
           </div>
