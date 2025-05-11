@@ -56,11 +56,21 @@ const PrintOptions = ({
   const [open, setOpen] = useState(false);
   const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
   
+  // Inizializzare sempre safeLayouts come un array vuoto
+  const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
+  
   useEffect(() => {
     if (error) {
       toast.error("Errore nel caricamento dei layout: " + error);
     }
-  }, [error]);
+    
+    // Aggiorna safeLayouts solo quando layouts è definito
+    if (layouts && Array.isArray(layouts)) {
+      setSafeLayouts(layouts);
+    } else {
+      setSafeLayouts([]); // Assicuriamoci che sia sempre un array
+    }
+  }, [error, layouts]);
 
   // Seleziona il layout basato sul layout attivo o su quello selezionato
   const handleLayoutChange = (layoutId: string) => {
@@ -68,7 +78,7 @@ const PrintOptions = ({
     
     try {
       // Find the selected layout first
-      const layout = layouts.find(l => l.id === layoutId);
+      const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
         changeActiveLayout(layoutId);
         setSelectedLayout(layout.type);
@@ -89,9 +99,6 @@ const PrintOptions = ({
     if (activeLayout) return activeLayout.name;
     return "Seleziona layout...";
   };
-  
-  // Assicuriamoci che layouts sia sempre un array, anche se vuoto
-  const safeLayouts = Array.isArray(layouts) ? layouts : [];
 
   return (
     <Tabs defaultValue="basic" className="w-full">
@@ -130,32 +137,35 @@ const PrintOptions = ({
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
-              <Command>
-                <CommandInput placeholder="Cerca layout..." />
-                <CommandEmpty>Nessun layout trovato.</CommandEmpty>
-                <CommandGroup>
-                  {safeLayouts.map((layout) => (
-                    <CommandItem
-                      key={layout.id}
-                      value={layout.id}
-                      onSelect={() => handleLayoutChange(layout.id)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
+            {/* Renderizziamo il PopoverContent solo quando abbiamo dati validi */}
+            {safeLayouts.length > 0 && (
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Cerca layout..." />
+                  <CommandEmpty>Nessun layout trovato.</CommandEmpty>
+                  <CommandGroup>
+                    {safeLayouts.map((layout) => (
+                      <CommandItem
+                        key={layout.id}
+                        value={layout.id}
+                        onSelect={() => handleLayoutChange(layout.id)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {layout.name}
+                        {layout.isDefault && (
+                          <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
                         )}
-                      />
-                      {layout.name}
-                      {layout.isDefault && (
-                        <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
-                      )}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            )}
           </Popover>
         </div>
 
