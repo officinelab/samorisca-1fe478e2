@@ -1,6 +1,5 @@
 
-import React from "react";
-import { Allergen } from "@/types/database";
+import React, { useRef } from "react";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,10 +12,19 @@ interface AllergenSelectorProps {
 
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
   const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
+  const isProcessingRef = useRef(false);
 
   const handleAllergenToggle = (allergenId: string) => {
-    const newSelection = toggleAllergen(allergenId);
-    onChange(newSelection);
+    if (isProcessingRef.current) return;
+    
+    isProcessingRef.current = true;
+    
+    // Utilizza requestAnimationFrame per differire l'aggiornamento al parent
+    requestAnimationFrame(() => {
+      const newSelection = toggleAllergen(allergenId);
+      onChange(newSelection);
+      isProcessingRef.current = false;
+    });
   };
 
   return (
@@ -37,8 +45,9 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
               onClick={() => handleAllergenToggle(allergen.id)}
             >
               <Checkbox 
-                checked={selected.has(allergen.id)} 
-                onCheckedChange={() => handleAllergenToggle(allergen.id)} 
+                checked={selected.has(allergen.id)}
+                id={`allergen-${allergen.id}`}
+                onCheckedChange={() => {}} 
               />
               <span className="text-sm">
                 {allergen.number && `${allergen.number}. `}{allergen.title}
