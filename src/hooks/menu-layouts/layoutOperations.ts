@@ -3,30 +3,62 @@ import { PrintLayout, PageMargins } from "@/types/printLayout";
 import { defaultLayouts } from "./defaultLayouts";
 import { saveLayouts } from "./layoutStorage";
 
+// Ensure all layout objects have properly initialized page margin properties
+const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
+  // Set default values if not present
+  const pageWithDefaults = {
+    marginTop: layout.page.marginTop || 20,
+    marginRight: layout.page.marginRight || 15,
+    marginBottom: layout.page.marginBottom || 20,
+    marginLeft: layout.page.marginLeft || 15,
+    useDistinctMarginsForPages: layout.page.useDistinctMarginsForPages || false,
+    oddPages: layout.page.oddPages || {
+      marginTop: layout.page.marginTop || 20,
+      marginRight: layout.page.marginRight || 15,
+      marginBottom: layout.page.marginBottom || 20,
+      marginLeft: layout.page.marginLeft || 15
+    },
+    evenPages: layout.page.evenPages || {
+      marginTop: layout.page.marginTop || 20,
+      marginRight: layout.page.marginRight || 15,
+      marginBottom: layout.page.marginBottom || 20,
+      marginLeft: layout.page.marginLeft || 15
+    }
+  };
+
+  return {
+    ...layout,
+    page: pageWithDefaults
+  };
+};
+
 // Aggiorna i margini di pagina in base alle impostazioni
 export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
+  // Make sure we have valid page margin objects
+  const validatedLayout = ensureValidPageMargins(layout);
+  
   // Se non si usano margini distinti, sincronizza i valori dei margini
-  if (!layout.page.useDistinctMarginsForPages) {
+  if (!validatedLayout.page.useDistinctMarginsForPages) {
     return {
-      ...layout,
+      ...validatedLayout,
       page: {
-        ...layout.page,
+        ...validatedLayout.page,
         oddPages: {
-          marginTop: layout.page.marginTop,
-          marginRight: layout.page.marginRight,
-          marginBottom: layout.page.marginBottom,
-          marginLeft: layout.page.marginLeft
+          marginTop: validatedLayout.page.marginTop,
+          marginRight: validatedLayout.page.marginRight,
+          marginBottom: validatedLayout.page.marginBottom,
+          marginLeft: validatedLayout.page.marginLeft
         },
         evenPages: {
-          marginTop: layout.page.marginTop,
-          marginRight: layout.page.marginRight,
-          marginBottom: layout.page.marginBottom,
-          marginLeft: layout.page.marginLeft
+          marginTop: validatedLayout.page.marginTop,
+          marginRight: validatedLayout.page.marginRight,
+          marginBottom: validatedLayout.page.marginBottom,
+          marginLeft: validatedLayout.page.marginLeft
         }
       }
     };
   }
-  return layout;
+  return validatedLayout;
 };
 
 // Aggiorna un layout esistente
@@ -58,13 +90,13 @@ export const createNewLayoutFromTemplate = (
   // Usa il layout classico come base per un nuovo layout
   const baseLayout = defaultLayouts.find(layout => layout.type === "classic") || defaultLayouts[0];
   
-  return {
+  return ensureValidPageMargins({
     ...baseLayout,
     id: Date.now().toString(),
     name: name,
     type: "custom" as const,
     isDefault: false
-  };
+  });
 };
 
 // Clona un layout esistente
@@ -78,10 +110,10 @@ export const cloneExistingLayout = (
     return null;
   }
   
-  return {
+  return ensureValidPageMargins({
     ...layoutToClone,
     id: Date.now().toString(),
     name: `${layoutToClone.name} (copia)`,
     isDefault: false
-  };
+  });
 };

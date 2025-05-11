@@ -20,6 +20,21 @@ const PageSettingsTab = ({
   onEvenPageMarginChange,
   onToggleDistinctMargins,
 }: PageSettingsTabProps) => {
+  // Ensure oddPages and evenPages are always defined with default values
+  const oddPages = layout.page.oddPages || {
+    marginTop: layout.page.marginTop,
+    marginRight: layout.page.marginRight,
+    marginBottom: layout.page.marginBottom,
+    marginLeft: layout.page.marginLeft
+  };
+
+  const evenPages = layout.page.evenPages || {
+    marginTop: layout.page.marginTop,
+    marginRight: layout.page.marginRight,
+    marginBottom: layout.page.marginBottom,
+    marginLeft: layout.page.marginLeft
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="p-4 border rounded-md">
@@ -98,7 +113,7 @@ const PageSettingsTab = ({
                     id="odd-margin-top"
                     type="number"
                     min={0}
-                    value={layout.page.oddPages.marginTop}
+                    value={oddPages.marginTop}
                     onChange={(e) => onOddPageMarginChange("marginTop", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -110,7 +125,7 @@ const PageSettingsTab = ({
                     id="odd-margin-right"
                     type="number"
                     min={0}
-                    value={layout.page.oddPages.marginRight}
+                    value={oddPages.marginRight}
                     onChange={(e) => onOddPageMarginChange("marginRight", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -122,7 +137,7 @@ const PageSettingsTab = ({
                     id="odd-margin-bottom"
                     type="number"
                     min={0}
-                    value={layout.page.oddPages.marginBottom}
+                    value={oddPages.marginBottom}
                     onChange={(e) => onOddPageMarginChange("marginBottom", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -134,7 +149,7 @@ const PageSettingsTab = ({
                     id="odd-margin-left"
                     type="number"
                     min={0}
-                    value={layout.page.oddPages.marginLeft}
+                    value={oddPages.marginLeft}
                     onChange={(e) => onOddPageMarginChange("marginLeft", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -151,7 +166,7 @@ const PageSettingsTab = ({
                     id="even-margin-top"
                     type="number"
                     min={0}
-                    value={layout.page.evenPages.marginTop}
+                    value={evenPages.marginTop}
                     onChange={(e) => onEvenPageMarginChange("marginTop", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -163,7 +178,7 @@ const PageSettingsTab = ({
                     id="even-margin-right"
                     type="number"
                     min={0}
-                    value={layout.page.evenPages.marginRight}
+                    value={evenPages.marginRight}
                     onChange={(e) => onEvenPageMarginChange("marginRight", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -175,7 +190,7 @@ const PageSettingsTab = ({
                     id="even-margin-bottom"
                     type="number"
                     min={0}
-                    value={layout.page.evenPages.marginBottom}
+                    value={evenPages.marginBottom}
                     onChange={(e) => onEvenPageMarginChange("marginBottom", parseInt(e.target.value))}
                     className="mt-1"
                   />
@@ -187,7 +202,7 @@ const PageSettingsTab = ({
                     id="even-margin-left"
                     type="number"
                     min={0}
-                    value={layout.page.evenPages.marginLeft}
+                    value={evenPages.marginLeft}
                     onChange={(e) => onEvenPageMarginChange("marginLeft", parseInt(e.target.value))}
                     className="mt-1"
                   />

@@ -2,8 +2,34 @@
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 
+// Helper to ensure page margins are properly initialized
+const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
+  // Set default values if not present
+  const pageWithDefaults = {
+    ...layout.page,
+    oddPages: layout.page.oddPages || {
+      marginTop: layout.page.marginTop,
+      marginRight: layout.page.marginRight,
+      marginBottom: layout.page.marginBottom,
+      marginLeft: layout.page.marginLeft
+    },
+    evenPages: layout.page.evenPages || {
+      marginTop: layout.page.marginTop,
+      marginRight: layout.page.marginRight,
+      marginBottom: layout.page.marginBottom,
+      marginLeft: layout.page.marginLeft
+    }
+  };
+
+  return {
+    ...layout,
+    page: pageWithDefaults
+  };
+};
+
 export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) => {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>({ ...initialLayout });
+  // Ensure the initial layout has all required page margin properties
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins({ ...initialLayout }));
   const [activeTab, setActiveTab] = useState("generale");
 
   const handleGeneralChange = (field: keyof PrintLayout, value: any) => {
