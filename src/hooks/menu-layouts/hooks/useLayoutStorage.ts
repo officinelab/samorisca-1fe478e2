@@ -5,7 +5,7 @@ import { loadLayouts } from "../storage";
 import { toast } from "@/components/ui/sonner";
 
 /**
- * Hook per caricare i layout da localStorage o default layouts
+ * Hook to load layouts from localStorage or default layouts
  */
 export const useLayoutStorage = () => {
   const [layouts, setLayouts] = useState<PrintLayout[]>([]);
@@ -13,7 +13,7 @@ export const useLayoutStorage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carica i layout salvati dal localStorage o quelli predefiniti
+  // Load saved layouts from localStorage or default ones
   useEffect(() => {
     const fetchLayouts = async () => {
       setIsLoading(true);
@@ -21,7 +21,7 @@ export const useLayoutStorage = () => {
         const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
         
         setLayouts(loadedLayouts || []);
-        setActiveLayout(defaultLayout);
+        setActiveLayout(defaultLayout || null);
         
         if (loadError) {
           setError(loadError);

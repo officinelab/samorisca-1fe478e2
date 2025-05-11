@@ -33,9 +33,9 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
-  const { layouts, activeLayout } = useMenuLayouts();
+  const { activeLayout } = useMenuLayouts();
   
-  // Usa il layout attivo se disponibile, altrimenti usa il layout selezionato
+  // Use selected layout as fallback if activeLayout is not available
   const effectiveLayoutType = activeLayout ? activeLayout.type : selectedLayout;
   
   switch (effectiveLayoutType) {
@@ -67,7 +67,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
         />
       );
     case "custom":
-      // Per layout personalizzati, usa il layout ClassicLayout come base
+      // For custom layouts, use ClassicLayout as base
       return (
         <ClassicLayout
           A4_WIDTH_MM={A4_WIDTH_MM}

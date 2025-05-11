@@ -1,12 +1,14 @@
 
+import { useState, useEffect } from "react";
+import { PrintLayout } from "@/types/printLayout";
 import { useLayoutStorage } from "./hooks/useLayoutStorage";
 import { useLayoutOperations } from "./hooks/useLayoutOperations";
 
 /**
- * Hook principale per la gestione dei layout di stampa 
+ * Main hook for managing menu layout operations
  */
 export const useMenuLayouts = () => {
-  // Caricamento dei layout
+  // Use storage hook to load layouts
   const {
     layouts,
     setLayouts,
@@ -17,7 +19,7 @@ export const useMenuLayouts = () => {
     setError
   } = useLayoutStorage();
 
-  // Operazioni sui layout
+  // Use operations hook for layout operations
   const {
     addLayout,
     updateLayout,
@@ -26,16 +28,18 @@ export const useMenuLayouts = () => {
     cloneLayout,
     createNewLayout
   } = useLayoutOperations(
-    layouts,
+    layouts || [],
     setLayouts,
     activeLayout,
     setActiveLayout,
     setError
   );
 
-  // Cambia il layout attivo
+  // Change active layout
   const changeActiveLayout = (layoutId: string) => {
-    const newActiveLayout = layouts.find(layout => layout.id === layoutId);
+    if (!layouts || !Array.isArray(layouts)) return;
+    
+    const newActiveLayout = layouts.find((layout) => layout.id === layoutId);
     if (newActiveLayout) {
       setActiveLayout(newActiveLayout);
     }

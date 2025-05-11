@@ -36,17 +36,13 @@ export const LayoutSelector = ({
       toast.error("Errore nel caricamento dei layout: " + error);
     }
     
-    // Aggiorna safeLayouts solo quando layouts è definito
-    if (layouts && Array.isArray(layouts)) {
-      setSafeLayouts(layouts);
-    } else {
-      setSafeLayouts([]); // Assicuriamoci che sia sempre un array
-    }
+    // Ensure layouts is always an array even if undefined or null
+    setSafeLayouts(Array.isArray(layouts) ? layouts : []);
   }, [error, layouts]);
 
-  // Seleziona il layout basato sul layout attivo o su quello selezionato
+  // Select layout based on active layout or selected layout
   const handleLayoutChange = (layoutId: string) => {
-    if (!layoutId) return; // Ensure we have a valid layoutId
+    if (!layoutId) return;
     
     try {
       // Find the selected layout first
@@ -65,7 +61,7 @@ export const LayoutSelector = ({
     }
   };
 
-  // Determiniamo il testo da mostrare nel pulsante del layout
+  // Determine text to show in layout button
   const getLayoutButtonText = () => {
     if (isLoading) return "Caricamento...";
     if (activeLayout) return activeLayout.name;
@@ -88,35 +84,32 @@ export const LayoutSelector = ({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        {/* Renderizziamo il PopoverContent solo quando abbiamo dati validi */}
-        {safeLayouts.length > 0 && (
-          <PopoverContent className="w-full p-0">
-            <Command>
-              <CommandInput placeholder="Cerca layout..." />
-              <CommandEmpty>Nessun layout trovato.</CommandEmpty>
-              <CommandGroup>
-                {safeLayouts.map((layout) => (
-                  <CommandItem
-                    key={layout.id}
-                    value={layout.id}
-                    onSelect={() => handleLayoutChange(layout.id)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {layout.name}
-                    {layout.isDefault && (
-                      <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
+        <PopoverContent className="w-full p-0">
+          <Command>
+            <CommandInput placeholder="Cerca layout..." />
+            <CommandEmpty>Nessun layout trovato.</CommandEmpty>
+            <CommandGroup>
+              {safeLayouts.map((layout) => (
+                <CommandItem
+                  key={layout.id}
+                  value={layout.id}
+                  onSelect={() => handleLayoutChange(layout.id)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
                     )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        )}
+                  />
+                  {layout.name}
+                  {layout.isDefault && (
+                    <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
       </Popover>
     </div>
   );
