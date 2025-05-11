@@ -14,6 +14,7 @@ interface ImageUploaderProps {
   folderPath?: string;
   maxSizeInMB?: number;
   allowedTypes?: string[];
+  id?: string;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -23,7 +24,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   bucketName = "images",
   folderPath = "uploads",
   maxSizeInMB = 5,
-  allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+  allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  id = "imageUpload"
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(currentImage);
   const [isUploading, setIsUploading] = useState(false);
@@ -108,13 +110,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           <div className="text-center">{label}</div>
           <input
             type="file"
-            id="imageUpload"
+            id={id}
             className="hidden"
             accept={allowedTypes.join(',')}
             onChange={handleImageChange}
             disabled={isUploading}
           />
-          <label htmlFor="imageUpload">
+          <label htmlFor={id}>
             <Button 
               type="button" 
               variant="secondary" 

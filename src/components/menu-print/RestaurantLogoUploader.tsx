@@ -9,9 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
 interface RestaurantLogoUploaderProps {
   currentLogo?: string | null;
   onLogoUploaded: (url: string) => void;
+  title?: string;
+  description?: string;
 }
 
-export const RestaurantLogoUploader = ({ currentLogo, onLogoUploaded }: RestaurantLogoUploaderProps) => {
+export const RestaurantLogoUploader = ({ 
+  currentLogo, 
+  onLogoUploaded,
+  title = "Logo del Ristorante", 
+  description
+}: RestaurantLogoUploaderProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogo || null);
 
@@ -65,7 +72,8 @@ export const RestaurantLogoUploader = ({ currentLogo, onLogoUploaded }: Restaura
 
   return (
     <div className="space-y-4">
-      <Label>Logo del Ristorante</Label>
+      <Label>{title}</Label>
+      {description && <p className="text-sm text-muted-foreground">{description}</p>}
       {previewUrl ? (
         <div className="space-y-2">
           <div className="relative w-40 h-40 mx-auto">

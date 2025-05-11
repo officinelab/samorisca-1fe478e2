@@ -48,6 +48,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { siteSettings } = useSiteSettings();
 
   // Gestisce lo scroll
   useEffect(() => {
