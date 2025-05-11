@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/sonner";
-import SVGIconUploader from "@/components/site/SVGIconUploader";
 import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
 import ImageUploader from "@/components/ImageUploader";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useSiteIcon } from "@/hooks/useSiteIcon";
 
 const SiteSettingsManager = () => {
   const { 
@@ -22,29 +22,29 @@ const SiteSettingsManager = () => {
     isLoading
   } = useSiteSettings();
 
-  const [restaurantName, setRestaurantName] = useState(siteSettings.restaurantName || "Sa Morisca");
+  const { siteIcon, updateSiteIcon } = useSiteIcon();
+
+  const [restaurantName, setRestaurantName] = useState(siteSettings?.restaurantName || "Sa Morisca");
   const [footerText, setFooterText] = useState(
-    siteSettings.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`
+    siteSettings?.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`
   );
 
-  // Aggiorna i campi quando i dati vengono caricati
+  // Aggiorniamo i campi quando i dati vengono caricati
   useEffect(() => {
-    if (siteSettings.restaurantName) {
+    if (siteSettings?.restaurantName) {
       setRestaurantName(siteSettings.restaurantName);
     }
-    if (siteSettings.footerText) {
+    if (siteSettings?.footerText) {
       setFooterText(siteSettings.footerText);
     }
   }, [siteSettings]);
 
   const handleRestaurantNameSave = () => {
     updateRestaurantName(restaurantName);
-    toast.success("Nome del ristorante aggiornato");
   };
 
   const handleFooterTextSave = () => {
     updateFooterText(footerText);
-    toast.success("Testo del footer aggiornato");
   };
 
   if (isLoading) {
@@ -70,7 +70,7 @@ const SiteSettingsManager = () => {
             </p>
             <div className="max-w-xs">
               <RestaurantLogoUploader
-                currentLogo={siteSettings.sidebarLogo}
+                currentLogo={siteSettings?.sidebarLogo}
                 onLogoUploaded={updateSidebarLogo}
                 title="Logo Sidebar"
                 description="Carica il logo che apparirà nella sidebar amministrativa"
@@ -90,12 +90,32 @@ const SiteSettingsManager = () => {
             </p>
             <div className="max-w-xs">
               <RestaurantLogoUploader
-                currentLogo={siteSettings.menuLogo}
+                currentLogo={siteSettings?.menuLogo}
                 onLogoUploaded={updateMenuLogo}
                 title="Logo Menu"
                 description="Carica il logo che apparirà nella pagina del menu pubblico"
                 defaultPreview="/placeholder.svg"
                 uploadPath="restaurant/menu-logo"
+              />
+            </div>
+          </div>
+          
+          <Separator />
+          
+          {/* Icona del Sito */}
+          <div className="space-y-2">
+            <Label>Icona del Sito</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Questa icona appare nella scheda del browser (favicon)
+            </p>
+            <div className="max-w-xs">
+              <RestaurantLogoUploader
+                currentLogo={siteIcon}
+                onLogoUploaded={updateSiteIcon}
+                title="Icona del Sito"
+                description="Carica l'icona che apparirà come favicon del sito"
+                defaultPreview="/placeholder.svg"
+                uploadPath="site/favicon"
               />
             </div>
           </div>
@@ -113,7 +133,7 @@ const SiteSettingsManager = () => {
                 id="default-product-image"
                 bucketName="menu-images"
                 folderPath="products/default"
-                currentImage={siteSettings.defaultProductImage}
+                currentImage={siteSettings?.defaultProductImage}
                 onImageUploaded={updateDefaultProductImage}
                 label="Carica immagine"
                 defaultPreview="/placeholder.svg"

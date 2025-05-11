@@ -33,19 +33,19 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 bg-white shadow-sm z-30">
       <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          {siteSettings.menuLogo && !logoError ? (
+          {siteSettings?.menuLogo && !logoError ? (
             <img 
               src={siteSettings.menuLogo} 
-              alt={siteSettings.restaurantName || "Sa Morisca"} 
+              alt={siteSettings?.restaurantName || "Sa Morisca"} 
               className="h-10 w-auto object-contain"
               onError={handleLogoError}
             />
           ) : (
             <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
-              <span className="text-sm font-bold">{(siteSettings.restaurantName || "SM").substring(0, 2)}</span>
+              <span className="text-sm font-bold">{(siteSettings?.restaurantName || "SM").substring(0, 2)}</span>
             </div>
           )}
-          <h1 className="text-xl font-bold ml-2">{siteSettings.restaurantName || "Sa Morisca"}</h1>
+          <h1 className="text-xl font-bold ml-2">{siteSettings?.restaurantName || "Sa Morisca"}</h1>
         </div>
         
         <div className="flex items-center space-x-2">

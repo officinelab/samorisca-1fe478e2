@@ -9,7 +9,7 @@ import { useSiteIcon } from "@/hooks/useSiteIcon";
 import ImageUploader from "@/components/ImageUploader";
 
 const SiteSettings = () => {
-  const { siteSettings, updateMenuLogo, updateDefaultProductImage } = useSiteSettings();
+  const { siteSettings, updateMenuLogo, updateDefaultProductImage, updateSidebarLogo } = useSiteSettings();
   const { siteIcon, updateSiteIcon } = useSiteIcon();
 
   // Apply site icon when page loads
@@ -46,14 +46,34 @@ const SiteSettings = () => {
                 <p className="text-sm text-muted-foreground">Questo logo appare nella pagina del menu pubblico</p>
                 <div className="bg-slate-50 p-4 rounded-md border">
                   <RestaurantLogoUploader 
-                    currentLogo={siteSettings.menuLogo} 
+                    currentLogo={siteSettings?.menuLogo} 
                     onLogoUploaded={updateMenuLogo}
                     title="Logo del Menu"
                     description="Questo logo appare nella pagina del menu pubblico"
+                    uploadPath="restaurant/menu-logo"
                   />
                 </div>
               </div>
               
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Logo Sidebar</h3>
+                <p className="text-sm text-muted-foreground">Questo logo appare nella sidebar dell'area amministrativa</p>
+                <div className="bg-slate-50 p-4 rounded-md border">
+                  <RestaurantLogoUploader 
+                    currentLogo={siteSettings?.sidebarLogo} 
+                    onLogoUploaded={updateSidebarLogo}
+                    title="Logo della Sidebar"
+                    description="Questo logo appare nella sidebar dell'area amministrativa"
+                    uploadPath="restaurant/sidebar-logo"
+                    defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <Separator className="my-6" />
+            
+            <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Icona del Sito</h3>
                 <p className="text-sm text-muted-foreground">Questa icona appare nella scheda del browser</p>
@@ -64,11 +84,7 @@ const SiteSettings = () => {
                   />
                 </div>
               </div>
-            </div>
-            
-            <Separator className="my-6" />
-            
-            <div className="grid gap-6 sm:grid-cols-2">
+              
               <div className="space-y-2">
                 <h3 className="text-lg font-medium">Immagine Predefinita Prodotti</h3>
                 <p className="text-sm text-muted-foreground">Questa immagine viene utilizzata per prodotti senza un'immagine specifica</p>
@@ -77,7 +93,7 @@ const SiteSettings = () => {
                     id="default-product-image"
                     bucketName="menu-images"
                     folderPath="products/default"
-                    currentImage={siteSettings.defaultProductImage}
+                    currentImage={siteSettings?.defaultProductImage}
                     onImageUploaded={updateDefaultProductImage}
                     label="Immagine predefinita per prodotti"
                   />

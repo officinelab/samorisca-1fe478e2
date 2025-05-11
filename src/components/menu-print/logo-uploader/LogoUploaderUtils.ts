@@ -45,5 +45,13 @@ export const validateImageFile = (file: File): boolean => {
     toast.error("Per favore seleziona un'immagine valida");
     return false;
   }
+  
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  if (file.size > maxSize) {
+    toast.error("L'immagine è troppo grande. Dimensione massima: 5MB");
+    return false;
+  }
+  
   return true;
 };

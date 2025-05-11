@@ -62,6 +62,10 @@ export const RestaurantLogoUploader = ({
         onLogoUploaded(publicUrl);
         toast.success("Logo caricato con successo");
       }
+    } catch (error) {
+      console.error("Errore nel caricamento:", error);
+      toast.error("Si è verificato un errore nel caricamento del logo");
+      setImageError(true);
     } finally {
       setIsUploading(false);
     }
@@ -80,10 +84,13 @@ export const RestaurantLogoUploader = ({
   };
 
   const triggerFileInput = () => {
-    document.getElementById('logo-upload')?.click();
+    // Generiamo un ID unico per evitare conflitti tra più uploader nella stessa pagina
+    const inputId = `logo-upload-${uploadPath.replace(/\//g, '-')}`;
+    document.getElementById(inputId)?.click();
   };
 
   const hasLogo = previewUrl !== null && !imageError;
+  const inputId = `logo-upload-${uploadPath.replace(/\//g, '-')}`;
 
   return (
     <div className="space-y-4">
@@ -130,7 +137,7 @@ export const RestaurantLogoUploader = ({
         </div>
       )}
       <Input 
-        id="logo-upload" 
+        id={inputId}
         type="file" 
         accept="image/*"
         onChange={handleFileChange}

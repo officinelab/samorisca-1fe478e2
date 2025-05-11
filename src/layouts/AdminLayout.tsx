@@ -18,7 +18,7 @@ const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { siteSettings } = useSiteSettings();
+  const { siteSettings, isLoading } = useSiteSettings();
 
   const handleLogout = async () => {
     await logout();
@@ -53,7 +53,7 @@ const AdminLayout = () => {
                 onClose={() => setSidebarOpen(false)} 
                 onLogout={handleLogout} 
                 navItems={navItems}
-                sidebarLogo={siteSettings.sidebarLogo} 
+                sidebarLogo={siteSettings?.sidebarLogo} 
               />
             </div>
           </div>
@@ -65,7 +65,7 @@ const AdminLayout = () => {
         <SidebarContent 
           onLogout={handleLogout} 
           navItems={navItems} 
-          sidebarLogo={siteSettings.sidebarLogo}
+          sidebarLogo={siteSettings?.sidebarLogo}
         />
       </div>
 
