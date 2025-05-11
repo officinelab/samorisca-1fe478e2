@@ -40,12 +40,16 @@ export const useProductData = (product?: Product) => {
             .select("allergen_id")
             .eq("product_id", product.id);
             
-          if (data) {
+          if (data && data.length > 0) {
             const allergenIds = data.map(item => item.allergen_id);
+            console.log("Allergeni caricati per il prodotto:", allergenIds);
             setSelectedAllergens(allergenIds);
+          } else {
+            setSelectedAllergens([]);
           }
         } catch (error) {
           console.error("Errore nel caricamento degli allergeni del prodotto:", error);
+          setSelectedAllergens([]);
         }
       };
       
@@ -66,12 +70,16 @@ export const useProductData = (product?: Product) => {
             .select("feature_id")
             .eq("product_id", product.id);
             
-          if (data) {
+          if (data && data.length > 0) {
             const featureIds = data.map(item => item.feature_id);
+            console.log("Caratteristiche caricate per il prodotto:", featureIds);
             setSelectedFeatures(featureIds);
+          } else {
+            setSelectedFeatures([]);
           }
         } catch (error) {
           console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
+          setSelectedFeatures([]);
         }
       };
       
@@ -82,71 +90,31 @@ export const useProductData = (product?: Product) => {
     }
   }, [product?.id]);
 
-  // Funzione sicura per l'aggiornamento degli allergeni
+  // Funzione per l'aggiornamento degli allergeni
   const setSelectedAllergensStable = useCallback((allergens: string[]) => {
     if (isUpdatingRef.current) return;
     
     isUpdatingRef.current = true;
+    console.log("Aggiornamento allergeni:", allergens);
     
-    const currentSet = new Set(selectedAllergens);
-    const newSet = new Set(allergens);
-    
-    // Confronto rapido basato su dimensione
-    if (currentSet.size !== newSet.size) {
-      setSelectedAllergens([...allergens]);
-    } else {
-      // Controllo approfondito se le dimensioni sono uguali
-      let isDifferent = false;
-      for (const item of newSet) {
-        if (!currentSet.has(item)) {
-          isDifferent = true;
-          break;
-        }
-      }
-      
-      if (isDifferent) {
-        setSelectedAllergens([...allergens]);
-      }
-    }
-    
-    // Utilizziamo requestAnimationFrame invece di setTimeout per garantire sincronizzazione con il rendering
-    requestAnimationFrame(() => {
+    setTimeout(() => {
+      setSelectedAllergens(allergens);
       isUpdatingRef.current = false;
-    });
-  }, [selectedAllergens]);
+    }, 0);
+  }, []);
 
-  // Funzione sicura per l'aggiornamento delle caratteristiche
+  // Funzione per l'aggiornamento delle caratteristiche
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
     if (isUpdatingRef.current) return;
     
     isUpdatingRef.current = true;
+    console.log("Aggiornamento caratteristiche:", features);
     
-    const currentSet = new Set(selectedFeatures);
-    const newSet = new Set(features);
-    
-    // Confronto rapido basato su dimensione
-    if (currentSet.size !== newSet.size) {
-      setSelectedFeatures([...features]);
-    } else {
-      // Controllo approfondito se le dimensioni sono uguali
-      let isDifferent = false;
-      for (const item of newSet) {
-        if (!currentSet.has(item)) {
-          isDifferent = true;
-          break;
-        }
-      }
-      
-      if (isDifferent) {
-        setSelectedFeatures([...features]);
-      }
-    }
-    
-    // Utilizziamo requestAnimationFrame invece di setTimeout
-    requestAnimationFrame(() => {
+    setTimeout(() => {
+      setSelectedFeatures(features);
       isUpdatingRef.current = false;
-    });
-  }, [selectedFeatures]);
+    }, 0);
+  }, []);
 
   return {
     labels,

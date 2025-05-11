@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,7 +13,7 @@ interface AllergenSelectorProps {
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
   const { allergens, isLoading, selected, toggleAllergen } = useAllergenCheckboxes(selectedAllergenIds);
 
-  // Gestore ottimizzato per il toggle degli allergeni
+  // Gestore per il toggle degli allergeni
   const handleAllergenToggle = (allergenId: string) => {
     toggleAllergen(allergenId, onChange);
   };

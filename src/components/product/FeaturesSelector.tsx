@@ -17,9 +17,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
 }) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([...selectedFeatureIds]);
   const processingRef = useRef(false);
-  const prevSelectedRef = useRef<string[]>([]);
 
   // Load product features
   useEffect(() => {
@@ -43,34 +42,16 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Update local state when props change, using Sets for efficient comparison
+  // Update local state when props change
   useEffect(() => {
-    if (processingRef.current) return;
+    const currentIds = JSON.stringify([...selectedFeatureIds].sort());
+    const selectedIds = JSON.stringify([...selected].sort());
     
-    const currentSet = new Set(selectedFeatureIds);
-    const localSet = new Set(selected);
-    
-    // Se le dimensioni sono diverse, sicuramente sono diversi
-    if (currentSet.size !== localSet.size) {
-      prevSelectedRef.current = [...selectedFeatureIds];
-      setSelected([...selectedFeatureIds]);
-      return;
-    }
-    
-    // Verifichiamo se tutti gli elementi di currentSet sono in localSet
-    let isDifferent = false;
-    for (const item of currentSet) {
-      if (!localSet.has(item)) {
-        isDifferent = true;
-        break;
-      }
-    }
-    
-    if (isDifferent) {
-      prevSelectedRef.current = [...selectedFeatureIds];
+    if (currentIds !== selectedIds) {
+      console.log("Aggiornamento selezione caratteristiche:", { da: selected, a: selectedFeatureIds });
       setSelected([...selectedFeatureIds]);
     }
-  }, [selectedFeatureIds, selected]);
+  }, [selectedFeatureIds]);
 
   // Handle feature toggle with optimized update pattern
   const toggleFeature = useCallback((featureId: string) => {
@@ -87,11 +68,12 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
         newSelection.push(featureId);
       }
       
-      // Utilizziamo requestAnimationFrame per uscire dal ciclo di rendering corrente
-      requestAnimationFrame(() => {
+      console.log("Toggle caratteristica:", { featureId, risultato: newSelection });
+      
+      setTimeout(() => {
         onChange(newSelection);
         processingRef.current = false;
-      });
+      }, 0);
       
       return newSelection;
     });

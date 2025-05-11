@@ -7,9 +7,8 @@ import { fetchAllergens } from "./allergensService";
 export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>(selectedAllergenIds);
+  const [selected, setSelected] = useState<string[]>([...selectedAllergenIds]);
   const processingRef = useRef(false);
-  const prevSelectedRef = useRef<string[]>(selectedAllergenIds);
   
   // Carica la lista di allergeni
   useEffect(() => {
@@ -30,33 +29,14 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
   
   // Aggiorna la selezione quando cambiano gli allergeni selezionati dall'esterno
   useEffect(() => {
-    if (processingRef.current) return;
+    const currentIds = JSON.stringify([...selectedAllergenIds].sort());
+    const selectedIds = JSON.stringify([...selected].sort());
     
-    // Convertiamo in Set per un confronto più efficiente
-    const currentSet = new Set(selectedAllergenIds);
-    const localSet = new Set(selected);
-    
-    // Se le dimensioni sono diverse, sicuramente sono diversi
-    if (currentSet.size !== localSet.size) {
-      prevSelectedRef.current = [...selectedAllergenIds];
-      setSelected([...selectedAllergenIds]);
-      return;
-    }
-    
-    // Verifichiamo se tutti gli elementi di currentSet sono in localSet
-    let isDifferent = false;
-    for (const item of currentSet) {
-      if (!localSet.has(item)) {
-        isDifferent = true;
-        break;
-      }
-    }
-    
-    if (isDifferent) {
-      prevSelectedRef.current = [...selectedAllergenIds];
+    if (currentIds !== selectedIds) {
+      console.log("Aggiornamento selezione allergeni:", { da: selected, a: selectedAllergenIds });
       setSelected([...selectedAllergenIds]);
     }
-  }, [selectedAllergenIds, selected]);
+  }, [selectedAllergenIds]);
 
   // Funzione ottimizzata per gestire il toggle degli allergeni
   const toggleAllergen = useCallback((allergenId: string, onChange: (selection: string[]) => void) => {
@@ -73,11 +53,12 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
         newSelection.push(allergenId);
       }
       
-      // Utilizziamo requestAnimationFrame per uscire dal ciclo di rendering corrente
-      requestAnimationFrame(() => {
+      console.log("Toggle allergene:", { allergenId, risultato: newSelection });
+      
+      setTimeout(() => {
         onChange(newSelection);
         processingRef.current = false;
-      });
+      }, 0);
       
       return newSelection;
     });
