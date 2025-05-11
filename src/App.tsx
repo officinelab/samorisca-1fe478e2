@@ -9,7 +9,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
-import Allergens from "./pages/admin/Allergens";
 import MenuSettings from "./pages/admin/MenuSettings";
 import MenuPreview from "./pages/admin/MenuPreview";
 import MenuPrint from "./pages/admin/MenuPrint";
@@ -39,10 +38,12 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="allergens" element={<Allergens />} />
               <Route path="settings" element={<MenuSettings />} />
               <Route path="preview" element={<MenuPreview />} />
               <Route path="print" element={<MenuPrint />} />
+              
+              {/* Redirect old allergens route to settings */}
+              <Route path="allergens" element={<Navigate to="/admin/settings" state={{ activeTab: 'allergens' }} replace />} />
             </Route>
             
             {/* Catch-all Route */}

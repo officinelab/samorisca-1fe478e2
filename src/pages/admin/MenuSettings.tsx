@@ -1,12 +1,22 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { useLocation } from "react-router-dom";
 import ProductLabelsManager from "@/components/menu-settings/ProductLabelsManager";
 import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesManager";
+import Allergens from "./Allergens";
 
 const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
+  const location = useLocation();
+
+  // Gestisce il caso in cui veniamo reindirizzati dalla vecchia pagina allergeni
+  useEffect(() => {
+    if (location.state && location.state.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
 
   return (
     <div className="container py-6">
@@ -20,6 +30,7 @@ const MenuSettings = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="labels">Etichette Prodotto</TabsTrigger>
           <TabsTrigger value="features">Caratteristiche Prodotto</TabsTrigger>
+          <TabsTrigger value="allergens">Allergeni</TabsTrigger>
         </TabsList>
         
         <TabsContent value="labels" className="space-y-4">
@@ -38,6 +49,15 @@ const MenuSettings = () => {
           </p>
           <Separator className="my-4" />
           <ProductFeaturesManager />
+        </TabsContent>
+        
+        <TabsContent value="allergens" className="space-y-4">
+          <h2 className="text-xl font-semibold">Gestione Allergeni</h2>
+          <p className="text-muted-foreground">
+            Gestisci l'elenco degli allergeni che possono essere associati ai prodotti del menu.
+          </p>
+          <Separator className="my-4" />
+          <Allergens />
         </TabsContent>
       </Tabs>
     </div>

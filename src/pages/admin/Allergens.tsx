@@ -31,7 +31,6 @@ const Allergens = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tabella Allergeni</h1>
         {isReordering ? (
           <div className="flex space-x-2">
             <Button onClick={cancelReordering} variant="outline">
@@ -52,10 +51,6 @@ const Allergens = () => {
           </div>
         )}
       </div>
-
-      <p className="text-gray-600">
-        Gestisci l'elenco degli allergeni che possono essere associati ai prodotti del menu.
-      </p>
 
       {/* Contenitore principale degli allergeni */}
       <div className="flex flex-col space-y-4">
