@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -7,7 +6,6 @@ import ProductLabelsManager from "@/components/menu-settings/ProductLabelsManage
 import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesManager";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import Allergens from "./Allergens";
-
 const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
   const location = useLocation();
@@ -18,9 +16,7 @@ const MenuSettings = () => {
       setActiveTab(location.state.activeTab);
     }
   }, [location.state]);
-
-  return (
-    <div className="container py-6">
+  return <div className="container py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Impostazioni Menu</h1>
       </div>
@@ -32,7 +28,7 @@ const MenuSettings = () => {
           <TabsTrigger value="labels">Etichette Prodotto</TabsTrigger>
           <TabsTrigger value="features">Caratteristiche Prodotto</TabsTrigger>
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
-          <TabsTrigger value="layouts">Layouts</TabsTrigger>
+          <TabsTrigger value="layouts">Layouts di Stampa</TabsTrigger>
         </TabsList>
         
         <TabsContent value="labels" className="space-y-4">
@@ -71,8 +67,6 @@ const MenuSettings = () => {
           <PrintLayoutsManager />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
-
 export default MenuSettings;
