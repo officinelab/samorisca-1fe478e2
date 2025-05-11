@@ -15,6 +15,7 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
 
   // Gestore per il toggle degli allergeni
   const handleAllergenToggle = (allergenId: string) => {
+    console.log("Chiamata a handleAllergenToggle con id:", allergenId);
     toggleAllergen(allergenId, onChange);
   };
 
@@ -42,9 +43,12 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
                   id={`allergen-${allergen.id}`}
                   onCheckedChange={() => {}} 
                 />
-                <span className="text-sm">
+                <label 
+                  htmlFor={`allergen-${allergen.id}`}
+                  className="text-sm cursor-pointer flex-1"
+                >
                   {allergen.number && `${allergen.number}. `}{allergen.title}
-                </span>
+                </label>
               </div>
             );
           })}

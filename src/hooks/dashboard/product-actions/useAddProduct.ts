@@ -75,11 +75,44 @@ export const useAddProduct = (
       }
       
       if (data && data.length > 0) {
+        const newProductId = data[0].id;
         console.log("Prodotto inserito con successo:", data[0]);
+        
+        // Handle allergens if present
+        if (productData.allergens && productData.allergens.length > 0) {
+          const allergenInserts = productData.allergens.map((allergen: any) => ({
+            product_id: newProductId,
+            allergen_id: typeof allergen === 'string' ? allergen : allergen.id,
+          }));
+          
+          const { error: allergenError } = await supabase
+            .from('product_allergens')
+            .insert(allergenInserts);
+          
+          if (allergenError) {
+            console.error("Errore nell'inserimento degli allergeni:", allergenError);
+          }
+        }
+        
+        // Handle features if present
+        if (productData.features && productData.features.length > 0) {
+          const featureInserts = productData.features.map((feature: any) => ({
+            product_id: newProductId,
+            feature_id: typeof feature === 'string' ? feature : feature.id,
+          }));
+          
+          const { error: featureError } = await supabase
+            .from('product_to_features')
+            .insert(featureInserts);
+          
+          if (featureError) {
+            console.error("Errore nell'inserimento delle caratteristiche:", featureError);
+          }
+        }
         
         // Update products
         await loadProducts(categoryId);
-        selectProduct(data[0].id);
+        selectProduct(newProductId);
         toast.success("Prodotto aggiunto con successo!");
         return data[0];
       }

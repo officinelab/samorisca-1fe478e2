@@ -44,14 +44,17 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
 
   // Update local state when props change
   useEffect(() => {
-    const currentIds = JSON.stringify([...selectedFeatureIds].sort());
-    const selectedIds = JSON.stringify([...selected].sort());
+    // Confronto degli array usando Set per evitare problemi di ordinamento
+    const currentSet = new Set(selectedFeatureIds);
+    const selectedSet = new Set(selected);
     
-    if (currentIds !== selectedIds) {
+    // Verifica se i due set sono diversi
+    if (currentSet.size !== selectedSet.size || 
+        ![...currentSet].every(id => selectedSet.has(id))) {
       console.log("Aggiornamento selezione caratteristiche:", { da: selected, a: selectedFeatureIds });
       setSelected([...selectedFeatureIds]);
     }
-  }, [selectedFeatureIds]);
+  }, [selectedFeatureIds, selected]);
 
   // Handle feature toggle with optimized update pattern
   const toggleFeature = useCallback((featureId: string) => {
@@ -70,10 +73,11 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
       
       console.log("Toggle caratteristica:", { featureId, risultato: newSelection });
       
-      setTimeout(() => {
+      // Uso di requestAnimationFrame per garantire che gli aggiornamenti dello stato avvengano nel contesto giusto
+      requestAnimationFrame(() => {
         onChange(newSelection);
         processingRef.current = false;
-      }, 0);
+      });
       
       return newSelection;
     });

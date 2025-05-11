@@ -92,27 +92,31 @@ export const useProductData = (product?: Product) => {
 
   // Funzione per l'aggiornamento degli allergeni
   const setSelectedAllergensStable = useCallback((allergens: string[]) => {
+    console.log("Aggiornamento allergeni chiamato con:", allergens);
     if (isUpdatingRef.current) return;
     
     isUpdatingRef.current = true;
-    console.log("Aggiornamento allergeni:", allergens);
     
+    // Uso setTimeout per garantire che gli aggiornamenti dello stato avvengano in modo asincrono
     setTimeout(() => {
       setSelectedAllergens(allergens);
       isUpdatingRef.current = false;
+      console.log("Allergeni aggiornati a:", allergens);
     }, 0);
   }, []);
 
   // Funzione per l'aggiornamento delle caratteristiche
   const setSelectedFeaturesStable = useCallback((features: string[]) => {
+    console.log("Aggiornamento caratteristiche chiamato con:", features);
     if (isUpdatingRef.current) return;
     
     isUpdatingRef.current = true;
-    console.log("Aggiornamento caratteristiche:", features);
     
+    // Uso setTimeout per garantire che gli aggiornamenti dello stato avvengano in modo asincrono
     setTimeout(() => {
       setSelectedFeatures(features);
       isUpdatingRef.current = false;
+      console.log("Caratteristiche aggiornate a:", features);
     }, 0);
   }, []);
 

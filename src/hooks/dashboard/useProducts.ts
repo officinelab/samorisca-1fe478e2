@@ -4,63 +4,51 @@ import { Product } from "@/types/database";
 import { useProductLoader } from "./product-actions/useProductLoader";
 import { useProductSelection } from "./product-actions/useProductSelection";
 import { useProductFiltering } from "./product-actions/useProductFiltering";
-import { useProductCRUD } from "./product-actions/useProductCRUD";
 import { useProductReordering } from "./product-actions/useProductReordering";
+import { useProductCRUD } from "./product-actions/useProductCRUD";
 
 export const useProducts = (categoryId: string | null) => {
-  const { 
-    products, 
-    setProducts,
-    isLoadingProducts, 
-    loadProducts 
-  } = useProductLoader();
+  // State for product data and UI state
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
-  const {
-    selectedProductId,
-    isEditing,
-    setIsEditing,
-    selectProduct,
-    startEditingProduct
-  } = useProductSelection();
+  // Load products for the selected category
+  const { products, isLoadingProducts, loadProducts } = useProductLoader(categoryId);
   
-  const {
-    searchQuery,
-    setSearchQuery,
-    filterProducts
-  } = useProductFiltering();
+  // Product selection
+  const { selectedProductId, selectProduct } = useProductSelection();
   
-  const {
-    addProduct,
-    updateProduct,
-    deleteProduct
-  } = useProductCRUD(categoryId, loadProducts, selectProduct);
+  // Product filtering
+  const { filteredProducts } = useProductFiltering(products, searchQuery);
   
-  const { reorderProduct: reorderProductBase } = useProductReordering(products, loadProducts, categoryId);
-
-  // Adapter for reorderProduct to update local state
-  const reorderProduct = useCallback(async (productId: string, direction: 'up' | 'down') => {
-    const updatedProducts = await reorderProductBase(productId, direction);
-    if (updatedProducts) {
-      setProducts(updatedProducts);
-      return true;
+  // Product reordering
+  const { reorderProduct } = useProductReordering(categoryId, loadProducts);
+  
+  // Product CRUD operations
+  const { addProduct, updateProduct, deleteProduct } = useProductCRUD(
+    categoryId,
+    loadProducts,
+    selectProduct
+  );
+  
+  // Start editing mode for a product
+  const startEditingProduct = useCallback((productId?: string) => {
+    if (productId) {
+      selectProduct(productId);
+    } else {
+      selectProduct("");
     }
-    return false;
-  }, [reorderProductBase, setProducts]);
-
-  // Load products when categoryId changes
+    setIsEditing(true);
+  }, [selectProduct]);
+  
+  // Clear selection when category changes
   useEffect(() => {
-    if (categoryId) {
-      loadProducts(categoryId);
-    }
-    // Reset selection when category changes
+    selectProduct("");
     setIsEditing(false);
-  }, [categoryId, loadProducts, setIsEditing]);
-
-  // Get filtered products
-  const filteredProducts = filterProducts(products);
+    setSearchQuery("");
+  }, [categoryId, selectProduct]);
 
   return {
-    products,
     filteredProducts,
     selectedProductId,
     isLoadingProducts,
@@ -70,7 +58,6 @@ export const useProducts = (categoryId: string | null) => {
     selectProduct,
     startEditingProduct,
     setIsEditing,
-    loadProducts,
     addProduct,
     updateProduct,
     deleteProduct,

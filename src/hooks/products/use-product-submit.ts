@@ -87,6 +87,7 @@ export const useProductSubmit = ({
         
       if (deleteAllergensError) {
         console.error("Errore nella rimozione degli allergeni:", deleteAllergensError);
+        throw deleteAllergensError;
       }
       
       // Insert new allergens if there are any
@@ -117,6 +118,7 @@ export const useProductSubmit = ({
         
       if (deleteFeaturesError) {
         console.error("Errore nella rimozione delle caratteristiche:", deleteFeaturesError);
+        throw deleteFeaturesError;
       }
       
       // Insert new features if there are any
@@ -140,13 +142,9 @@ export const useProductSubmit = ({
       toast.success(product?.id ? "Prodotto aggiornato con successo" : "Prodotto creato con successo");
       console.log("Prodotto salvato con successo:", savedProduct);
       
-      // Pass the product data to the onSave callback, but after the state updates are complete
+      // Pass the product data to the onSave callback
       if (onSave) {
-        // Use setTimeout to break the synchronous rendering cycle
-        setTimeout(() => {
-          console.log("Chiamando onSave con:", savedProduct || productData);
-          onSave(savedProduct || productData);
-        }, 0);
+        onSave(savedProduct || productData);
       }
     } catch (error: any) {
       console.error("Errore durante il salvataggio del prodotto:", error);

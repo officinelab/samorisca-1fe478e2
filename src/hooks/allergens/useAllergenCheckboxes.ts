@@ -29,14 +29,17 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
   
   // Aggiorna la selezione quando cambiano gli allergeni selezionati dall'esterno
   useEffect(() => {
-    const currentIds = JSON.stringify([...selectedAllergenIds].sort());
-    const selectedIds = JSON.stringify([...selected].sort());
+    // Confronto degli array usando Set per evitare problemi di ordinamento
+    const currentSet = new Set(selectedAllergenIds);
+    const selectedSet = new Set(selected);
     
-    if (currentIds !== selectedIds) {
+    // Verifica se i due set sono diversi
+    if (currentSet.size !== selectedSet.size || 
+        ![...currentSet].every(id => selectedSet.has(id))) {
       console.log("Aggiornamento selezione allergeni:", { da: selected, a: selectedAllergenIds });
       setSelected([...selectedAllergenIds]);
     }
-  }, [selectedAllergenIds]);
+  }, [selectedAllergenIds, selected]);
 
   // Funzione ottimizzata per gestire il toggle degli allergeni
   const toggleAllergen = useCallback((allergenId: string, onChange: (selection: string[]) => void) => {
@@ -55,10 +58,11 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
       
       console.log("Toggle allergene:", { allergenId, risultato: newSelection });
       
-      setTimeout(() => {
+      // Uso di requestAnimationFrame per garantire che gli aggiornamenti dello stato avvengano nel contesto giusto
+      requestAnimationFrame(() => {
         onChange(newSelection);
         processingRef.current = false;
-      }, 0);
+      });
       
       return newSelection;
     });
