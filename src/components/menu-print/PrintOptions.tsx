@@ -83,6 +83,16 @@ const PrintOptions = ({
     }
   };
 
+  // Determiniamo il testo da mostrare nel pulsante del layout
+  const getLayoutButtonText = () => {
+    if (isLoading) return "Caricamento...";
+    if (activeLayout) return activeLayout.name;
+    return "Seleziona layout...";
+  };
+  
+  // Assicuriamoci che layouts sia sempre un array, anche se vuoto
+  const safeLayouts = Array.isArray(layouts) ? layouts : [];
+
   return (
     <Tabs defaultValue="basic" className="w-full">
       <TabsList>
@@ -116,11 +126,7 @@ const PrintOptions = ({
                 className="w-full justify-between"
                 disabled={isLoading}
               >
-                {isLoading 
-                  ? "Caricamento..." 
-                  : activeLayout 
-                    ? activeLayout.name 
-                    : "Seleziona layout..."}
+                {getLayoutButtonText()}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -129,7 +135,7 @@ const PrintOptions = ({
                 <CommandInput placeholder="Cerca layout..." />
                 <CommandEmpty>Nessun layout trovato.</CommandEmpty>
                 <CommandGroup>
-                  {layouts && layouts.map((layout) => (
+                  {safeLayouts.map((layout) => (
                     <CommandItem
                       key={layout.id}
                       value={layout.id}
