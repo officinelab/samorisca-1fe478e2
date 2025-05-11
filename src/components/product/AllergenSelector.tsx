@@ -15,8 +15,15 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
 
   // Gestore per il toggle degli allergeni
   const handleAllergenToggle = (allergenId: string) => {
-    console.log("Chiamata a handleAllergenToggle con id:", allergenId);
-    toggleAllergen(allergenId, onChange);
+    console.log("Toggle allergene:", allergenId);
+    console.log("Stato corrente allergeni:", selected);
+    
+    const newSelection = selected.includes(allergenId) 
+      ? selected.filter(id => id !== allergenId)
+      : [...selected, allergenId];
+    
+    console.log("Nuova selezione allergeni:", newSelection);
+    onChange(newSelection);
   };
 
   return (
@@ -41,7 +48,7 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
                 <Checkbox 
                   checked={isSelected}
                   id={`allergen-${allergen.id}`}
-                  onCheckedChange={() => {}} 
+                  onCheckedChange={() => handleAllergenToggle(allergen.id)}
                 />
                 <label 
                   htmlFor={`allergen-${allergen.id}`}

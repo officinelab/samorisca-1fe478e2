@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductLabel } from "@/types/database";
 
@@ -10,7 +10,6 @@ export const useProductData = (product?: Product) => {
   const [labels, setLabels] = useState<ProductLabel[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const isUpdatingRef = useRef(false);
   
   // Load product labels
   useEffect(() => {
@@ -24,6 +23,7 @@ export const useProductData = (product?: Product) => {
         setLabels(data || []);
       } catch (error) {
         console.error("Errore nel caricamento delle etichette:", error);
+        setLabels([]);
       }
     };
     
@@ -32,99 +32,84 @@ export const useProductData = (product?: Product) => {
   
   // Load product allergens
   useEffect(() => {
-    if (product?.id) {
-      const fetchProductAllergens = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_allergens")
-            .select("allergen_id")
-            .eq("product_id", product.id);
-            
-          if (data && data.length > 0) {
-            const allergenIds = data.map(item => item.allergen_id);
-            console.log("Allergeni caricati per il prodotto:", allergenIds);
-            setSelectedAllergens(allergenIds);
-          } else {
-            setSelectedAllergens([]);
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento degli allergeni del prodotto:", error);
+    const fetchProductAllergens = async () => {
+      if (!product?.id) {
+        setSelectedAllergens([]);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from("product_allergens")
+          .select("allergen_id")
+          .eq("product_id", product.id);
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const allergenIds = data.map(item => item.allergen_id);
+          console.log("Allergeni caricati per il prodotto:", allergenIds);
+          setSelectedAllergens(allergenIds);
+        } else {
           setSelectedAllergens([]);
         }
-      };
-      
-      fetchProductAllergens();
-    } else {
-      // Reset allergens when no product is selected
-      setSelectedAllergens([]);
-    }
+      } catch (error) {
+        console.error("Errore nel caricamento degli allergeni del prodotto:", error);
+        setSelectedAllergens([]);
+      }
+    };
+    
+    fetchProductAllergens();
   }, [product?.id]);
   
   // Load product features
   useEffect(() => {
-    if (product?.id) {
-      const fetchProductFeatures = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_to_features")
-            .select("feature_id")
-            .eq("product_id", product.id);
-            
-          if (data && data.length > 0) {
-            const featureIds = data.map(item => item.feature_id);
-            console.log("Caratteristiche caricate per il prodotto:", featureIds);
-            setSelectedFeatures(featureIds);
-          } else {
-            setSelectedFeatures([]);
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
+    const fetchProductFeatures = async () => {
+      if (!product?.id) {
+        setSelectedFeatures([]);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from("product_to_features")
+          .select("feature_id")
+          .eq("product_id", product.id);
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const featureIds = data.map(item => item.feature_id);
+          console.log("Caratteristiche caricate per il prodotto:", featureIds);
+          setSelectedFeatures(featureIds);
+        } else {
           setSelectedFeatures([]);
         }
-      };
-      
-      fetchProductFeatures();
-    } else {
-      // Reset features when no product is selected
-      setSelectedFeatures([]);
-    }
+      } catch (error) {
+        console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
+        setSelectedFeatures([]);
+      }
+    };
+    
+    fetchProductFeatures();
   }, [product?.id]);
 
-  // Funzione per l'aggiornamento degli allergeni
-  const setSelectedAllergensStable = useCallback((allergens: string[]) => {
+  // Handlers for updating selections with proper state management
+  const setSelectedAllergensHandler = useCallback((allergens: string[]) => {
     console.log("Aggiornamento allergeni chiamato con:", allergens);
-    if (isUpdatingRef.current) return;
-    
-    isUpdatingRef.current = true;
-    
-    // Uso setTimeout per garantire che gli aggiornamenti dello stato avvengano in modo asincrono
-    setTimeout(() => {
-      setSelectedAllergens(allergens);
-      isUpdatingRef.current = false;
-      console.log("Allergeni aggiornati a:", allergens);
-    }, 0);
+    setSelectedAllergens(allergens);
   }, []);
 
-  // Funzione per l'aggiornamento delle caratteristiche
-  const setSelectedFeaturesStable = useCallback((features: string[]) => {
+  const setSelectedFeaturesHandler = useCallback((features: string[]) => {
     console.log("Aggiornamento caratteristiche chiamato con:", features);
-    if (isUpdatingRef.current) return;
-    
-    isUpdatingRef.current = true;
-    
-    // Uso setTimeout per garantire che gli aggiornamenti dello stato avvengano in modo asincrono
-    setTimeout(() => {
-      setSelectedFeatures(features);
-      isUpdatingRef.current = false;
-      console.log("Caratteristiche aggiornate a:", features);
-    }, 0);
+    setSelectedFeatures(features);
   }, []);
 
   return {
     labels,
     selectedAllergens,
-    setSelectedAllergens: setSelectedAllergensStable,
+    setSelectedAllergens: setSelectedAllergensHandler,
     selectedFeatures,
-    setSelectedFeatures: setSelectedFeaturesStable
+    setSelectedFeatures: setSelectedFeaturesHandler
   };
 };

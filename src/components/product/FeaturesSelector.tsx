@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,8 +17,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
 }) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>([...selectedFeatureIds]);
-  const processingRef = useRef(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
   // Load product features
   useEffect(() => {
@@ -44,44 +43,23 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
 
   // Update local state when props change
   useEffect(() => {
-    // Confronto degli array usando Set per evitare problemi di ordinamento
-    const currentSet = new Set(selectedFeatureIds);
-    const selectedSet = new Set(selected);
-    
-    // Verifica se i due set sono diversi
-    if (currentSet.size !== selectedSet.size || 
-        ![...currentSet].every(id => selectedSet.has(id))) {
-      console.log("Aggiornamento selezione caratteristiche:", { da: selected, a: selectedFeatureIds });
-      setSelected([...selectedFeatureIds]);
-    }
-  }, [selectedFeatureIds, selected]);
+    console.log("FeatureSelector: Updating selected features from props", selectedFeatureIds);
+    setSelected(selectedFeatureIds || []);
+  }, [selectedFeatureIds]);
 
-  // Handle feature toggle with optimized update pattern
-  const toggleFeature = useCallback((featureId: string) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
+  // Handle feature toggle
+  const handleFeatureToggle = (featureId: string) => {
+    console.log("Toggle caratteristica:", featureId);
+    console.log("Stato corrente caratteristiche:", selected);
     
-    setSelected(current => {
-      const newSelection = [...current];
-      const index = newSelection.indexOf(featureId);
-      
-      if (index >= 0) {
-        newSelection.splice(index, 1);
-      } else {
-        newSelection.push(featureId);
-      }
-      
-      console.log("Toggle caratteristica:", { featureId, risultato: newSelection });
-      
-      // Uso di requestAnimationFrame per garantire che gli aggiornamenti dello stato avvengano nel contesto giusto
-      requestAnimationFrame(() => {
-        onChange(newSelection);
-        processingRef.current = false;
-      });
-      
-      return newSelection;
-    });
-  }, [onChange]);
+    const newSelection = selected.includes(featureId)
+      ? selected.filter(id => id !== featureId)
+      : [...selected, featureId];
+    
+    console.log("Nuova selezione caratteristiche:", newSelection);
+    setSelected(newSelection);
+    onChange(newSelection);
+  };
 
   return (
     <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
@@ -100,12 +78,12 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
                   "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                   isSelected ? "border-primary bg-muted/50" : "border-input"
                 )}
-                onClick={() => toggleFeature(feature.id)}
+                onClick={() => handleFeatureToggle(feature.id)}
               >
                 <Checkbox 
                   checked={isSelected}
                   id={`feature-${feature.id}`}
-                  onCheckedChange={() => {}}
+                  onCheckedChange={() => handleFeatureToggle(feature.id)}
                 />
                 <label 
                   htmlFor={`feature-${feature.id}`}

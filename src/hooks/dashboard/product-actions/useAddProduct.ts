@@ -17,7 +17,8 @@ export const useAddProduct = (
     }
 
     try {
-      console.log("Aggiunta nuovo prodotto nella categoria:", categoryId, productData);
+      console.log("Aggiunta nuovo prodotto nella categoria:", categoryId);
+      console.log("Dati prodotto:", productData);
       
       // Determine the next display_order
       const { data: productsData, error: orderError } = await supabase
@@ -39,27 +40,20 @@ export const useAddProduct = (
         return null;
       }
       
+      // Extract allergens and features from productData
+      const { allergens, features, ...productInsertData } = productData;
+      
       // Handle the "none" value for label_id
-      if (productData.label_id === "none") {
-        productData.label_id = null;
+      if (productInsertData.label_id === "none") {
+        productInsertData.label_id = null;
       }
       
       const productInsert = {
-        title: productData.title,
-        description: productData.description || null,
-        image_url: productData.image_url || null,
+        ...productInsertData,
+        title: productInsertData.title,
         category_id: categoryId,
-        is_active: productData.is_active !== undefined ? productData.is_active : true,
-        display_order: nextOrder,
-        price_standard: productData.price_standard || 0,
-        has_multiple_prices: productData.has_multiple_prices || false,
-        price_variant_1_name: productData.price_variant_1_name || null,
-        price_variant_1_value: productData.price_variant_1_value || null,
-        price_variant_2_name: productData.price_variant_2_name || null,
-        price_variant_2_value: productData.price_variant_2_value || null,
-        has_price_suffix: productData.has_price_suffix || false,
-        price_suffix: productData.price_suffix || null,
-        label_id: productData.label_id || null
+        is_active: productInsertData.is_active !== undefined ? productInsertData.is_active : true,
+        display_order: nextOrder
       };
       
       console.log("Dati prodotto da inserire:", productInsert);
@@ -79,12 +73,13 @@ export const useAddProduct = (
         console.log("Prodotto inserito con successo:", data[0]);
         
         // Handle allergens if present
-        if (productData.allergens && productData.allergens.length > 0) {
-          const allergenInserts = productData.allergens.map((allergen: any) => ({
+        if (allergens && allergens.length > 0) {
+          const allergenInserts = allergens.map((allergen: any) => ({
             product_id: newProductId,
             allergen_id: typeof allergen === 'string' ? allergen : allergen.id,
           }));
           
+          console.log("Inserimento allergeni:", allergenInserts);
           const { error: allergenError } = await supabase
             .from('product_allergens')
             .insert(allergenInserts);
@@ -95,12 +90,13 @@ export const useAddProduct = (
         }
         
         // Handle features if present
-        if (productData.features && productData.features.length > 0) {
-          const featureInserts = productData.features.map((feature: any) => ({
+        if (features && features.length > 0) {
+          const featureInserts = features.map((feature: any) => ({
             product_id: newProductId,
             feature_id: typeof feature === 'string' ? feature : feature.id,
           }));
           
+          console.log("Inserimento caratteristiche:", featureInserts);
           const { error: featureError } = await supabase
             .from('product_to_features')
             .insert(featureInserts);

@@ -18,6 +18,8 @@ export const useProductForm = (product?: Product, onSave?: (productData: Partial
           is_active: true,
           has_price_suffix: false,
           has_multiple_prices: false,
+          category_id: "",
+          price_standard: ""
         }
   });
   
@@ -42,7 +44,8 @@ export const useProductForm = (product?: Product, onSave?: (productData: Partial
     product,
     onSave,
     selectedAllergens,
-    selectedFeatures
+    selectedFeatures,
+    form
   });
 
   return {
