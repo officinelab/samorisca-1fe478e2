@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,13 @@ import {
   X,
   Settings
 } from "lucide-react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { siteSettings } = useSiteSettings();
 
   const handleLogout = async () => {
     await logout();
@@ -46,7 +49,12 @@ const AdminLayout = () => {
           <div className="fixed inset-0 z-40">
             <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)}></div>
             <div className="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-lg z-50">
-              <SidebarContent onClose={() => setSidebarOpen(false)} onLogout={handleLogout} navItems={navItems} />
+              <SidebarContent 
+                onClose={() => setSidebarOpen(false)} 
+                onLogout={handleLogout} 
+                navItems={navItems}
+                sidebarLogo={siteSettings.sidebarLogo} 
+              />
             </div>
           </div>
         )}
@@ -54,7 +62,11 @@ const AdminLayout = () => {
 
       {/* Sidebar per desktop */}
       <div className="hidden lg:block w-64 bg-white shadow-md">
-        <SidebarContent onLogout={handleLogout} navItems={navItems} />
+        <SidebarContent 
+          onLogout={handleLogout} 
+          navItems={navItems} 
+          sidebarLogo={siteSettings.sidebarLogo}
+        />
       </div>
 
       {/* Contenuto principale */}
@@ -86,13 +98,18 @@ interface SidebarContentProps {
   onClose?: () => void;
   onLogout: () => void;
   navItems: { to: string; icon: React.ReactNode; label: string }[];
+  sidebarLogo?: string | null;
 }
 
-const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navItems }) => {
+const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navItems, sidebarLogo }) => {
   return (
     <div className="h-full flex flex-col py-4">
       <div className="px-6 py-4 flex items-center justify-center">
-        <img src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" alt="Sa Morisca Logo" className="h-21 w-auto" />
+        <img 
+          src={sidebarLogo || "/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"} 
+          alt="Logo" 
+          className="h-21 w-auto" 
+        />
       </div>
 
       <div className="flex-1 px-4 mt-6">

@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Allergen, Category as CategoryType, Product as ProductType } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 // Local interfaces for cart items
 interface CartItem {
@@ -350,8 +351,12 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       <header className="sticky top-0 bg-white shadow-sm z-30">
         <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/placeholder.svg" alt="Sa Morisca Logo" className="h-10 w-auto" />
-            <h1 className="text-xl font-bold ml-2">Sa Morisca</h1>
+            <img 
+              src={siteSettings.menuLogo || "/placeholder.svg"} 
+              alt={siteSettings.restaurantName || "Sa Morisca"} 
+              className="h-10 w-auto" 
+            />
+            <h1 className="text-xl font-bold ml-2">{siteSettings.restaurantName || "Sa Morisca"}</h1>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -485,7 +490,17 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
                 {categories.map(category => <section key={category.id} id={`category-${category.id}`} className="scroll-mt-20">
                     <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
                     <div className="grid grid-cols-1 gap-4">
-                      {products[category.id]?.map(product => deviceView === 'mobile' || isMobile ? <ProductCardMobile key={product.id} product={product} /> : <ProductCardDesktop key={product.id} product={product} />)}
+                      {products[category.id]?.map(product => {
+                        // Aggiungiamo l'immagine di default se necessario
+                        const productWithDefaultImage = {
+                          ...product,
+                          image_url: product.image_url || siteSettings.defaultProductImage
+                        };
+                        
+                        return deviceView === 'mobile' || isMobile ? 
+                          <ProductCardMobile key={product.id} product={productWithDefaultImage} /> : 
+                          <ProductCardDesktop key={product.id} product={productWithDefaultImage} />;
+                      })}
                     </div>
                     {products[category.id]?.length === 0 && <p className="text-gray-500 text-center py-6">
                         Nessun prodotto disponibile in questa categoria.
@@ -604,7 +619,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       {/* Footer */}
       <footer className="bg-white border-t mt-auto py-4">
         <div className="container max-w-5xl mx-auto px-4 text-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati</p>
+          <p>{siteSettings.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`}</p>
         </div>
       </footer>
     </div>;
