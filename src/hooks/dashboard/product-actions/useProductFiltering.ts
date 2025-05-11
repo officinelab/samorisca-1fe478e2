@@ -7,6 +7,10 @@ export const useProductFiltering = () => {
 
   // Filter products based on search query
   const filterProducts = useCallback((products: Product[]): Product[] => {
+    if (!products || !Array.isArray(products)) {
+      return [];
+    }
+    
     if (!searchQuery.trim()) {
       return products;
     }

@@ -22,10 +22,10 @@ export const useProducts = (categoryId: string | null) => {
   const { searchQuery: filterSearchQuery, setSearchQuery: setFilterSearchQuery, filterProducts } = useProductFiltering();
   
   // Apply filtering to products
-  const filteredProducts = filterProducts(products);
+  const filteredProducts = filterProducts(products || []);
   
   // Product reordering
-  const { reorderProduct } = useProductReordering(products, loadProducts, categoryId);
+  const { reorderProduct } = useProductReordering(products || [], loadProducts, categoryId);
   
   // Product CRUD operations
   const { addProduct, updateProduct, deleteProduct } = useProductCRUD(

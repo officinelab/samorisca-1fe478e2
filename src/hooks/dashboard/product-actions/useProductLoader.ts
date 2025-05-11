@@ -10,7 +10,7 @@ export const useProductLoader = () => {
 
   // Load products for a category
   const loadProducts = useCallback(async (categoryId: string): Promise<Product[] | void> => {
-    if (!categoryId) return;
+    if (!categoryId) return [];
     
     setIsLoadingProducts(true);
     try {
@@ -81,6 +81,7 @@ export const useProductLoader = () => {
     } catch (error) {
       console.error('Error loading products:', error);
       toast.error("Error loading products. Please try again later.");
+      setProducts([]); // Ensure products is always an array
       return [];
     } finally {
       setIsLoadingProducts(false);
