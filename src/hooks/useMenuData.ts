@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Category, Product } from "@/types/database";
@@ -77,7 +76,7 @@ export const useMenuData = () => {
       const categoriesData = categoriesResult.data || [];
       setCategories(categoriesData);
       initializeSelectedCategories(categoriesData);
-      setAllergensData(allAllergens.data || []);
+      setAllergens(allAllergens.data || []); // Fixed: Changed setAllergensData to setAllergens
       setLabels(labelsResult.data || []);
       setFeatures(featuresResult.data || []);
 
