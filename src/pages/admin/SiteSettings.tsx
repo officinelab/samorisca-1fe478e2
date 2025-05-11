@@ -4,14 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import SVGIconUploader from "@/components/site/SVGIconUploader";
 import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
-import { useMenuData } from "@/hooks/useMenuData";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSiteIcon } from "@/hooks/useSiteIcon";
 
 const SiteSettings = () => {
-  const { restaurantLogo, updateRestaurantLogo } = useMenuData();
+  const { siteSettings, updateMenuLogo } = useSiteSettings();
   const { siteIcon, updateSiteIcon } = useSiteIcon();
 
-  // Applica l'icona del sito all'avvio della pagina
+  // Apply site icon when page loads
   useEffect(() => {
     if (siteIcon) {
       // Casting to HTMLLinkElement to fix TypeScript errors
@@ -42,8 +42,8 @@ const SiteSettings = () => {
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
                 <RestaurantLogoUploader 
-                  currentLogo={restaurantLogo} 
-                  onLogoUploaded={updateRestaurantLogo} 
+                  currentLogo={siteSettings.menuLogo} 
+                  onLogoUploaded={updateMenuLogo} 
                 />
               </div>
               

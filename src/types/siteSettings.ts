@@ -18,5 +18,10 @@ export interface SiteSettings {
   };
   logoUrl?: string;
   faviconUrl?: string;
+  sidebarLogo?: string;
+  menuLogo?: string;
+  restaurantName?: string;
+  footerText?: string;
+  defaultProductImage?: string;
   [key: string]: any;
 }
