@@ -21,7 +21,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageUploaded,
   currentImage = null,
   label = "Carica immagine",
-  bucketName = "images",
+  bucketName = "menu-images",
   folderPath = "uploads",
   maxSizeInMB = 5,
   allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -50,6 +50,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setIsUploading(true);
     
     try {
+      console.log(`Uploading to bucket: ${bucketName}, folder: ${folderPath}`);
+      
       // Upload file to Supabase Storage
       const fileName = `${Date.now()}-${file.name}`;
       const filePath = `${folderPath}/${fileName}`;
@@ -62,13 +64,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
       
       if (error) {
+        console.error("Upload error:", error);
         throw error;
       }
+      
+      console.log("Upload successful:", data);
       
       // Get public URL
       const { data: urlData } = supabase.storage
         .from(bucketName)
         .getPublicUrl(data.path);
+      
+      console.log("Public URL:", urlData.publicUrl);
       
       setImageUrl(urlData.publicUrl);
       onImageUploaded(urlData.publicUrl);

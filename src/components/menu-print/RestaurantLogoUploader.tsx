@@ -35,6 +35,8 @@ export const RestaurantLogoUploader = ({
     setIsUploading(true);
     
     try {
+      console.log("Uploading logo to Supabase Storage");
+      
       // Create local preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
@@ -48,12 +50,19 @@ export const RestaurantLogoUploader = ({
           upsert: true
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Logo upload error:", error);
+        throw error;
+      }
+      
+      console.log("Logo upload successful:", data);
       
       // Get public URL of the image
       const { data: publicUrlData } = supabase.storage
         .from('menu-images')
         .getPublicUrl(data.path);
+      
+      console.log("Logo public URL:", publicUrlData.publicUrl);
       
       onLogoUploaded(publicUrlData.publicUrl);
       toast.success("Logo caricato con successo");

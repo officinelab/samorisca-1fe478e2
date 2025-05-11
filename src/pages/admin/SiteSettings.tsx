@@ -6,9 +6,10 @@ import SVGIconUploader from "@/components/site/SVGIconUploader";
 import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSiteIcon } from "@/hooks/useSiteIcon";
+import ImageUploader from "@/components/ImageUploader";
 
 const SiteSettings = () => {
-  const { siteSettings, updateMenuLogo } = useSiteSettings();
+  const { siteSettings, updateMenuLogo, updateDefaultProductImage } = useSiteSettings();
   const { siteIcon, updateSiteIcon } = useSiteIcon();
 
   // Apply site icon when page loads
@@ -41,16 +42,36 @@ const SiteSettings = () => {
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
+                <h3 className="text-lg font-medium mb-4">Logo Menu</h3>
                 <RestaurantLogoUploader 
                   currentLogo={siteSettings.menuLogo} 
-                  onLogoUploaded={updateMenuLogo} 
+                  onLogoUploaded={updateMenuLogo}
+                  title="Logo del Menu"
+                  description="Questo logo appare nella pagina del menu pubblico"
                 />
               </div>
               
               <div>
+                <h3 className="text-lg font-medium mb-4">Icona del Sito</h3>
                 <SVGIconUploader
                   currentIcon={siteIcon}
                   onIconUploaded={updateSiteIcon}
+                />
+              </div>
+            </div>
+            
+            <Separator className="my-6" />
+            
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Immagine Predefinita Prodotti</h3>
+                <ImageUploader
+                  id="default-product-image"
+                  bucketName="menu-images"
+                  folderPath="products/default"
+                  currentImage={siteSettings.defaultProductImage}
+                  onImageUploaded={updateDefaultProductImage}
+                  label="Immagine predefinita per prodotti"
                 />
               </div>
             </div>
