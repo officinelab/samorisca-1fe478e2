@@ -16,7 +16,7 @@ export const useUpdateProduct = (product: Product, onSuccess?: () => void) => {
     setIsSubmitting(true);
     
     try {
-      const result = await saveProduct(values, selectedAllergenIds, selectedFeatureIds, product);
+      const result = await saveProduct(values, selectedAllergenIds, selectedFeatureIds, product.id);
       
       if (result.success && onSuccess) {
         onSuccess();

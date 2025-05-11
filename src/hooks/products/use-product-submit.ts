@@ -3,35 +3,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
 import { formValuesToProduct } from "@/types/form";
+import { ProductFormValues } from "@/types/form";
 
 export const useProductSubmit = () => {
   // Funzione per salvare un prodotto (nuovo o esistente)
   const saveProduct = async (
-    values: any, 
+    values: ProductFormValues, 
     selectedAllergenIds: string[], 
     selectedFeatureIds: string[],
-    existingProduct?: Product
+    existingProductId?: string
   ) => {
     try {
       // Converte i valori del form in dati del prodotto
-      const productData = formValuesToProduct(values, existingProduct?.id);
+      const productData = formValuesToProduct(values, existingProductId);
       
       // Inserisce o aggiorna il prodotto
       let savedProduct;
       let productId;
       
-      if (existingProduct?.id) {
+      if (existingProductId) {
         // Aggiorna il prodotto esistente
         const { data, error } = await supabase
           .from("products")
           .update(productData)
-          .eq("id", existingProduct.id)
+          .eq("id", existingProductId)
           .select()
           .single();
           
         if (error) throw error;
         savedProduct = data;
-        productId = existingProduct.id;
+        productId = existingProductId;
         console.log("Prodotto aggiornato:", savedProduct);
       } else {
         // Inserisce un nuovo prodotto
@@ -113,7 +114,7 @@ export const useProductSubmit = () => {
         console.log("Tutte le associazioni di caratteristiche rimosse per il prodotto:", productId);
       }
       
-      toast.success(existingProduct?.id ? 
+      toast.success(existingProductId ? 
         "Prodotto aggiornato con successo" : 
         "Prodotto creato con successo");
       
