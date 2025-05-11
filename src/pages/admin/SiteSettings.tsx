@@ -10,22 +10,22 @@ import ImageUploader from "@/components/ImageUploader";
 
 const SiteSettings = () => {
   const { siteSettings, updateMenuLogo, updateDefaultProductImage, updateSidebarLogo } = useSiteSettings();
-  const { siteIcon, updateSiteIcon } = useSiteIcon();
+  const { iconUrl, updateSiteIcon } = useSiteIcon();
 
   // Apply site icon when page loads
   useEffect(() => {
-    if (siteIcon) {
+    if (iconUrl) {
       // Casting to HTMLLinkElement to fix TypeScript errors
       const link = document.querySelector('link[rel="icon"]') as HTMLLinkElement || document.createElement('link');
       link.rel = 'icon';
-      link.href = siteIcon;
+      link.href = iconUrl;
       link.type = 'image/svg+xml';
       
       if (!document.querySelector('link[rel="icon"]')) {
         document.head.appendChild(link);
       }
     }
-  }, [siteIcon]);
+  }, [iconUrl]);
 
   return (
     <div className="container mx-auto py-6">
@@ -79,7 +79,7 @@ const SiteSettings = () => {
                 <p className="text-sm text-muted-foreground">Questa icona appare nella scheda del browser</p>
                 <div className="bg-slate-50 p-4 rounded-md border">
                   <SVGIconUploader
-                    currentIcon={siteIcon}
+                    currentIcon={iconUrl}
                     onIconUploaded={updateSiteIcon}
                   />
                 </div>

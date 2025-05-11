@@ -9,7 +9,7 @@ import { updateFaviconInDOM } from "./domUtils";
  * Hook for managing the site favicon icon
  */
 export const useSiteIcon = (): SiteIcon => {
-  const [siteIcon, setSiteIcon] = useState<string | null>(null);
+  const [iconUrl, setSiteIcon] = useState<string | null>(null);
   const { siteSettings, saveSetting } = useSiteSettings();
 
   // Load icon from site settings or localStorage fallback
@@ -51,7 +51,7 @@ export const useSiteIcon = (): SiteIcon => {
   };
 
   return {
-    siteIcon,
+    iconUrl,
     updateSiteIcon
   };
 };

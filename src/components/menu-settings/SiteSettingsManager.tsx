@@ -22,7 +22,7 @@ const SiteSettingsManager = () => {
     isLoading
   } = useSiteSettings();
 
-  const { siteIcon, updateSiteIcon } = useSiteIcon();
+  const { iconUrl, updateSiteIcon } = useSiteIcon();
 
   const [restaurantName, setRestaurantName] = useState(siteSettings?.restaurantName || "Sa Morisca");
   const [footerText, setFooterText] = useState(
@@ -110,7 +110,7 @@ const SiteSettingsManager = () => {
             </p>
             <div className="max-w-xs">
               <RestaurantLogoUploader
-                currentLogo={siteIcon}
+                currentLogo={iconUrl}
                 onLogoUploaded={updateSiteIcon}
                 title="Icona del Sito"
                 description="Carica l'icona che apparirà come favicon del sito"
