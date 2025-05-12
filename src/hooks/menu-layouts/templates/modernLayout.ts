@@ -4,8 +4,9 @@ import { PrintLayout } from "@/types/printLayout";
 export const modernLayout: PrintLayout = {
   id: "modern",
   name: "Layout Moderno",
-  type: "modern",
+  type: "custom",
   isDefault: false,
+  productSchema: 'schema2',
   elements: {
     category: {
       visible: true,

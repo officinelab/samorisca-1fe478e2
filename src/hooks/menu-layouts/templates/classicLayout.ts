@@ -6,6 +6,7 @@ export const classicLayout: PrintLayout = {
   name: "Layout Classico",
   type: "classic",
   isDefault: true,
+  productSchema: 'schema1',
   elements: {
     category: {
       visible: true,

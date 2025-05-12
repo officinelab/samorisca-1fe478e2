@@ -13,6 +13,7 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
     name,
     type: 'custom',
     isDefault: false,
+    productSchema: 'schema1',
     elements: {
       category: {
         visible: true,

@@ -22,8 +22,8 @@ const PrintLayoutsManager = () => {
     deleteLayout,
     setDefaultLayout,
     cloneLayout,
-    changeActiveLayout,
-    createNewLayout
+    createNewLayout,
+    changeActiveLayout
   } = useMenuLayouts();
   
   const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
@@ -48,7 +48,7 @@ const PrintLayoutsManager = () => {
 
   const handleCloneLayout = async (layoutId: string) => {
     try {
-      const clonedLayout = await cloneLayout(layoutId);
+      const clonedLayout = cloneLayout(layoutId);
       if (clonedLayout) {
         toast.success("Layout clonato con successo");
         setSelectedLayout(clonedLayout);
@@ -76,7 +76,7 @@ const PrintLayoutsManager = () => {
 
   const handleCreateLayout = async (name: string) => {
     try {
-      const newLayout = await createNewLayout(name);
+      const newLayout = createNewLayout(name);
       setSelectedLayout(newLayout);
       setIsCreateDialogOpen(false);
       setEditorTab("modifica");

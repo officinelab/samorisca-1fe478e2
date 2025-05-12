@@ -4,8 +4,9 @@ import { PrintLayout } from "@/types/printLayout";
 export const allergensLayout: PrintLayout = {
   id: "allergens",
   name: "Solo Allergeni",
-  type: "allergens",
+  type: "custom",
   isDefault: false,
+  productSchema: 'schema1',
   elements: {
     category: {
       visible: false,
