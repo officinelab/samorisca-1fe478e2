@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUpload
 import ImageUploader from "@/components/ImageUploader";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useSiteIcon } from "@/hooks/useSiteIcon";
-
 const SiteSettingsManager = () => {
   const {
     siteSettings,
@@ -19,17 +17,14 @@ const SiteSettingsManager = () => {
     updateRestaurantName,
     updateFooterText,
     updateDefaultProductImage,
-    updateHeaderTitle,
     isLoading
   } = useSiteSettings();
   const {
     iconUrl,
     updateSiteIcon
   } = useSiteIcon();
-  
   const [restaurantName, setRestaurantName] = useState(siteSettings?.restaurantName || "Sa Morisca");
   const [footerText, setFooterText] = useState(siteSettings?.footerText || `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`);
-  const [headerTitle, setHeaderTitle] = useState(siteSettings?.headerTitle || "Sa Morisca Menu - Amministrazione");
 
   // Aggiorniamo i campi quando i dati vengono caricati
   useEffect(() => {
@@ -39,29 +34,18 @@ const SiteSettingsManager = () => {
     if (siteSettings?.footerText) {
       setFooterText(siteSettings.footerText);
     }
-    if (siteSettings?.headerTitle) {
-      setHeaderTitle(siteSettings.headerTitle);
-    }
   }, [siteSettings]);
-  
   const handleRestaurantNameSave = () => {
     updateRestaurantName(restaurantName);
   };
-  
   const handleFooterTextSave = () => {
     updateFooterText(footerText);
   };
-  
-  const handleHeaderTitleSave = () => {
-    updateHeaderTitle(headerTitle);
-  };
-  
   if (isLoading) {
     return <div className="flex items-center justify-center p-12">
         <p className="text-muted-foreground">Caricamento impostazioni in corso...</p>
       </div>;
   }
-  
   return <div className="space-y-6">
       <Card>
         <CardHeader>
@@ -135,20 +119,6 @@ const SiteSettingsManager = () => {
           
           <Separator />
           
-          {/* Titolo Intestazione */}
-          <div className="space-y-2">
-            <Label htmlFor="header-title">Titolo Intestazione</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Questo titolo appare nell'intestazione dell'area amministrativa
-            </p>
-            <div className="flex items-center gap-2">
-              <Input id="header-title" value={headerTitle} onChange={e => setHeaderTitle(e.target.value)} placeholder="Titolo intestazione" className="max-w-md" />
-              <Button onClick={handleHeaderTitleSave}>Salva</Button>
-            </div>
-          </div>
-          
-          <Separator />
-          
           {/* Testo Footer */}
           <div className="space-y-2">
             <Label htmlFor="footer-text">Testo del Footer</Label>
@@ -164,5 +134,4 @@ const SiteSettingsManager = () => {
       </Card>
     </div>;
 };
-
 export default SiteSettingsManager;

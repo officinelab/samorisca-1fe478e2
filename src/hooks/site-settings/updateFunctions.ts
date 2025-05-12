@@ -80,18 +80,3 @@ export const updateDefaultProductImage = (imageUrl: string): boolean => {
   }
   return false;
 };
-
-/**
- * Update the header title
- */
-export const updateHeaderTitle = (title: string): boolean => {
-  if (saveSetting('headerTitle', title)) {
-    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
-      detail: { key: 'headerTitle', value: title } 
-    }));
-    
-    toast.success("Titolo dell'intestazione aggiornato");
-    return true;
-  }
-  return false;
-};
