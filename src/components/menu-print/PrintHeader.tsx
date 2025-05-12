@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, FilePdf } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { usePdfMenuExport } from "@/hooks/menu-print/usePdfMenuExport";
 import { useMenuPrintState } from "@/hooks/menu-print/useMenuPrintState";
 
@@ -45,7 +45,7 @@ const PrintHeader: React.FC = () => {
           disabled={isExporting || selectedCategories.length === 0}
           className="w-full md:w-auto"
         >
-          <FilePdf className="mr-2 h-4 w-4" />
+          <FileText className="mr-2 h-4 w-4" />
           {isExporting ? "Generazione PDF..." : "Esporta PDF"}
         </Button>
       </div>

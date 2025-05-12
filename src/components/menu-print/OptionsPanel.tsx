@@ -62,8 +62,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
           <div className="pt-4">
             <h3 className="text-sm font-medium mb-2">Logo Ristorante</h3>
             <RestaurantLogoUploader
-              restaurantLogo={restaurantLogo}
-              updateRestaurantLogo={updateRestaurantLogo}
+              logo={restaurantLogo}
+              onLogoChange={updateRestaurantLogo}
               className="w-full"
             />
           </div>
