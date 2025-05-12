@@ -5,6 +5,7 @@ import { Category, Product } from '@/types/database';
 import { usePageBreakCalculator } from '@/hooks/print/usePageBreakCalculator';
 import { getPageMargins } from '@/hooks/print/getPageMargins';
 import CategoryGroup from '../layouts/classic/CategoryGroup';
+import RepeatedCategoryTitle from './RepeatedCategoryTitle';
 
 interface PaginatedContentProps {
   A4_WIDTH_MM: number;
@@ -138,7 +139,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
           
           lastCategoryId = category.id;
         } else {
-          // Se è una continuazione, aggiungi il titolo ripetuto
+          // Se è una continuazione, aggiungi il titolo ripetuto con lo stesso stile
           currentPageContent.push(
             <RepeatedCategoryTitle
               key={`cat-title-${category.id}-${currentPageIndex}-continued`}
@@ -148,7 +149,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
               isRepeated={true}
             />
           );
-          currentHeight += categoryTitleHeight * 0.8; // Il titolo ripetuto è un po' più piccolo
+          currentHeight += categoryTitleHeight;
         }
         
         // Contenitore per i prodotti di questa categoria in questa pagina
@@ -174,7 +175,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
             // Chiudi questa pagina e inizia una nuova
             addNewPage();
             
-            // Nella nuova pagina, ripeti il titolo della categoria come "continuazione"
+            // Nella nuova pagina, ripeti il titolo della categoria
             currentPageContent.push(
               <RepeatedCategoryTitle
                 key={`cat-title-${category.id}-${currentPageIndex}-repeat`}
@@ -184,7 +185,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
                 isRepeated={true}
               />
             );
-            currentHeight += categoryTitleHeight * 0.8;
+            currentHeight += categoryTitleHeight;
             
             // Reset per i prodotti della nuova pagina
             currentCategoryProducts = [];
@@ -267,5 +268,4 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   );
 };
 
-import RepeatedCategoryTitle from './RepeatedCategoryTitle';
 export default PaginatedContent;

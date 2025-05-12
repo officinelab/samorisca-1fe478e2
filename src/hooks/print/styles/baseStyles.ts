@@ -44,15 +44,6 @@ export const getBaseStyles = (): string => {
       overflow: hidden; /* Modificato da "visible" a "hidden" */
       height: 100%;
     }
-    
-    /* Stile per il titolo della categoria ripetuto */
-    .repeated-category-title {
-      font-style: italic;
-      margin-top: 0;
-      border-bottom: 1px dashed #ccc;
-      margin-bottom: 10px;
-      padding-bottom: 2px;
-    }
 
     @media print {
       html, body {
@@ -76,12 +67,6 @@ export const getBaseStyles = (): string => {
       .menu-item {
         break-inside: avoid;
         page-break-inside: avoid;
-      }
-      
-      /* Stile per il titolo della categoria ripetuto durante la stampa */
-      .repeated-category-title {
-        font-style: italic;
-        color: #444;
       }
     }
   `;

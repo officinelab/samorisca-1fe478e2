@@ -29,25 +29,15 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
     textTransform: 'uppercase',
   });
   
-  // Se si tratta di un titolo ripetuto, applica uno stile diverso
-  const titleStyle = isRepeated 
-    ? {
-        ...baseStyle,
-        fontStyle: 'italic',
-        borderBottom: '1px dashed #999',
-        paddingBottom: '2px',
-        marginTop: '0',
-        fontSize: `${(customLayout.elements.category.fontSize - 2)}pt`, // Leggermente più piccolo
-        color: '#555', // Colore più chiaro per indicare che è un titolo ripetuto
-      }
-    : baseStyle;
+  // Manteniamo lo stesso stile sia per i titoli originali che per quelli ripetuti
+  const titleStyle = baseStyle;
 
   return (
     <h2 
       style={titleStyle} 
-      className={isRepeated ? "category-title repeated-category-title" : "category-title"}
+      className={isRepeated ? "category-title" : "category-title"}
     >
-      {isRepeated ? `${category[`title_${language}`] || category.title} (cont.)` : category[`title_${language}`] || category.title}
+      {category[`title_${language}`] || category.title}
     </h2>
   );
 };
