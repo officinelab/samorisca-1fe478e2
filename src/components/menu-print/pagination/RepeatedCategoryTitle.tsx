@@ -51,9 +51,8 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
         className="category-title" 
         style={getCategoryStyle()}
       >
-        {/* Se è un titolo ripetuto, aggiungi un indicatore visivo (cont.) */}
+        {/* Rimosso il testo "(cont.)" per i titoli ripetuti */}
         {category[`title_${language}`] || category.title}
-        {isRepeated && <span className="text-muted-foreground text-sm"> (cont.)</span>}
       </h2>
     </div>
   );
