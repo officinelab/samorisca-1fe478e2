@@ -117,21 +117,6 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
     }));
   };
 
-  // Aggiungiamo i gestori per il titolo e sottotitolo del menu
-  const handleMenuTitleChange = (value: string) => {
-    setEditedLayout(prev => ({
-      ...prev,
-      menu_title: value
-    }));
-  };
-
-  const handleMenuSubtitleChange = (value: string) => {
-    setEditedLayout(prev => ({
-      ...prev,
-      menu_subtitle: value
-    }));
-  };
-
   const handleElementChange = (
     elementKey: keyof PrintLayout["elements"],
     field: keyof PrintLayoutElementConfig,
@@ -531,10 +516,7 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
     handleCoverTitleMarginChange, 
     handleCoverSubtitleChange,
     handleCoverSubtitleMarginChange,
-    // Funzioni per il titolo e sottotitolo del menu
-    handleMenuTitleChange,
-    handleMenuSubtitleChange,
-    // Funzioni per allergeni
+    // Nuove funzioni per allergeni
     handleAllergensTitleChange,
     handleAllergensTitleMarginChange,
     handleAllergensDescriptionChange,

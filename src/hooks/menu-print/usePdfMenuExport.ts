@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { generatePDF } from "./pdfGenerator";
 
 interface PdfMenuExportProps {
-  layoutId: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   language: string;
   printAllergens: boolean;
   selectedCategories: string[];
@@ -16,7 +16,7 @@ interface PdfMenuExportProps {
 }
 
 export const usePdfMenuExport = ({
-  layoutId,
+  layoutId, // Cambiato da layoutType a layoutId
   language,
   printAllergens,
   selectedCategories,
@@ -34,9 +34,7 @@ export const usePdfMenuExport = ({
       return null;
     }
     
-    const layout = layouts.find(layout => layout.id === layoutId);
-    console.log("Layout trovato:", layout);
-    return layout || null;
+    return layouts.find(layout => layout.id === layoutId) || null;
   };
   
   const customLayout = findActiveLayout();
@@ -63,12 +61,8 @@ export const usePdfMenuExport = ({
         return;
       }
       
-      console.log("Esportazione PDF con layout:", customLayout);
-      console.log("Titolo menu:", customLayout.menu_title);
-      console.log("Sottotitolo menu:", customLayout.menu_subtitle);
-      
       // Genera il PDF basato sull'anteprima visualizzata
-      const result = await generatePDF({
+      await generatePDF({
         categories: filteredCategories,
         products,
         selectedCategories,
@@ -80,13 +74,7 @@ export const usePdfMenuExport = ({
         layoutType: customLayout.type // Usiamo il tipo dal layout selezionato
       });
       
-      if (result) {
-        toast.success("PDF generato con successo");
-        console.log("PDF generazione completata con successo");
-      } else {
-        toast.error("Errore nella generazione del PDF");
-        console.error("Generazione PDF fallita");
-      }
+      toast.success("PDF generato con successo");
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
       toast.error("Si è verificato un errore durante la generazione del PDF");

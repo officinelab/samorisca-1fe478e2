@@ -1,157 +1,142 @@
 
-import { useState } from "react";
-import { PrintLayout, PrintLayoutElementConfig, FontStyle, ProductSchema } from "@/types/printLayout";
+import { useState, useCallback } from 'react';
+import { PrintLayout, PrintLayoutElementConfig, ProductSchema } from '@/types/printLayout';
 
-export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layout: PrintLayout) => void) => {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>({ ...initialLayout });
-  const [activeTab, setActiveTab] = useState("generale");
-  
-  // Gestore per le modifiche generali
-  const handleGeneralChange = (field: string, value: string | boolean | ProductSchema) => {
-    setEditedLayout((prev) => ({
+export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) {
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>({...initialLayout, productSchema: initialLayout.productSchema || 'schema1'});
+  const [activeTab, setActiveTab] = useState('generale');
+
+  // Gestione delle modifiche alle proprietà generali del layout
+  const handleGeneralChange = useCallback((field: string, value: string | boolean | ProductSchema) => {
+    setEditedLayout(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
-  // Gestore per le modifiche ai titoli e sottotitoli del menu
-  const handleMenuTitleChange = (value: string) => {
-    setEditedLayout((prev) => ({
-      ...prev,
-      menu_title: value
-    }));
-  };
-
-  const handleMenuSubtitleChange = (value: string) => {
-    setEditedLayout((prev) => ({
-      ...prev,
-      menu_subtitle: value
-    }));
-  };
-  
-  // Gestore per le modifiche agli elementi
-  const handleElementChange = (elementType: keyof PrintLayout['elements'], field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche agli elementi del layout (visibilità, font, colore, ecc.)
+  const handleElementChange = useCallback((elementKey: keyof PrintLayout['elements'], property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       elements: {
         ...prev.elements,
-        [elementType]: {
-          ...prev.elements[elementType],
-          [field]: value
+        [elementKey]: {
+          ...prev.elements[elementKey],
+          [property]: value
         }
       }
     }));
-  };
-  
-  // Gestore per le modifiche ai margini degli elementi
-  const handleElementMarginChange = (elementType: keyof PrintLayout['elements'], field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  }, []);
+
+  // Gestione delle modifiche ai margini degli elementi
+  const handleElementMarginChange = useCallback((elementKey: keyof PrintLayout['elements'], marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       elements: {
         ...prev.elements,
-        [elementType]: {
-          ...prev.elements[elementType],
+        [elementKey]: {
+          ...prev.elements[elementKey],
           margin: {
-            ...prev.elements[elementType].margin,
-            [field]: value
+            ...prev.elements[elementKey].margin,
+            [marginKey]: value
           }
         }
       }
     }));
-  };
-  
-  // Gestore per le modifiche alla spaziatura
-  const handleSpacingChange = (field: keyof PrintLayout['spacing'], value: number) => {
-    setEditedLayout((prev) => ({
+  }, []);
+
+  // Gestione delle modifiche alla spaziatura tra elementi
+  const handleSpacingChange = useCallback((spacingKey: keyof PrintLayout['spacing'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       spacing: {
         ...prev.spacing,
-        [field]: value
+        [spacingKey]: value
       }
     }));
-  };
-  
-  // Gestore per le modifiche ai margini delle pagine
-  const handlePageMarginChange = (field: keyof PrintLayout['page'], value: number) => {
-    setEditedLayout((prev) => ({
+  }, []);
+
+  // Gestione delle modifiche ai margini della pagina
+  const handlePageMarginChange = useCallback((marginKey: keyof PrintLayout['page'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       page: {
         ...prev.page,
-        [field]: value
+        [marginKey]: value
       }
     }));
-  };
-  
-  // Gestore per le modifiche ai margini delle pagine dispari
-  const handleOddPageMarginChange = (field: keyof PrintLayout['page']['oddPages'], value: number) => {
-    setEditedLayout((prev) => ({
+  }, []);
+
+  // Gestione dell'attivazione dei margini distinti per pagine pari e dispari
+  const handleToggleDistinctMargins = useCallback((useDistinct: boolean) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        useDistinctMarginsForPages: useDistinct
+      }
+    }));
+  }, []);
+
+  // Gestione delle modifiche ai margini delle pagine dispari
+  const handleOddPageMarginChange = useCallback((marginKey: keyof PrintLayout['page']['oddPages'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       page: {
         ...prev.page,
         oddPages: {
           ...prev.page.oddPages,
-          [field]: value
+          [marginKey]: value
         }
       }
     }));
-  };
-  
-  // Gestore per le modifiche ai margini delle pagine pari
-  const handleEvenPageMarginChange = (field: keyof PrintLayout['page']['evenPages'], value: number) => {
-    setEditedLayout((prev) => ({
+  }, []);
+
+  // Gestione delle modifiche ai margini delle pagine pari
+  const handleEvenPageMarginChange = useCallback((marginKey: keyof PrintLayout['page']['evenPages'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       page: {
         ...prev.page,
         evenPages: {
           ...prev.page.evenPages,
-          [field]: value
+          [marginKey]: value
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestore per abilitare/disabilitare i margini distinti
-  const handleToggleDistinctMargins = (enabled: boolean) => {
-    setEditedLayout((prev) => ({
-      ...prev,
-      page: {
-        ...prev.page,
-        useDistinctMarginsForPages: enabled
-      }
-    }));
-  };
-  
-  // Gestore per le modifiche al logo della copertina
-  const handleCoverLogoChange = (field: keyof PrintLayout['cover']['logo'], value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche alla configurazione del logo di copertina
+  const handleCoverLogoChange = useCallback((property: keyof PrintLayout['cover']['logo'], value: number | string) => {
+    setEditedLayout(prev => ({
       ...prev,
       cover: {
         ...prev.cover,
         logo: {
           ...prev.cover.logo,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestore per le modifiche al titolo della copertina
-  const handleCoverTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche al titolo di copertina
+  const handleCoverTitleChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       cover: {
         ...prev.cover,
         title: {
           ...prev.cover.title,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestore per le modifiche ai margini del titolo della copertina
-  const handleCoverTitleMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini del titolo di copertina
+  const handleCoverTitleMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       cover: {
         ...prev.cover,
@@ -159,30 +144,30 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.cover.title,
           margin: {
             ...prev.cover.title.margin,
-            [field]: value
+            [marginKey]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestore per le modifiche al sottotitolo della copertina
-  const handleCoverSubtitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche al sottotitolo di copertina
+  const handleCoverSubtitleChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       cover: {
         ...prev.cover,
         subtitle: {
           ...prev.cover.subtitle,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestore per le modifiche ai margini del sottotitolo della copertina
-  const handleCoverSubtitleMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini del sottotitolo di copertina
+  const handleCoverSubtitleMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       cover: {
         ...prev.cover,
@@ -190,29 +175,30 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.cover.subtitle,
           margin: {
             ...prev.cover.subtitle.margin,
-            [field]: value
+            [marginKey]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  // Gestori per le modifiche alla sezione allergeni
-  const handleAllergensTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche al titolo della pagina degli allergeni
+  const handleAllergensTitleChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
         title: {
           ...prev.allergens.title,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensTitleMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini del titolo della pagina degli allergeni
+  const handleAllergensTitleMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -220,28 +206,30 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.allergens.title,
           margin: {
             ...prev.allergens.title.margin,
-            [field]: value
+            [marginKey]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensDescriptionChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche alla descrizione della pagina degli allergeni
+  const handleAllergensDescriptionChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
         description: {
           ...prev.allergens.description,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensDescriptionMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini della descrizione della pagina degli allergeni
+  const handleAllergensDescriptionMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -249,15 +237,16 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.allergens.description,
           margin: {
             ...prev.allergens.description.margin,
-            [field]: value
+            [marginKey]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensItemNumberChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche al numero degli elementi allergeni
+  const handleAllergensItemNumberChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -265,15 +254,16 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.allergens.item,
           number: {
             ...prev.allergens.item.number,
-            [field]: value
+            [property]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensItemNumberMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini del numero degli elementi allergeni
+  const handleAllergensItemNumberMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -283,16 +273,17 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
             ...prev.allergens.item.number,
             margin: {
               ...prev.allergens.item.number.margin,
-              [field]: value
+              [marginKey]: value
             }
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensItemTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche al titolo degli elementi allergeni
+  const handleAllergensItemTitleChange = useCallback((property: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -300,15 +291,16 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
           ...prev.allergens.item,
           title: {
             ...prev.allergens.item.title,
-            [field]: value
+            [property]: value
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensItemTitleMarginChange = (field: keyof PrintLayoutElementConfig['margin'], value: number) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche ai margini del titolo degli elementi allergeni
+  const handleAllergensItemTitleMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
@@ -318,39 +310,37 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
             ...prev.allergens.item.title,
             margin: {
               ...prev.allergens.item.title.margin,
-              [field]: value
+              [marginKey]: value
             }
           }
         }
       }
     }));
-  };
+  }, []);
   
-  const handleAllergensItemChange = (field: keyof Omit<PrintLayout['allergens']['item'], 'number' | 'title'>, value: any) => {
-    setEditedLayout((prev) => ({
+  // Gestione delle modifiche generali agli elementi degli allergeni
+  const handleAllergensItemChange = useCallback((property: keyof PrintLayout['allergens']['item'], value: any) => {
+    setEditedLayout(prev => ({
       ...prev,
       allergens: {
         ...prev.allergens,
         item: {
           ...prev.allergens.item,
-          [field]: value
+          [property]: value
         }
       }
     }));
-  };
-  
-  // Gestore per il salvataggio del layout
-  const handleSave = () => {
-    onSaveLayout(editedLayout);
-  };
-  
+  }, []);
+
+  const handleSave = useCallback(() => {
+    onSave(editedLayout);
+  }, [editedLayout, onSave]);
+
   return {
     editedLayout,
     activeTab,
     setActiveTab,
     handleGeneralChange,
-    handleMenuTitleChange,
-    handleMenuSubtitleChange,
     handleElementChange,
     handleElementMarginChange,
     handleSpacingChange,
@@ -374,4 +364,4 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSaveLayout: (layou
     handleAllergensItemChange,
     handleSave
   };
-};
+}

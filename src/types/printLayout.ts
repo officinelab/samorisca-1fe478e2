@@ -31,8 +31,6 @@ export type PrintLayout = {
   type: 'classic' | 'custom' | 'modern' | 'allergens';
   isDefault: boolean;
   productSchema: ProductSchema;
-  menu_title?: string; // Campo per il titolo del menu
-  menu_subtitle?: string; // Campo per il sottotitolo del menu
   elements: {
     category: PrintLayoutElementConfig;
     title: PrintLayoutElementConfig;

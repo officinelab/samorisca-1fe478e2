@@ -1,19 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
-import { useMenuLayouts } from '@/hooks/useMenuLayouts';
-import { RestaurantLogo } from './cover-components/RestaurantLogo';
-import { CoverTitles } from './cover-components/CoverTitles';
-import { PageDebugInfo } from './cover-components/PageDebugInfo';
+import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
 
 type CoverPageProps = {
   A4_WIDTH_MM: number; 
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
-  layoutType: string;
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  pageIndex?: number;
+  pageIndex?: number; // Added this prop to fix the type error
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -23,28 +19,9 @@ const CoverPage: React.FC<CoverPageProps> = ({
   layoutType,
   restaurantLogo,
   customLayout,
-  pageIndex = 0
+  pageIndex = 0 // Default to 0 for the cover page
 }) => {
-  const { activeLayout } = useMenuLayouts();
-  const [menuTitle, setMenuTitle] = useState("Menu");
-  const [menuSubtitle, setMenuSubtitle] = useState("Ristorante");
-  
-  // Aggiorna il titolo e il sottotitolo quando cambia il layout attivo o customLayout
-  useEffect(() => {
-    if (customLayout) {
-      console.log("CoverPage - Usando customLayout:", customLayout.menu_title, customLayout.menu_subtitle);
-      setMenuTitle(customLayout.menu_title || "Menu");
-      setMenuSubtitle(customLayout.menu_subtitle || "Ristorante");
-    } else if (activeLayout) {
-      console.log("CoverPage - Usando activeLayout:", activeLayout.menu_title, activeLayout.menu_subtitle);
-      setMenuTitle(activeLayout.menu_title || "Menu");
-      setMenuSubtitle(activeLayout.menu_subtitle || "Ristorante");
-    }
-  }, [activeLayout, customLayout]);
-  
-  useEffect(() => {
-    console.log("CoverPage rendering con titolo:", menuTitle, "sottotitolo:", menuSubtitle);
-  }, [menuTitle, menuSubtitle]);
+  const [imageError, setImageError] = useState(false);
   
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -63,27 +40,167 @@ const CoverPage: React.FC<CoverPageProps> = ({
     position: 'relative' as const,
   });
 
+  // Ottieni le configurazioni dal layout personalizzato se disponibile
+  const getLogoStyle = () => {
+    if (customLayout?.cover?.logo) {
+      const { maxWidth, maxHeight, alignment, marginTop, marginBottom } = customLayout.cover.logo;
+      return {
+        maxWidth: `${maxWidth}%`,
+        maxHeight: `${maxHeight}%`,
+        marginTop: `${marginTop}mm`,
+        marginBottom: `${marginBottom}mm`,
+        alignSelf: alignment,
+        objectFit: 'contain' as const,
+      };
+    }
+    
+    // Default style
+    return {
+      maxWidth: '80%',
+      maxHeight: '50%',
+      objectFit: 'contain' as const,
+    };
+  };
+
+  // Usa getElementStyle con fallback ai vecchi stili predefiniti
+  const getTitleStyle = () => {
+    if (customLayout?.cover?.title) {
+      return getElementStyle(customLayout.cover.title, {
+        fontSize: '32px',
+        fontWeight: '700',
+        textAlign: 'center' as const,
+        marginTop: '40px',
+        textTransform: 'uppercase' as const
+      });
+    }
+    
+    switch (layoutType) {
+      case 'modern':
+        return {
+          fontSize: '32px',
+          fontWeight: '700',
+          textAlign: 'center' as const,
+          marginTop: '40px',
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.1em',
+        };
+      case 'allergens':
+        return {
+          fontSize: '28px',
+          fontWeight: '700',
+          textAlign: 'center' as const,
+          marginTop: '30px',
+          textTransform: 'uppercase' as const,
+        };
+      case 'custom':
+        return {
+          fontSize: '30px',
+          fontWeight: '700',
+          textAlign: 'center' as const,
+          marginTop: '35px',
+          textTransform: 'uppercase' as const,
+        };
+      case 'classic':
+      default:
+        return {
+          fontSize: '24px',
+          fontWeight: '700',
+          textAlign: 'center' as const,
+          marginTop: '20px',
+          textTransform: 'uppercase' as const,
+        };
+    }
+  };
+
+  const getSubtitleStyle = () => {
+    if (customLayout?.cover?.subtitle) {
+      return getElementStyle(customLayout.cover.subtitle, {
+        fontSize: '18px',
+        fontWeight: '400',
+        textAlign: 'center' as const,
+        marginTop: '10px',
+        fontStyle: 'italic' as const
+      });
+    }
+
+    switch (layoutType) {
+      case 'modern':
+        return {
+          fontSize: '18px',
+          fontWeight: '400',
+          textAlign: 'center' as const,
+          marginTop: '10px',
+          fontStyle: 'italic' as const,
+        };
+      case 'allergens':
+        return {
+          fontSize: '16px',
+          fontWeight: '400',
+          textAlign: 'center' as const,
+          marginTop: '8px',
+          fontStyle: 'italic' as const,
+        };
+      case 'custom':
+        return {
+          fontSize: '17px',
+          fontWeight: '400',
+          textAlign: 'center' as const,
+          marginTop: '9px',
+          fontStyle: 'italic' as const,
+        };
+      case 'classic':
+      default:
+        return {
+          fontSize: '14px',
+          fontWeight: '400',
+          textAlign: 'center' as const,
+          marginTop: '6px',
+          fontStyle: 'italic' as const,
+        };
+    }
+  };
+
+  const handleImageError = () => {
+    console.error("Errore nel caricamento del logo del ristorante in CoverPage");
+    setImageError(true);
+  };
+
   return (
     <div className="page cover-page bg-white" style={getPageStyle()}>
-      {/* Logo del ristorante (componente) */}
-      <RestaurantLogo 
-        restaurantLogo={restaurantLogo} 
-        customLayout={customLayout} 
-      />
+      {(restaurantLogo && !imageError) ? (
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: customLayout?.cover?.logo?.alignment || 'center',
+          marginTop: customLayout?.cover?.logo?.marginTop ? `${customLayout.cover.logo.marginTop}mm` : '0',
+          marginBottom: customLayout?.cover?.logo?.marginBottom ? `${customLayout.cover.logo.marginBottom}mm` : '0',
+        }}>
+          <img 
+            src={restaurantLogo}
+            alt="Logo del ristorante"
+            style={getLogoStyle()}
+            onError={handleImageError}
+          />
+        </div>
+      ) : (
+        <>
+          <h1 style={getTitleStyle()}>Menu</h1>
+          <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>
+        </>
+      )}
       
-      {/* Titolo e Sottotitolo (componente) */}
-      <CoverTitles 
-        menuTitle={menuTitle}
-        menuSubtitle={menuSubtitle}
-        layoutType={layoutType}
-        customLayout={customLayout}
-      />
-      
-      {/* Informazioni di debug (componente) */}
-      <PageDebugInfo 
-        showPageBoundaries={showPageBoundaries} 
-        pageIndex={pageIndex} 
-      />
+      {/* Debug page number indicator only shown in preview mode */}
+      {showPageBoundaries && (
+        <div 
+          className="absolute text-xs text-muted-foreground" 
+          style={{
+            right: '5mm',
+            bottom: '5mm'
+          }}
+        >
+          Copertina (Pagina {pageIndex})
+        </div>
+      )}
     </div>
   );
 };

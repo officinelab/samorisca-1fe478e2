@@ -83,8 +83,6 @@ export type Database = {
           elements: Json
           id: string
           is_default: boolean
-          menu_subtitle: string | null
-          menu_title: string | null
           name: string
           page: Json
           product_schema: string
@@ -99,8 +97,6 @@ export type Database = {
           elements: Json
           id?: string
           is_default?: boolean
-          menu_subtitle?: string | null
-          menu_title?: string | null
           name: string
           page: Json
           product_schema: string
@@ -115,8 +111,6 @@ export type Database = {
           elements?: Json
           id?: string
           is_default?: boolean
-          menu_subtitle?: string | null
-          menu_title?: string | null
           name?: string
           page?: Json
           product_schema?: string

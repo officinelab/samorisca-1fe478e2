@@ -16,8 +16,6 @@ interface MenuPdfDocumentProps {
   printAllergens: boolean;
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  menuTitle?: string;
-  menuSubtitle?: string;
 }
 
 const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ 
@@ -28,13 +26,8 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  customLayout,
-  menuTitle = "Menu",
-  menuSubtitle = "Ristorante"
+  customLayout
 }) => {
-  // Aggiungiamo log per verificare che i titoli arrivino correttamente
-  console.log("MenuPdfDocument riceve titolo:", menuTitle, "sottotitolo:", menuSubtitle);
-  
   return (
     <Document>
       <CoverPagePdf 
@@ -42,8 +35,6 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
         restaurantLogo={restaurantLogo} 
         customLayout={customLayout} 
         isPageZero={true}
-        menuTitle={menuTitle}
-        menuSubtitle={menuSubtitle}
       />
       
       {categories.map((category, index) => (
@@ -58,14 +49,12 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
         />
       ))}
       
-      {printAllergens && allergens.length > 0 && (
-        <AllergensPdf 
-          styles={styles} 
-          allergens={allergens} 
-          printAllergens={printAllergens}
-          customLayout={customLayout}
-        />
-      )}
+      <AllergensPdf 
+        styles={styles} 
+        allergens={allergens} 
+        printAllergens={printAllergens}
+        customLayout={customLayout}
+      />
     </Document>
   );
 };
