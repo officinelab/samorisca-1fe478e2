@@ -34,6 +34,11 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   restaurantLogo,
   customLayout
 }) => {
+  // Debug log per verificare che il customLayout venga passato correttamente
+  React.useEffect(() => {
+    console.log("ClassicLayout - customLayout:", customLayout);
+  }, [customLayout]);
+  
   // Use our hook to organize categories into pages
   const pages = usePageOrganizer({ 
     categories, 

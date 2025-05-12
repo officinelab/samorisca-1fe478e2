@@ -33,13 +33,18 @@ export const SimpleLayoutSelector: React.FC<SimpleLayoutSelectorProps> = ({
       setSelectedLayout("classic");
     }
   }, [selectedLayout, setSelectedLayout]);
+  
+  const handleLayoutChange = (value: string) => {
+    console.log("SimpleLayoutSelector - Layout changed to:", value);
+    setSelectedLayout(value);
+  };
 
   return (
     <div>
       <div className="text-sm font-medium mb-2">Layout</div>
       <Select 
         value={selectedLayout || "classic"} 
-        onValueChange={setSelectedLayout}
+        onValueChange={handleLayoutChange}
         disabled={isLoading}
       >
         <SelectTrigger className="w-full">

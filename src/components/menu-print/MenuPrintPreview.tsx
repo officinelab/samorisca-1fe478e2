@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { Category, Product, Allergen } from "@/types/database";
-import ClassicLayout from "./layouts/ClassicLayout";
-import ModernLayout from "./layouts/ModernLayout";
-import AllergensLayout from "./layouts/AllergensLayout";
+import MenuLayoutSelector from "./MenuLayoutSelector";
 import PageBoundaries from "./PageBoundaries";
 
 type MenuPrintPreviewProps = {
@@ -44,36 +42,21 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     });
   }, [layoutType, selectedCategories, language]);
   
-  // Props comuni per tutti i layout
-  const commonProps = {
-    A4_WIDTH_MM,
-    A4_HEIGHT_MM,
-    showPageBoundaries,
-    categories,
-    products,
-    selectedCategories,
-    language,
-    allergens,
-    printAllergens,
-    restaurantLogo
-  };
-  
-  // Componente del layout basato sul tipo selezionato
-  const renderLayout = () => {
-    switch (layoutType) {
-      case "modern":
-        return <ModernLayout {...commonProps} />;
-      case "allergens":
-        return <AllergensLayout {...commonProps} />;
-      case "classic":
-      default:
-        return <ClassicLayout {...commonProps} />;
-    }
-  };
-
   return (
     <div className="relative">
-      {renderLayout()}
+      <MenuLayoutSelector
+        selectedLayout={layoutType}
+        A4_WIDTH_MM={A4_WIDTH_MM}
+        A4_HEIGHT_MM={A4_HEIGHT_MM}
+        showPageBoundaries={showPageBoundaries}
+        categories={categories}
+        products={products}
+        selectedCategories={selectedCategories}
+        language={language}
+        allergens={allergens}
+        printAllergens={printAllergens}
+        restaurantLogo={restaurantLogo}
+      />
       
       {showPageBoundaries && (
         <PageBoundaries

@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category, Product, Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CoverPage from '../shared/CoverPage';
 import AllergensPage from '../shared/AllergensPage';
 import AllergensContentPage from './allergens/AllergensContentPage';
@@ -17,6 +18,7 @@ type AllergensLayoutProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const AllergensLayout: React.FC<AllergensLayoutProps> = ({
@@ -30,7 +32,13 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
+  customLayout
 }) => {
+  // Debug log to verify custom layout is passed correctly
+  useEffect(() => {
+    console.log("AllergensLayout - customLayout:", customLayout);
+  }, [customLayout]);
+  
   // Usa l'organizzatore di pagine per dividere le categorie in pagine
   const pages = usePageOrganizer({
     categories, 
@@ -58,6 +66,7 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
           allergens={allergens}
           layoutType="allergens"
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       )}
       
@@ -72,6 +81,7 @@ const AllergensLayout: React.FC<AllergensLayoutProps> = ({
           products={products}
           language={language}
           allergens={allergens}
+          customLayout={customLayout}
           pageIndex={pageIndex}
         />
       ))}

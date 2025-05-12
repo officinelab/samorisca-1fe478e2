@@ -33,12 +33,12 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
-  const { activeLayout, layouts } = useMenuLayouts();
+  const { layouts, activeLayout, changeActiveLayout, isLoading } = useMenuLayouts();
   
-  // Valore di default per garantire un layout valido
+  // Default layout type as fallback
   const defaultLayoutType = "classic";
   
-  // Aggiungiamo log per debug
+  // Debug logs
   useEffect(() => {
     console.log("MenuLayoutSelector - Props:", { 
       selectedLayout, 
@@ -51,11 +51,23 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     console.log("MenuLayoutSelector - layouts disponibili:", layouts);
   }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
-  // Use selected layout as fallback if activeLayout is not available
-  // Ensure we always have a valid layout type
-  const effectiveLayoutType = activeLayout?.type || selectedLayout || defaultLayoutType;
+  // When selectedLayout changes, update activeLayout
+  useEffect(() => {
+    if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
+      // Find layout by type
+      const matchingLayout = layouts.find(layout => layout.type === selectedLayout);
+      if (matchingLayout) {
+        console.log("MenuLayoutSelector - Setting active layout by type:", matchingLayout);
+        changeActiveLayout(matchingLayout.id);
+      }
+    }
+  }, [selectedLayout, layouts, isLoading, changeActiveLayout]);
+  
+  // Determine which layout type to use based on available data
+  const effectiveLayoutType = selectedLayout || (activeLayout?.type || defaultLayoutType);
   
   console.log("MenuLayoutSelector - Layout selezionato:", effectiveLayoutType);
+  console.log("MenuLayoutSelector - activeLayout utilizzato:", activeLayout);
   
   const commonProps = {
     A4_WIDTH_MM,
@@ -68,7 +80,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     allergens: Array.isArray(allergens) ? allergens : [],
     printAllergens: Boolean(printAllergens),
     restaurantLogo,
-    customLayout: activeLayout || null
+    customLayout: activeLayout
   };
   
   switch (effectiveLayoutType) {
@@ -77,7 +89,6 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     case "allergens":
       return <AllergensLayout {...commonProps} />;
     case "custom":
-      // Per i layout personalizzati, usa ClassicLayout come base
       return <ClassicLayout {...commonProps} />;
     case "classic":
     default:

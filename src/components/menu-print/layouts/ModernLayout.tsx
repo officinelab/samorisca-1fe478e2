@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category, Product, Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CoverPage from '../shared/CoverPage';
 import AllergensPage from '../shared/AllergensPage';
 import ContentPage from './modern/ContentPage';
@@ -17,6 +18,7 @@ type ModernLayoutProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const ModernLayout: React.FC<ModernLayoutProps> = ({
@@ -30,7 +32,13 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
+  customLayout
 }) => {
+  // Debug log to verify custom layout is passed correctly
+  useEffect(() => {
+    console.log("ModernLayout - customLayout:", customLayout);
+  }, [customLayout]);
+  
   // Usa l'organizzatore di pagine per dividere le categorie in pagine
   const pages = usePageOrganizer({ 
     categories, 
@@ -59,6 +67,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
           pageCategories={pageCategories}
           products={products}
           language={language}
+          customLayout={customLayout}
           pageIndex={pageIndex}
         />
       ))}
@@ -72,6 +81,7 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({
           allergens={allergens}
           layoutType="modern"
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       )}
     </>

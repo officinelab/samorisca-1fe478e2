@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import CategoryGroup from './CategoryGroup';
@@ -25,6 +25,12 @@ const ContentPage: React.FC<ContentPageProps> = ({
   customLayout,
   pageIndex
 }) => {
+  // Debug log to verify custom layout is passed correctly
+  useEffect(() => {
+    console.log("ContentPage [Classic] - customLayout:", customLayout);
+    console.log("ContentPage [Classic] - pageIndex:", pageIndex);
+  }, [customLayout, pageIndex]);
+  
   // Determina i margini della pagina in base a pari/dispari
   const getPageMargins = () => {
     if (!customLayout) {
@@ -61,11 +67,14 @@ const ContentPage: React.FC<ContentPageProps> = ({
     }
   };
   
+  const pageMargins = getPageMargins();
+  console.log("ContentPage [Classic] - Page margins:", pageMargins);
+  
   return (
-    <div key={`page-${pageIndex}`} className="page relative bg-white" style={{
+    <div className="page relative bg-white" style={{
       width: `${A4_WIDTH_MM}mm`,
       height: `${A4_HEIGHT_MM}mm`,
-      padding: getPageMargins(),
+      padding: pageMargins,
       boxSizing: 'border-box',
       margin: '0 auto 60px auto',
       pageBreakAfter: 'always',

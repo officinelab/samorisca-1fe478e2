@@ -54,19 +54,24 @@ export const useLayoutOperations = (
 
   // Update an existing layout
   const updateLayout = async (updatedLayout: PrintLayout) => {
-    if (!layouts) {
+    if (!layouts || !Array.isArray(layouts)) {
       setError("Nessun layout disponibile per l'aggiornamento.");
       return;
     }
     
-    const updatedLayouts = updateLayoutInList(layouts, updatedLayout);
+    console.log("useLayoutOperations - updateLayout:", updatedLayout);
+    
+    // Ensure page margins are synchronized
+    const finalLayout = syncPageMargins(updatedLayout);
+    
+    const updatedLayouts = updateLayoutInList(layouts, finalLayout);
     const { success, error: saveError } = await saveLayouts(updatedLayouts);
     
     if (success) {
       setLayouts(updatedLayouts);
       
-      const finalLayout = syncPageMargins(updatedLayout);
       if (finalLayout.isDefault || (activeLayout && activeLayout.id === finalLayout.id)) {
+        console.log("useLayoutOperations - setActiveLayout con layout aggiornato:", finalLayout);
         setActiveLayout(finalLayout);
       }
       
@@ -79,7 +84,7 @@ export const useLayoutOperations = (
 
   // Delete a layout
   const deleteLayout = async (layoutId: string): Promise<boolean> => {
-    if (!layouts || layouts.length <= 1) {
+    if (!layouts || !Array.isArray(layouts) || layouts.length <= 1) {
       setError("Non puoi eliminare l'unico layout disponibile.");
       toast.error("Non puoi eliminare l'unico layout disponibile");
       return false;
@@ -173,7 +178,7 @@ export const useLayoutOperations = (
 
   // Create a new layout from scratch
   const createNewLayout = async (name: string): Promise<PrintLayout> => {
-    if (!layouts) {
+    if (!layouts || !Array.isArray(layouts)) {
       setError("Impossibile creare un nuovo layout.");
       return createNewLayoutFromTemplate(name, []);
     }

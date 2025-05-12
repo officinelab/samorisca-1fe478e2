@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useEffect } from "react";
 
 interface BasicOptionsProps {
   language: string;
@@ -36,6 +37,11 @@ const BasicOptions = ({
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
   };
+  
+  // Debug log per verificare che il layoutType cambi correttamente
+  useEffect(() => {
+    console.log("BasicOptions - Current layoutType:", layoutType);
+  }, [layoutType]);
 
   return (
     <div className="space-y-6">
