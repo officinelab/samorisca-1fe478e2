@@ -8,6 +8,7 @@ import {
   estimateProductHeight,
   getFilteredCategories
 } from './utils/pageCalculations';
+import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
 
 interface UsePaginationProps {
   categories: Category[];
@@ -26,7 +27,7 @@ export const usePagination = ({
   A4_HEIGHT_MM,
   customLayout
 }: UsePaginationProps) => {
-  const [pages, setPages] = useState<React.ReactNode[][]>([]);
+  const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
 
   useEffect(() => {
@@ -36,8 +37,8 @@ export const usePagination = ({
         return;
       }
 
-      const allPages: React.ReactNode[][] = [];
-      let currentPageContent: React.ReactNode[] = [];
+      const allPages: PrintPageContent[] = [];
+      let currentPageContent: PageContent[] = [];
       let currentPageIndex = 0;
       let currentHeight = 0;
       let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
@@ -76,12 +77,18 @@ export const usePagination = ({
         lastCategoryId = category.id;
         
         // Aggiungiamo un titolo (originale o ripetuto)
-        const titleKey = `cat-title-${category.id}-${currentPageIndex}${isNewCategory ? '' : '-continued'}`;
-        currentPageContent.push({ type: 'category-title', key: titleKey, category, isRepeated: !isNewCategory });
+        const categoryTitleContent: CategoryTitleContent = {
+          type: 'category-title',
+          key: `cat-title-${category.id}-${currentPageIndex}${isNewCategory ? '' : '-continued'}`,
+          category,
+          isRepeated: !isNewCategory
+        };
+        
+        currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
         
         // Contenitore per i prodotti di questa categoria in questa pagina
-        let currentCategoryProducts: { type: string, key: string, product: Product }[] = [];
+        let currentCategoryProducts: ProductItem[] = [];
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
@@ -103,12 +110,14 @@ export const usePagination = ({
             addNewPage();
             
             // Nella nuova pagina, ripeti il titolo della categoria
-            currentPageContent.push({ 
-              type: 'category-title', 
-              key: `cat-title-${category.id}-${currentPageIndex}-repeat`, 
-              category, 
+            const repeatedCategoryTitle: CategoryTitleContent = {
+              type: 'category-title',
+              key: `cat-title-${category.id}-${currentPageIndex}-repeat`,
+              category,
               isRepeated: true
-            });
+            };
+            
+            currentPageContent.push(repeatedCategoryTitle);
             currentHeight += categoryTitleHeight;
             
             // Reset per i prodotti della nuova pagina

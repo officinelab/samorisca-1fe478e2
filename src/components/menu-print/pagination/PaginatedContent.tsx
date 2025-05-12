@@ -6,6 +6,7 @@ import PrintPage from './PrintPage';
 import RepeatedCategoryTitle from './RepeatedCategoryTitle';
 import ProductItem from './ProductItem';
 import { usePagination } from './usePagination';
+import { CategoryTitleContent, PageContent, ProductsGroupContent } from './types/paginationTypes';
 
 interface PaginatedContentProps {
   A4_WIDTH_MM: number;
@@ -50,33 +51,32 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
           showPageBoundaries={showPageBoundaries}
           customLayout={customLayout}
         >
-          {pageContent.map(content => {
-            if ('type' in content) {
-              // Gestione dei diversi tipi di contenuto
-              if (content.type === 'category-title') {
-                return (
-                  <RepeatedCategoryTitle
-                    key={content.key}
-                    category={content.category}
-                    language={language}
-                    customLayout={customLayout}
-                    isRepeated={content.isRepeated}
-                  />
-                );
-              } else if (content.type === 'products-group') {
-                return (
-                  <div key={content.key} className="category-products">
-                    {content.products.map(productItem => (
-                      <ProductItem
-                        key={productItem.key}
-                        product={productItem.product}
-                        language={language}
-                        customLayout={customLayout}
-                      />
-                    ))}
-                  </div>
-                );
-              }
+          {pageContent.map((content: PageContent) => {
+            if (content.type === 'category-title') {
+              const categoryContent = content as CategoryTitleContent;
+              return (
+                <RepeatedCategoryTitle
+                  key={categoryContent.key}
+                  category={categoryContent.category}
+                  language={language}
+                  customLayout={customLayout}
+                  isRepeated={categoryContent.isRepeated}
+                />
+              );
+            } else if (content.type === 'products-group') {
+              const productsContent = content as ProductsGroupContent;
+              return (
+                <div key={productsContent.key} className="category-products">
+                  {productsContent.products.map(productItem => (
+                    <ProductItem
+                      key={productItem.key}
+                      product={productItem.product}
+                      language={language}
+                      customLayout={customLayout}
+                    />
+                  ))}
+                </div>
+              );
             }
             return null;
           })}
