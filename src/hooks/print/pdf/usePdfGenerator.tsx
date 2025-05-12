@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Allergen, Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
-import MenuPdfDocument from "./components/MenuPdfDocument";
+import { MenuPdfDocument } from "./components";
 import { createPdfStyles } from "./styles/pdfStyles";
 import { downloadPdf, printPdf } from "./utils/pdfUtils";
 

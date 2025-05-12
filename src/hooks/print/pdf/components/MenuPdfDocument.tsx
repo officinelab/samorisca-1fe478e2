@@ -3,9 +3,9 @@ import React from 'react';
 import { Document } from '@react-pdf/renderer';
 import { Allergen, Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
-import CoverPagePdf from './CoverPagePdf';
-import MenuContentPdf from './MenuContentPdf';
-import AllergensPdf from './AllergensPdf';
+import CoverPagePdf from './cover/CoverPagePdf';
+import MenuContentPdf from './content/MenuContentPdf';
+import AllergensPdf from './allergens/AllergensPdf';
 
 interface MenuPdfDocumentProps {
   styles: any;
