@@ -19,6 +19,8 @@ interface PrintOptionsProps {
   handleCategoryToggle: (categoryId: string) => void;
   handleToggleAllCategories: (selected: boolean) => void;
   isLoading: boolean;
+  restaurantLogo: string | null;
+  updateRestaurantLogo: (newLogo: string | null) => void;
 }
 
 const PrintOptions = ({
@@ -34,7 +36,9 @@ const PrintOptions = ({
   selectedCategories,
   handleCategoryToggle,
   handleToggleAllCategories,
-  isLoading
+  isLoading,
+  restaurantLogo,
+  updateRestaurantLogo
 }: PrintOptionsProps) => {
   const [activeTab, setActiveTab] = useState("base");
 
@@ -56,6 +60,8 @@ const PrintOptions = ({
           showPageBoundaries={showPageBoundaries}
           setShowPageBoundaries={setShowPageBoundaries}
           isLoading={isLoading}
+          restaurantLogo={restaurantLogo}
+          updateRestaurantLogo={updateRestaurantLogo}
         />
       </TabsContent>
 
