@@ -1,9 +1,7 @@
 
 import React from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Category } from "@/types/database";
 import SimpleLayoutSelector from "./options/SimpleLayoutSelector";
-import CategorySelector from "./options/CategorySelector";
 import RestaurantLogoUploader from "./RestaurantLogoUploader";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -16,14 +14,8 @@ interface OptionsPanelProps {
   setLanguage: (language: string) => void;
   layoutType: string;
   setLayoutType: (layout: string) => void;
-  printAllergens: boolean;
-  setPrintAllergens: (value: boolean) => void;
   showPageBoundaries: boolean;
   setShowPageBoundaries: (value: boolean) => void;
-  categories: Category[];
-  selectedCategories: string[];
-  handleCategoryToggle: (categoryId: string) => void;
-  handleToggleAllCategories: () => void;
   isLoading: boolean;
   forceLayoutRefresh: () => void;
 }
@@ -35,19 +27,13 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   setLanguage,
   layoutType,
   setLayoutType,
-  printAllergens,
-  setPrintAllergens,
   showPageBoundaries,
   setShowPageBoundaries,
-  categories,
-  selectedCategories,
-  handleCategoryToggle,
-  handleToggleAllCategories,
   isLoading,
   forceLayoutRefresh
 }) => {
   return (
-    <Accordion type="multiple" defaultValue={["categories", "layout", "options"]} className="w-full">
+    <Accordion type="multiple" defaultValue={["layout", "options"]} className="w-full">
       <AccordionItem value="layout" className="border-b">
         <AccordionTrigger className="text-base font-medium">
           Layout e Logo
@@ -70,24 +56,9 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
         </AccordionContent>
       </AccordionItem>
       
-      <AccordionItem value="categories" className="border-b">
-        <AccordionTrigger className="text-base font-medium">
-          Categorie
-        </AccordionTrigger>
-        <AccordionContent>
-          <CategorySelector
-            categories={categories}
-            selectedCategories={selectedCategories}
-            handleCategoryToggle={handleCategoryToggle}
-            handleToggleAllCategories={handleToggleAllCategories}
-            isLoading={isLoading}
-          />
-        </AccordionContent>
-      </AccordionItem>
-      
       <AccordionItem value="options" className="border-b">
         <AccordionTrigger className="text-base font-medium">
-          Opzioni Aggiuntive
+          Opzioni
         </AccordionTrigger>
         <AccordionContent className="space-y-4">
           <div className="flex items-center justify-between">
@@ -107,18 +78,6 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
                 <SelectItem value="en">Inglese</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="print-allergens" className="text-sm font-medium">
-              Mostra allergenici
-            </Label>
-            <Switch
-              id="print-allergens"
-              checked={printAllergens}
-              onCheckedChange={setPrintAllergens}
-              disabled={isLoading}
-            />
           </div>
           
           <div className="flex items-center justify-between space-x-2">

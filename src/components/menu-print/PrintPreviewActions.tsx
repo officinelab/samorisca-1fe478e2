@@ -38,7 +38,7 @@ const PrintPreviewActions: React.FC<PrintPreviewActionsProps> = ({
         variant="outline" 
         size="sm"
         onClick={handleExportToPdf}
-        disabled={isExporting || selectedCategories.length === 0}
+        disabled={isExporting}
       >
         <Download className="mr-2 h-4 w-4" />
         Scarica PDF

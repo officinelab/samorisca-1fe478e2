@@ -54,31 +54,37 @@ export const useMenuPrintState = () => {
   
   // Calcola il numero di pagine in base alle categorie e prodotti selezionati
   const pageCount = useMemo(() => {
-    if (isLoadingMenu || !categories || !products || !selectedCategories) {
+    if (isLoadingMenu || !categories || !products) {
       return 1;
     }
     
-    // Calcola il numero di prodotti nelle categorie selezionate
-    const totalProducts = selectedCategories.reduce((acc, catId) => {
-      return acc + (products[catId]?.length || 0);
+    // Per semplificare, selezioniamo tutte le categorie automaticamente
+    if (!selectedCategories || selectedCategories.length === 0) {
+      const allCategoryIds = categories.map(cat => cat.id);
+      setSelectedCategories(allCategoryIds);
+    }
+    
+    // Calcola il numero di prodotti nelle categorie disponibili
+    const totalProducts = categories.reduce((acc, cat) => {
+      return acc + (products[cat.id]?.length || 0);
     }, 0);
     
     // Stima: pagina copertina + pagine prodotti + pagina allergeni
     return 1 + Math.ceil(totalProducts / 10) + (printAllergens && allergens.length > 0 ? 1 : 0);
-  }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu]);
+  }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu, setSelectedCategories]);
   
   // Quando si carica la pagina, forza un aggiornamento dei layout
   useEffect(() => {
     forceLayoutRefresh();
   }, [forceLayoutRefresh]);
   
-  // Seleziona tutte le categorie per default se non ce ne sono selezionate
+  // Seleziona tutte le categorie per default
   useEffect(() => {
-    if (!isLoadingMenu && categories && categories.length > 0 && selectedCategories.length === 0) {
+    if (!isLoadingMenu && categories && categories.length > 0 && (!selectedCategories || selectedCategories.length === 0)) {
       const allCategoryIds = categories.map(cat => cat.id);
       setSelectedCategories(allCategoryIds);
     }
-  }, [isLoadingMenu, categories, selectedCategories.length, setSelectedCategories]);
+  }, [isLoadingMenu, categories, selectedCategories, setSelectedCategories]);
   
   return {
     // Layout and display options

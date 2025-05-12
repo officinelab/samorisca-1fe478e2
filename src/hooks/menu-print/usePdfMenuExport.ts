@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { Allergen, Category } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
-import { usePdfGenerator } from "../print/pdf/usePdfGenerator";
 import { useMenuData } from "../useMenuData";
 import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
 import { toast } from "@/components/ui/sonner";
+import { generatePDF } from "./pdfGenerator";
 
 interface PdfMenuExportProps {
   layoutType: string;
@@ -24,40 +24,26 @@ export const usePdfMenuExport = ({
 }: PdfMenuExportProps) => {
   const [isExporting, setIsExporting] = useState(false);
   
-  // Importa menu data e layouts separatamente
+  // Importa menu data e layouts
   const { categories, products, allergens, isLoading } = useMenuData();
-  const menuLayouts = useMenuLayouts();
+  const { layouts } = useMenuLayouts();
   
   // Trova il layout attivo
   const findActiveLayout = (): PrintLayout | null => {
-    if (!Array.isArray(menuLayouts.layouts) || menuLayouts.layouts.length === 0) {
+    if (!Array.isArray(layouts) || layouts.length === 0) {
       return null;
     }
-    return menuLayouts.layouts.find(layout => layout.id === layoutType) || 
-           menuLayouts.layouts.find(layout => layout.type === layoutType) ||
+    
+    return layouts.find(layout => layout.id === layoutType) || 
+           layouts.find(layout => layout.type === layoutType) ||
            null;
   };
   
   const customLayout = findActiveLayout();
   
-  // Inizializza il generatore PDF
-  const { 
-    generateAndDownloadPdf,
-    isGenerating
-  } = usePdfGenerator({
-    categories: categories as Category[],
-    products,
-    selectedCategories,
-    language,
-    allergens: allergens as Allergen[],
-    printAllergens,
-    restaurantLogo,
-    customLayout
-  });
-  
   // Gestore per l'esportazione PDF
   const handleExportToPdf = async () => {
-    if (isExporting || isGenerating || isLoading) return;
+    if (isExporting || isLoading) return;
     
     if (selectedCategories.length === 0) {
       toast.error("Seleziona almeno una categoria per generare il PDF");
@@ -65,8 +51,26 @@ export const usePdfMenuExport = ({
     }
     
     setIsExporting(true);
+    
     try {
-      await generateAndDownloadPdf();
+      // Filtra le categorie selezionate
+      const filteredCategories = categories.filter(cat => 
+        selectedCategories.includes(cat.id)
+      ) as Category[];
+      
+      // Genera il PDF basato sull'anteprima visualizzata
+      await generatePDF({
+        categories: filteredCategories,
+        products,
+        selectedCategories,
+        language,
+        allergens: allergens as Allergen[],
+        printAllergens,
+        restaurantLogo,
+        customLayout,
+        layoutType
+      });
+      
       toast.success("PDF generato con successo");
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
@@ -78,6 +82,6 @@ export const usePdfMenuExport = ({
   
   return {
     handleExportToPdf,
-    isExporting: isExporting || isGenerating
+    isExporting
   };
 };

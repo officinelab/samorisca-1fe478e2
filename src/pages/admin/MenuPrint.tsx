@@ -26,8 +26,6 @@ const MenuPrint = () => {
     allergens,
     isLoadingMenu,
     selectedCategories,
-    handleCategoryToggle,
-    handleToggleAllCategories,
     restaurantLogo,
     updateRestaurantLogo,
     
@@ -58,14 +56,8 @@ const MenuPrint = () => {
             setLanguage={setLanguage}
             layoutType={layoutType}
             setLayoutType={setLayoutType}
-            printAllergens={printAllergens}
-            setPrintAllergens={setPrintAllergens}
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
-            categories={categories}
-            selectedCategories={selectedCategories}
-            handleCategoryToggle={handleCategoryToggle}
-            handleToggleAllCategories={handleToggleAllCategories}
             isLoading={isLoadingMenu}
             forceLayoutRefresh={forceLayoutRefresh}
           />
