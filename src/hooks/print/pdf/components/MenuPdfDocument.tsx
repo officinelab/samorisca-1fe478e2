@@ -16,6 +16,8 @@ interface MenuPdfDocumentProps {
   printAllergens: boolean;
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
+  menuTitle?: string;
+  menuSubtitle?: string;
 }
 
 const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ 
@@ -26,7 +28,9 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  customLayout
+  customLayout,
+  menuTitle = "Menu",
+  menuSubtitle = "Ristorante"
 }) => {
   return (
     <Document>
@@ -35,6 +39,8 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
         restaurantLogo={restaurantLogo} 
         customLayout={customLayout} 
         isPageZero={true}
+        menuTitle={menuTitle}
+        menuSubtitle={menuSubtitle}
       />
       
       {categories.map((category, index) => (

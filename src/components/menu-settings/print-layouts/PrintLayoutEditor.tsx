@@ -36,8 +36,10 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleCoverTitleMarginChange,
     handleCoverSubtitleChange,
     handleCoverSubtitleMarginChange,
+    handleMenuTitleChange,
+    handleMenuSubtitleChange,
     
-    // Nuove funzioni per allergeni
+    // Funzioni per allergeni
     handleAllergensTitleChange,
     handleAllergensTitleMarginChange,
     handleAllergensDescriptionChange,
@@ -94,6 +96,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               onCoverTitleMarginChange={handleCoverTitleMarginChange}
               onCoverSubtitleChange={handleCoverSubtitleChange}
               onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
+              onMenuTitleChange={handleMenuTitleChange}
+              onMenuSubtitleChange={handleMenuSubtitleChange}
             />
           </TabsContent>
           

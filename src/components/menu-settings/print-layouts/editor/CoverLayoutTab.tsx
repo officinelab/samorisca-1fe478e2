@@ -16,6 +16,8 @@ interface CoverLayoutTabProps {
   onCoverTitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
   onCoverSubtitleChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
   onCoverSubtitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
+  onMenuTitleChange?: (value: string) => void;
+  onMenuSubtitleChange?: (value: string) => void;
 }
 
 const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
@@ -24,7 +26,9 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
   onCoverTitleChange,
   onCoverTitleMarginChange,
   onCoverSubtitleChange,
-  onCoverSubtitleMarginChange
+  onCoverSubtitleMarginChange,
+  onMenuTitleChange,
+  onMenuSubtitleChange
 }) => {
   // Se le configurazioni di copertina non esistono, usa valori predefiniti
   const coverLogo = layout.cover?.logo || {
@@ -138,16 +142,43 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         </CardContent>
       </Card>
       
+      {/* Nuova sezione per il titolo e sottotitolo del menu */}
+      <Card>
+        <CardContent className="pt-6">
+          <h4 className="text-lg font-medium mb-4">Testo Copertina</h4>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Titolo del Menu</Label>
+              <Input
+                value={layout.menu_title || "Menu"}
+                onChange={(e) => onMenuTitleChange && onMenuTitleChange(e.target.value)}
+                placeholder="Titolo del Menu"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Sottotitolo del Menu</Label>
+              <Input
+                value={layout.menu_subtitle || "Ristorante"}
+                onChange={(e) => onMenuSubtitleChange && onMenuSubtitleChange(e.target.value)}
+                placeholder="Sottotitolo del Menu"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       <Tabs defaultValue="titolo">
         <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="titolo">Titolo Menu</TabsTrigger>
-          <TabsTrigger value="sottotitolo">Sottotitolo</TabsTrigger>
+          <TabsTrigger value="titolo">Stile Titolo</TabsTrigger>
+          <TabsTrigger value="sottotitolo">Stile Sottotitolo</TabsTrigger>
         </TabsList>
         
         <TabsContent value="titolo" className="space-y-4 pt-4">
           <Card>
             <CardContent className="pt-6">
-              <h4 className="text-lg font-medium mb-4">Titolo Menu</h4>
+              <h4 className="text-lg font-medium mb-4">Stile Titolo Menu</h4>
               <ElementEditor
                 element={coverTitle}
                 onChange={onCoverTitleChange}
@@ -160,7 +191,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         <TabsContent value="sottotitolo" className="space-y-4 pt-4">
           <Card>
             <CardContent className="pt-6">
-              <h4 className="text-lg font-medium mb-4">Sottotitolo Menu</h4>
+              <h4 className="text-lg font-medium mb-4">Stile Sottotitolo Menu</h4>
               <ElementEditor
                 element={coverSubtitle}
                 onChange={onCoverSubtitleChange}
