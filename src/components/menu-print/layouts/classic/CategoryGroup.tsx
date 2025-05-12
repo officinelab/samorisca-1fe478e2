@@ -4,19 +4,22 @@ import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import ProductItem from './ProductItem';
 import { getElementStyle } from '../../utils/styleUtils';
+import RepeatedCategoryTitle from '../../pagination/RepeatedCategoryTitle';
 
 interface CategoryGroupProps {
   category: Category;
   products: Product[];
   language: string;
   customLayout?: PrintLayout | null;
+  isRepeatedTitle?: boolean;
 }
 
 const CategoryGroup: React.FC<CategoryGroupProps> = ({ 
   category, 
   products, 
   language,
-  customLayout
+  customLayout,
+  isRepeatedTitle = false
 }) => {
   // Define properly typed CSS properties
   const categoryStyle: React.CSSProperties = customLayout 
@@ -45,9 +48,12 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
   return (
     <div style={containerStyle} className="category">
       {(!customLayout || customLayout.elements.category.visible) && (
-        <h2 style={categoryStyle} className="category-title">
-          {category[`title_${language}`] || category.title}
-        </h2>
+        <RepeatedCategoryTitle 
+          category={category}
+          language={language}
+          customLayout={customLayout}
+          isRepeated={isRepeatedTitle}
+        />
       )}
       
       <div>

@@ -30,7 +30,7 @@ export const getBaseStyles = (): string => {
       page-break-after: always;
       break-after: page;
       position: relative;
-      overflow: visible;
+      overflow: hidden; /* Modificato da "visible" a "hidden" per contenere correttamente il contenuto */
     }
     
     .page:last-of-type {
@@ -41,9 +41,17 @@ export const getBaseStyles = (): string => {
     .menu-container {
       margin: 0 auto;
       max-width: 100%;
-      overflow: visible;
-      height: auto !important;
-      max-height: none !important;
+      overflow: hidden; /* Modificato da "visible" a "hidden" */
+      height: 100%;
+    }
+    
+    /* Stile per il titolo della categoria ripetuto */
+    .repeated-category-title {
+      font-style: italic;
+      margin-top: 0;
+      border-bottom: 1px dashed #ccc;
+      margin-bottom: 10px;
+      padding-bottom: 2px;
     }
 
     @media print {
@@ -56,12 +64,24 @@ export const getBaseStyles = (): string => {
         margin: 0;
         padding: 20mm 15mm;
         box-shadow: none;
-        overflow: visible;
+        overflow: hidden;
         height: auto;
       }
       
       .page-break {
         page-break-before: always;
+      }
+      
+      /* Assicura che gli elementi non siano divisi tra pagine */
+      .menu-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      
+      /* Stile per il titolo della categoria ripetuto durante la stampa */
+      .repeated-category-title {
+        font-style: italic;
+        color: #444;
       }
     }
   `;

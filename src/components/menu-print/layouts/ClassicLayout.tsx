@@ -4,8 +4,7 @@ import { Category, Product, Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import CoverPage from '../shared/CoverPage';
 import AllergensPage from '../shared/AllergensPage';
-import ContentPage from './classic/ContentPage';
-import { usePageOrganizer } from './classic/PageOrganizer';
+import PaginatedContent from '../pagination/PaginatedContent';
 
 type ClassicLayoutProps = {
   A4_WIDTH_MM: number;
@@ -38,17 +37,10 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   useEffect(() => {
     console.log("ClassicLayout - customLayout:", customLayout);
   }, [customLayout]);
-  
-  // Use our hook to organize categories into pages
-  const pages = usePageOrganizer({ 
-    categories, 
-    products, 
-    selectedCategories 
-  });
 
   return (
     <>
-      {/* Cover page */}
+      {/* Pagina di copertina */}
       <CoverPage 
         A4_WIDTH_MM={A4_WIDTH_MM} 
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
@@ -57,22 +49,19 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         restaurantLogo={restaurantLogo}
       />
 
-      {/* Content pages */}
-      {pages.map((pageCategories, pageIndex) => (
-        <ContentPage
-          key={`page-${pageIndex}`}
-          A4_WIDTH_MM={A4_WIDTH_MM}
-          A4_HEIGHT_MM={A4_HEIGHT_MM}
-          showPageBoundaries={showPageBoundaries}
-          pageCategories={pageCategories}
-          products={products}
-          language={language}
-          customLayout={customLayout}
-          pageIndex={pageIndex}
-        />
-      ))}
+      {/* Contenuto paginato che gestisce automaticamente l'interruzione delle pagine */}
+      <PaginatedContent
+        A4_WIDTH_MM={A4_WIDTH_MM}
+        A4_HEIGHT_MM={A4_HEIGHT_MM}
+        showPageBoundaries={showPageBoundaries}
+        categories={categories}
+        products={products}
+        selectedCategories={selectedCategories}
+        language={language}
+        customLayout={customLayout}
+      />
           
-      {/* Allergens page */}
+      {/* Pagina degli allergeni */}
       {printAllergens && allergens.length > 0 && (
         <AllergensPage
           A4_WIDTH_MM={A4_WIDTH_MM}
