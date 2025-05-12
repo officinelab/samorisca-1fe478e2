@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface ProductLabel {
   id: string;
   title: string;
   color?: string | null;
+  text_color?: string | null;
   display_order: number;
 }
 
@@ -76,6 +78,7 @@ const ProductLabelsManager = () => {
           .update({
             title: currentLabel.title,
             color: currentLabel.color,
+            text_color: currentLabel.text_color,
             updated_at: new Date().toISOString()
           })
           .eq("id", currentLabel.id);
@@ -92,6 +95,7 @@ const ProductLabelsManager = () => {
           .insert({
             title: currentLabel.title,
             color: currentLabel.color,
+            text_color: currentLabel.text_color,
             display_order: maxOrder
           });
 
@@ -145,11 +149,11 @@ const ProductLabelsManager = () => {
     
     try {
       // Aggiorna tutti i display_order nel database
-      // CORREZIONE: Includi tutti i campi necessari incluso il titolo
       const updates = updatedLabels.map(label => ({
         id: label.id,
         title: label.title,
         color: label.color,
+        text_color: label.text_color,
         display_order: label.display_order,
         updated_at: new Date().toISOString()
       }));
@@ -177,6 +181,24 @@ const ProductLabelsManager = () => {
     if (draggedId !== targetId) {
       reorderLabels(draggedId, targetId);
     }
+  };
+
+  // Funzione per determinare il colore del testo più leggibile 
+  // in base al colore dello sfondo
+  const getContrastTextColor = (bgColor?: string | null) => {
+    if (!bgColor) return "#000000";
+    
+    // Converte il colore esadecimale in RGB
+    const hex = bgColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Calcola la luminosità
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    // Se la luminosità è alta, usa testo scuro, altrimenti chiaro
+    return brightness > 128 ? "#000000" : "#FFFFFF";
   };
 
   return (
@@ -220,7 +242,8 @@ const ProductLabelsManager = () => {
             <TableRow>
               <TableHead style={{ width: "50px" }}></TableHead>
               <TableHead>Titolo</TableHead>
-              <TableHead>Colore</TableHead>
+              <TableHead>Anteprima</TableHead>
+              <TableHead>Colori</TableHead>
               <TableHead style={{ width: "100px" }}>Azioni</TableHead>
             </TableRow>
           </TableHeader>
@@ -241,6 +264,17 @@ const ProductLabelsManager = () => {
                 </TableCell>
                 <TableCell>{label.title}</TableCell>
                 <TableCell>
+                  <Badge
+                    className="font-normal"
+                    style={{
+                      backgroundColor: label.color || "#e2e8f0",
+                      color: label.text_color || getContrastTextColor(label.color),
+                    }}
+                  >
+                    {label.title}
+                  </Badge>
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-2">
                     {label.color && (
                       <div 
@@ -248,7 +282,10 @@ const ProductLabelsManager = () => {
                         style={{ backgroundColor: label.color }}
                       />
                     )}
-                    <span>{label.color || 'Nessun colore'}</span>
+                    <span className="text-xs">
+                      {label.color || 'Nessun colore'} 
+                      {label.text_color && <span> / {label.text_color}</span>}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -302,15 +339,33 @@ const ProductLabelsManager = () => {
               />
             </div>
             
+            {/* Anteprima dell'etichetta */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">
+                Anteprima
+              </label>
+              <div className="p-4 bg-gray-50 rounded-md border flex items-center justify-center">
+                <Badge
+                  className="font-normal text-sm"
+                  style={{
+                    backgroundColor: currentLabel.color || "#e2e8f0",
+                    color: currentLabel.text_color || getContrastTextColor(currentLabel.color),
+                  }}
+                >
+                  {currentLabel.title || "Anteprima Etichetta"}
+                </Badge>
+              </div>
+            </div>
+            
             <div className="grid gap-2">
               <label htmlFor="color" className="text-sm font-medium">
-                Colore (opzionale)
+                Colore Sfondo (opzionale)
               </label>
               <div className="flex gap-3 items-center">
                 <Input
                   id="color"
                   type="color"
-                  value={currentLabel.color || '#000000'}
+                  value={currentLabel.color || '#e2e8f0'}
                   onChange={(e) => setCurrentLabel({...currentLabel, color: e.target.value})}
                   className="w-14 h-9 p-1"
                 />
@@ -326,11 +381,47 @@ const ProductLabelsManager = () => {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setCurrentLabel({...currentLabel, color: null})}
+                    title="Rimuovi colore"
                   >
                     <X size={16} />
                   </Button>
                 )}
               </div>
+            </div>
+
+            <div className="grid gap-2">
+              <label htmlFor="text_color" className="text-sm font-medium">
+                Colore Testo (opzionale)
+              </label>
+              <div className="flex gap-3 items-center">
+                <Input
+                  id="text_color"
+                  type="color"
+                  value={currentLabel.text_color || '#000000'}
+                  onChange={(e) => setCurrentLabel({...currentLabel, text_color: e.target.value})}
+                  className="w-14 h-9 p-1"
+                />
+                <Input
+                  type="text"
+                  value={currentLabel.text_color || ''}
+                  onChange={(e) => setCurrentLabel({...currentLabel, text_color: e.target.value})}
+                  placeholder="Codice colore (es. #FFFFFF)"
+                  className="flex-1"
+                />
+                {currentLabel.text_color && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setCurrentLabel({...currentLabel, text_color: null})}
+                    title="Auto (in base allo sfondo)"
+                  >
+                    <X size={16} />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Se non specificato, il colore del testo sarà automaticamente nero o bianco in base al colore di sfondo.
+              </p>
             </div>
           </div>
           
