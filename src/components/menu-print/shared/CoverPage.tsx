@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
@@ -9,7 +10,7 @@ type CoverPageProps = {
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  pageIndex?: number; // Added this prop to fix the type error
+  pageIndex?: number;
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -19,9 +20,15 @@ const CoverPage: React.FC<CoverPageProps> = ({
   layoutType,
   restaurantLogo,
   customLayout,
-  pageIndex = 0 // Default to 0 for the cover page
+  pageIndex = 0
 }) => {
   const [imageError, setImageError] = useState(false);
+  
+  // Debug per verificare se il customLayout viene passato correttamente
+  React.useEffect(() => {
+    console.log("CoverPage - customLayout:", customLayout);
+    console.log("CoverPage - logo config:", customLayout?.cover?.logo);
+  }, [customLayout]);
   
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -165,9 +172,16 @@ const CoverPage: React.FC<CoverPageProps> = ({
     setImageError(true);
   };
 
+  // Controlla se il logo è visibile
+  const isLogoVisible = customLayout?.cover?.logo?.visible !== false;
+
+  // Verifica se il titolo e il sottotitolo sono visibili
+  const isTitleVisible = customLayout?.cover?.title?.visible !== false;
+  const isSubtitleVisible = customLayout?.cover?.subtitle?.visible !== false;
+
   return (
     <div className="page cover-page bg-white" style={getPageStyle()}>
-      {(restaurantLogo && !imageError) ? (
+      {(restaurantLogo && !imageError && isLogoVisible) ? (
         <div style={{
           width: '100%',
           display: 'flex',
@@ -182,11 +196,14 @@ const CoverPage: React.FC<CoverPageProps> = ({
             onError={handleImageError}
           />
         </div>
-      ) : (
-        <>
-          <h1 style={getTitleStyle()}>Menu</h1>
-          <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>
-        </>
+      ) : null}
+      
+      {isTitleVisible && (
+        <h1 style={getTitleStyle()}>Menu</h1>
+      )}
+      
+      {isSubtitleVisible && (
+        <p style={getSubtitleStyle()}>I nostri piatti</p>
       )}
       
       {/* Debug page number indicator only shown in preview mode */}

@@ -46,6 +46,11 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     visible: true
   };
   
+  // Controlla la visibilità degli elementi e imposta la visibilità predefinita su true se non specificata
+  const isLogoVisible = 'visible' in coverLogo ? coverLogo.visible !== false : true;
+  const isTitleVisible = 'visible' in coverTitle ? coverTitle.visible !== false : true;
+  const isSubtitleVisible = 'visible' in coverSubtitle ? coverSubtitle.visible !== false : true;
+  
   return StyleSheet.create({
     coverPage: {
       flex: 1,
@@ -59,7 +64,8 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       alignSelf: mapAlignment(coverLogo.alignment || 'center'),
       width: `${coverLogo.maxWidth}%`,
       height: 'auto',
-      maxHeight: `${coverLogo.maxHeight}mm`
+      maxHeight: `${coverLogo.maxHeight}mm`,
+      display: isLogoVisible ? 'flex' : 'none',
     },
     coverLogo: {
       width: '100%',
@@ -77,6 +83,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${coverTitle.margin.bottom}mm`,
       marginLeft: `${coverTitle.margin.left}mm`,
       textAlign: coverTitle.alignment || 'center',
+      display: isTitleVisible ? 'block' : 'none',
     },
     coverSubtitle: {
       fontSize: coverSubtitle.fontSize,
@@ -89,6 +96,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${coverSubtitle.margin.bottom}mm`,
       marginLeft: `${coverSubtitle.margin.left}mm`,
       textAlign: coverSubtitle.alignment || 'center',
+      display: isSubtitleVisible ? 'block' : 'none',
     },
   });
 };
@@ -122,4 +130,3 @@ const defaultCoverStyles = () => StyleSheet.create({
     textAlign: 'center',
   },
 });
-

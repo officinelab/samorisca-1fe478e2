@@ -2,7 +2,7 @@
 import React from 'react';
 import { Category, Product, Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import CoverPage from './CoverPage';
+import CoverPage from './shared/CoverPage';
 import AllergensPage from './AllergensPage';
 import ContentPage from './classic/ContentPage';
 import { usePageOrganizer } from './classic/PageOrganizer';
@@ -48,13 +48,14 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 
   return (
     <>
-      {/* Cover page */}
+      {/* Cover page - Passa customLayout al componente CoverPage */}
       <CoverPage 
         A4_WIDTH_MM={A4_WIDTH_MM} 
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType={customLayout?.type || "classic"}
         restaurantLogo={restaurantLogo}
+        customLayout={customLayout}  {/* Aggiungiamo la prop customLayout */}
       />
 
       {/* Content pages */}
