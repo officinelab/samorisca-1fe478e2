@@ -10,30 +10,37 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   
   // Ensure the cover structure exists with default values
   const cover = customLayout.cover || {};
+  
+  // Se cover.logo non esiste, crea un oggetto predefinito
   const coverLogo = cover.logo || { 
     marginBottom: 10, 
     marginTop: 0, 
     alignment: 'center', 
     maxWidth: 60, 
-    maxHeight: 50 
+    maxHeight: 50,
+    visible: true
   };
   
+  // Se cover.title non esiste, crea un oggetto predefinito
   const coverTitle = cover.title || {
     fontSize: 24,
     fontStyle: 'normal',
     fontColor: '#000000',
     fontFamily: 'Helvetica',
     margin: { top: 10, right: 0, bottom: 20, left: 0 },
-    alignment: 'center'
+    alignment: 'center',
+    visible: true
   };
   
+  // Se cover.subtitle non esiste, crea un oggetto predefinito
   const coverSubtitle = cover.subtitle || {
     fontSize: 16,
     fontStyle: 'normal',
     fontColor: '#000000',
     fontFamily: 'Helvetica',
     margin: { top: 0, right: 0, bottom: 10, left: 0 },
-    alignment: 'center'
+    alignment: 'center',
+    visible: true
   };
   
   return StyleSheet.create({

@@ -26,7 +26,9 @@ export const useRestaurantLogo = () => {
         }
         
         if (data) {
-          setRestaurantLogo(data.value);
+          // Converti il valore in stringa se necessario
+          const logoUrl = typeof data.value === 'string' ? data.value : String(data.value);
+          setRestaurantLogo(logoUrl);
         } else {
           // Fallback to localStorage for backward compatibility
           const localLogo = localStorage.getItem('restaurant_logo');

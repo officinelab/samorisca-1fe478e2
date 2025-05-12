@@ -148,8 +148,10 @@ export const loadRestaurantLogo = async (): Promise<string | null> => {
       throw error;
     }
     
-    if (data) {
-      return data.value;
+    if (data && data.value) {
+      // Assicuriamoci che sia una stringa
+      const logoUrl = typeof data.value === 'string' ? data.value : String(data.value);
+      return logoUrl;
     }
     
     // Fallback to localStorage
