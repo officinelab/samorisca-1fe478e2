@@ -47,6 +47,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         showPageBoundaries={showPageBoundaries}
         layoutType={customLayout?.type || "classic"}
         restaurantLogo={restaurantLogo}
+        customLayout={customLayout}
         pageIndex={0} // Imposta esplicitamente come pagina 0
       />
 
@@ -73,6 +74,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           allergens={allergens}
           layoutType={customLayout?.type || "classic"}
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       )}
     </>

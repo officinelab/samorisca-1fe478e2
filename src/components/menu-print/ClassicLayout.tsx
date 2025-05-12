@@ -48,14 +48,14 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 
   return (
     <>
-      {/* Cover page - Passa customLayout al componente CoverPage */}
+      {/* Cover page */}
       <CoverPage 
         A4_WIDTH_MM={A4_WIDTH_MM} 
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType={customLayout?.type || "classic"}
         restaurantLogo={restaurantLogo}
-        customLayout={customLayout}  /* Corretto la sintassi qui */
+        customLayout={customLayout}
       />
 
       {/* Content pages */}

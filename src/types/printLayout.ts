@@ -46,6 +46,7 @@ export type PrintLayout = {
       alignment: 'left' | 'center' | 'right';
       marginTop: number;
       marginBottom: number;
+      visible: boolean; // Aggiunta questa proprietà mancante
     };
     title: PrintLayoutElementConfig;
     subtitle: PrintLayoutElementConfig;

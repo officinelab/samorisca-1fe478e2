@@ -172,7 +172,7 @@ const CoverPage: React.FC<CoverPageProps> = ({
     setImageError(true);
   };
 
-  // Controlla se il logo è visibile
+  // Controlla se il logo è visibile - con valore predefinito true se non definito
   const isLogoVisible = customLayout?.cover?.logo?.visible !== false;
 
   // Verifica se il titolo e il sottotitolo sono visibili

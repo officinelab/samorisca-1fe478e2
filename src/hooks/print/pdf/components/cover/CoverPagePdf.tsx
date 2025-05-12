@@ -26,17 +26,14 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({
   // Utilizziamo il type assertion per garantire il corretto tipo
   const coverConfigTyped = coverConfig as PrintLayout['cover'];
   
-  // Controlla se il logo è visibile
-  const isLogoVisible = coverConfigTyped.logo && 'visible' in coverConfigTyped.logo ? 
-    coverConfigTyped.logo.visible !== false : true;
+  // Controlla se il logo è visibile, con valore predefinito true se non specificato
+  const isLogoVisible = coverConfigTyped.logo?.visible !== false;
     
-  // Controlla se il titolo è visibile
-  const isTitleVisible = coverConfigTyped.title && 'visible' in coverConfigTyped.title ? 
-    coverConfigTyped.title.visible !== false : true;
+  // Controlla se il titolo è visibile, con valore predefinito true se non specificato
+  const isTitleVisible = coverConfigTyped.title?.visible !== false;
     
-  // Controlla se il sottotitolo è visibile
-  const isSubtitleVisible = coverConfigTyped.subtitle && 'visible' in coverConfigTyped.subtitle ? 
-    coverConfigTyped.subtitle.visible !== false : true;
+  // Controlla se il sottotitolo è visibile, con valore predefinito true se non specificato
+  const isSubtitleVisible = coverConfigTyped.subtitle?.visible !== false;
   
   return (
     <Page size="A4" style={styles.page}>

@@ -83,7 +83,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${coverTitle.margin.bottom}mm`,
       marginLeft: `${coverTitle.margin.left}mm`,
       textAlign: coverTitle.alignment || 'center',
-      display: isTitleVisible ? 'block' : 'none',
+      display: isTitleVisible ? 'flex' : 'none',
     },
     coverSubtitle: {
       fontSize: coverSubtitle.fontSize,
@@ -96,7 +96,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${coverSubtitle.margin.bottom}mm`,
       marginLeft: `${coverSubtitle.margin.left}mm`,
       textAlign: coverSubtitle.alignment || 'center',
-      display: isSubtitleVisible ? 'block' : 'none',
+      display: isSubtitleVisible ? 'flex' : 'none',
     },
   });
 };
