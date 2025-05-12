@@ -11,8 +11,11 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   // Ensure the cover structure exists with default values
   const cover = customLayout.cover || {};
   
+  // Type assertion per dirgli che cover è del tipo corretto
+  const typedCover = cover as PrintLayout['cover'];
+  
   // Se cover.logo non esiste, crea un oggetto predefinito
-  const coverLogo = cover.logo || { 
+  const coverLogo = typedCover.logo || { 
     marginBottom: 10, 
     marginTop: 0, 
     alignment: 'center', 
@@ -22,7 +25,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   };
   
   // Se cover.title non esiste, crea un oggetto predefinito
-  const coverTitle = cover.title || {
+  const coverTitle = typedCover.title || {
     fontSize: 24,
     fontStyle: 'normal',
     fontColor: '#000000',
@@ -33,7 +36,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   };
   
   // Se cover.subtitle non esiste, crea un oggetto predefinito
-  const coverSubtitle = cover.subtitle || {
+  const coverSubtitle = typedCover.subtitle || {
     fontSize: 16,
     fontStyle: 'normal',
     fontColor: '#000000',
@@ -119,3 +122,4 @@ const defaultCoverStyles = () => StyleSheet.create({
     textAlign: 'center',
   },
 });
+
