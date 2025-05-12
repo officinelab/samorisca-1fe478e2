@@ -8,7 +8,7 @@ import { useMenuPrintState } from "@/hooks/menu-print/useMenuPrintState";
 
 const PrintHeader: React.FC = () => {
   const { 
-    layoutType, 
+    layoutId,
     language, 
     printAllergens, 
     selectedCategories,
@@ -16,7 +16,7 @@ const PrintHeader: React.FC = () => {
   } = useMenuPrintState();
 
   const { handleExportToPdf, isExporting } = usePdfMenuExport({
-    layoutType,
+    layoutId,
     language,
     printAllergens,
     selectedCategories,

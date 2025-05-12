@@ -7,13 +7,10 @@ import { ensureValidPageMargins } from "../../storage/layoutValidator";
  * Returns null if the layout to clone is not found
  */
 export const cloneExistingLayout = (
-  layoutId: string,
-  layouts: PrintLayout[]
-): PrintLayout | null => {
-  const layoutToClone = layouts.find(layout => layout.id === layoutId);
-  
+  layoutToClone: PrintLayout
+): PrintLayout => {
   if (!layoutToClone) {
-    return null;
+    throw new Error("Layout non trovato");
   }
   
   return ensureValidPageMargins({

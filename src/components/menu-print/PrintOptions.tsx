@@ -8,8 +8,8 @@ import CategorySelector from "./options/CategorySelector";
 interface PrintOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  layoutType: string;
-  setLayoutType: (layout: string) => void;
+  layoutId: string;
+  setLayoutId: (layoutId: string) => void;
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
@@ -26,8 +26,8 @@ interface PrintOptionsProps {
 const PrintOptions = ({
   language,
   setLanguage,
-  layoutType,
-  setLayoutType,
+  layoutId,
+  setLayoutId,
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
@@ -53,8 +53,8 @@ const PrintOptions = ({
         <BasicOptions
           language={language}
           setLanguage={setLanguage}
-          layoutType={layoutType}
-          setLayoutType={setLayoutType}
+          layoutId={layoutId}
+          setLayoutId={setLayoutId}
           printAllergens={printAllergens}
           setPrintAllergens={setPrintAllergens}
           showPageBoundaries={showPageBoundaries}
