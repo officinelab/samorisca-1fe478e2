@@ -25,6 +25,7 @@ export interface ProductLabel {
   id: string;
   title: string;
   color: string | null;
+  text_color: string | null;
   display_order: number;
   created_at?: string;
   updated_at?: string;
