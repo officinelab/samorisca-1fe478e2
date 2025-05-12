@@ -8,7 +8,7 @@ type AllergensPageProps = {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   allergens: Allergen[];
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
 };
@@ -51,6 +51,13 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
           marginBottom: '20px',
           textAlign: 'center' as const,
         };
+      case 'custom':
+        return {
+          fontSize: '26px',
+          fontWeight: '700',
+          marginBottom: '18px',
+          textAlign: 'center' as const,
+        };
       default:
         return {
           fontSize: '22px',
@@ -76,6 +83,15 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
           padding: '8px',
           borderRadius: '4px',
           backgroundColor: '#f9f9f9',
+          display: 'flex',
+          alignItems: 'baseline',
+        };
+      case 'custom':
+        return {
+          marginBottom: '11px',
+          padding: '7px',
+          borderRadius: '3px',
+          backgroundColor: '#f5f5f5',
           display: 'flex',
           alignItems: 'baseline',
         };

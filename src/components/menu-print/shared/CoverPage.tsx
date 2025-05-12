@@ -5,7 +5,7 @@ type CoverPageProps = {
   A4_WIDTH_MM: number; 
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
-  layoutType: 'classic' | 'modern' | 'allergens';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
 };
 
@@ -54,6 +54,14 @@ const CoverPage: React.FC<CoverPageProps> = ({
           marginTop: '30px',
           textTransform: 'uppercase' as const,
         };
+      case 'custom':
+        return {
+          fontSize: '30px',
+          fontWeight: '700',
+          textAlign: 'center' as const,
+          marginTop: '35px',
+          textTransform: 'uppercase' as const,
+        };
       case 'classic':
       default:
         return {
@@ -82,6 +90,14 @@ const CoverPage: React.FC<CoverPageProps> = ({
           fontWeight: '400',
           textAlign: 'center' as const,
           marginTop: '8px',
+          fontStyle: 'italic' as const,
+        };
+      case 'custom':
+        return {
+          fontSize: '17px',
+          fontWeight: '400',
+          textAlign: 'center' as const,
+          marginTop: '9px',
           fontStyle: 'italic' as const,
         };
       case 'classic':
