@@ -4,6 +4,7 @@ import { Allergen, Category } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { usePdfGenerator } from "../print/pdf/usePdfGenerator";
 import { useMenuData } from "../useMenuData";
+import { useMenuLayouts } from "../useMenuLayouts";
 
 export const usePdfMenuExport = ({
   layoutType,
@@ -20,8 +21,9 @@ export const usePdfMenuExport = ({
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   
-  // Import menu data
-  const { categories, products, allergens, layouts, isLoading } = useMenuData();
+  // Import menu data e layouts separatamente
+  const { categories, products, allergens, isLoading } = useMenuData();
+  const { layouts } = useMenuLayouts();
   
   // Find the active layout
   const findActiveLayout = (): PrintLayout | null => {

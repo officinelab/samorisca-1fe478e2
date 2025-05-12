@@ -231,7 +231,7 @@ export const usePdfGenerator = ({
     }
   };
 
-  // Genera il PDF e lo apre in una nuova finestra
+  // Genera il PDF e lo apre in una nuova finestra per la stampa
   const generateAndPrintPdf = async () => {
     if (selectedCategories.length === 0) {
       toast.error("Seleziona almeno una categoria per stampare il PDF");
@@ -241,12 +241,105 @@ export const usePdfGenerator = ({
     setIsGenerating(true);
 
     try {
-      // Riutilizza la stessa logica di generazione del PDF
-      // ma apre il file in una nuova finestra per la stampa
+      // Filtra le categorie selezionate per questa funzione
+      const filteredCategories = categories.filter(cat => selectedCategories.includes(cat.id));
+      
+      // Crea gli stili per il PDF (riutilizzando la stessa logica di prima)
+      const styles = StyleSheet.create({
+        page: {
+          flexDirection: 'column',
+          padding: customLayout ? 
+            `${customLayout.page.marginTop}mm ${customLayout.page.marginRight}mm ${customLayout.page.marginBottom}mm ${customLayout.page.marginLeft}mm` : 
+            '20mm 15mm 20mm 15mm',
+          fontFamily: 'Helvetica'
+        },
+        coverPage: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        coverTitle: {
+          fontSize: customLayout?.cover.title.fontSize || 24,
+          fontWeight: 'bold',
+          marginBottom: '20mm',
+          textAlign: customLayout?.cover.title.alignment || 'center',
+        },
+        coverSubtitle: {
+          fontSize: customLayout?.cover.subtitle.fontSize || 16,
+          marginBottom: '10mm',
+          textAlign: customLayout?.cover.subtitle.alignment || 'center',
+        },
+        categoryTitle: {
+          fontSize: customLayout?.elements.category.fontSize || 14,
+          fontWeight: 'bold',
+          marginBottom: customLayout?.spacing.categoryTitleBottomMargin || 10,
+          textTransform: 'uppercase',
+        },
+        productContainer: {
+          marginBottom: customLayout?.spacing.betweenProducts || 5,
+        },
+        productHeader: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 2,
+        },
+        productTitle: {
+          fontSize: customLayout?.elements.title.fontSize || 12,
+          fontWeight: 'bold',
+          maxWidth: '70%',
+        },
+        productPrice: {
+          fontSize: customLayout?.elements.price.fontSize || 12,
+          fontWeight: 'bold',
+          textAlign: 'right',
+        },
+        productDescription: {
+          fontSize: customLayout?.elements.description.fontSize || 10,
+          fontStyle: 'italic',
+          marginTop: 2,
+        },
+        productAllergens: {
+          fontSize: customLayout?.elements.allergensList.fontSize || 9,
+          marginTop: 2,
+          color: '#666',
+        },
+        allergensPage: {
+          marginTop: '10mm',
+        },
+        allergensTitle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginBottom: 10,
+          textAlign: 'center',
+        },
+        allergenItem: {
+          flexDirection: 'row',
+          marginBottom: 5,
+          padding: 5,
+        },
+        allergenNumber: {
+          fontSize: 12,
+          fontWeight: 'bold',
+          marginRight: 10,
+        },
+        allergenName: {
+          fontSize: 12,
+        },
+        pageNumber: {
+          position: 'absolute',
+          bottom: '10mm',
+          right: '15mm',
+          fontSize: 10,
+          color: '#888',
+        },
+      });
+
+      // Crea il documento PDF per la stampa (stessa struttura di MenuDocument sopra)
       const MenuDocumentForPrint = () => (
         <Document>
           {/* Pagina di copertina */}
-          <Page size="A4" style={StyleSheet.create({ page: { padding: '20mm' } })}>
+          <Page size="A4" style={styles.page}>
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Menu</Text>
               <Text style={{ fontSize: 16, marginTop: 10 }}>Ristorante</Text>
@@ -254,7 +347,7 @@ export const usePdfGenerator = ({
           </Page>
 
           {/* Pagine del menu */}
-          <Page size="A4" style={StyleSheet.create({ page: { padding: '20mm' } })}>
+          <Page size="A4" style={styles.page}>
             {filteredCategories.map((category) => (
               <View key={category.id} style={{ marginBottom: '10mm' }}>
                 <Text style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 10, textTransform: 'uppercase' }}>
