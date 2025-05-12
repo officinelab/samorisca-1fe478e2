@@ -8,20 +8,6 @@ import PrintPreview from "@/components/menu-print/PrintPreview";
 import OptionsPanel from "@/components/menu-print/OptionsPanel";
 import PrintStylesheet from "@/components/menu-print/PrintStylesheet";
 
-interface OptionsPanelProps {
-  // Aggiungiamo la proprietà restaurantLogo all'interfaccia
-  restaurantLogo?: string | null;
-  updateRestaurantLogo: (url: string) => Promise<boolean>;
-  language: string;
-  setLanguage: (lang: string) => void;
-  layoutId: string;
-  setLayoutId: (id: string) => void;
-  showPageBoundaries: boolean;
-  setShowPageBoundaries: (show: boolean) => void;
-  isLoading: boolean;
-  forceLayoutRefresh: () => void;
-}
-
 const MenuPrint = () => {
   const {
     // Layout and display options
@@ -64,16 +50,16 @@ const MenuPrint = () => {
         {/* Pannello opzioni (1/3 dello spazio su desktop) */}
         <Card className="md:col-span-1 p-5 h-fit">
           <OptionsPanel
-            restaurantLogo={restaurantLogo}
-            updateRestaurantLogo={updateRestaurantLogo}
-            language={language}
-            setLanguage={setLanguage}
             layoutId={layoutId}
             setLayoutId={setLayoutId}
+            language={language}
+            setLanguage={setLanguage}
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
             isLoading={isLoadingMenu}
             forceLayoutRefresh={forceLayoutRefresh}
+            restaurantLogo={restaurantLogo}
+            updateRestaurantLogo={updateRestaurantLogo}
           />
         </Card>
 

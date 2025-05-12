@@ -4,12 +4,15 @@ import { PrintLayout } from "@/types/printLayout";
 import { mapAlignment } from './utils/alignmentUtils';
 
 export const createCoverStyles = (customLayout?: PrintLayout | null) => {
+  // Se customLayout è null o undefined, usiamo gli stili predefiniti
   if (!customLayout) {
     return defaultCoverStyles();
   }
   
-  // Assicuriamoci che tutti i campi necessari esistano
+  // Se la proprietà cover è mancante o vuota, inizializziamola con un oggetto vuoto
   const cover = customLayout.cover || {};
+  
+  // Definiamo valori predefiniti per il logo e assicuriamoci che esistano
   const logoSettings = cover.logo || {
     maxWidth: 60,
     maxHeight: 50,
@@ -18,7 +21,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     marginBottom: 20
   };
   
-  // Verifichiamo che i campi title e subtitle esistano
+  // Definiamo valori predefiniti per il titolo e assicuriamoci che esista
   const title = cover.title || {
     fontSize: 24,
     fontStyle: 'normal',
@@ -29,6 +32,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     margin: { top: 10, right: 0, bottom: 5, left: 0 }
   };
   
+  // Definiamo valori predefiniti per il sottotitolo e assicuriamoci che esista
   const subtitle = cover.subtitle || {
     fontSize: 16,
     fontStyle: 'normal',

@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { ReloadIcon } from "@radix-ui/react-icons"
+import { RefreshCw } from "lucide-react"
 
 import PrintLogoUploader from './PrintLogoUploader';
 
@@ -17,6 +18,8 @@ interface OptionsPanelProps {
   setShowPageBoundaries: (show: boolean) => void;
   isLoading: boolean;
   forceLayoutRefresh: () => void;
+  restaurantLogo?: string | null;
+  updateRestaurantLogo: (url: string) => Promise<boolean>;
 }
 
 const OptionsPanel: React.FC<OptionsPanelProps> = ({
@@ -28,6 +31,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   setShowPageBoundaries,
   isLoading,
   forceLayoutRefresh,
+  restaurantLogo,
+  updateRestaurantLogo
 }) => {
   return (
     <div className="space-y-6">
@@ -79,7 +84,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
       </div>
 
       <Button variant="outline" onClick={forceLayoutRefresh} disabled={isLoading} className="w-full">
-        <ReloadIcon className="mr-2 h-4 w-4" />
+        <RefreshCw className="mr-2 h-4 w-4" />
         Forza il ricaricamento del layout
       </Button>
     </div>
