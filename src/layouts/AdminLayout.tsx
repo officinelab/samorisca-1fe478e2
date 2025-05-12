@@ -13,6 +13,7 @@ import {
   Settings
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
@@ -88,8 +89,12 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+        <main className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-6">
+              <Outlet />
+            </div>
+          </ScrollArea>
         </main>
       </div>
     </div>
