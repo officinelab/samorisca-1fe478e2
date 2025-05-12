@@ -85,5 +85,77 @@ export const classicLayout: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
+  },
+  // Aggiungiamo le sezioni mancanti
+  cover: {
+    logo: {
+      maxWidth: 80,
+      maxHeight: 50,
+      alignment: 'center',
+      marginTop: 20,
+      marginBottom: 20
+    },
+    title: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 26,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "center",
+      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+    },
+    subtitle: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 16,
+      fontColor: "#666666",
+      fontStyle: "italic",
+      alignment: "center",
+      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  allergens: {
+    title: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 22,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+    },
+    description: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 14,
+      fontColor: "#333333",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+    },
+    item: {
+      number: {
+        visible: true,
+        fontFamily: "Times New Roman",
+        fontSize: 14,
+        fontColor: "#000000",
+        fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 8, bottom: 0, left: 0 }
+      },
+      title: {
+        visible: true,
+        fontFamily: "Times New Roman",
+        fontSize: 14,
+        fontColor: "#333333",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      spacing: 10,
+      backgroundColor: "#f5f5f5",
+      borderRadius: 0,
+      padding: 5
+    }
   }
 };

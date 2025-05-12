@@ -85,5 +85,77 @@ export const allergensLayout: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
+  },
+  // Aggiungiamo le sezioni mancanti
+  cover: {
+    logo: {
+      maxWidth: 80,
+      maxHeight: 50,
+      alignment: 'center',
+      marginTop: 20,
+      marginBottom: 20
+    },
+    title: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 28,
+      fontColor: "#ea384c",
+      fontStyle: "bold",
+      alignment: "center",
+      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+    },
+    subtitle: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 16,
+      fontColor: "#666666",
+      fontStyle: "italic",
+      alignment: "center",
+      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  allergens: {
+    title: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 28,
+      fontColor: "#ea384c",
+      fontStyle: "bold",
+      alignment: "center",
+      margin: { top: 0, right: 0, bottom: 20, left: 0 }
+    },
+    description: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#333333",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+    },
+    item: {
+      number: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#FFFFFF",
+        fontStyle: "bold",
+        alignment: "center",
+        margin: { top: 0, right: 10, bottom: 0, left: 0 }
+      },
+      title: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#333333",
+        fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      spacing: 12,
+      backgroundColor: "#f9f9f9",
+      borderRadius: 4,
+      padding: 8
+    }
   }
 };

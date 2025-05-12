@@ -16,10 +16,10 @@ export const useCreateLayout = (
   const createNewLayout = async (name: string): Promise<PrintLayout> => {
     if (!layouts || !Array.isArray(layouts)) {
       setError("Impossibile creare un nuovo layout.");
-      return createNewLayoutFromTemplate(name, []);
+      return createNewLayoutFromTemplate(name);
     }
     
-    const newLayout = createNewLayoutFromTemplate(name, layouts);
+    const newLayout = createNewLayoutFromTemplate(name);
     const updatedLayouts = [...layouts, newLayout];
     
     const { success, error: saveError } = await saveLayouts(updatedLayouts);
