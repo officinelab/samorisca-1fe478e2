@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -17,11 +17,8 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
-  
-  const isDashboardRoute = location.pathname === "/admin/dashboard" || location.pathname === "/admin";
 
   const handleLogout = async () => {
     await logout();
@@ -57,7 +54,7 @@ const AdminLayout = () => {
                 onLogout={handleLogout} 
                 navItems={navItems}
                 sidebarLogo={siteSettings?.sidebarLogo} 
-                key={siteSettings?.sidebarLogo}
+                key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
               />
             </div>
           </div>
@@ -70,12 +67,12 @@ const AdminLayout = () => {
           onLogout={handleLogout} 
           navItems={navItems} 
           sidebarLogo={siteSettings?.sidebarLogo}
-          key={siteSettings?.sidebarLogo}
+          key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
         />
       </div>
 
       {/* Contenuto principale */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${isDashboardRoute ? 'lg:flex-row' : ''}`}>
+      <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
             <h1 className="text-xl font-semibold">Sa Morisca Menu - Amministrazione</h1>
@@ -91,7 +88,7 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <main className={`overflow-y-auto ${isDashboardRoute ? 'lg:flex-1' : 'flex-1 p-6'}`}>
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
