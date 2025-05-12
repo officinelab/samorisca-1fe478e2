@@ -15,13 +15,15 @@ export const usePdfGeneration = () => {
   const generatePdf = async (content: string): Promise<void> => {
     try {
       setIsGenerating(true);
+      console.log("Inizio generazione PDF...");
       
       // Clear any existing layout cache from localStorage for this session
       clearLayoutCache();
       
       // Wait for layout data to be loaded fully
       if (isLoading) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log("Layout in caricamento, attendo...");
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       // Create a new virtual document to convert to PDF
@@ -41,13 +43,14 @@ export const usePdfGeneration = () => {
       // Let the content render before printing
       setTimeout(() => {
         try {
+          printWindow.focus();
           printWindow.print();
           toast.success("PDF generato con successo");
         } catch (err) {
           console.error("Errore durante la stampa:", err);
           toast.error("Errore durante la fase di stampa del PDF");
         }
-      }, 1000);
+      }, 1500);
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
       toast.error("Si è verificato un errore durante la generazione del PDF.");
@@ -111,6 +114,7 @@ export const usePdfGeneration = () => {
             break-after: page;
             position: relative;
             overflow: hidden;
+            background-color: white !important;
           }
           
           .category-title {
@@ -130,26 +134,44 @@ export const usePdfGeneration = () => {
             page-break-inside: avoid;
             break-inside: avoid;
           }
-
-          /* Layout-specific styles */
-          ${layoutStyles}
           
+          /* Force page breaks to work correctly */
+          .page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+          }
+          
+          /* Ensure all elements are visible on print */
           @media print {
-            html, body {
+            body, html {
               width: 210mm;
               height: 297mm;
+              margin: 0;
+              padding: 0;
+              background-color: white !important;
             }
             
             .page {
               margin: 0;
+              border: none;
               box-shadow: none;
               overflow: hidden;
-              height: auto;
+            }
+          }
+
+          /* Layout-specific styles */
+          ${layoutStyles}
+          
+          /* Additional print-specific styles */
+          @media print {
+            .menu-container {
+              height: auto !important;
+              overflow: visible !important;
             }
             
-            .page-break {
-              page-break-before: always;
-              break-before: page;
+            .category {
+              page-break-inside: avoid;
+              break-inside: avoid;
             }
           }
         </style>

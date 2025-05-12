@@ -25,7 +25,7 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
         color: '#000',
         fontWeight: 'bold',
         fontStyle: 'normal',
-        textAlign: 'left' as const,
+        textAlign: 'left' as React.CSSProperties['textAlign'],
         marginBottom: '10px',
       };
     }
@@ -51,7 +51,6 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
         className="category-title" 
         style={getCategoryStyle()}
       >
-        {/* Rimosso il testo "(cont.)" per i titoli ripetuti */}
         {category[`title_${language}`] || category.title}
       </h2>
     </div>
