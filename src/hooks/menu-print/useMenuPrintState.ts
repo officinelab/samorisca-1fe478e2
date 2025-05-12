@@ -1,19 +1,10 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLayoutEffect } from "react";
-import { useMenuCategories } from "@/hooks/useMenuCategories";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-
-export type MenuPrintStateProps = {
-  restaurantLogo: string | null;
-  updateRestaurantLogo: (newLogo: string | null) => void;
-  menuTitle: string;
-  updateMenuTitle: (title: string) => void;
-  menuSubtitle: string;
-  updateMenuSubtitle: (subtitle: string) => void;
-};
 
 // Costanti per il formato A4 in millimetri
 const A4_WIDTH_MM = 210;
@@ -34,7 +25,7 @@ export const useMenuPrintState = () => {
   const printContentRef = useRef<HTMLDivElement | null>(null);
   
   // Ottieni i dati del menu
-  const { categories, getAllergensForProduct } = useMenuCategories();
+  const { categories, getAllergensForProduct } = useMenuData();
   const { products } = useMenuData();
   const { layouts, isLoading: isLoadingLayouts } = useMenuLayouts();
   const { siteSettings, updateMenuLogo, isLoading: isLoadingSettings } = useSiteSettings();
@@ -48,7 +39,7 @@ export const useMenuPrintState = () => {
     queryFn: async () => {
       const allergensData = await getAllergensForProduct();
       return allergensData;
-    },
+    }
   });
   
   // Ottieni menu title e subtitle dalle impostazioni del sito
