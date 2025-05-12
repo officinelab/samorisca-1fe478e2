@@ -50,7 +50,6 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
             <RestaurantLogoUploader
               currentLogo={restaurantLogo}
               onLogoUploaded={updateRestaurantLogo}
-              className="w-full"
             />
           </div>
         </AccordionContent>
