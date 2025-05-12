@@ -2,6 +2,9 @@
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 
+// Fattore di conversione più preciso da millimetri a pixel
+const MM_TO_PX = 3.78;
+
 /**
  * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
  */
@@ -10,8 +13,6 @@ export const calculateAvailableHeight = (
   A4_HEIGHT_MM: number, 
   customLayout?: PrintLayout | null
 ): number => {
-  const MM_TO_PX = 3.78; // Fattore di conversione approssimativo
-  
   let marginTop = 20;
   let marginBottom = 20;
   
@@ -32,7 +33,9 @@ export const calculateAvailableHeight = (
     }
   }
   
-  return (A4_HEIGHT_MM - marginTop - marginBottom) * MM_TO_PX;
+  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
+  const safetyMargin = 5;
+  return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
 /**
@@ -41,7 +44,11 @@ export const calculateAvailableHeight = (
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
   if (!customLayout) return 30;
   
-  return (customLayout.elements.category.fontSize * 1.5) + customLayout.spacing.categoryTitleBottomMargin;
+  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
+  const baseFontSize = customLayout.elements.category.fontSize * 1.5;
+  const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
+  
+  return (baseFontSize + marginBottom) * 1.2;
 };
 
 /**
@@ -51,8 +58,38 @@ export const estimateProductHeight = (
   product: Product,
   language: string,
 ): number => {
+  // Base height for all products
+  let height = 30;
+  
+  // Increase height if there's a description
   const hasDescription = !!product.description || !!product[`description_${language}`];
-  return (hasDescription ? 60 : 30) + (product.has_multiple_prices ? 20 : 0);
+  if (hasDescription) {
+    const descriptionText = (product[`description_${language}`] as string) || product.description || "";
+    const descriptionLength = descriptionText.length;
+    
+    // Stima l'altezza della descrizione in base alla lunghezza del testo
+    if (descriptionLength > 200) {
+      height += 60; // Descrizioni molto lunghe
+    } else if (descriptionLength > 100) {
+      height += 40; // Descrizioni lunghe
+    } else if (descriptionLength > 50) {
+      height += 25; // Descrizioni medie
+    } else {
+      height += 15; // Descrizioni brevi
+    }
+  }
+  
+  // Increase height for multiple price variants
+  if (product.has_multiple_prices) {
+    height += 20;
+  }
+  
+  // Increase height if product has allergens
+  if (product.allergens && product.allergens.length > 0) {
+    height += 10;
+  }
+  
+  return height;
 };
 
 /**

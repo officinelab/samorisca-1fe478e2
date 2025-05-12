@@ -5,42 +5,42 @@ import { PrintLayout } from "@/types/printLayout";
 import { useMenuLayouts } from "@/hooks/menu-layouts/useMenuLayouts";
 
 /**
- * Hook for handling PDF generation with exact same layout as the preview
+ * Hook per la generazione di PDF con lo stesso layout esatto dell'anteprima
  */
 export const usePdfGeneration = () => {
   const { activeLayout, isLoading } = useMenuLayouts();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Generate a PDF that matches the preview layout
+  // Genera un PDF che corrisponde esattamente al layout dell'anteprima
   const generatePdf = async (content: string): Promise<void> => {
     try {
       setIsGenerating(true);
       console.log("Inizio generazione PDF...");
       
-      // Clear any existing layout cache from localStorage for this session
+      // Pulisci eventuali dati di layout in cache per questa sessione
       clearLayoutCache();
       
-      // Wait for layout data to be loaded fully
+      // Attendi che i dati di layout siano completamente caricati
       if (isLoading) {
         console.log("Layout in caricamento, attendo...");
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      // Create a new virtual document to convert to PDF
+      // Crea un nuovo documento virtuale da convertire in PDF
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
         toast.error("Il browser ha bloccato l'apertura della finestra per il PDF.");
         return;
       }
 
-      // Get the complete HTML document with styles
+      // Ottieni il documento HTML completo con stili
       const htmlContent = generatePrintDocument(content, activeLayout);
       
       printWindow.document.open();
       printWindow.document.write(htmlContent);
       printWindow.document.close();
       
-      // Let the content render before printing
+      // Lascia che il contenuto si renderizzi prima di stampare
       setTimeout(() => {
         try {
           printWindow.focus();
@@ -50,7 +50,7 @@ export const usePdfGeneration = () => {
           console.error("Errore durante la stampa:", err);
           toast.error("Errore durante la fase di stampa del PDF");
         }
-      }, 1500);
+      }, 2000); // Aumento del tempo di attesa per garantire il completo rendering
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
       toast.error("Si è verificato un errore durante la generazione del PDF.");
@@ -59,20 +59,26 @@ export const usePdfGeneration = () => {
     }
   };
 
-  // Clear any cached layout data to prevent stale values
+  // Cancella i dati di layout in cache per evitare valori obsoleti
   const clearLayoutCache = () => {
-    // Forced refresh of layout data - this can help with color inconsistency issues
     try {
       const currentSessionKey = 'print_layout_session_' + new Date().toISOString().split('T')[0];
       window.sessionStorage.setItem(currentSessionKey, Date.now().toString());
+      
+      // Forza un refresh della pagina e dei suoi stili
+      document.querySelectorAll('style').forEach(styleTag => {
+        if (styleTag.id && styleTag.id.includes('print-style')) {
+          document.head.removeChild(styleTag);
+        }
+      });
     } catch (e) {
       console.warn("Impossibile aggiornare il session storage:", e);
     }
   };
   
-  // Generate complete HTML document with all necessary styles
+  // Genera il documento HTML completo con tutti gli stili necessari
   const generatePrintDocument = (content: string, layout: PrintLayout | null): string => {
-    // Add layout-specific styles based on the active layout
+    // Aggiungi stili specifici in base al layout attivo
     const layoutStyles = layout ? generateLayoutSpecificStyles(layout) : '';
     
     return `
@@ -83,14 +89,14 @@ export const usePdfGeneration = () => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          /* Reset browser styles */
+          /* Reset degli stili del browser */
           * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
             color-adjust: exact !important; /* Firefox */
-            print-color-adjust: exact !important; /* Future standard */
+            print-color-adjust: exact !important; /* Standard futuro */
           }
           
           @page {
@@ -107,6 +113,7 @@ export const usePdfGeneration = () => {
             height: 100%;
           }
           
+          /* Layout di base per le pagine A4 */
           .page {
             width: 210mm;
             height: 297mm;
@@ -115,8 +122,10 @@ export const usePdfGeneration = () => {
             position: relative;
             overflow: hidden;
             background-color: white !important;
+            display: block;
           }
           
+          /* Stile per i titoli di categoria */
           .category-title {
             font-size: ${layout?.elements.category.fontSize || 18}pt;
             font-family: ${layout?.elements.category.fontFamily || 'Arial'};
@@ -130,18 +139,27 @@ export const usePdfGeneration = () => {
             break-after: avoid;
           }
           
+          /* Assicura che gli elementi del menu non vengano divisi tra pagine */
           .menu-item {
             page-break-inside: avoid;
             break-inside: avoid;
+            display: block;
           }
           
-          /* Force page breaks to work correctly */
+          /* Anche le categorie non dovrebbero essere divise tra pagine */
+          .category {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            display: block;
+          }
+          
+          /* Forza le interruzioni di pagina a funzionare correttamente */
           .page:last-child {
             page-break-after: auto;
             break-after: auto;
           }
           
-          /* Ensure all elements are visible on print */
+          /* Assicura che tutti gli elementi siano visibili durante la stampa */
           @media print {
             body, html {
               width: 210mm;
@@ -156,14 +174,10 @@ export const usePdfGeneration = () => {
               border: none;
               box-shadow: none;
               overflow: hidden;
+              page-break-after: always;
+              break-after: page;
             }
-          }
-
-          /* Layout-specific styles */
-          ${layoutStyles}
-          
-          /* Additional print-specific styles */
-          @media print {
+            
             .menu-container {
               height: auto !important;
               overflow: visible !important;
@@ -173,18 +187,56 @@ export const usePdfGeneration = () => {
               page-break-inside: avoid;
               break-inside: avoid;
             }
+            
+            .menu-item {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
+          }
+
+          /* Stili specifici per il layout */
+          ${layoutStyles}
+          
+          /* Stili aggiuntivi specifici per la stampa */
+          @media print {
+            /* Evita che il contenuto venga tagliato */
+            * {
+              overflow: visible !important;
+            }
+            
+            /* Assicura che i titoli di categoria non vengano separati dai loro prodotti */
+            .category-title {
+              page-break-after: avoid;
+              break-after: avoid;
+            }
+            
+            /* Assicura che le descrizioni dei prodotti rimangano con i titoli */
+            .product-component {
+              page-break-inside: avoid;
+              break-inside: avoid;
+            }
           }
         </style>
       </head>
       <body>
         ${content}
         <script>
-          // Force complete rendering before printing
+          // Forza il rendering completo prima della stampa
           window.onload = function() {
-            // Make sure all images and resources are loaded
+            // Assicura che tutte le immagini e le risorse siano caricate
             setTimeout(function() {
               console.log("Documento pronto per la stampa/download");
-            }, 500);
+              
+              // Rimuove gli indicatori dei margini e i numeri di pagina usati nell'anteprima
+              document.querySelectorAll('.absolute').forEach(function(element) {
+                if (element.textContent && element.textContent.includes('Margine')) {
+                  element.style.display = 'none';
+                }
+                if (element.textContent && element.textContent.includes('Pagina')) {
+                  element.style.display = 'none';
+                }
+              });
+            }, 1000);
           };
         </script>
       </body>
@@ -192,7 +244,7 @@ export const usePdfGeneration = () => {
     `;
   };
 
-  // Generate CSS specific to the active layout
+  // Genera CSS specifico per il layout attivo
   const generateLayoutSpecificStyles = (layout: PrintLayout): string => {
     return `
       /* Stili specifici per il layout ${layout.name} */

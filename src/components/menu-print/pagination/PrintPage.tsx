@@ -130,6 +130,21 @@ const PrintPage: React.FC<PrintPageProps> = ({
               Margine dx: {margins.right}mm
             </div>
           </div>
+          
+          {/* Linea di divisione pagina */}
+          <div className="absolute left-0 right-0 bottom-0 flex justify-center">
+            <div 
+              className="bg-red-300/50 py-1 px-4 text-xs text-red-800 rounded"
+              style={{
+                transform: 'translateY(50%)',
+                zIndex: 50,
+                width: 'auto',
+                display: 'inline-block',
+              }}
+            >
+              FINE PAGINA {pageIndex + 1} - INIZIO PAGINA {pageIndex + 2}
+            </div>
+          </div>
         </div>
       </>
     );

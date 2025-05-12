@@ -43,7 +43,8 @@ export const usePagination = ({
       let currentHeight = 0;
       let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
       let lastCategoryId: string | null = null;
-
+      let currentCategoryProducts: ProductItem[] = [];
+      
       // Aggiungiamo una guardia di sicurezza per prevenire loop infiniti
       const MAX_PAGES = 100;
       
@@ -54,7 +55,9 @@ export const usePagination = ({
           return false;
         }
         
-        allPages.push([...currentPageContent]);
+        if (currentPageContent.length > 0) {
+          allPages.push([...currentPageContent]);
+        }
         
         // Reset per la prossima pagina
         currentPageContent = [];
@@ -63,9 +66,24 @@ export const usePagination = ({
         availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
         return true;
       };
+
+      // Funzione per aggiungere i prodotti rimanenti della categoria corrente alla pagina
+      const addRemainingProducts = () => {
+        if (currentCategoryProducts.length > 0) {
+          currentPageContent.push({ 
+            type: 'products-group', 
+            key: `cat-products-${lastCategoryId}-${currentPageIndex}`,
+            products: [...currentCategoryProducts]
+          });
+          currentCategoryProducts = [];
+        }
+      };
+      
+      // Stiamo per iniziare una nuova categoria?
+      let startingNewCategory = true;
       
       // Generiamo i contenuti per ciascuna pagina
-      filteredCategories.forEach((category) => {
+      filteredCategories.forEach((category, categoryIndex) => {
         const categoryProducts = products[category.id] || [];
         
         // Se la categoria è vuota, saltiamo
@@ -74,23 +92,20 @@ export const usePagination = ({
         // Altezza approssimativa del titolo della categoria
         const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
         
-        // Se questo è l'inizio di una nuova categoria (non è una continuazione)
-        const isNewCategory = lastCategoryId !== category.id;
-        
-        // Se non c'è spazio per il titolo della categoria nella pagina corrente, crea una nuova pagina
+        // Se il titolo della categoria non entra nella pagina corrente e abbiamo già contenuto,
+        // crea una nuova pagina, ma solo se non siamo all'inizio di una pagina
         if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
+          addRemainingProducts(); // Aggiungi eventuali prodotti rimanenti
           if (!addNewPage()) return;
+          startingNewCategory = true;
         }
         
-        // Segna che abbiamo processato questa categoria
-        lastCategoryId = category.id;
-        
-        // Aggiungiamo un titolo (originale o ripetuto)
+        // Titolo categoria (originale o ripetuto)
         const categoryTitleContent: CategoryTitleContent = {
           type: 'category-title',
-          key: `cat-title-${category.id}-${currentPageIndex}${isNewCategory ? '' : '-continued'}`,
+          key: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
           category,
-          isRepeated: !isNewCategory
+          isRepeated: !startingNewCategory
         };
         
         currentPageContent.push(categoryTitleContent);
@@ -100,24 +115,15 @@ export const usePagination = ({
         const categoryBottomMargin = customLayout?.spacing.categoryTitleBottomMargin || 5;
         currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
         
-        // Contenitore per i prodotti di questa categoria in questa pagina
-        let currentCategoryProducts: ProductItem[] = [];
-        
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto (più accurata)
+          // Stima dell'altezza del prodotto
           const productHeight = estimateProductHeight(product, language);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
             // Aggiungi i prodotti correnti al contenuto della pagina
-            if (currentCategoryProducts.length > 0) {
-              currentPageContent.push({ 
-                type: 'products-group', 
-                key: `cat-products-${category.id}-${currentPageIndex}`,
-                products: [...currentCategoryProducts]
-              });
-            }
+            addRemainingProducts();
             
             // Chiudi questa pagina e inizia una nuova
             if (!addNewPage()) return;
@@ -135,9 +141,6 @@ export const usePagination = ({
             
             // Aggiungi spazio extra dopo il titolo ripetuto
             currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
-            
-            // Reset per i prodotti della nuova pagina
-            currentCategoryProducts = [];
           }
           
           // Aggiungi il prodotto ai prodotti correnti
@@ -155,17 +158,17 @@ export const usePagination = ({
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
-        if (currentCategoryProducts.length > 0) {
-          currentPageContent.push({ 
-            type: 'products-group', 
-            key: `cat-products-${category.id}-${currentPageIndex}`,
-            products: [...currentCategoryProducts]
-          });
+        addRemainingProducts();
+        
+        // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
+        if (categoryIndex < filteredCategories.length - 1) {
+          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
+          currentHeight += spacingBetweenCategories;
         }
         
-        // Aggiungi lo spazio tra categorie
-        const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
-        currentHeight += spacingBetweenCategories;
+        // La prossima categoria sarà nuova (non una continuazione)
+        startingNewCategory = true;
+        lastCategoryId = category.id;
       });
       
       // Aggiungi l'ultima pagina se ci sono contenuti rimanenti
