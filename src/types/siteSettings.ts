@@ -22,6 +22,7 @@ export interface SiteSettings {
   menuLogo?: string;
   restaurantName?: string;
   footerText?: string;
+  adminTitle?: string;
   defaultProductImage?: string;
   [key: string]: any;
 }

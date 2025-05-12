@@ -9,6 +9,7 @@ export const defaultSettings: SiteSettings = {
   menuLogo: null,
   restaurantName: "Sa Morisca",
   footerText: `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`,
+  adminTitle: "Sa Morisca Menu - Amministrazione",
   defaultProductImage: null,
   siteName: "Sa Morisca",
   siteDescription: "Ristorante Sa Morisca",
