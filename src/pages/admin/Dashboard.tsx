@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { fetchAllProducts } from "@/hooks/menu/menuDataFetchers";
+import { fetchProductsByCategory, fetchCategories, fetchLabels } from "@/hooks/menu/menuDataFetchers";
 import ProductForm from "@/components/product/ProductForm";
 import { Product } from "@/types/database";
 
@@ -26,14 +26,37 @@ export default function Dashboard() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   
-  const { data: products = [], isLoading, error } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchAllProducts
+  // Fetch categories first
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories
   });
 
-  // Assicuriamoci che il campo di ricerca mantenga il focus
+  // Fetch products for each category
+  const { isLoading: productsLoading, error: productsError } = useQuery({
+    queryKey: ["all-products", categories],
+    queryFn: async () => {
+      if (!categories.length) return [];
+      
+      const productPromises = categories.map(category => 
+        fetchProductsByCategory(category.id)
+      );
+      
+      const productsArrays = await Promise.all(productPromises);
+      const allFetchedProducts = productsArrays.flat();
+      setAllProducts(allFetchedProducts);
+      return allFetchedProducts;
+    },
+    enabled: categories.length > 0
+  });
+
+  const isLoading = categoriesLoading || productsLoading;
+  const error = categoriesError || productsError;
+
+  // Manteniamo il focus sull'input di ricerca
   useEffect(() => {
     // Manteniamo il focus solo se il campo aveva già il focus prima dell'aggiornamento
     if (document.activeElement === searchInputRef.current) {
@@ -42,15 +65,15 @@ export default function Dashboard() {
         searchInputRef.current?.focus();
       }, 0);
     }
-  }, [searchTerm, products]);
+  }, [searchTerm, allProducts]);
 
   if (error) {
     toast.error("Errore nel caricamento dei prodotti");
   }
 
   // Raggruppamento dei prodotti per categoria
-  const groupedProducts = products.reduce((acc: Record<string, Product[]>, product) => {
-    const categoryName = product.label || "Senza categoria";
+  const groupedProducts = allProducts.reduce((acc: Record<string, Product[]>, product) => {
+    const categoryName = product.label?.title || "Senza categoria";
     if (!acc[categoryName]) {
       acc[categoryName] = [];
     }
@@ -62,7 +85,7 @@ export default function Dashboard() {
   const filteredGroupedProducts = Object.entries(groupedProducts).reduce(
     (acc: Record<string, Product[]>, [category, products]) => {
       const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       
@@ -149,7 +172,7 @@ export default function Dashboard() {
                           }`}
                           onClick={() => handleProductSelect(product)}
                         >
-                          <div className="font-medium">{product.name}</div>
+                          <div className="font-medium">{product.title}</div>
                           {product.description && (
                             <div className="text-sm text-muted-foreground truncate">
                               {product.description}
