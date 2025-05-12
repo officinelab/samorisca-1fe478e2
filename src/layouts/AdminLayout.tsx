@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -13,15 +13,12 @@ import {
   Settings
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
-  const isDashboardPage = location.pathname === "/admin/dashboard";
 
   const handleLogout = async () => {
     await logout();
@@ -56,8 +53,8 @@ const AdminLayout = () => {
                 onClose={() => setSidebarOpen(false)} 
                 onLogout={handleLogout} 
                 navItems={navItems}
-                sidebarLogo={siteSettings?.sidebarLogo}
-                key={siteSettings?.sidebarLogo}
+                sidebarLogo={siteSettings?.sidebarLogo} 
+                key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
               />
             </div>
           </div>
@@ -65,18 +62,18 @@ const AdminLayout = () => {
       </div>
 
       {/* Sidebar per desktop */}
-      <div className="hidden lg:block w-64 bg-white shadow-md flex-shrink-0">
+      <div className="hidden lg:block w-64 bg-white shadow-md">
         <SidebarContent 
           onLogout={handleLogout} 
           navItems={navItems} 
           sidebarLogo={siteSettings?.sidebarLogo}
-          key={siteSettings?.sidebarLogo}
+          key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
         />
       </div>
 
       {/* Contenuto principale */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm h-16 flex items-center px-6 flex-shrink-0">
+        <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
             <h1 className="text-xl font-semibold">Sa Morisca Menu - Amministrazione</h1>
           </div>
@@ -91,30 +88,8 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <main className={`flex-1 overflow-hidden flex ${isDashboardPage ? 'flex-row' : 'flex-col'}`}>
-          {isDashboardPage ? (
-            <>
-              {/* Colonna centrale con liste di prodotti (scrollabile) */}
-              <div className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full">
-                  <div className="p-6">
-                    <Outlet />
-                  </div>
-                </ScrollArea>
-              </div>
-              
-              {/* Colonna di destra per il form di modifica (fissa) */}
-              <div className="w-1/3 border-l border-gray-200 bg-gray-50 hidden lg:block">
-                <div id="product-form-container" className="h-full"></div>
-              </div>
-            </>
-          ) : (
-            <ScrollArea className="h-full w-full">
-              <div className="p-6">
-                <Outlet />
-              </div>
-            </ScrollArea>
-          )}
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
         </main>
       </div>
     </div>
