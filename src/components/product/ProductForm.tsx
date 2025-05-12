@@ -36,25 +36,43 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     handleSubmit
   } = useProductForm(product, onSave);
 
-  // Scrolling automatico al form quando viene caricato
+  // Implementazione migliorata di scrolling automatico
   useEffect(() => {
-    if (formRef.current) {
-      // Utilizziamo un timeout più lungo per assicurarci che tutti gli elementi siano renderizzati
-      setTimeout(() => {
+    // Definiamo una funzione separata per gestire lo scrolling
+    const scrollToForm = () => {
+      if (formRef.current) {
+        // Utilizziamo una combinazione di tecniche per assicurarci che funzioni in tutti i contesti
+        
+        // 1. Scroll con offset dalla parte superiore della pagina
+        const headerOffset = 100; // Offset per evitare che il form sia nascosto da header o altri elementi fissi
+        const formPosition = formRef.current.getBoundingClientRect().top;
+        const offsetPosition = formPosition + window.pageYOffset - headerOffset;
+        
         window.scrollTo({
-          top: formRef.current?.offsetTop - 20 || 0,
+          top: offsetPosition,
           behavior: 'smooth'
         });
         
-        // Backup con scrollIntoView nel caso in cui window.scrollTo non funzioni come previsto
+        // 2. Come backup, utilizziamo anche scrollIntoView con un timeout più lungo
         setTimeout(() => {
           formRef.current?.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'start' 
           });
-        }, 50);
-      }, 300); // Timeout aumentato per garantire che il rendering sia completo
-    }
+        }, 100);
+      }
+    };
+    
+    // Eseguiamo lo scrolling con un ritardo per assicurarci che il DOM sia completamente renderizzato
+    const timer1 = setTimeout(scrollToForm, 100);
+    // Eseguiamo nuovamente dopo un ritardo maggiore come ulteriore assicurazione
+    const timer2 = setTimeout(scrollToForm, 500);
+    
+    // Puliamo i timer quando il componente viene smontato
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [product]);
 
   return (
