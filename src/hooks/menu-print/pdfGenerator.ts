@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Category, Allergen, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { pdf } from '@react-pdf/renderer';
@@ -36,7 +37,7 @@ export const generatePDF = async ({
 }: PDFGenerationParams) => {
   try {
     // Create PDF blob
-    const blob = await pdf(
+    const blob = await pdf((
       <MenuPdf
         categories={categories}
         products={products}
@@ -50,7 +51,7 @@ export const generatePDF = async ({
         menuTitle={menuTitle}
         menuSubtitle={menuSubtitle}
       />
-    ).toBlob();
+    )).toBlob();
 
     // Create download link and trigger download
     const url = URL.createObjectURL(blob);
