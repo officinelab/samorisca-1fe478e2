@@ -36,6 +36,29 @@ export type PrintLayout = {
     allergensList: PrintLayoutElementConfig;
     priceVariants: PrintLayoutElementConfig;
   };
+  cover: {
+    logo: {
+      maxWidth: number; // percentuale della larghezza del foglio
+      maxHeight: number; // percentuale dell'altezza del foglio
+      alignment: 'left' | 'center' | 'right';
+      marginTop: number;
+      marginBottom: number;
+    };
+    title: PrintLayoutElementConfig;
+    subtitle: PrintLayoutElementConfig;
+  };
+  allergens: {
+    title: PrintLayoutElementConfig;
+    description: PrintLayoutElementConfig;
+    item: {
+      number: PrintLayoutElementConfig;
+      title: PrintLayoutElementConfig;
+      spacing: number;
+      backgroundColor: string;
+      borderRadius: number;
+      padding: number;
+    };
+  };
   spacing: {
     betweenCategories: number;
     betweenProducts: number;

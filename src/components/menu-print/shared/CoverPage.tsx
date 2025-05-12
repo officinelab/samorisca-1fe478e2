@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { PrintLayout } from '@/types/printLayout';
+import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
 
 type CoverPageProps = {
   A4_WIDTH_MM: number; 
@@ -7,6 +9,7 @@ type CoverPageProps = {
   showPageBoundaries: boolean;
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -14,7 +17,8 @@ const CoverPage: React.FC<CoverPageProps> = ({
   A4_HEIGHT_MM,
   showPageBoundaries,
   layoutType,
-  restaurantLogo
+  restaurantLogo,
+  customLayout
 }) => {
   const [imageError, setImageError] = useState(false);
   
@@ -35,7 +39,40 @@ const CoverPage: React.FC<CoverPageProps> = ({
     position: 'relative' as const,
   });
 
+  // Ottieni le configurazioni dal layout personalizzato se disponibile
+  const getLogoStyle = () => {
+    if (customLayout?.cover?.logo) {
+      const { maxWidth, maxHeight, alignment, marginTop, marginBottom } = customLayout.cover.logo;
+      return {
+        maxWidth: `${maxWidth}%`,
+        maxHeight: `${maxHeight}%`,
+        marginTop: `${marginTop}mm`,
+        marginBottom: `${marginBottom}mm`,
+        alignSelf: alignment,
+        objectFit: 'contain' as const,
+      };
+    }
+    
+    // Default style
+    return {
+      maxWidth: '80%',
+      maxHeight: '50%',
+      objectFit: 'contain' as const,
+    };
+  };
+
+  // Usa getElementStyle con fallback ai vecchi stili predefiniti
   const getTitleStyle = () => {
+    if (customLayout?.cover?.title) {
+      return getElementStyle(customLayout.cover.title, {
+        fontSize: '32px',
+        fontWeight: '700',
+        textAlign: 'center' as const,
+        marginTop: '40px',
+        textTransform: 'uppercase' as const
+      });
+    }
+    
     switch (layoutType) {
       case 'modern':
         return {
@@ -75,6 +112,16 @@ const CoverPage: React.FC<CoverPageProps> = ({
   };
 
   const getSubtitleStyle = () => {
+    if (customLayout?.cover?.subtitle) {
+      return getElementStyle(customLayout.cover.subtitle, {
+        fontSize: '18px',
+        fontWeight: '400',
+        textAlign: 'center' as const,
+        marginTop: '10px',
+        fontStyle: 'italic' as const
+      });
+    }
+
     switch (layoutType) {
       case 'modern':
         return {
@@ -121,20 +168,16 @@ const CoverPage: React.FC<CoverPageProps> = ({
     <div className="page cover-page bg-white" style={getPageStyle()}>
       {(restaurantLogo && !imageError) ? (
         <div style={{
-          maxWidth: '80%',
-          maxHeight: '50%',
+          width: '100%',
           display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          justifyContent: customLayout?.cover?.logo?.alignment || 'center',
+          marginTop: customLayout?.cover?.logo?.marginTop ? `${customLayout.cover.logo.marginTop}mm` : '0',
+          marginBottom: customLayout?.cover?.logo?.marginBottom ? `${customLayout.cover.logo.marginBottom}mm` : '0',
         }}>
           <img 
             src={restaurantLogo}
             alt="Logo del ristorante"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain',
-            }}
+            style={getLogoStyle()}
             onError={handleImageError}
           />
         </div>

@@ -3,9 +3,9 @@ import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 
-// Helper to ensure page margins are properly initialized
+// Assicura che i margini della pagina siano correttamente inizializzati
 const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
-  // Set default values if not present
+  // Imposta valori predefiniti se non presenti
   const pageWithDefaults = {
     ...layout.page,
     oddPages: layout.page.oddPages || {
@@ -22,14 +22,91 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     }
   };
 
+  // Assicurati che le impostazioni di copertina esistano
+  const coverWithDefaults = layout.cover || {
+    logo: {
+      maxWidth: 80,
+      maxHeight: 50,
+      alignment: 'center',
+      marginTop: 20,
+      marginBottom: 20
+    },
+    title: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 24,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "center",
+      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+    },
+    subtitle: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#666666",
+      fontStyle: "italic",
+      alignment: "center",
+      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+    }
+  };
+  
+  // Assicurati che le impostazioni per allergeni esistano
+  const allergensWithDefaults = layout.allergens || {
+    title: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 22,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "center",
+      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+    },
+    description: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#333333",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+    },
+    item: {
+      number: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#000000",
+        fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 8, bottom: 0, left: 0 }
+      },
+      title: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#333333",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      spacing: 10,
+      backgroundColor: "#f9f9f9",
+      borderRadius: 4,
+      padding: 8
+    }
+  };
+
   return {
     ...layout,
-    page: pageWithDefaults
+    page: pageWithDefaults,
+    cover: coverWithDefaults,
+    allergens: allergensWithDefaults
   };
 };
 
 export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) => {
-  // Ensure the initial layout has all required page margin properties
+  // Assicurati che il layout iniziale abbia tutte le proprietà di margine richieste
   const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins({ ...initialLayout }));
   const [activeTab, setActiveTab] = useState("generale");
 
@@ -72,6 +149,262 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
             ...prev.elements[elementKey].margin,
             [marginKey]: value
           }
+        }
+      }
+    }));
+  };
+
+  // Nuove funzioni per gestire la sezione copertina
+  const handleCoverLogoChange = (
+    field: keyof PrintLayout["cover"]["logo"],
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        logo: {
+          ...prev.cover.logo,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleCoverTitleChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        title: {
+          ...prev.cover.title,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleCoverTitleMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        title: {
+          ...prev.cover.title,
+          margin: {
+            ...prev.cover.title.margin,
+            [marginKey]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleCoverSubtitleChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        subtitle: {
+          ...prev.cover.subtitle,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleCoverSubtitleMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        subtitle: {
+          ...prev.cover.subtitle,
+          margin: {
+            ...prev.cover.subtitle.margin,
+            [marginKey]: value
+          }
+        }
+      }
+    }));
+  };
+
+  // Nuove funzioni per gestire la sezione allergeni
+  const handleAllergensTitleChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        title: {
+          ...prev.allergens.title,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleAllergensTitleMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        title: {
+          ...prev.allergens.title,
+          margin: {
+            ...prev.allergens.title.margin,
+            [marginKey]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensDescriptionChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        description: {
+          ...prev.allergens.description,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleAllergensDescriptionMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        description: {
+          ...prev.allergens.description,
+          margin: {
+            ...prev.allergens.description.margin,
+            [marginKey]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensItemNumberChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          number: {
+            ...prev.allergens.item.number,
+            [field]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensItemNumberMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          number: {
+            ...prev.allergens.item.number,
+            margin: {
+              ...prev.allergens.item.number.margin,
+              [marginKey]: value
+            }
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensItemTitleChange = (
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          title: {
+            ...prev.allergens.item.title,
+            [field]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensItemTitleMarginChange = (
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          title: {
+            ...prev.allergens.item.title,
+            margin: {
+              ...prev.allergens.item.title.margin,
+              [marginKey]: value
+            }
+          }
+        }
+      }
+    }));
+  };
+
+  const handleAllergensItemChange = (
+    field: keyof {spacing: number, backgroundColor: string, borderRadius: number, padding: number},
+    value: any
+  ) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          [field]: value
         }
       }
     }));
@@ -177,6 +510,22 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
     handleOddPageMarginChange,
     handleEvenPageMarginChange,
     handleToggleDistinctMargins,
+    // Nuove funzioni per copertina
+    handleCoverLogoChange,
+    handleCoverTitleChange,
+    handleCoverTitleMarginChange, 
+    handleCoverSubtitleChange,
+    handleCoverSubtitleMarginChange,
+    // Nuove funzioni per allergeni
+    handleAllergensTitleChange,
+    handleAllergensTitleMarginChange,
+    handleAllergensDescriptionChange,
+    handleAllergensDescriptionMarginChange,
+    handleAllergensItemNumberChange,
+    handleAllergensItemNumberMarginChange,
+    handleAllergensItemTitleChange,
+    handleAllergensItemTitleMarginChange,
+    handleAllergensItemChange,
     handleSave
   };
 };

@@ -1,27 +1,28 @@
 
 import { PrintLayoutElementConfig } from '@/types/printLayout';
+import React from 'react';
 
 /**
  * Gets the style for a print layout element based on its configuration.
  * Merges the default style with the element's config to create a final style object.
  */
-export const getElementStyle = (config: PrintLayoutElementConfig | undefined, defaultStyle: React.CSSProperties = {}): React.CSSProperties => {
+export const getElementStyle = (
+  config: PrintLayoutElementConfig | undefined, 
+  defaultStyle: React.CSSProperties = {}
+): React.CSSProperties => {
   if (!config) return defaultStyle;
   
   // Convert text alignment to a valid CSS property
-  const textAlign = config.alignment as 'left' | 'center' | 'right';
+  const textAlign = config.alignment as React.CSSProperties['textAlign'];
   
-  // Properly type fontStyle
-  let fontStyle: string | undefined;
-  let fontWeight: string | undefined;
+  // Properly handle font style and weight
+  let fontStyle: React.CSSProperties['fontStyle'] = 'normal';
+  let fontWeight: React.CSSProperties['fontWeight'] = 'normal';
   
   if (config.fontStyle === 'italic') {
     fontStyle = 'italic';
   } else if (config.fontStyle === 'bold') {
     fontWeight = 'bold';
-  } else {
-    fontStyle = 'normal';
-    fontWeight = 'normal';
   }
   
   // Costruisci l'oggetto stile

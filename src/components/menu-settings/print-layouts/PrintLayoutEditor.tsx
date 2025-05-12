@@ -8,6 +8,8 @@ import GeneralTab from "./editor/GeneralTab";
 import ElementsTab from "./editor/ElementsTab";
 import SpacingTab from "./editor/SpacingTab";
 import PageSettingsTab from "./editor/PageSettingsTab";
+import CoverLayoutTab from "./editor/CoverLayoutTab";
+import AllergensLayoutTab from "./editor/AllergensLayoutTab";
 
 interface PrintLayoutEditorProps {
   layout: PrintLayout;
@@ -27,6 +29,25 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleOddPageMarginChange,
     handleEvenPageMarginChange,
     handleToggleDistinctMargins,
+    
+    // Nuove funzioni per copertina
+    handleCoverLogoChange,
+    handleCoverTitleChange,
+    handleCoverTitleMarginChange,
+    handleCoverSubtitleChange,
+    handleCoverSubtitleMarginChange,
+    
+    // Nuove funzioni per allergeni
+    handleAllergensTitleChange,
+    handleAllergensTitleMarginChange,
+    handleAllergensDescriptionChange,
+    handleAllergensDescriptionMarginChange,
+    handleAllergensItemNumberChange,
+    handleAllergensItemNumberMarginChange,
+    handleAllergensItemTitleChange,
+    handleAllergensItemTitleMarginChange,
+    handleAllergensItemChange,
+    
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -41,9 +62,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex flex-wrap">
             <TabsTrigger value="generale">Generale</TabsTrigger>
-            <TabsTrigger value="elementi">Elementi</TabsTrigger>
+            <TabsTrigger value="elementi">Elementi Menu</TabsTrigger>
+            <TabsTrigger value="copertina">Copertina</TabsTrigger>
+            <TabsTrigger value="allergeni">Allergeni</TabsTrigger>
             <TabsTrigger value="spaziatura">Spaziatura</TabsTrigger>
             <TabsTrigger value="pagina">Impostazioni Pagina</TabsTrigger>
           </TabsList>
@@ -60,6 +83,32 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               layout={editedLayout}
               onElementChange={handleElementChange}
               onElementMarginChange={handleElementMarginChange}
+            />
+          </TabsContent>
+          
+          <TabsContent value="copertina">
+            <CoverLayoutTab
+              layout={editedLayout}
+              onCoverLogoChange={handleCoverLogoChange}
+              onCoverTitleChange={handleCoverTitleChange}
+              onCoverTitleMarginChange={handleCoverTitleMarginChange}
+              onCoverSubtitleChange={handleCoverSubtitleChange}
+              onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
+            />
+          </TabsContent>
+          
+          <TabsContent value="allergeni">
+            <AllergensLayoutTab
+              layout={editedLayout}
+              onAllergensTitleChange={handleAllergensTitleChange}
+              onAllergensTitleMarginChange={handleAllergensTitleMarginChange}
+              onAllergensDescriptionChange={handleAllergensDescriptionChange}
+              onAllergensDescriptionMarginChange={handleAllergensDescriptionMarginChange}
+              onAllergensItemNumberChange={handleAllergensItemNumberChange}
+              onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
+              onAllergensItemTitleChange={handleAllergensItemTitleChange}
+              onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
+              onAllergensItemChange={handleAllergensItemChange}
             />
           </TabsContent>
 
