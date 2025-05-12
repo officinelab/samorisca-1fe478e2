@@ -2,6 +2,7 @@
 import React from 'react';
 import { Document } from '@react-pdf/renderer';
 import { Allergen, Category, Product } from "@/types/database";
+import { PrintLayout } from "@/types/printLayout";
 import CoverPagePdf from './CoverPagePdf';
 import MenuContentPdf from './MenuContentPdf';
 import AllergensPdf from './AllergensPdf';
@@ -14,6 +15,7 @@ interface MenuPdfDocumentProps {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 }
 
 const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ 
@@ -23,21 +25,34 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
   language,
   allergens,
   printAllergens,
-  restaurantLogo
+  restaurantLogo,
+  customLayout
 }) => {
   return (
     <Document>
-      <CoverPagePdf styles={styles} restaurantLogo={restaurantLogo} />
-      <MenuContentPdf 
+      <CoverPagePdf 
         styles={styles} 
-        categories={categories} 
-        products={products} 
-        language={language} 
+        restaurantLogo={restaurantLogo} 
+        customLayout={customLayout} 
       />
+      
+      {categories.map((category, index) => (
+        <MenuContentPdf 
+          key={category.id}
+          styles={styles} 
+          categories={[category]}
+          products={products} 
+          language={language}
+          customLayout={customLayout}
+          pageIndex={index + 1} // +1 perché la copertina è la pagina 0
+        />
+      ))}
+      
       <AllergensPdf 
         styles={styles} 
         allergens={allergens} 
-        printAllergens={printAllergens} 
+        printAllergens={printAllergens}
+        customLayout={customLayout}
       />
     </Document>
   );

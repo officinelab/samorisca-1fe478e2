@@ -40,7 +40,7 @@ export const usePdfGenerator = ({
     setIsGenerating(true);
 
     try {
-      // Crea gli stili per il PDF
+      // Crea gli stili per il PDF basati sul layout personalizzato
       const styles = createPdfStyles(customLayout);
 
       // Filtra le categorie selezionate
@@ -56,6 +56,7 @@ export const usePdfGenerator = ({
           allergens={allergens}
           printAllergens={printAllergens}
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       );
 
@@ -75,7 +76,7 @@ export const usePdfGenerator = ({
     setIsGenerating(true);
 
     try {
-      // Crea gli stili per il PDF
+      // Crea gli stili per il PDF basati sul layout personalizzato
       const styles = createPdfStyles(customLayout);
 
       // Filtra le categorie selezionate
@@ -91,6 +92,7 @@ export const usePdfGenerator = ({
           allergens={allergens}
           printAllergens={printAllergens}
           restaurantLogo={restaurantLogo}
+          customLayout={customLayout}
         />
       );
 
