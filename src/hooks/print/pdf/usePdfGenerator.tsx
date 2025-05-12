@@ -153,23 +153,23 @@ export const usePdfGenerator = ({
             {filteredCategories.map((category) => (
               <View key={category.id} style={{ marginBottom: '10mm' }}>
                 <Text style={styles.categoryTitle}>
-                  {category[`title_${language}`] || category.title}
+                  {category[`title_${language}` as keyof Category] as string || category.title}
                 </Text>
                 
                 {products[category.id]?.map((product) => (
                   <View key={product.id} style={styles.productContainer}>
                     <View style={styles.productHeader}>
                       <Text style={styles.productTitle}>
-                        {product[`title_${language}`] || product.title}
+                        {product[`title_${language}` as keyof Product] as string || product.title}
                       </Text>
                       <Text style={styles.productPrice}>
                         € {product.price_standard}
                       </Text>
                     </View>
                     
-                    {(product[`description_${language}`] || product.description) && (
+                    {(product[`description_${language}` as keyof Product] as string || product.description) && (
                       <Text style={styles.productDescription}>
-                        {product[`description_${language}`] || product.description}
+                        {product[`description_${language}` as keyof Product] as string || product.description}
                       </Text>
                     )}
                     
@@ -243,11 +243,50 @@ export const usePdfGenerator = ({
     try {
       // Riutilizza la stessa logica di generazione del PDF
       // ma apre il file in una nuova finestra per la stampa
-      const blob = await pdf(<Document>
-        <Page size="A4">
-          <Text>Contenuto del PDF per la stampa</Text>
-        </Page>
-      </Document>).toBlob();
+      const MenuDocumentForPrint = () => (
+        <Document>
+          {/* Pagina di copertina */}
+          <Page size="A4" style={StyleSheet.create({ page: { padding: '20mm' } })}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Menu</Text>
+              <Text style={{ fontSize: 16, marginTop: 10 }}>Ristorante</Text>
+            </View>
+          </Page>
+
+          {/* Pagine del menu */}
+          <Page size="A4" style={StyleSheet.create({ page: { padding: '20mm' } })}>
+            {filteredCategories.map((category) => (
+              <View key={category.id} style={{ marginBottom: '10mm' }}>
+                <Text style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 10, textTransform: 'uppercase' }}>
+                  {category[`title_${language}` as keyof Category] as string || category.title}
+                </Text>
+                
+                {products[category.id]?.map((product) => (
+                  <View key={product.id} style={{ marginBottom: 5 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={{ fontWeight: 'bold', maxWidth: '70%' }}>
+                        {product[`title_${language}` as keyof Product] as string || product.title}
+                      </Text>
+                      <Text style={{ fontWeight: 'bold' }}>
+                        € {product.price_standard}
+                      </Text>
+                    </View>
+                    
+                    {(product[`description_${language}` as keyof Product] as string || product.description) && (
+                      <Text style={{ fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
+                        {product[`description_${language}` as keyof Product] as string || product.description}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ))}
+          </Page>
+        </Document>
+      );
+
+      // Genera il blob PDF
+      const blob = await pdf(<MenuDocumentForPrint />).toBlob();
       
       const url = URL.createObjectURL(blob);
       const printWindow = window.open(url);
