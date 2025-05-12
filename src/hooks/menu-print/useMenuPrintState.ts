@@ -9,8 +9,11 @@ export const useMenuPrintState = () => {
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
   
+  // Import layout management
+  const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
+  
   // State for layout options
-  const [layoutType, setLayoutType] = useState<string>("classic");
+  const [layoutType, setLayoutType] = useState<string>("");
   const [language, setLanguage] = useState<string>("it");
   const [printAllergens, setPrintAllergens] = useState<boolean>(true);
   const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(true);
@@ -38,19 +41,23 @@ export const useMenuPrintState = () => {
     printContentRef
   } = usePrintOperationsManager();
   
-  // Import layout management to force layout refresh
-  const { forceRefresh } = useMenuLayouts();
-  
   // Function to force layout refresh when needed
   const forceLayoutRefresh = useCallback(() => {
     console.log("Forzando refresh dei layout...");
     forceRefresh();
-    // Aggiorna anche il tipo di layout per forzare un re-render
-    setLayoutType(prevType => {
-      console.log("Re-impostazione del layout type:", prevType);
-      return prevType;
-    });
   }, [forceRefresh]);
+  
+  // Imposta il layout predefinito all'avvio
+  useEffect(() => {
+    if (layouts && layouts.length > 0 && !layoutType) {
+      // Trova il layout predefinito o usa il primo disponibile
+      const defaultLayout = layouts.find(l => l.isDefault) || layouts[0];
+      if (defaultLayout) {
+        console.log("Impostazione layout predefinito:", defaultLayout.id);
+        setLayoutType(defaultLayout.id);
+      }
+    }
+  }, [layouts, layoutType]);
   
   // Calcola il numero di pagine in base alle categorie e prodotti selezionati
   const pageCount = useMemo(() => {

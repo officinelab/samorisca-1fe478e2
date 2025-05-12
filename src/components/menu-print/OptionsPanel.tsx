@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import SimpleLayoutSelector from "./options/SimpleLayoutSelector";
+import LayoutSelector from "./options/LayoutSelector";
 import RestaurantLogoUploader from "./RestaurantLogoUploader";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -39,10 +39,9 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
           Layout e Logo
         </AccordionTrigger>
         <AccordionContent className="space-y-4">
-          <SimpleLayoutSelector
+          <LayoutSelector
             selectedLayout={layoutType}
             setSelectedLayout={setLayoutType}
-            isLoading={isLoading}
           />
           
           <div className="pt-4">

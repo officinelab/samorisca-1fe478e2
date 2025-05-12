@@ -33,9 +33,6 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
 }) => {
   const { layouts, activeLayout, changeActiveLayout, isLoading } = useMenuLayouts();
   
-  // Default layout type as fallback
-  const defaultLayoutType = "classic";
-  
   // Debug logs
   useEffect(() => {
     console.log("MenuLayoutSelector - Props:", { 
@@ -49,11 +46,11 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     console.log("MenuLayoutSelector - layouts disponibili:", layouts);
   }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
-  // When selectedLayout changes, update activeLayout
+  // Quando cambia selectedLayout, aggiorna activeLayout
   useEffect(() => {
     if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
-      console.log("MenuLayoutSelector - Ricerca layout per tipo:", selectedLayout);
-      // Find layout by type
+      console.log("MenuLayoutSelector - Ricerca layout per ID:", selectedLayout);
+      // Trova layout per ID
       const matchingLayout = layouts.find(layout => layout.id === selectedLayout);
       if (matchingLayout) {
         console.log("MenuLayoutSelector - Trovato layout corrispondente:", matchingLayout);
@@ -81,7 +78,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     customLayout: activeLayout
   };
   
-  // Ora utilizzamo solo ClassicLayout
+  // Utilizziamo solo ClassicLayout che è in grado di adattarsi al layout personalizzato
   return <ClassicLayout {...commonProps} />;
 };
 

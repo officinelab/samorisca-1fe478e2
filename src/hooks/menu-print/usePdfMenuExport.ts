@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Allergen, Category } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { useMenuData } from "../useMenuData";
-import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
+import { useMenuLayouts } from "../useMenuLayouts";
 import { toast } from "@/components/ui/sonner";
 import { generatePDF } from "./pdfGenerator";
 
@@ -34,9 +34,7 @@ export const usePdfMenuExport = ({
       return null;
     }
     
-    return layouts.find(layout => layout.id === layoutType) || 
-           layouts.find(layout => layout.type === layoutType) ||
-           null;
+    return layouts.find(layout => layout.id === layoutType) || null;
   };
   
   const customLayout = findActiveLayout();
