@@ -2,9 +2,9 @@
 import React, { useEffect } from 'react';
 import { Category, Product, Allergen } from "@/types/database";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import ClassicLayout from "./ClassicLayout";
-import ModernLayout from "./ModernLayout";
-import AllergensLayout from "./AllergensLayout";
+import ClassicLayout from "./layouts/ClassicLayout";
+import ModernLayout from "./layouts/ModernLayout";
+import AllergensLayout from "./layouts/AllergensLayout";
 
 type MenuLayoutSelectorProps = {
   selectedLayout: string;
@@ -35,6 +35,9 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
 }) => {
   const { activeLayout, layouts } = useMenuLayouts();
   
+  // Valore di default per garantire un layout valido
+  const defaultLayoutType = "classic";
+  
   // Aggiungiamo log per debug
   useEffect(() => {
     console.log("MenuLayoutSelector - Props:", { 
@@ -50,7 +53,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   
   // Use selected layout as fallback if activeLayout is not available
   // Ensure we always have a valid layout type
-  const effectiveLayoutType = activeLayout?.type || selectedLayout || "classic";
+  const effectiveLayoutType = activeLayout?.type || selectedLayout || defaultLayoutType;
   
   console.log("MenuLayoutSelector - Layout selezionato:", effectiveLayoutType);
   
@@ -58,12 +61,12 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
     showPageBoundaries,
-    categories,
-    products,
-    selectedCategories,
-    language,
-    allergens,
-    printAllergens,
+    categories: Array.isArray(categories) ? categories : [],
+    products: products || {},
+    selectedCategories: Array.isArray(selectedCategories) ? selectedCategories : [],
+    language: language || "it",
+    allergens: Array.isArray(allergens) ? allergens : [],
+    printAllergens: Boolean(printAllergens),
     restaurantLogo,
     customLayout: activeLayout || null
   };

@@ -1,22 +1,14 @@
 
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface LayoutSelectorProps {
   selectedLayout: string;
@@ -25,20 +17,26 @@ interface LayoutSelectorProps {
 
 export const LayoutSelector = ({
   selectedLayout,
-  setSelectedLayout,
+  setSelectedLayout
 }: LayoutSelectorProps) => {
-  const [open, setOpen] = useState(false);
   const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
   
   // Creiamo una versione sicura dei layout che è sempre un array valido
   const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
 
-  // Aggiungiamo log per debug
+  // Debug log
   useEffect(() => {
     console.log("LayoutSelector - Props:", { selectedLayout });
-    console.log("LayoutSelector - useMenuLayouts:", { layouts, activeLayout, isLoading, error });
+    console.log("LayoutSelector - useMenuLayouts:", { 
+      layouts, 
+      activeLayout, 
+      isLoading, 
+      error,
+      layoutsLength: layouts?.length
+    });
   }, [selectedLayout, layouts, activeLayout, isLoading, error]);
 
+  // Controlla e gestisci i layout quando sono disponibili
   useEffect(() => {
     if (error) {
       toast.error("Errore nel caricamento dei layout: " + error);
@@ -52,9 +50,21 @@ export const LayoutSelector = ({
       console.warn("LayoutSelector - Layouts non è un array valido:", layouts);
       setSafeLayouts([]);
     }
-  }, [error, layouts]);
 
-  // Select layout based on active layout or selected layout
+    // Se non c'è un layout selezionato, usa il layout attivo o il primo disponibile
+    if (!selectedLayout && !isLoading) {
+      if (activeLayout) {
+        setSelectedLayout(activeLayout.type);
+      } else if (Array.isArray(layouts) && layouts.length > 0) {
+        setSelectedLayout(layouts[0].type);
+      } else {
+        // Fallback a classic come default
+        setSelectedLayout("classic");
+      }
+    }
+  }, [error, layouts, activeLayout, isLoading, selectedLayout, setSelectedLayout]);
+
+  // Gestisce il cambio di layout
   const handleLayoutChange = (layoutId: string) => {
     if (!layoutId) {
       console.warn("LayoutSelector - Layout ID non valido:", layoutId);
@@ -63,12 +73,11 @@ export const LayoutSelector = ({
     
     try {
       console.log("LayoutSelector - Cambio layout:", layoutId);
-      // Find the selected layout first
+      // Trova il layout selezionato
       const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
         changeActiveLayout(layoutId);
         setSelectedLayout(layout.type);
-        setOpen(false);
         console.log("LayoutSelector - Layout cambiato con successo:", layout);
       } else {
         console.error("Layout non trovato:", layoutId);
@@ -80,56 +89,54 @@ export const LayoutSelector = ({
     }
   };
 
-  // Determine text to show in layout button
+  // Determine il testo da mostrare nel pulsante del layout
   const getLayoutButtonText = () => {
     if (isLoading) return "Caricamento...";
     if (activeLayout) return activeLayout.name;
     return "Seleziona layout...";
   };
 
+  // Fallback se non ci sono layout disponibili
+  if (safeLayouts.length === 0 && !isLoading) {
+    return (
+      <div>
+        <div className="text-sm font-medium mb-2">Layout</div>
+        <Select disabled defaultValue="classic">
+          <SelectTrigger>
+            <SelectValue placeholder="Nessun layout disponibile" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="classic">Classico</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="text-sm font-medium mb-2">Layout</div>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            disabled={isLoading}
-          >
-            {getLayoutButtonText()}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Cerca layout..." />
-            <CommandEmpty>Nessun layout trovato.</CommandEmpty>
-            <CommandGroup>
-              {Array.isArray(safeLayouts) && safeLayouts.map((layout) => (
-                <CommandItem
-                  key={layout.id}
-                  value={layout.id || `item-${Math.random()}`} // Garantiamo che value sia sempre definito
-                  onSelect={() => handleLayoutChange(layout.id)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {layout.name || "Layout senza nome"}
-                  {layout.isDefault && (
-                    <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <Select 
+        value={activeLayout?.id || ""} 
+        onValueChange={handleLayoutChange}
+        disabled={isLoading || safeLayouts.length === 0}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={getLayoutButtonText()} />
+        </SelectTrigger>
+        <SelectContent>
+          {safeLayouts.map((layout) => (
+            <SelectItem key={layout.id} value={layout.id}>
+              {layout.name || "Layout senza nome"}
+              {layout.isDefault && (
+                <span className="ml-2 text-xs text-muted-foreground">(Predefinito)</span>
+              )}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };
+
+export default LayoutSelector;
