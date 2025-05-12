@@ -77,6 +77,7 @@ const OptionsCard: React.FC<OptionsCardProps> = ({
               setShowPageBoundaries={setShowPageBoundaries}
               restaurantLogo={restaurantLogo}
               updateRestaurantLogo={updateRestaurantLogo}
+              isLoading={isLoading}
             />
           </div>
 

@@ -20,7 +20,9 @@ interface BasicOptionsProps {
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
   setShowPageBoundaries: (show: boolean) => void;
-  isLoading: boolean;
+  isLoading?: boolean;
+  restaurantLogo: string | null;
+  updateRestaurantLogo: (newLogo: string | null) => void;
 }
 
 const BasicOptions = ({
@@ -32,7 +34,9 @@ const BasicOptions = ({
   setPrintAllergens,
   showPageBoundaries,
   setShowPageBoundaries,
-  isLoading
+  isLoading = false,
+  restaurantLogo,
+  updateRestaurantLogo
 }: BasicOptionsProps) => {
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
