@@ -23,6 +23,7 @@ export interface SiteSettings {
   restaurantName?: string;
   footerText?: string;
   defaultProductImage?: string;
+  adminTitle?: string; // Nuovo campo per il titolo dell'interfaccia amministrativa
   [key: string]: any;
 }
 

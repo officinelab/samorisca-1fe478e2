@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -75,7 +74,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold">Sa Morisca Menu - Amministrazione</h1>
+            <h1 className="text-xl font-semibold">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
           <div className="lg:hidden">
             <Button
