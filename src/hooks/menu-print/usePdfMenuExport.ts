@@ -4,7 +4,7 @@ import { Allergen, Category } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { usePdfGenerator } from "../print/pdf/usePdfGenerator";
 import { useMenuData } from "../useMenuData";
-import { useMenuLayouts } from "../useMenuLayouts";
+import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
 
 export const usePdfMenuExport = ({
   layoutType,
@@ -21,17 +21,17 @@ export const usePdfMenuExport = ({
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   
-  // Import menu data e layouts separatamente
+  // Importa menu data e layouts separatamente
   const { categories, products, allergens, isLoading } = useMenuData();
-  const { layouts } = useMenuLayouts();
+  const menuLayouts = useMenuLayouts();
   
   // Find the active layout
   const findActiveLayout = (): PrintLayout | null => {
-    if (!Array.isArray(layouts) || layouts.length === 0) {
+    if (!Array.isArray(menuLayouts.layouts) || menuLayouts.layouts.length === 0) {
       return null;
     }
-    return layouts.find(layout => layout.id === layoutType) || 
-           layouts.find(layout => layout.type === layoutType) ||
+    return menuLayouts.layouts.find(layout => layout.id === layoutType) || 
+           menuLayouts.layouts.find(layout => layout.type === layoutType) ||
            null;
   };
   
