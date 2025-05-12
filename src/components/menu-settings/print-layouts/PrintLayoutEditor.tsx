@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintLayout } from "@/types/printLayout";
-import { useLayoutEditor } from "./editor/useLayoutEditor";
+import { useLayoutEditor } from "./editor/useLayoutEditor"; // Fix the import path to use the correct hook
 import GeneralTab from "./editor/GeneralTab";
 import ElementsTab from "./editor/ElementsTab";
 import SpacingTab from "./editor/SpacingTab";
