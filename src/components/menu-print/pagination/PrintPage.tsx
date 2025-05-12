@@ -20,20 +20,118 @@ const PrintPage: React.FC<PrintPageProps> = ({
   showPageBoundaries,
   customLayout
 }) => {
-  // Aggiunge un numero di pagina in basso a destra (visibile solo in modalità anteprima)
-  const renderPageNumber = () => {
+  // Calcola i margini in base al layout e all'indice della pagina
+  const margins = React.useMemo(() => {
+    if (!customLayout) {
+      return { top: 20, right: 15, bottom: 20, left: 15 };
+    }
+    
+    if (!customLayout.page.useDistinctMarginsForPages) {
+      return {
+        top: customLayout.page.marginTop,
+        right: customLayout.page.marginRight,
+        bottom: customLayout.page.marginBottom,
+        left: customLayout.page.marginLeft
+      };
+    }
+    
+    // Pagina dispari (0-based, quindi pageIndex 0, 2, 4... sono pagine 1, 3, 5...)
+    if (pageIndex % 2 === 0) {
+      return {
+        top: customLayout.page.oddPages?.marginTop || customLayout.page.marginTop,
+        right: customLayout.page.oddPages?.marginRight || customLayout.page.marginRight,
+        bottom: customLayout.page.oddPages?.marginBottom || customLayout.page.marginBottom,
+        left: customLayout.page.oddPages?.marginLeft || customLayout.page.marginLeft
+      };
+    } 
+    // Pagina pari (1, 3, 5...)
+    else {
+      return {
+        top: customLayout.page.evenPages?.marginTop || customLayout.page.marginTop,
+        right: customLayout.page.evenPages?.marginRight || customLayout.page.marginRight,
+        bottom: customLayout.page.evenPages?.marginBottom || customLayout.page.marginBottom,
+        left: customLayout.page.evenPages?.marginLeft || customLayout.page.marginLeft
+      };
+    }
+  }, [customLayout, pageIndex]);
+  
+  // Aggiunge un numero di pagina e indicatori di margine (visibili solo in modalità anteprima)
+  const renderPageDebugInfo = () => {
     if (!showPageBoundaries) return null;
     
     return (
-      <div 
-        className="absolute text-xs text-muted-foreground" 
-        style={{
-          right: '5mm',
-          bottom: '5mm'
-        }}
-      >
-        Pagina {pageIndex}
-      </div>
+      <>
+        {/* Numero di pagina */}
+        <div 
+          className="absolute text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded" 
+          style={{
+            right: '5mm',
+            bottom: '5mm',
+            zIndex: 50
+          }}
+        >
+          Pagina {pageIndex + 1}
+        </div>
+        
+        {/* Indicatori dei margini */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Margine superiore */}
+          <div className="absolute left-0 right-0 flex justify-center">
+            <div 
+              className="bg-blue-500/20 px-2 rounded text-xs text-blue-800"
+              style={{
+                height: `${margins.top}mm`,
+                top: 0,
+                lineHeight: `${margins.top}mm`
+              }}
+            >
+              Margine superiore: {margins.top}mm
+            </div>
+          </div>
+          
+          {/* Margine inferiore */}
+          <div className="absolute left-0 right-0 bottom-0 flex justify-center">
+            <div 
+              className="bg-blue-500/20 px-2 rounded text-xs text-blue-800"
+              style={{
+                height: `${margins.bottom}mm`,
+                bottom: 0,
+                lineHeight: `${margins.bottom}mm`
+              }}
+            >
+              Margine inferiore: {margins.bottom}mm
+            </div>
+          </div>
+          
+          {/* Margine sinistro */}
+          <div 
+            className="absolute top-0 bottom-0 left-0 flex flex-col justify-center items-center"
+            style={{
+              width: `${margins.left}mm`
+            }}
+          >
+            <div 
+              className="bg-blue-500/20 px-1 py-2 rounded text-xs text-blue-800 rotate-90"
+            >
+              Margine sx: {margins.left}mm
+            </div>
+          </div>
+          
+          {/* Margine destro */}
+          <div 
+            className="absolute top-0 bottom-0 right-0 flex flex-col justify-center items-center"
+            style={{
+              width: `${margins.right}mm`
+            }}
+          >
+            <div 
+              className="bg-blue-500/20 px-1 py-2 rounded text-xs text-blue-800 rotate-90"
+            >
+              Margine dx: {margins.right}mm
+            </div>
+          </div>
+        </div>
+      </>
     );
   };
 
@@ -62,7 +160,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
       >
         {children}
       </div>
-      {renderPageNumber()}
+      {showPageBoundaries && renderPageDebugInfo()}
     </div>
   );
 };

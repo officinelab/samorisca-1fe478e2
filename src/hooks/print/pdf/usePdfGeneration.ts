@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { PrintLayout } from "@/types/printLayout";
 import { useMenuLayouts } from "@/hooks/menu-layouts/useMenuLayouts";
@@ -8,16 +9,19 @@ import { useMenuLayouts } from "@/hooks/menu-layouts/useMenuLayouts";
  */
 export const usePdfGeneration = () => {
   const { activeLayout, isLoading } = useMenuLayouts();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Generate a PDF that matches the preview layout
   const generatePdf = async (content: string): Promise<void> => {
     try {
+      setIsGenerating(true);
+      
       // Clear any existing layout cache from localStorage for this session
       clearLayoutCache();
       
       // Wait for layout data to be loaded fully
       if (isLoading) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
       // Create a new virtual document to convert to PDF
@@ -36,11 +40,19 @@ export const usePdfGeneration = () => {
       
       // Let the content render before printing
       setTimeout(() => {
-        printWindow.print();
-      }, 500);
+        try {
+          printWindow.print();
+          toast.success("PDF generato con successo");
+        } catch (err) {
+          console.error("Errore durante la stampa:", err);
+          toast.error("Errore durante la fase di stampa del PDF");
+        }
+      }, 1000);
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
       toast.error("Si è verificato un errore durante la generazione del PDF.");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -65,12 +77,17 @@ export const usePdfGeneration = () => {
       <html>
       <head>
         <title>Menu PDF</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          /* Resettiamo eventuali stili cached del browser */
+          /* Reset browser styles */
           * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
+            color-adjust: exact !important; /* Firefox */
+            print-color-adjust: exact !important; /* Future standard */
           }
           
           @page {
@@ -90,15 +107,12 @@ export const usePdfGeneration = () => {
           .page {
             width: 210mm;
             height: 297mm;
-            padding: 20mm 15mm;
-            box-sizing: border-box;
             page-break-after: always;
             break-after: page;
             position: relative;
             overflow: hidden;
           }
           
-          /* Stili per elementi del menu */
           .category-title {
             font-size: ${layout?.elements.category.fontSize || 18}pt;
             font-family: ${layout?.elements.category.fontFamily || 'Arial'};
@@ -107,7 +121,14 @@ export const usePdfGeneration = () => {
             font-style: ${layout?.elements.category.fontStyle === 'italic' ? 'italic' : 'normal'};
             text-align: ${layout?.elements.category.alignment || 'left'};
             margin-top: ${layout?.elements.category.margin.top || 0}mm;
-            margin-bottom: ${layout?.spacing.categoryTitleBottomMargin || 5}mm;
+            margin-bottom: ${layout?.spacing?.categoryTitleBottomMargin || 5}mm;
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          
+          .menu-item {
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
 
           /* Layout-specific styles */
@@ -125,18 +146,23 @@ export const usePdfGeneration = () => {
               overflow: hidden;
               height: auto;
             }
+            
+            .page-break {
+              page-break-before: always;
+              break-before: page;
+            }
           }
         </style>
       </head>
       <body>
         ${content}
         <script>
-          // Forzare il rendering completo prima della stampa
+          // Force complete rendering before printing
           window.onload = function() {
+            // Make sure all images and resources are loaded
             setTimeout(function() {
-              // Segnalare che il contenuto è pronto per la stampa
               console.log("Documento pronto per la stampa/download");
-            }, 300);
+            }, 500);
           };
         </script>
       </body>
@@ -154,6 +180,9 @@ export const usePdfGeneration = () => {
         color: ${layout.elements.title.fontColor};
         font-weight: ${layout.elements.title.fontStyle === 'bold' ? 'bold' : 'normal'};
         font-style: ${layout.elements.title.fontStyle === 'italic' ? 'italic' : 'normal'};
+        text-align: ${layout.elements.title.alignment};
+        page-break-after: avoid;
+        break-after: avoid;
       }
       
       .menu-item-description {
@@ -162,6 +191,7 @@ export const usePdfGeneration = () => {
         color: ${layout.elements.description.fontColor};
         font-style: ${layout.elements.description.fontStyle === 'italic' ? 'italic' : 'normal'};
         font-weight: ${layout.elements.description.fontStyle === 'bold' ? 'bold' : 'normal'};
+        text-align: ${layout.elements.description.alignment};
       }
       
       .menu-item-price {
@@ -170,9 +200,10 @@ export const usePdfGeneration = () => {
         color: ${layout.elements.price.fontColor};
         font-weight: ${layout.elements.price.fontStyle === 'bold' ? 'bold' : 'normal'};
         font-style: ${layout.elements.price.fontStyle === 'italic' ? 'italic' : 'normal'};
+        text-align: ${layout.elements.price.alignment};
       }
     `;
   };
 
-  return { generatePdf };
+  return { generatePdf, isGenerating };
 };
