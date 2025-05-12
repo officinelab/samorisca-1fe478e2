@@ -1,3 +1,4 @@
+
 import { PrintLayout, ProductSchema } from "@/types/printLayout";
 
 // Classic layout - Schema 1 (layout originale)
@@ -93,7 +94,8 @@ const classicLayoutSchema1: PrintLayout = {
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      visible: true  // Added missing visible property
     },
     title: {
       visible: true,
@@ -253,7 +255,8 @@ const classicLayoutSchema2: PrintLayout = {
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      visible: true  // Added missing visible property
     },
     title: {
       visible: true,
@@ -413,7 +416,8 @@ const classicLayoutSchema3: PrintLayout = {
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      visible: true  // Added missing visible property
     },
     title: {
       visible: true,
