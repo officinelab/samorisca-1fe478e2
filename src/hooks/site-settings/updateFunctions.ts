@@ -66,6 +66,22 @@ export const updateFooterText = (text: string): boolean => {
 };
 
 /**
+ * Update the admin header title
+ */
+export const updateAdminHeaderTitle = (title: string): boolean => {
+  console.log("Updating admin header title:", title);
+  if (saveSetting('adminHeaderTitle', title)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'adminHeaderTitle', value: title } 
+    }));
+    
+    toast.success("Titolo dell'intestazione amministrativa aggiornato");
+    return true;
+  }
+  return false;
+};
+
+/**
  * Update the default product image
  */
 export const updateDefaultProductImage = (imageUrl: string): boolean => {
