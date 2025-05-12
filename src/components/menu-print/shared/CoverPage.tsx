@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
@@ -10,6 +9,7 @@ type CoverPageProps = {
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
+  pageIndex?: number; // Added this prop to fix the type error
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -18,7 +18,8 @@ const CoverPage: React.FC<CoverPageProps> = ({
   showPageBoundaries,
   layoutType,
   restaurantLogo,
-  customLayout
+  customLayout,
+  pageIndex = 0 // Default to 0 for the cover page
 }) => {
   const [imageError, setImageError] = useState(false);
   
@@ -186,6 +187,19 @@ const CoverPage: React.FC<CoverPageProps> = ({
           <h1 style={getTitleStyle()}>Menu</h1>
           <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>
         </>
+      )}
+      
+      {/* Debug page number indicator only shown in preview mode */}
+      {showPageBoundaries && (
+        <div 
+          className="absolute text-xs text-muted-foreground" 
+          style={{
+            right: '5mm',
+            bottom: '5mm'
+          }}
+        >
+          Copertina (Pagina {pageIndex})
+        </div>
       )}
     </div>
   );

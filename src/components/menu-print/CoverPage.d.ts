@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { PrintLayout } from '@/types/printLayout';
 
 export interface CoverPageProps {
   A4_WIDTH_MM: number;
@@ -7,6 +8,8 @@ export interface CoverPageProps {
   showPageBoundaries: boolean;
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
+  pageIndex?: number; // Added this prop to fix the type error
 }
 
 declare const CoverPage: React.FC<CoverPageProps>;

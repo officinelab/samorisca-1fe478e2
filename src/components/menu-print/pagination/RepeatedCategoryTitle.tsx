@@ -25,7 +25,7 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
         color: '#000',
         fontWeight: 'bold',
         fontStyle: 'normal',
-        textAlign: 'left',
+        textAlign: 'left' as React.CSSProperties['textAlign'],
         marginBottom: '10px',
       };
     }
@@ -37,7 +37,7 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
       color: element.fontColor,
       fontWeight: element.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: element.fontStyle === 'italic' ? 'italic' : 'normal',
-      textAlign: element.alignment as any, // casting necessario per TypeScript
+      textAlign: element.alignment as React.CSSProperties['textAlign'], // Fixed the type issue here
       marginTop: `${element.margin.top}mm`,
       marginRight: `${element.margin.right}mm`,
       marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
