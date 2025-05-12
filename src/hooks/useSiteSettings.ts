@@ -8,7 +8,8 @@ import {
   updateMenuLogo,
   updateRestaurantName,
   updateFooterText,
-  updateDefaultProductImage
+  updateDefaultProductImage,
+  updateHeaderTitle
 } from "./site-settings/updateFunctions";
 
 /**
@@ -61,7 +62,8 @@ export const useSiteSettings = () => {
     updateMenuLogo,
     updateRestaurantName,
     updateFooterText,
-    updateDefaultProductImage
+    updateDefaultProductImage,
+    updateHeaderTitle
   };
 };
 

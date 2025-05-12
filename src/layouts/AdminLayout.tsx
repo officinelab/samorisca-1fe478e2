@@ -10,19 +10,39 @@ import {
   Menu as MenuIcon, 
   LogOut,
   X,
-  Settings
+  Settings,
+  ChevronUp
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setShowBackToTop(scrollTop > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const navItems = [
@@ -75,7 +95,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold">Sa Morisca Menu - Amministrazione</h1>
+            <h1 className="text-xl font-semibold">{siteSettings?.headerTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
           <div className="lg:hidden">
             <Button
@@ -90,6 +110,7 @@ const AdminLayout = () => {
 
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
+          <BackToTopButton show={showBackToTop} onClick={scrollToTop} />
         </main>
       </div>
     </div>
