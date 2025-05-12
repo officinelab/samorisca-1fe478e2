@@ -61,6 +61,10 @@ export const usePdfMenuExport = ({
         return;
       }
       
+      console.log("Esportazione PDF con layout:", customLayout);
+      console.log("Titolo menu:", customLayout.menu_title);
+      console.log("Sottotitolo menu:", customLayout.menu_subtitle);
+      
       // Genera il PDF basato sull'anteprima visualizzata
       await generatePDF({
         categories: filteredCategories,

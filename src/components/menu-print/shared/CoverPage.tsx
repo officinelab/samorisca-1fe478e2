@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
-import { useMenuLayouts } from '@/hooks/menu-layouts/useMenuLayouts';
+import { useMenuLayouts } from '@/hooks/useMenuLayouts';
 
 type CoverPageProps = {
   A4_WIDTH_MM: number; 
@@ -28,13 +28,22 @@ const CoverPage: React.FC<CoverPageProps> = ({
   const [menuTitle, setMenuTitle] = useState("Menu");
   const [menuSubtitle, setMenuSubtitle] = useState("Ristorante");
   
-  // Aggiorna il titolo e il sottotitolo quando cambia il layout attivo
+  // Aggiorna il titolo e il sottotitolo quando cambia il layout attivo o customLayout
   useEffect(() => {
-    if (activeLayout) {
+    if (customLayout) {
+      console.log("CoverPage - Usando customLayout:", customLayout.menu_title, customLayout.menu_subtitle);
+      setMenuTitle(customLayout.menu_title || "Menu");
+      setMenuSubtitle(customLayout.menu_subtitle || "Ristorante");
+    } else if (activeLayout) {
+      console.log("CoverPage - Usando activeLayout:", activeLayout.menu_title, activeLayout.menu_subtitle);
       setMenuTitle(activeLayout.menu_title || "Menu");
       setMenuSubtitle(activeLayout.menu_subtitle || "Ristorante");
     }
-  }, [activeLayout]);
+  }, [activeLayout, customLayout]);
+  
+  useEffect(() => {
+    console.log("CoverPage rendering con titolo:", menuTitle, "sottotitolo:", menuSubtitle);
+  }, [menuTitle, menuSubtitle]);
   
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -180,7 +189,7 @@ const CoverPage: React.FC<CoverPageProps> = ({
 
   return (
     <div className="page cover-page bg-white" style={getPageStyle()}>
-      {(restaurantLogo && !imageError) ? (
+      {(restaurantLogo && !imageError) && (
         <div style={{
           width: '100%',
           display: 'flex',
@@ -195,12 +204,11 @@ const CoverPage: React.FC<CoverPageProps> = ({
             onError={handleImageError}
           />
         </div>
-      ) : (
-        <>
-          <h1 style={getTitleStyle()}>{menuTitle}</h1>
-          <p style={getSubtitleStyle()}>{menuSubtitle}</p>
-        </>
       )}
+      
+      {/* Sempre visualizza titolo e sottotitolo, sia con logo che senza */}
+      <h1 style={getTitleStyle()}>{menuTitle}</h1>
+      <p style={getSubtitleStyle()}>{menuSubtitle}</p>
       
       {/* Debug page number indicator only shown in preview mode */}
       {showPageBoundaries && (

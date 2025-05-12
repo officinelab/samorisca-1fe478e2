@@ -33,6 +33,8 @@ export const generatePDF = async ({
 }: PDFGenerationParams) => {
   try {
     console.log("Inizio generazione PDF con layout:", customLayout);
+    console.log("Titolo menu:", customLayout.menu_title);
+    console.log("Sottotitolo menu:", customLayout.menu_subtitle);
     
     // Filtra le categorie selezionate
     const filteredCategories = categories.filter(cat => selectedCategories.includes(cat.id));
@@ -44,20 +46,23 @@ export const generatePDF = async ({
     const menuTitle = customLayout.menu_title || "Menu";
     const menuSubtitle = customLayout.menu_subtitle || "Ristorante";
     
-    // Create PDF document using createElement instead of JSX
+    console.log("Utilizzo titolo:", menuTitle);
+    console.log("Utilizzo sottotitolo:", menuSubtitle);
+    
+    // Create PDF document using React.createElement
     const pdfDoc = pdf(
-      React.createElement(MenuPdfDocument, {
-        styles: styles,
-        categories: filteredCategories,
-        products: products,
-        language: language,
-        allergens: allergens,
-        printAllergens: printAllergens,
-        restaurantLogo: restaurantLogo,
-        customLayout: customLayout,
-        menuTitle: menuTitle,
-        menuSubtitle: menuSubtitle
-      })
+      <MenuPdfDocument
+        styles={styles}
+        categories={filteredCategories}
+        products={products}
+        language={language}
+        allergens={allergens}
+        printAllergens={printAllergens}
+        restaurantLogo={restaurantLogo}
+        customLayout={customLayout}
+        menuTitle={menuTitle}
+        menuSubtitle={menuSubtitle}
+      />
     );
     
     // Generate PDF blob

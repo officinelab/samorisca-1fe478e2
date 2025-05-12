@@ -20,6 +20,8 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({
   menuTitle = "Menu",
   menuSubtitle = "Ristorante"
 }) => {
+  console.log("CoverPagePdf rendering con titolo:", menuTitle, "sottotitolo:", menuSubtitle);
+
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>

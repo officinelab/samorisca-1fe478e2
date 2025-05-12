@@ -18,8 +18,13 @@ const CoverPage: React.FC<CoverPageProps> = ({
   showPageBoundaries,
   layoutType,
   restaurantLogo,
+  customLayout,
   pageIndex = 0 // Default a 0 per la copertina
 }) => {
+  // Determina il titolo e sottotitolo da visualizzare
+  const menuTitle = customLayout?.menu_title || "Menu";
+  const menuSubtitle = customLayout?.menu_subtitle || "Ristorante";
+  
   return (
     <div className="page cover-page relative bg-white" style={{
       width: `${A4_WIDTH_MM}mm`,
@@ -58,12 +63,12 @@ const CoverPage: React.FC<CoverPageProps> = ({
       
       {/* Titolo principale del menu */}
       <h1 className={`cover-title text-4xl font-bold text-center ${layoutType === 'modern' ? 'uppercase tracking-widest' : ''}`}>
-        Menu
+        {menuTitle}
       </h1>
       
       {/* Sottotitolo */}
       <h2 className={`cover-subtitle mt-4 text-xl ${layoutType === 'modern' ? 'tracking-wide' : ''}`}>
-        Ristorante
+        {menuSubtitle}
       </h2>
       
       {/* Numero pagina per debug (visibile solo con showPageBoundaries) */}
