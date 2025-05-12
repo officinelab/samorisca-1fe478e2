@@ -18,11 +18,32 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     marginBottom: 20
   };
   
+  // Verifichiamo che i campi title e subtitle esistano
+  const title = cover.title || {
+    fontSize: 24,
+    fontStyle: 'normal',
+    fontColor: '#000000',
+    fontFamily: 'Helvetica',
+    alignment: 'center',
+    visible: true,
+    margin: { top: 10, right: 0, bottom: 5, left: 0 }
+  };
+  
+  const subtitle = cover.subtitle || {
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontColor: '#000000',
+    fontFamily: 'Helvetica',
+    alignment: 'center',
+    visible: true,
+    margin: { top: 5, right: 0, bottom: 0, left: 0 }
+  };
+  
   return StyleSheet.create({
     coverPage: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: mapAlignment(cover.title?.alignment || 'center'),
+      alignItems: mapAlignment(title.alignment || 'center'),
       padding: '10mm'
     },
     coverLogoContainer: {
@@ -39,28 +60,28 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       objectFit: 'contain'
     },
     coverTitle: {
-      fontSize: cover.title?.fontSize || 24,
-      fontWeight: cover.title?.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: cover.title?.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: cover.title?.fontColor || '#000000',
-      fontFamily: cover.title?.fontFamily || 'Helvetica',
-      marginTop: `${cover.title?.margin?.top || 10}mm`,
-      marginRight: `${cover.title?.margin?.right || 0}mm`,
-      marginBottom: `${cover.title?.margin?.bottom || 5}mm`,
-      marginLeft: `${cover.title?.margin?.left || 0}mm`,
-      textAlign: cover.title?.alignment || 'center',
+      fontSize: title.fontSize || 24,
+      fontWeight: title.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: title.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: title.fontColor || '#000000',
+      fontFamily: title.fontFamily || 'Helvetica',
+      marginTop: `${title.margin?.top || 10}mm`,
+      marginRight: `${title.margin?.right || 0}mm`,
+      marginBottom: `${title.margin?.bottom || 5}mm`,
+      marginLeft: `${title.margin?.left || 0}mm`,
+      textAlign: title.alignment || 'center',
     },
     coverSubtitle: {
-      fontSize: cover.subtitle?.fontSize || 16,
-      fontWeight: cover.subtitle?.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: cover.subtitle?.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: cover.subtitle?.fontColor || '#000000',
-      fontFamily: cover.subtitle?.fontFamily || 'Helvetica',
-      marginTop: `${cover.subtitle?.margin?.top || 5}mm`,
-      marginRight: `${cover.subtitle?.margin?.right || 0}mm`,
-      marginBottom: `${cover.subtitle?.margin?.bottom || 0}mm`,
-      marginLeft: `${cover.subtitle?.margin?.left || 0}mm`,
-      textAlign: cover.subtitle?.alignment || 'center',
+      fontSize: subtitle.fontSize || 16,
+      fontWeight: subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: subtitle.fontColor || '#000000',
+      fontFamily: subtitle.fontFamily || 'Helvetica',
+      marginTop: `${subtitle.margin?.top || 5}mm`,
+      marginRight: `${subtitle.margin?.right || 0}mm`,
+      marginBottom: `${subtitle.margin?.bottom || 0}mm`,
+      marginLeft: `${subtitle.margin?.left || 0}mm`,
+      textAlign: subtitle.alignment || 'center',
     },
   });
 };

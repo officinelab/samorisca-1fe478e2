@@ -1,8 +1,12 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useMenuData } from "@/hooks/useMenuData";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { A4_HEIGHT, A4_WIDTH } from "@/lib/constants";
 import { usePrintLogoStorage } from './usePrintLogoStorage';
+
+// Definiamo le costanti qui invece di importarle
+const A4_WIDTH = 210; // mm
+const A4_HEIGHT = 297; // mm
 
 export const useMenuPrintState = () => {
   // Layout and display options
