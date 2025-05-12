@@ -16,7 +16,7 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   const logoSettings = cover.logo || {
     maxWidth: 60,
     maxHeight: 50,
-    alignment: 'center',
+    alignment: 'center' as const,
     marginTop: 20,
     marginBottom: 20
   };
@@ -24,10 +24,10 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   // Definiamo valori predefiniti per il titolo e assicuriamoci che esista
   const title = cover.title || {
     fontSize: 24,
-    fontStyle: 'normal',
+    fontStyle: 'normal' as const,
     fontColor: '#000000',
     fontFamily: 'Helvetica',
-    alignment: 'center',
+    alignment: 'center' as const,
     visible: true,
     margin: { top: 10, right: 0, bottom: 5, left: 0 }
   };
@@ -35,10 +35,10 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
   // Definiamo valori predefiniti per il sottotitolo e assicuriamoci che esista
   const subtitle = cover.subtitle || {
     fontSize: 16,
-    fontStyle: 'normal',
+    fontStyle: 'normal' as const,
     fontColor: '#000000',
     fontFamily: 'Helvetica',
-    alignment: 'center',
+    alignment: 'center' as const,
     visible: true,
     margin: { top: 5, right: 0, bottom: 0, left: 0 }
   };
