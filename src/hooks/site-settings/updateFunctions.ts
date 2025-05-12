@@ -80,3 +80,18 @@ export const updateDefaultProductImage = (imageUrl: string): boolean => {
   }
   return false;
 };
+
+/**
+ * Update the admin header title
+ */
+export const updateAdminHeaderTitle = (title: string): boolean => {
+  if (saveSetting('adminHeaderTitle', title)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'adminHeaderTitle', value: title } 
+    }));
+    
+    toast.success("Titolo dell'intestazione amministrativa aggiornato");
+    return true;
+  }
+  return false;
+};
