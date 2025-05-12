@@ -14,7 +14,6 @@ export type PrintLayoutElementConfig = {
     bottom: number;
     left: number;
   };
-  text?: string; // Testo personalizzabile per elementi come titolo e sottotitolo
 }
 
 export type PageMargins = {
@@ -48,8 +47,8 @@ export type PrintLayout = {
       marginTop: number;
       marginBottom: number;
     };
-    title: PrintLayoutElementConfig & { text?: string };
-    subtitle: PrintLayoutElementConfig & { text?: string };
+    title: PrintLayoutElementConfig;
+    subtitle: PrintLayoutElementConfig;
   };
   allergens: {
     title: PrintLayoutElementConfig;

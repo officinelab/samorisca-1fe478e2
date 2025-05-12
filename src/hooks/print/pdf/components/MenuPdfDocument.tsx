@@ -28,10 +28,6 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
   restaurantLogo,
   customLayout
 }) => {
-  console.log("MenuPdfDocument - received logo:", restaurantLogo);
-  console.log("MenuPdfDocument - layout:", customLayout?.type);
-  console.log("MenuPdfDocument - categories count:", categories.length);
-
   return (
     <Document>
       <CoverPagePdf 
@@ -53,14 +49,12 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
         />
       ))}
       
-      {printAllergens && allergens.length > 0 && (
-        <AllergensPdf 
-          styles={styles} 
-          allergens={allergens} 
-          printAllergens={printAllergens}
-          customLayout={customLayout}
-        />
-      )}
+      <AllergensPdf 
+        styles={styles} 
+        allergens={allergens} 
+        printAllergens={printAllergens}
+        customLayout={customLayout}
+      />
     </Document>
   );
 };
