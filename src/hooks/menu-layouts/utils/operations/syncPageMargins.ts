@@ -53,7 +53,8 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
         maxHeight: 50,
         alignment: 'center',
         marginTop: 20,
-        marginBottom: 20
+        marginBottom: 20,
+        visible: true  // Aggiunto il campo visible
       },
       title: {
         visible: true,
@@ -74,6 +75,9 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
         margin: { top: 5, right: 0, bottom: 0, left: 0 }
       }
     };
+  } else if (syncedLayout.cover.logo && typeof syncedLayout.cover.logo.visible !== 'boolean') {
+    // Assicuriamo che la proprietà visible esista nel logo
+    syncedLayout.cover.logo.visible = true;
   }
   
   // Ensure allergens settings exist

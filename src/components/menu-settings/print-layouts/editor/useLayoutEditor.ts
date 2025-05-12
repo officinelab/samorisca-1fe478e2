@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -29,7 +28,8 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      visible: true  // Aggiunto il campo visible
     },
     title: {
       visible: true,

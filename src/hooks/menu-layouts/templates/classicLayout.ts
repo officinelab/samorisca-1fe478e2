@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const classicLayout: PrintLayout = {
@@ -94,7 +93,8 @@ export const classicLayout: PrintLayout = {
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20
+      marginBottom: 20,
+      visible: true
     },
     title: {
       visible: true,

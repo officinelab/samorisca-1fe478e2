@@ -1,4 +1,3 @@
-
 import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
 
 /**
@@ -130,7 +129,7 @@ export const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
     };
   }
   
-  // Ensure cover layout exists
+  // Ensure cover settings exist
   if (!result.cover) {
     result.cover = {
       logo: {
@@ -138,7 +137,8 @@ export const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
         maxHeight: 50,
         alignment: 'center',
         marginTop: 20,
-        marginBottom: 20
+        marginBottom: 20,
+        visible: true  // Aggiunto il campo visible
       },
       title: {
         visible: true,
@@ -161,7 +161,12 @@ export const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
     };
   }
   
-  // Ensure allergens layout exists
+  // Ensure logo.visible exists
+  if (result.cover && result.cover.logo && typeof result.cover.logo.visible !== 'boolean') {
+    result.cover.logo.visible = true;
+  }
+  
+  // Ensure allergens settings exist
   if (!result.allergens) {
     result.allergens = {
       title: {

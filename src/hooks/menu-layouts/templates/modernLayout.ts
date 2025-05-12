@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const modernLayout: PrintLayout = {
@@ -94,7 +93,8 @@ export const modernLayout: PrintLayout = {
       maxHeight: 60,
       alignment: 'center',
       marginTop: 30,
-      marginBottom: 30
+      marginBottom: 30,
+      visible: true
     },
     title: {
       visible: true,

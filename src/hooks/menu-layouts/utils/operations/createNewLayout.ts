@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from "uuid";
 
@@ -101,7 +100,8 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         maxHeight: 50,
         alignment: 'center',
         marginTop: 20,
-        marginBottom: 20
+        marginBottom: 20,
+        visible: true
       },
       title: {
         visible: true,
