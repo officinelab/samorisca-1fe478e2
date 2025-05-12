@@ -5,6 +5,15 @@ import { PrintLayout } from "@/types/printLayout";
 import { usePdfGenerator } from "../print/pdf/usePdfGenerator";
 import { useMenuData } from "../useMenuData";
 import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
+import { toast } from "@/components/ui/sonner";
+
+interface PdfMenuExportProps {
+  layoutType: string;
+  language: string;
+  printAllergens: boolean;
+  selectedCategories: string[];
+  restaurantLogo?: string | null;
+}
 
 export const usePdfMenuExport = ({
   layoutType,
@@ -12,20 +21,14 @@ export const usePdfMenuExport = ({
   printAllergens,
   selectedCategories,
   restaurantLogo
-}: {
-  layoutType: string;
-  language: string;
-  printAllergens: boolean;
-  selectedCategories: string[];
-  restaurantLogo?: string | null;
-}) => {
+}: PdfMenuExportProps) => {
   const [isExporting, setIsExporting] = useState(false);
   
   // Importa menu data e layouts separatamente
   const { categories, products, allergens, isLoading } = useMenuData();
   const menuLayouts = useMenuLayouts();
   
-  // Find the active layout
+  // Trova il layout attivo
   const findActiveLayout = (): PrintLayout | null => {
     if (!Array.isArray(menuLayouts.layouts) || menuLayouts.layouts.length === 0) {
       return null;
@@ -37,10 +40,9 @@ export const usePdfMenuExport = ({
   
   const customLayout = findActiveLayout();
   
-  // Initialize PDF generator
+  // Inizializza il generatore PDF
   const { 
     generateAndDownloadPdf,
-    generateAndPrintPdf,
     isGenerating
   } = usePdfGenerator({
     categories: categories as Category[],
@@ -53,25 +55,22 @@ export const usePdfMenuExport = ({
     customLayout
   });
   
-  // Download PDF handler
+  // Gestore per l'esportazione PDF
   const handleExportToPdf = async () => {
     if (isExporting || isGenerating || isLoading) return;
+    
+    if (selectedCategories.length === 0) {
+      toast.error("Seleziona almeno una categoria per generare il PDF");
+      return;
+    }
     
     setIsExporting(true);
     try {
       await generateAndDownloadPdf();
-    } finally {
-      setIsExporting(false);
-    }
-  };
-  
-  // Print PDF handler
-  const handlePrintAsPdf = async () => {
-    if (isExporting || isGenerating || isLoading) return;
-    
-    setIsExporting(true);
-    try {
-      await generateAndPrintPdf();
+      toast.success("PDF generato con successo");
+    } catch (error) {
+      console.error("Errore durante la generazione del PDF:", error);
+      toast.error("Si è verificato un errore durante la generazione del PDF");
     } finally {
       setIsExporting(false);
     }
@@ -79,7 +78,6 @@ export const usePdfMenuExport = ({
   
   return {
     handleExportToPdf,
-    handlePrintAsPdf,
     isExporting: isExporting || isGenerating
   };
 };

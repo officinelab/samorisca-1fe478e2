@@ -1,10 +1,10 @@
+
 import { useState } from "react";
 import { Allergen, Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
-import { toast } from "@/components/ui/sonner";
 import { MenuPdfDocument } from "./components";
 import { createPdfStyles } from "./styles/pdfStyles";
-import { downloadPdf, printPdf } from "./utils/pdfUtils";
+import { pdf } from '@react-pdf/renderer';
 
 interface PdfGeneratorProps {
   categories: Category[];
@@ -31,11 +31,6 @@ export const usePdfGenerator = ({
 
   // Genera il PDF e lo fa scaricare
   const generateAndDownloadPdf = async () => {
-    if (selectedCategories.length === 0) {
-      toast.error("Seleziona almeno una categoria per generare il PDF");
-      return;
-    }
-
     setIsGenerating(true);
 
     try {
@@ -59,43 +54,22 @@ export const usePdfGenerator = ({
         />
       );
 
-      await downloadPdf(documentElement);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Genera il PDF e lo apre in una nuova finestra per la stampa
-  const generateAndPrintPdf = async () => {
-    if (selectedCategories.length === 0) {
-      toast.error("Seleziona almeno una categoria per stampare il PDF");
-      return;
-    }
-
-    setIsGenerating(true);
-
-    try {
-      // Crea gli stili per il PDF basati sul layout personalizzato
-      const styles = createPdfStyles(customLayout);
-
-      // Filtra le categorie selezionate
-      const filteredCategories = categories.filter(cat => selectedCategories.includes(cat.id));
-
-      // Crea il documento PDF
-      const documentElement = (
-        <MenuPdfDocument 
-          styles={styles}
-          categories={filteredCategories}
-          products={products}
-          language={language}
-          allergens={allergens}
-          printAllergens={printAllergens}
-          restaurantLogo={restaurantLogo}
-          customLayout={customLayout}
-        />
-      );
-
-      await printPdf(documentElement);
+      // Genera il blob PDF
+      const blob = await pdf(documentElement).toBlob();
+      
+      // Crea un URL per il blob e scarica il file
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `menu_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      return true;
+    } catch (error) {
+      console.error("Errore durante la generazione del PDF:", error);
+      throw error;
     } finally {
       setIsGenerating(false);
     }
@@ -103,7 +77,6 @@ export const usePdfGenerator = ({
 
   return {
     isGenerating,
-    generateAndDownloadPdf,
-    generateAndPrintPdf
+    generateAndDownloadPdf
   };
 };
