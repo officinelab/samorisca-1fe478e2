@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Search, XCircle } from "lucide-react";
-import { getProductById, getProducts } from "@/hooks/products/useProductFormSubmit";
+import { getProductById, getProducts } from "@/hooks/products/productFetchers";
 import ProductForm from "@/components/product/ProductForm";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,7 +29,7 @@ const Dashboard = () => {
   });
 
   // Funzione per filtrare i prodotti in base al termine di ricerca
-  const filteredProducts = products.filter((product: Product) => {
+  const filteredProducts = (products as Product[]).filter((product: Product) => {
     if (!searchTerm) return true;
     
     // Cerchiamo in titolo e descrizione, case insensitive
