@@ -36,16 +36,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     handleSubmit
   } = useProductForm(product, onSave);
 
-  // Scorrimento automatico al form quando viene caricato
+  // Scrolling automatico al form quando viene caricato
   useEffect(() => {
     if (formRef.current) {
-      // Usando setTimeout per assicurarsi che lo scorrimento avvenga dopo il rendering completo
+      // Utilizziamo un timeout più lungo per assicurarci che tutti gli elementi siano renderizzati
       setTimeout(() => {
-        formRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start'
+        window.scrollTo({
+          top: formRef.current?.offsetTop - 20 || 0,
+          behavior: 'smooth'
         });
-      }, 100);
+        
+        // Backup con scrollIntoView nel caso in cui window.scrollTo non funzioni come previsto
+        setTimeout(() => {
+          formRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 50);
+      }, 300); // Timeout aumentato per garantire che il rendering sia completo
     }
   }, [product]);
 
