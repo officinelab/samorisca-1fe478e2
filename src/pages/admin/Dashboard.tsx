@@ -4,18 +4,21 @@ import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Search, XCircle } from "lucide-react";
+import { Pencil, Search, XCircle, ArrowUp } from "lucide-react";
 import { getProductById, getProducts } from "@/hooks/products/productFetchers";
 import ProductForm from "@/components/product/ProductForm";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product } from "@/types/database";
+import useSiteSettings from "@/hooks/useSiteSettings";
 
 const Dashboard = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const { siteSettings } = useSiteSettings();
 
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
@@ -67,9 +70,24 @@ const Dashboard = () => {
     }, 500);
   };
 
+  // Controlla lo scrolling della pagina per mostrare/nascondere il pulsante "Torna in alto"
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Gestisce la chiusura del form
   const handleCloseForm = () => {
     setSelectedProductId(null);
+  };
+
+  // Gestisce il click sul pulsante "Torna in alto"
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -173,6 +191,17 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Pulsante "Torna in alto" */}
+      {showBackToTop && (
+        <Button
+          className="fixed bottom-4 right-4 rounded-full shadow-lg z-50"
+          size="icon"
+          onClick={scrollToTop}
+        >
+          <ArrowUp size={18} />
+        </Button>
+      )}
     </div>
   );
 };
