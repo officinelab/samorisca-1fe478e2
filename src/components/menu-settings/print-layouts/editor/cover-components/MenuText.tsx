@@ -17,6 +17,9 @@ const MenuText: React.FC<MenuTextProps> = ({
   onMenuTitleChange,
   onMenuSubtitleChange
 }) => {
+  // Aggiungiamo log per vedere i valori
+  console.log("MenuText rendering con titolo:", menuTitle, "sottotitolo:", menuSubtitle);
+  
   return (
     <Card>
       <CardContent className="pt-6">

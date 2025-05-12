@@ -20,6 +20,7 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({
   menuTitle = "Menu",
   menuSubtitle = "Ristorante"
 }) => {
+  // Aggiungiamo log per verificare i valori
   console.log("CoverPagePdf rendering con titolo:", menuTitle, "sottotitolo:", menuSubtitle);
 
   return (
@@ -34,12 +35,14 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({
           </View>
         )}
         
+        {/* Assicuriamoci che il titolo sia sempre visualizzato se fornito */}
         <Text style={styles.coverTitle}>
-          {customLayout?.cover?.title?.visible !== false ? menuTitle : ""}
+          {menuTitle || "Menu"}
         </Text>
         
+        {/* Assicuriamoci che il sottotitolo sia sempre visualizzato se fornito */}
         <Text style={styles.coverSubtitle}>
-          {customLayout?.cover?.subtitle?.visible !== false ? menuSubtitle : ""}
+          {menuSubtitle || "Ristorante"}
         </Text>
       </View>
       

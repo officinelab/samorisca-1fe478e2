@@ -34,7 +34,9 @@ export const usePdfMenuExport = ({
       return null;
     }
     
-    return layouts.find(layout => layout.id === layoutId) || null;
+    const layout = layouts.find(layout => layout.id === layoutId);
+    console.log("Layout trovato:", layout);
+    return layout || null;
   };
   
   const customLayout = findActiveLayout();
@@ -66,7 +68,7 @@ export const usePdfMenuExport = ({
       console.log("Sottotitolo menu:", customLayout.menu_subtitle);
       
       // Genera il PDF basato sull'anteprima visualizzata
-      await generatePDF({
+      const result = await generatePDF({
         categories: filteredCategories,
         products,
         selectedCategories,
@@ -78,7 +80,13 @@ export const usePdfMenuExport = ({
         layoutType: customLayout.type // Usiamo il tipo dal layout selezionato
       });
       
-      toast.success("PDF generato con successo");
+      if (result) {
+        toast.success("PDF generato con successo");
+        console.log("PDF generazione completata con successo");
+      } else {
+        toast.error("Errore nella generazione del PDF");
+        console.error("Generazione PDF fallita");
+      }
     } catch (error) {
       console.error("Errore durante la generazione del PDF:", error);
       toast.error("Si è verificato un errore durante la generazione del PDF");
