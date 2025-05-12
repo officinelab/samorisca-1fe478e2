@@ -12,5 +12,4 @@ export const defaultSettings: SiteSettings = {
   defaultProductImage: null,
   siteName: "Sa Morisca",
   siteDescription: "Ristorante Sa Morisca",
-  adminHeaderTitle: "Sa Morisca Menu - Amministrazione",
 };
