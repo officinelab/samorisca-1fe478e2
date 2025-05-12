@@ -3,9 +3,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SearchIcon, X } from "lucide-react";
-import { ProductForm } from "@/components/product/ProductForm";
+import { SearchIcon, X, ArrowUp } from "lucide-react";
+import ProductForm from "@/components/product/ProductForm";
 import { useMenuData } from "@/hooks/useMenuData";
+import { Product } from "@/types/database";
 
 const Dashboard = () => {
   const {
@@ -21,11 +22,22 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const productFormRef = useRef<HTMLDivElement>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Aggiorna i dati quando il componente viene montato
   useEffect(() => {
     fetchMenuData();
   }, [fetchMenuData]);
+
+  // Controllo per mostrare il pulsante "Back to Top"
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 500);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Scroll alla parte superiore quando viene selezionato un prodotto
   useEffect(() => {
@@ -34,8 +46,11 @@ const Dashboard = () => {
     }
   }, [selectedProduct]);
 
+  // Trasforma i prodotti da Record a array piatto
+  const flattenedProducts = Object.values(products || {}).flat() as Product[];
+
   // Funzione per filtrare i prodotti in base ai termini di ricerca
-  const filteredProducts = products ? products.filter(product => {
+  const filteredProducts = flattenedProducts ? flattenedProducts.filter(product => {
     if (!searchTerm) return true;
     
     // Dividiamo i termini di ricerca per supportare più parole
@@ -56,12 +71,17 @@ const Dashboard = () => {
     }
   };
 
+  // Funzione per tornare all'inizio della pagina
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (isLoading) {
     return <div>Caricamento in corso...</div>;
   }
 
   if (error) {
-    return <div>Errore: {error.message}</div>;
+    return <div>Errore: {typeof error === 'string' ? error : error.message}</div>;
   }
 
   return (
@@ -143,6 +163,19 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Pulsante Back to Top */}
+      {showBackToTop && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 rounded-full w-12 h-12 shadow-md flex items-center justify-center"
+          aria-label="Torna all'inizio"
+        >
+          <ArrowUp size={20} />
+        </Button>
+      )}
     </div>
   );
 };
