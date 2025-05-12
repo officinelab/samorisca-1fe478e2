@@ -8,6 +8,11 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     return defaultCoverStyles();
   }
   
+  console.log("Creating cover styles with custom layout:", 
+    customLayout.cover.logo,
+    customLayout.cover.title,
+    customLayout.cover.subtitle);
+  
   return StyleSheet.create({
     coverPage: {
       flex: 1,
@@ -21,11 +26,14 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       alignSelf: mapAlignment(customLayout.cover.logo.alignment || 'center'),
       width: `${customLayout.cover.logo.maxWidth}%`,
       height: 'auto',
-      maxHeight: `${customLayout.cover.logo.maxHeight}mm`
+      maxHeight: `${customLayout.cover.logo.maxHeight}%`,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     coverLogo: {
-      width: '100%',
-      height: 'auto',
+      maxWidth: '100%',
+      maxHeight: '100%',
       objectFit: 'contain'
     },
     coverTitle: {
@@ -65,11 +73,14 @@ const defaultCoverStyles = () => StyleSheet.create({
     marginBottom: '20mm',
     alignSelf: 'center',
     width: '60%',
-    maxHeight: '50mm',
+    maxHeight: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   coverLogo: {
-    width: '100%',
-    height: 'auto',
+    maxWidth: '100%',
+    maxHeight: '100%',
     objectFit: 'contain'
   },
   coverTitle: {

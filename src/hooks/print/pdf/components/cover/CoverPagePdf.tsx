@@ -11,6 +11,22 @@ interface CoverPagePdfProps {
 }
 
 const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout, isPageZero = false }) => {
+  // Determiniamo se mostrare il titolo e il sottotitolo in base alle impostazioni del layout
+  // Se non è specificato, assumiamo che debbano essere visibili
+  const showTitle = customLayout?.cover?.title?.visible !== false;
+  const showSubtitle = customLayout?.cover?.subtitle?.visible !== false;
+  
+  // Otteniamo i testi personalizzati o usiamo quelli predefiniti
+  const titleText = customLayout?.cover?.title?.text || "Menu";
+  const subtitleText = customLayout?.cover?.subtitle?.text || "Ristorante";
+  
+  console.log("CoverPagePdf - Logo:", restaurantLogo);
+  console.log("CoverPagePdf - showTitle:", showTitle);
+  console.log("CoverPagePdf - showSubtitle:", showSubtitle);
+  console.log("CoverPagePdf - titleText:", titleText);
+  console.log("CoverPagePdf - subtitleText:", subtitleText);
+  console.log("CoverPagePdf - customLayout?.cover?.logo:", customLayout?.cover?.logo);
+
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>
@@ -23,13 +39,17 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, cus
           </View>
         )}
         
-        <Text style={styles.coverTitle}>
-          {customLayout?.cover?.title?.visible !== false ? "Menu" : ""}
-        </Text>
+        {showTitle && (
+          <Text style={styles.coverTitle}>
+            {titleText}
+          </Text>
+        )}
         
-        <Text style={styles.coverSubtitle}>
-          {customLayout?.cover?.subtitle?.visible !== false ? "Ristorante" : ""}
-        </Text>
+        {showSubtitle && (
+          <Text style={styles.coverSubtitle}>
+            {subtitleText}
+          </Text>
+        )}
       </View>
       
       {/* Se non è impostato come pagina zero, mostra il numero di pagina */}
