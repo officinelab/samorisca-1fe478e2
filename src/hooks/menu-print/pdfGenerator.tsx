@@ -44,9 +44,8 @@ export const generatePDF = async ({
     const menuTitle = customLayout.menu_title || "Menu";
     const menuSubtitle = customLayout.menu_subtitle || "Ristorante";
     
-    // Create PDF document
+    // Create PDF document using createElement instead of JSX
     const pdfDoc = pdf(
-      // Qui usiamo createElement invece di JSX per evitare problemi di sintassi nel file .ts
       React.createElement(MenuPdfDocument, {
         styles: styles,
         categories: filteredCategories,

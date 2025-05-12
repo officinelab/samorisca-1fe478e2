@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { generatePDF } from "./pdfGenerator";
 
 interface PdfMenuExportProps {
-  layoutId: string; // Cambiato da layoutType a layoutId
+  layoutId: string;
   language: string;
   printAllergens: boolean;
   selectedCategories: string[];
@@ -16,7 +16,7 @@ interface PdfMenuExportProps {
 }
 
 export const usePdfMenuExport = ({
-  layoutId, // Cambiato da layoutType a layoutId
+  layoutId,
   language,
   printAllergens,
   selectedCategories,
