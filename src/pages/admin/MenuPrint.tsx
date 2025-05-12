@@ -11,8 +11,8 @@ import PrintStylesheet from "@/components/menu-print/PrintStylesheet";
 const MenuPrint = () => {
   const {
     // Layout and display options
-    layoutType,
-    setLayoutType,
+    layoutId,
+    setLayoutId,
     language,
     setLanguage,
     printAllergens,
@@ -54,8 +54,8 @@ const MenuPrint = () => {
             updateRestaurantLogo={updateRestaurantLogo}
             language={language}
             setLanguage={setLanguage}
-            layoutType={layoutType}
-            setLayoutType={setLayoutType}
+            layoutId={layoutId} // Cambiato da layoutType a layoutId
+            setLayoutId={setLayoutId} // Cambiato da setLayoutType a setLayoutId
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
             isLoading={isLoadingMenu}
@@ -68,7 +68,7 @@ const MenuPrint = () => {
           <ScrollArea className="h-[80vh] md:h-[85vh] p-4">
             <PrintPreview
               printContentRef={printContentRef}
-              layoutType={layoutType}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
               showPageBoundaries={showPageBoundaries}
               categories={categories}
               products={products}

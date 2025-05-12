@@ -5,7 +5,7 @@ import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import ClassicLayout from "./layouts/ClassicLayout";
 
 type MenuLayoutSelectorProps = {
-  selectedLayout: string;
+  selectedLayout: string; // Continua a chiamarlo selectedLayout per compatibilità, ma ora è l'ID
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
@@ -19,7 +19,7 @@ type MenuLayoutSelectorProps = {
 };
 
 const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
-  selectedLayout,
+  selectedLayout, // Ora è l'ID del layout selezionato
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
@@ -46,7 +46,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     console.log("MenuLayoutSelector - layouts disponibili:", layouts);
   }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
-  // Quando cambia selectedLayout, aggiorna activeLayout
+  // Quando cambia selectedLayout (ora è l'ID), aggiorna activeLayout
   useEffect(() => {
     if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
       console.log("MenuLayoutSelector - Ricerca layout per ID:", selectedLayout);
@@ -61,7 +61,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     }
   }, [selectedLayout, layouts, isLoading, changeActiveLayout]);
   
-  console.log("MenuLayoutSelector - Layout selezionato:", selectedLayout);
+  console.log("MenuLayoutSelector - Layout ID selezionato:", selectedLayout);
   console.log("MenuLayoutSelector - activeLayout utilizzato:", activeLayout);
   
   const commonProps = {

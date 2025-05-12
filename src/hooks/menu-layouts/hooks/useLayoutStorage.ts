@@ -5,7 +5,7 @@ import { loadLayouts } from "../storage";
 import { toast } from "@/components/ui/sonner";
 
 /**
- * Hook to load layouts from localStorage or default layouts
+ * Hook to load layouts from Supabase or default layouts
  * with improved caching and synchronization
  */
 export const useLayoutStorage = () => {
@@ -26,7 +26,7 @@ export const useLayoutStorage = () => {
     setCacheKey(Date.now().toString());
   }, []);
 
-  // Load saved layouts from localStorage or default ones
+  // Load saved layouts from Supabase or default ones
   useEffect(() => {
     const fetchLayouts = async () => {
       setIsLoading(true);
@@ -94,6 +94,6 @@ export const useLayoutStorage = () => {
     isLoading,
     error,
     setError,
-    forceRefresh // Nuova funzione per ricaricare i layout
+    forceRefresh // Funzione per ricaricare i layout
   };
 };

@@ -3,6 +3,7 @@ import { LAYOUTS_STORAGE_KEY } from "../constants";
 
 /**
  * Generic function to get data from localStorage
+ * @deprecated Use supabaseLayoutService instead
  */
 export const getFromStorage = <T>(key: string): T | null => {
   try {
@@ -16,6 +17,7 @@ export const getFromStorage = <T>(key: string): T | null => {
 
 /**
  * Generic function to set data in localStorage
+ * @deprecated Use supabaseLayoutService instead
  */
 export const saveToStorage = <T>(key: string, data: T): boolean => {
   try {
@@ -29,6 +31,7 @@ export const saveToStorage = <T>(key: string, data: T): boolean => {
 
 /**
  * Get layouts from localStorage
+ * @deprecated Use fetchLayoutsFromSupabase instead
  */
 export const getLayoutsFromStorage = () => {
   return getFromStorage(LAYOUTS_STORAGE_KEY);
@@ -36,7 +39,9 @@ export const getLayoutsFromStorage = () => {
 
 /**
  * Save layouts to localStorage
+ * @deprecated Use saveLayoutToSupabase instead
  */
 export const saveLayoutsToStorage = (layouts: any) => {
+  console.warn("saveLayoutsToStorage è deprecato. Usa saveLayoutToSupabase invece.");
   return saveToStorage(LAYOUTS_STORAGE_KEY, layouts);
 };

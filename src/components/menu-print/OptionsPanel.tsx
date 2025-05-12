@@ -12,8 +12,8 @@ interface OptionsPanelProps {
   updateRestaurantLogo: (logo: string) => void;
   language: string;
   setLanguage: (language: string) => void;
-  layoutType: string;
-  setLayoutType: (layout: string) => void;
+  layoutId: string; // Cambiato da layoutType a layoutId
+  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
   showPageBoundaries: boolean;
   setShowPageBoundaries: (value: boolean) => void;
   isLoading: boolean;
@@ -25,8 +25,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   updateRestaurantLogo,
   language,
   setLanguage,
-  layoutType,
-  setLayoutType,
+  layoutId, // Cambiato da layoutType a layoutId
+  setLayoutId, // Cambiato da setLayoutType a setLayoutId
   showPageBoundaries,
   setShowPageBoundaries,
   isLoading,
@@ -40,8 +40,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
         </AccordionTrigger>
         <AccordionContent className="space-y-4">
           <LayoutSelector
-            selectedLayout={layoutType}
-            setSelectedLayout={setLayoutType}
+            selectedLayoutId={layoutId} // Cambiato da selectedLayout a selectedLayoutId
+            setSelectedLayoutId={setLayoutId} // Cambiato da setSelectedLayout a setSelectedLayoutId
           />
           
           <div className="pt-4">

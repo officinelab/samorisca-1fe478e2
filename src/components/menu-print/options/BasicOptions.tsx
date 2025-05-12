@@ -1,84 +1,74 @@
 
-import { SimpleLayoutSelector } from "./SimpleLayoutSelector";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import { useEffect } from "react";
+import React from 'react';
+import LayoutSelector from './LayoutSelector';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import RestaurantLogoUploader from '../RestaurantLogoUploader';
 
 interface BasicOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  layoutType: string;
-  setLayoutType: (layout: string) => void;
+  layoutId: string; // Cambiato da layoutType a layoutId
+  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
   setShowPageBoundaries: (show: boolean) => void;
-  isLoading?: boolean;
   restaurantLogo: string | null;
-  updateRestaurantLogo: (newLogo: string | null) => void;
+  updateRestaurantLogo: (logo: string | null) => void;
+  isLoading: boolean;
 }
 
-const BasicOptions = ({
+const BasicOptions: React.FC<BasicOptionsProps> = ({
   language,
   setLanguage,
-  layoutType,
-  setLayoutType,
+  layoutId, // Cambiato da layoutType a layoutId
+  setLayoutId, // Cambiato da setLayoutType a setLayoutId
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
   setShowPageBoundaries,
-  isLoading = false,
   restaurantLogo,
-  updateRestaurantLogo
-}: BasicOptionsProps) => {
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-  };
-  
-  // Debug log per verificare che il layoutType cambi correttamente
-  useEffect(() => {
-    console.log("BasicOptions - Current layoutType:", layoutType);
-  }, [layoutType]);
-
+  updateRestaurantLogo,
+  isLoading,
+}) => {
   return (
     <div className="space-y-6">
-      {/* Layout Selector */}
-      <SimpleLayoutSelector
-        selectedLayout={layoutType}
-        setSelectedLayout={setLayoutType}
-        isLoading={isLoading}
+      <LayoutSelector
+        selectedLayoutId={layoutId} // Cambiato da selectedLayout a selectedLayoutId
+        setSelectedLayoutId={setLayoutId} // Cambiato da setSelectedLayout a setSelectedLayoutId
       />
 
-      {/* Language Selector */}
-      <div>
-        <div className="text-sm font-medium mb-2">Lingua</div>
-        <Select value={language} onValueChange={handleLanguageChange} disabled={isLoading}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Seleziona lingua" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="it">Italiano</SelectItem>
-            <SelectItem value="en">English</SelectItem>
-            <SelectItem value="es">Español</SelectItem>
-            <SelectItem value="fr">Français</SelectItem>
-            <SelectItem value="de">Deutsch</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Toggle Options */}
       <div className="space-y-4">
-        {/* Print Allergens Toggle */}
+        <div>
+          <Label htmlFor="restaurant-logo" className="text-sm font-medium block mb-2">
+            Logo Ristorante
+          </Label>
+          <RestaurantLogoUploader
+            currentLogo={restaurantLogo}
+            onLogoUploaded={updateRestaurantLogo}
+          />
+        </div>
+
         <div className="flex items-center justify-between">
-          <Label htmlFor="print-allergens" className="text-sm">
-            Stampa pagina allergeni
+          <Label htmlFor="language" className="text-sm font-medium">
+            Lingua
+          </Label>
+          <Select value={language} onValueChange={setLanguage} disabled={isLoading}>
+            <SelectTrigger className="w-24">
+              <SelectValue placeholder="Lingua" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="it">Italiano</SelectItem>
+              <SelectItem value="en">Inglese</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label htmlFor="print-allergens" className="text-sm font-medium">
+            Includi pagina allergeni
           </Label>
           <Switch
             id="print-allergens"
@@ -88,9 +78,8 @@ const BasicOptions = ({
           />
         </div>
 
-        {/* Show Page Boundaries Toggle */}
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-boundaries" className="text-sm">
+          <Label htmlFor="show-boundaries" className="text-sm font-medium">
             Mostra bordi pagina
           </Label>
           <Switch

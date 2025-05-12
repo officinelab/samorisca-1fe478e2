@@ -1,10 +1,10 @@
 
 import { PrintLayout } from "@/types/printLayout";
-import { saveLayoutsToStorage } from "./localStorageManager";
+import { saveLayoutToSupabase } from "../services/supabaseLayoutService";
 import { ensureValidPageMargins } from "./layoutValidator";
 
 /**
- * Saves layouts to localStorage
+ * Saves layouts to Supabase
  */
 export const saveLayouts = async (
   layouts: PrintLayout[]
@@ -21,13 +21,18 @@ export const saveLayouts = async (
     // Ensure all layouts have valid page margins
     const validatedLayouts = layouts.map(ensureValidPageMargins);
     
-    const success = saveLayoutsToStorage(validatedLayouts);
-    
-    if (!success) {
-      return {
-        success: false,
-        error: "Si è verificato un errore durante il salvataggio dei layout."
-      };
+    // Per ora salviamo solo l'ultimo layout modificato
+    // In futuro potremmo implementare una sincronizzazione completa se necessario
+    if (validatedLayouts.length > 0) {
+      const lastLayout = validatedLayouts[validatedLayouts.length - 1];
+      const { success, error } = await saveLayoutToSupabase(lastLayout);
+      
+      if (!success) {
+        return {
+          success: false,
+          error: error || "Si è verificato un errore durante il salvataggio del layout."
+        };
+      }
     }
     
     return { success: true, error: null };

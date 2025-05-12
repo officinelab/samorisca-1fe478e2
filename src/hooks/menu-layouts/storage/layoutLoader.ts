@@ -1,11 +1,10 @@
 
 import { PrintLayout } from "@/types/printLayout";
 import { defaultLayouts } from "../utils/defaultLayouts";
-import { getLayoutsFromStorage } from "./localStorageManager";
-import { validateLayouts, ensureValidPageMargins } from "./layoutValidator";
+import { fetchLayoutsFromSupabase } from "../services/supabaseLayoutService";
 
 /**
- * Loads layouts from localStorage or defaults
+ * Loads layouts from Supabase or defaults
  */
 export const loadLayouts = async (): Promise<{ 
   layouts: PrintLayout[]; 
@@ -13,46 +12,37 @@ export const loadLayouts = async (): Promise<{
   error: string | null;
 }> => {
   try {
-    const savedLayouts = getLayoutsFromStorage();
+    // Tenta di recuperare i layout da Supabase
+    const { layouts, defaultLayout, error } = await fetchLayoutsFromSupabase();
     
-    if (savedLayouts && validateLayouts(savedLayouts)) {
-      // Ensure all layouts have valid page margins
-      const validatedLayouts = (savedLayouts as PrintLayout[]).map(ensureValidPageMargins);
+    if (error) {
+      console.error("Errore durante il caricamento dei layout:", error);
       
-      // Find default layout
-      const defaultLayout = validatedLayouts.find((layout) => layout.isDefault) || validatedLayouts[0] || null;
-      
-      return {
-        layouts: validatedLayouts,
-        defaultLayout,
-        error: null
-      };
-    } else {
-      // If no valid layouts are saved, use defaults
-      const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0] || null;
-      
-      // Save the default layouts to localStorage for future use
-      saveLayoutsToStorage(defaultLayouts);
+      // Fallback ai layout predefiniti in caso di errore
+      const fallbackDefaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0] || null;
       
       return {
         layouts: defaultLayouts,
-        defaultLayout,
-        error: null
+        defaultLayout: fallbackDefaultLayout,
+        error: "Si è verificato un errore durante il caricamento dei layout. Utilizzando i layout predefiniti."
       };
     }
-  } catch (err) {
-    console.error("Errore durante il caricamento dei layout:", err);
     
-    // Fallback to default layouts
+    return {
+      layouts,
+      defaultLayout,
+      error: null
+    };
+  } catch (err) {
+    console.error("Errore imprevisto durante il caricamento dei layout:", err);
+    
+    // Fallback ai layout predefiniti
     const defaultLayout = defaultLayouts.find(layout => layout.isDefault) || defaultLayouts[0] || null;
     
     return {
       layouts: defaultLayouts,
       defaultLayout,
-      error: "Si è verificato un errore durante il caricamento dei layout."
+      error: "Si è verificato un errore imprevisto durante il caricamento dei layout."
     };
   }
 };
-
-// Import the function to avoid circular references
-import { saveLayoutsToStorage } from "./localStorageManager";

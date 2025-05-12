@@ -13,7 +13,7 @@ export const useMenuPrintState = () => {
   const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
   
   // State for layout options
-  const [layoutType, setLayoutType] = useState<string>("");
+  const [layoutId, setLayoutId] = useState<string>("");
   const [language, setLanguage] = useState<string>("it");
   const [printAllergens, setPrintAllergens] = useState<boolean>(true);
   const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(true);
@@ -49,15 +49,15 @@ export const useMenuPrintState = () => {
   
   // Imposta il layout predefinito all'avvio
   useEffect(() => {
-    if (layouts && layouts.length > 0 && !layoutType) {
+    if (layouts && layouts.length > 0 && !layoutId) {
       // Trova il layout predefinito o usa il primo disponibile
       const defaultLayout = layouts.find(l => l.isDefault) || layouts[0];
       if (defaultLayout) {
         console.log("Impostazione layout predefinito:", defaultLayout.id);
-        setLayoutType(defaultLayout.id);
+        setLayoutId(defaultLayout.id);
       }
     }
-  }, [layouts, layoutType]);
+  }, [layouts, layoutId]);
   
   // Calcola il numero di pagine in base alle categorie e prodotti selezionati
   const pageCount = useMemo(() => {
@@ -95,8 +95,8 @@ export const useMenuPrintState = () => {
   
   return {
     // Layout and display options
-    layoutType,
-    setLayoutType,
+    layoutId, // Cambiato da layoutType a layoutId
+    setLayoutId, // Cambiato da setLayoutType a setLayoutId
     language,
     setLanguage,
     printAllergens,

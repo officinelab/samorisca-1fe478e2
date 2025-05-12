@@ -1,12 +1,10 @@
 
+import { useState, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { saveLayouts } from "../../storage/layoutStorage";
-import { updateLayoutInList, syncPageMargins } from "../../utils/operations";
+import { updateLayoutInList } from "../../utils/layoutOperations";
 import { toast } from "@/components/ui/sonner";
+import { saveLayoutToSupabase } from "../../services/supabaseLayoutService";
 
-/**
- * Hook functionality for updating an existing layout
- */
 export const useUpdateLayout = (
   layouts: PrintLayout[],
   setLayouts: (layouts: PrintLayout[]) => void,
@@ -14,35 +12,46 @@ export const useUpdateLayout = (
   setActiveLayout: (layout: PrintLayout | null) => void,
   setError: (error: string | null) => void
 ) => {
-  // Update an existing layout
-  const updateLayout = async (updatedLayout: PrintLayout) => {
-    if (!layouts || !Array.isArray(layouts)) {
-      setError("Nessun layout disponibile per l'aggiornamento.");
-      return;
-    }
-    
-    console.log("useUpdateLayout - Updating layout:", updatedLayout);
-    
-    // Ensure page margins are synchronized
-    const finalLayout = syncPageMargins(updatedLayout);
-    
-    const updatedLayouts = updateLayoutInList(layouts, finalLayout);
-    const { success, error: saveError } = await saveLayouts(updatedLayouts);
-    
-    if (success) {
-      setLayouts(updatedLayouts);
-      
-      if (finalLayout.isDefault || (activeLayout && activeLayout.id === finalLayout.id)) {
-        console.log("useUpdateLayout - Setting active layout to updated layout:", finalLayout);
-        setActiveLayout(finalLayout);
-      }
-      
-      toast.success("Layout aggiornato con successo");
-    } else {
-      setError(saveError);
-      toast.error(saveError || "Errore durante l'aggiornamento del layout");
-    }
-  };
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  return { updateLayout };
+  const updateLayout = useCallback(
+    async (updatedLayout: PrintLayout) => {
+      setIsUpdating(true);
+      try {
+        // Salva il layout aggiornato su Supabase
+        const { success, error, layout } = await saveLayoutToSupabase(updatedLayout);
+
+        if (!success) {
+          toast.error(error || "Errore durante l'aggiornamento del layout");
+          setError(error || "Errore durante l'aggiornamento del layout");
+          return false;
+        }
+
+        // Aggiorna lo stato locale
+        const finalLayout = layout || updatedLayout; // Usa il layout restituito da Supabase se disponibile
+        const newLayouts = updateLayoutInList(layouts, finalLayout);
+        setLayouts(newLayouts);
+
+        // Aggiorna il layout attivo se necessario
+        if (activeLayout && activeLayout.id === finalLayout.id) {
+          setActiveLayout(finalLayout);
+        }
+
+        return finalLayout;
+      } catch (err) {
+        console.error("Errore durante l'aggiornamento del layout:", err);
+        toast.error("Errore durante l'aggiornamento del layout");
+        setError("Errore durante l'aggiornamento del layout");
+        return false;
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [layouts, activeLayout, setLayouts, setActiveLayout, setError]
+  );
+
+  return {
+    updateLayout,
+    isUpdating
+  };
 };

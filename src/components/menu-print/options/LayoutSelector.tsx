@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/select";
 
 interface LayoutSelectorProps {
-  selectedLayout: string;
-  setSelectedLayout: (layout: string) => void;
+  selectedLayoutId: string; // Cambiato da selectedLayout a selectedLayoutId
+  setSelectedLayoutId: (layoutId: string) => void; // Cambiato da setSelectedLayout a setSelectedLayoutId
 }
 
 export const LayoutSelector = ({
-  selectedLayout,
-  setSelectedLayout
+  selectedLayoutId, // Cambiato da selectedLayout a selectedLayoutId
+  setSelectedLayoutId // Cambiato da setSelectedLayout a setSelectedLayoutId
 }: LayoutSelectorProps) => {
   const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
   
@@ -26,7 +26,7 @@ export const LayoutSelector = ({
 
   // Debug log
   useEffect(() => {
-    console.log("LayoutSelector - Props:", { selectedLayout });
+    console.log("LayoutSelector - Props:", { selectedLayoutId }); // selectedLayout -> selectedLayoutId
     console.log("LayoutSelector - useMenuLayouts:", { 
       layouts, 
       activeLayout, 
@@ -34,7 +34,7 @@ export const LayoutSelector = ({
       error,
       layoutsLength: layouts?.length
     });
-  }, [selectedLayout, layouts, activeLayout, isLoading, error]);
+  }, [selectedLayoutId, layouts, activeLayout, isLoading, error]); // selectedLayout -> selectedLayoutId
 
   // Controlla e gestisci i layout quando sono disponibili
   useEffect(() => {
@@ -52,17 +52,14 @@ export const LayoutSelector = ({
     }
 
     // Se non c'è un layout selezionato, usa il layout attivo o il primo disponibile
-    if (!selectedLayout && !isLoading) {
+    if (!selectedLayoutId && !isLoading) { // selectedLayout -> selectedLayoutId
       if (activeLayout) {
-        setSelectedLayout(activeLayout.type);
+        setSelectedLayoutId(activeLayout.id); // Usa l'ID invece del tipo
       } else if (Array.isArray(layouts) && layouts.length > 0) {
-        setSelectedLayout(layouts[0].type);
-      } else {
-        // Fallback a classic come default
-        setSelectedLayout("classic");
+        setSelectedLayoutId(layouts[0].id); // Usa l'ID invece del tipo
       }
     }
-  }, [error, layouts, activeLayout, isLoading, selectedLayout, setSelectedLayout]);
+  }, [error, layouts, activeLayout, isLoading, selectedLayoutId, setSelectedLayoutId]); // selectedLayout -> selectedLayoutId
 
   // Gestisce il cambio di layout
   const handleLayoutChange = (layoutId: string) => {
@@ -77,7 +74,7 @@ export const LayoutSelector = ({
       const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
         changeActiveLayout(layoutId);
-        setSelectedLayout(layout.type);
+        setSelectedLayoutId(layoutId); // Imposta l'ID direttamente
         console.log("LayoutSelector - Layout cambiato con successo:", layout);
       } else {
         console.error("Layout non trovato:", layoutId);
@@ -101,12 +98,12 @@ export const LayoutSelector = ({
     return (
       <div>
         <div className="text-sm font-medium mb-2">Layout</div>
-        <Select disabled defaultValue="classic">
+        <Select disabled defaultValue="">
           <SelectTrigger>
             <SelectValue placeholder="Nessun layout disponibile" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="classic">Classico</SelectItem>
+            <SelectItem value="">Nessun layout disponibile</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -117,7 +114,7 @@ export const LayoutSelector = ({
     <div>
       <div className="text-sm font-medium mb-2">Layout</div>
       <Select 
-        value={activeLayout?.id || ""} 
+        value={selectedLayoutId} // Usa selectedLayoutId invece di activeLayout?.id
         onValueChange={handleLayoutChange}
         disabled={isLoading || safeLayouts.length === 0}
       >

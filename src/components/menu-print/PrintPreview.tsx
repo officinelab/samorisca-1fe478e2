@@ -6,7 +6,7 @@ import { Allergen, Category } from "@/types/database";
 
 interface PrintPreviewProps {
   printContentRef: React.RefObject<HTMLDivElement>;
-  layoutType: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   showPageBoundaries: boolean;
   categories: Category[];
   products: Record<string, any[]>;
@@ -22,7 +22,7 @@ interface PrintPreviewProps {
 
 const PrintPreview: React.FC<PrintPreviewProps> = ({
   printContentRef,
-  layoutType,
+  layoutId, // Cambiato da layoutType a layoutId
   showPageBoundaries,
   categories,
   products,
@@ -37,7 +37,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
 }) => {
   // Ogni volta che cambia il layout, forziamo un aggiornamento completo del contenuto
   useEffect(() => {
-    console.log("PrintPreview - Layout type cambiato:", layoutType);
+    console.log("PrintPreview - Layout ID cambiato:", layoutId);
     
     // Forza un refresh del contenuto dopo il cambio di layout
     const timer = setTimeout(() => {
@@ -54,7 +54,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
     }, 50);
     
     return () => clearTimeout(timer);
-  }, [layoutType, printContentRef]);
+  }, [layoutId, printContentRef]);
 
   return (
     <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
@@ -65,10 +65,10 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
             id="print-content" 
             className="bg-white print:p-0 relative" 
             ref={printContentRef}
-            data-layout-type={layoutType} // Aggiungiamo un attributo per tracciare il tipo di layout
+            data-layout-id={layoutId} // Cambiato da data-layout-type a data-layout-id
           >
             <MenuPrintPreview
-              layoutType={layoutType}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
               showPageBoundaries={showPageBoundaries}

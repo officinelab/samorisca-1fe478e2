@@ -13,8 +13,8 @@ interface OptionsCardProps {
   updateRestaurantLogo: (newLogo: string | null) => void;
   language: string;
   setLanguage: (lang: string) => void;
-  layoutType: string;
-  setLayoutType: (layout: string) => void;
+  layoutId: string; // Cambiato da layoutType a layoutId
+  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
   printAllergens: boolean;
   setPrintAllergens: (value: boolean) => void;
   showPageBoundaries: boolean;
@@ -32,8 +32,8 @@ const OptionsCard: React.FC<OptionsCardProps> = ({
   updateRestaurantLogo,
   language,
   setLanguage,
-  layoutType,
-  setLayoutType,
+  layoutId, // Cambiato da layoutType a layoutId
+  setLayoutId, // Cambiato da setLayoutType a setLayoutId
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
@@ -69,8 +69,8 @@ const OptionsCard: React.FC<OptionsCardProps> = ({
             <BasicOptions
               language={language}
               setLanguage={setLanguage}
-              layoutType={layoutType}
-              setLayoutType={setLayoutType}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
+              setLayoutId={setLayoutId} // Cambiato da setLayoutType a setLayoutId
               printAllergens={printAllergens}
               setPrintAllergens={setPrintAllergens}
               showPageBoundaries={showPageBoundaries}
@@ -95,7 +95,7 @@ const OptionsCard: React.FC<OptionsCardProps> = ({
           <div>
             <h3 className="text-lg font-medium mb-4">Stampa</h3>
             <PrintPreviewActions
-              layoutType={layoutType}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
               language={language}
               printAllergens={printAllergens}
               selectedCategories={selectedCategories}

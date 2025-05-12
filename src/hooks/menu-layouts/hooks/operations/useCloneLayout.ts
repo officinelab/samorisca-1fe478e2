@@ -1,45 +1,72 @@
 
+import { useState, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { saveLayouts } from "../../storage/layoutStorage";
-import { cloneExistingLayout } from "../../utils/operations";
+import { cloneExistingLayout } from "../../utils/layoutOperations";
 import { toast } from "@/components/ui/sonner";
+import { v4 as uuidv4 } from "uuid";
+import { saveLayoutToSupabase } from "../../services/supabaseLayoutService";
 
-/**
- * Hook functionality for cloning a layout
- */
 export const useCloneLayout = (
   layouts: PrintLayout[],
   setLayouts: (layouts: PrintLayout[]) => void,
   setError: (error: string | null) => void
 ) => {
-  // Clone an existing layout
-  const cloneLayout = async (layoutId: string): Promise<PrintLayout | null> => {
-    if (!layouts || !Array.isArray(layouts)) {
-      setError("Nessun layout disponibile per la clonazione.");
-      return null;
-    }
-    
-    const clonedLayout = cloneExistingLayout(layoutId, layouts);
-    
-    if (!clonedLayout) {
-      setError("Layout non trovato.");
-      toast.error("Layout non trovato");
-      return null;
-    }
-    
-    const updatedLayouts = [...layouts, clonedLayout];
-    const { success, error: saveError } = await saveLayouts(updatedLayouts);
-    
-    if (success) {
-      setLayouts(updatedLayouts);
-      toast.success("Layout clonato con successo");
-      return clonedLayout;
-    } else {
-      setError(saveError);
-      toast.error(saveError || "Errore durante la clonazione del layout");
-      return null;
-    }
-  };
+  const [isCloning, setIsCloning] = useState(false);
 
-  return { cloneLayout };
+  const cloneLayout = useCallback(
+    async (layoutId: string) => {
+      if (layouts.length >= 4) {
+        toast.error("Non è possibile creare più di 4 layout");
+        setError("Non è possibile creare più di 4 layout");
+        return null;
+      }
+
+      setIsCloning(true);
+      try {
+        // Trova il layout da clonare
+        const layoutToClone = layouts.find((l) => l.id === layoutId);
+        if (!layoutToClone) {
+          toast.error("Layout non trovato");
+          setError("Layout non trovato");
+          return null;
+        }
+
+        // Clona il layout
+        const clonedLayout = cloneExistingLayout(layoutToClone);
+        
+        // Assegna un ID univoco
+        const layoutWithId = {
+          ...clonedLayout,
+          id: uuidv4()
+        };
+        
+        // Salva il layout clonato su Supabase
+        const { success, error, layout } = await saveLayoutToSupabase(layoutWithId);
+
+        if (!success || !layout) {
+          toast.error(error || "Errore durante la clonazione del layout");
+          setError(error || "Errore durante la clonazione del layout");
+          return null;
+        }
+
+        // Aggiorna lo stato locale
+        setLayouts([...layouts, layout]);
+
+        return layout;
+      } catch (err) {
+        console.error("Errore durante la clonazione del layout:", err);
+        toast.error("Errore durante la clonazione del layout");
+        setError("Errore durante la clonazione del layout");
+        return null;
+      } finally {
+        setIsCloning(false);
+      }
+    },
+    [layouts, setLayouts, setError]
+  );
+
+  return {
+    cloneLayout,
+    isCloning
+  };
 };

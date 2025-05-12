@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { generatePDF } from "./pdfGenerator";
 
 interface PdfMenuExportProps {
-  layoutType: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   language: string;
   printAllergens: boolean;
   selectedCategories: string[];
@@ -16,7 +16,7 @@ interface PdfMenuExportProps {
 }
 
 export const usePdfMenuExport = ({
-  layoutType,
+  layoutId, // Cambiato da layoutType a layoutId
   language,
   printAllergens,
   selectedCategories,
@@ -26,22 +26,22 @@ export const usePdfMenuExport = ({
   
   // Importa menu data e layouts
   const { categories, products, allergens, isLoading } = useMenuData();
-  const { layouts } = useMenuLayouts();
+  const { layouts, isLoading: isLoadingLayouts } = useMenuLayouts();
   
-  // Trova il layout attivo
+  // Trova il layout attivo usando ID invece di type
   const findActiveLayout = (): PrintLayout | null => {
     if (!Array.isArray(layouts) || layouts.length === 0) {
       return null;
     }
     
-    return layouts.find(layout => layout.id === layoutType) || null;
+    return layouts.find(layout => layout.id === layoutId) || null;
   };
   
   const customLayout = findActiveLayout();
   
   // Gestore per l'esportazione PDF
   const handleExportToPdf = async () => {
-    if (isExporting || isLoading) return;
+    if (isExporting || isLoading || isLoadingLayouts) return;
     
     if (selectedCategories.length === 0) {
       toast.error("Seleziona almeno una categoria per generare il PDF");
@@ -56,6 +56,11 @@ export const usePdfMenuExport = ({
         selectedCategories.includes(cat.id)
       ) as Category[];
       
+      if (!customLayout) {
+        toast.error("Layout non trovato. Seleziona un layout valido.");
+        return;
+      }
+      
       // Genera il PDF basato sull'anteprima visualizzata
       await generatePDF({
         categories: filteredCategories,
@@ -66,7 +71,7 @@ export const usePdfMenuExport = ({
         printAllergens,
         restaurantLogo,
         customLayout,
-        layoutType
+        layoutType: customLayout.type // Usiamo il tipo dal layout selezionato
       });
       
       toast.success("PDF generato con successo");

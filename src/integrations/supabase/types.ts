@@ -75,6 +75,51 @@ export type Database = {
         }
         Relationships: []
       }
+      print_layouts: {
+        Row: {
+          allergens: Json
+          cover: Json
+          created_at: string
+          elements: Json
+          id: string
+          is_default: boolean
+          name: string
+          page: Json
+          product_schema: string
+          spacing: Json
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          allergens: Json
+          cover: Json
+          created_at?: string
+          elements: Json
+          id?: string
+          is_default?: boolean
+          name: string
+          page: Json
+          product_schema: string
+          spacing: Json
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          allergens?: Json
+          cover?: Json
+          created_at?: string
+          elements?: Json
+          id?: string
+          is_default?: boolean
+          name?: string
+          page?: Json
+          product_schema?: string
+          spacing?: Json
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_allergens: {
         Row: {
           allergen_id: string | null
