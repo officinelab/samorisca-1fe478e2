@@ -1,120 +1,102 @@
 
-import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useLayoutEffect } from "react";
-import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { useMenuData } from "@/hooks/useMenuData";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMenuData } from "../useMenuData";
+import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
+import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
 
-// Costanti per il formato A4 in millimetri
-const A4_WIDTH_MM = 210;
-const A4_HEIGHT_MM = 297;
-
-/**
- * Hook per gestire lo stato globale della pagina di stampa menu
- */
 export const useMenuPrintState = () => {
-  // Stato del layout e delle opzioni di visualizzazione
-  const [layoutId, setLayoutId] = useState("1"); // ID del layout selezionato
-  const [language, setLanguage] = useState("it"); // Lingua selezionata
-  const [printAllergens, setPrintAllergens] = useState(true); // Mostra pagina allergeni
-  const [showPageBoundaries, setShowPageBoundaries] = useState(true); // Mostra bordi pagina
-  const [forceRefresh, setForceRefresh] = useState(0); // Forza refresh del layout
+  // Constants for A4 paper size
+  const A4_WIDTH_MM = 210;
+  const A4_HEIGHT_MM = 297;
   
-  // Riferimento al contenuto da stampare
-  const printContentRef = useRef<HTMLDivElement | null>(null);
+  // Import layout management
+  const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
   
-  // Ottieni i dati del menu
-  const { categories, getAllergensForProduct } = useMenuData();
-  const { products } = useMenuData();
-  const { layouts, isLoading: isLoadingLayouts } = useMenuLayouts();
-  const { siteSettings, updateMenuLogo, isLoading: isLoadingSettings } = useSiteSettings();
+  // State for layout options
+  const [layoutId, setLayoutId] = useState<string>("");
+  const [language, setLanguage] = useState<string>("it");
+  const [printAllergens, setPrintAllergens] = useState<boolean>(true);
+  const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(true);
   
-  // Stato delle categorie selezionate
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  // Import menu data
+  const {
+    categories,
+    products,
+    allergens,
+    labels,
+    features,
+    restaurantLogo,
+    updateRestaurantLogo,
+    isLoading: isLoadingMenu,
+    error,
+    retryLoading,
+    selectedCategories,
+    setSelectedCategories,
+    handleCategoryToggle,
+    handleToggleAllCategories
+  } = useMenuData();
   
-  // Ottieni gli allergeni
-  const { data: allergens = [], isLoading: isLoadingAllergens } = useQuery({
-    queryKey: ["allergens"],
-    queryFn: async () => {
-      const allergensData = await getAllergensForProduct();
-      return allergensData;
-    }
-  });
+  // Import print operations
+  const {
+    printContentRef
+  } = usePrintOperationsManager();
   
-  // Ottieni menu title e subtitle dalle impostazioni del sito
-  const menuTitle = siteSettings?.menuTitle || "Menu";
-  const menuSubtitle = siteSettings?.menuSubtitle || "Ristorante";
+  // Function to force layout refresh when needed
+  const forceLayoutRefresh = useCallback(() => {
+    console.log("Forzando refresh dei layout...");
+    forceRefresh();
+  }, [forceRefresh]);
   
-  // Imposta tutte le categorie come selezionate all'avvio
+  // Imposta il layout predefinito all'avvio
   useEffect(() => {
-    if (categories && categories.length > 0 && selectedCategories.length === 0) {
-      const categoryIds = categories.map((cat) => cat.id);
-      setSelectedCategories(categoryIds);
+    if (layouts && layouts.length > 0 && !layoutId) {
+      // Trova il layout predefinito o usa il primo disponibile
+      const defaultLayout = layouts.find(l => l.isDefault) || layouts[0];
+      if (defaultLayout) {
+        console.log("Impostazione layout predefinito:", defaultLayout.id);
+        setLayoutId(defaultLayout.id);
+      }
     }
-  }, [categories, selectedCategories]);
+  }, [layouts, layoutId]);
   
-  // Ottieni il numero di pagine basato sul contenuto attuale
-  const calculatePageCount = (): number => {
-    if (!printContentRef.current) return 1;
+  // Calcola il numero di pagine in base alle categorie e prodotti selezionati
+  const pageCount = useMemo(() => {
+    if (isLoadingMenu || !categories || !products) {
+      return 1;
+    }
     
-    const content = printContentRef.current;
-    const pages = content.querySelectorAll(".page");
-    
-    return pages ? pages.length : 1;
-  };
-  
-  // Calcola il numero di pagine
-  const [pageCount, setPageCount] = useState(1);
-  useLayoutEffect(() => {
-    setPageCount(calculatePageCount());
-  }, [printContentRef.current, selectedCategories, layoutId, printAllergens, forceRefresh]);
-  
-  // Gestori per la modifica delle categorie selezionate
-  const handleCategoryToggle = (categoryId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-  
-  const handleToggleAllCategories = (selected: boolean) => {
-    if (selected) {
-      const allCategoryIds = categories.map((cat) => cat.id);
+    // Per semplificare, selezioniamo tutte le categorie automaticamente
+    if (!selectedCategories || selectedCategories.length === 0) {
+      const allCategoryIds = categories.map(cat => cat.id);
       setSelectedCategories(allCategoryIds);
-    } else {
-      setSelectedCategories([]);
     }
-  };
+    
+    // Calcola il numero di prodotti nelle categorie disponibili
+    const totalProducts = categories.reduce((acc, cat) => {
+      return acc + (products[cat.id]?.length || 0);
+    }, 0);
+    
+    // Stima: pagina copertina + pagine prodotti + pagina allergeni
+    return 1 + Math.ceil(totalProducts / 10) + (printAllergens && allergens.length > 0 ? 1 : 0);
+  }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu, setSelectedCategories]);
   
-  // Forza aggiornamento del layout
-  const forceLayoutRefresh = () => {
-    setForceRefresh((prev) => prev + 1);
-  };
+  // Quando si carica la pagina, forza un aggiornamento dei layout
+  useEffect(() => {
+    forceLayoutRefresh();
+  }, [forceLayoutRefresh]);
   
-  // Recupera il logo del ristorante dalle impostazioni del sito
-  const restaurantLogo = siteSettings?.menuLogo || null;
-  
-  // Aggiorna il logo del ristorante
-  const updateRestaurantLogo = (newLogo: string | null) => {
-    updateMenuLogo(newLogo || '');
-  };
-  
-  // Aggiorna il titolo del menu
-  const updateMenuTitle = (title: string) => {
-    // Implementato nel hook useSiteSettings
-  };
-  
-  // Aggiorna il sottotitolo del menu
-  const updateMenuSubtitle = (subtitle: string) => {
-    // Implementato nel hook useSiteSettings
-  };
+  // Seleziona tutte le categorie per default
+  useEffect(() => {
+    if (!isLoadingMenu && categories && categories.length > 0 && (!selectedCategories || selectedCategories.length === 0)) {
+      const allCategoryIds = categories.map(cat => cat.id);
+      setSelectedCategories(allCategoryIds);
+    }
+  }, [isLoadingMenu, categories, selectedCategories, setSelectedCategories]);
   
   return {
-    // Layout e opzioni di visualizzazione
-    layoutId,
-    setLayoutId,
+    // Layout and display options
+    layoutId, // Cambiato da layoutType a layoutId
+    setLayoutId, // Cambiato da setLayoutType a setLayoutId
     language,
     setLanguage,
     printAllergens,
@@ -122,31 +104,31 @@ export const useMenuPrintState = () => {
     showPageBoundaries,
     setShowPageBoundaries,
     
-    // Dati del menu
+    // Menu data
     categories,
     products,
     allergens,
-    isLoadingMenu: isLoadingAllergens || isLoadingLayouts || isLoadingSettings,
+    labels,
+    features,
+    isLoadingMenu,
+    error,
+    retryLoading,
     selectedCategories,
+    setSelectedCategories,
     handleCategoryToggle,
     handleToggleAllCategories,
-    getAllergensForProduct,
     restaurantLogo,
     updateRestaurantLogo,
-    menuTitle,
-    menuSubtitle,
-    updateMenuTitle,
-    updateMenuSubtitle,
     
-    // Operazioni di stampa
+    // Print operations
     printContentRef,
     
-    // Costanti
+    // Constants
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
     pageCount,
     
-    // Force layout refresh se necessario
+    // Refresh layout
     forceLayoutRefresh
   };
 };

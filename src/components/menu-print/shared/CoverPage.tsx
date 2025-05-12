@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 type CoverPageProps = {
   A4_WIDTH_MM: number; 
@@ -11,7 +9,7 @@ type CoverPageProps = {
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  pageIndex?: number;
+  pageIndex?: number; // Added this prop to fix the type error
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -21,14 +19,9 @@ const CoverPage: React.FC<CoverPageProps> = ({
   layoutType,
   restaurantLogo,
   customLayout,
-  pageIndex = 0
+  pageIndex = 0 // Default to 0 for the cover page
 }) => {
   const [imageError, setImageError] = useState(false);
-  const { siteSettings } = useSiteSettings();
-  
-  // Recupera titolo e sottotitolo dalle impostazioni
-  const menuTitle = siteSettings?.menuTitle || "Menu";
-  const menuSubtitle = siteSettings?.menuSubtitle || "Ristorante";
   
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
@@ -191,8 +184,8 @@ const CoverPage: React.FC<CoverPageProps> = ({
         </div>
       ) : (
         <>
-          <h1 style={getTitleStyle()}>{menuTitle}</h1>
-          <p style={getSubtitleStyle()}>{menuSubtitle}</p>
+          <h1 style={getTitleStyle()}>Menu</h1>
+          <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>
         </>
       )}
       

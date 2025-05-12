@@ -6,10 +6,9 @@ import { useMenuData } from "../useMenuData";
 import { useMenuLayouts } from "../useMenuLayouts";
 import { toast } from "@/components/ui/sonner";
 import { generatePDF } from "./pdfGenerator";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface PdfMenuExportProps {
-  layoutId: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   language: string;
   printAllergens: boolean;
   selectedCategories: string[];
@@ -17,7 +16,7 @@ interface PdfMenuExportProps {
 }
 
 export const usePdfMenuExport = ({
-  layoutId,
+  layoutId, // Cambiato da layoutType a layoutId
   language,
   printAllergens,
   selectedCategories,
@@ -28,7 +27,6 @@ export const usePdfMenuExport = ({
   // Importa menu data e layouts
   const { categories, products, allergens, isLoading } = useMenuData();
   const { layouts, isLoading: isLoadingLayouts } = useMenuLayouts();
-  const { siteSettings } = useSiteSettings();
   
   // Trova il layout attivo usando ID invece di type
   const findActiveLayout = (): PrintLayout | null => {
@@ -73,9 +71,7 @@ export const usePdfMenuExport = ({
         printAllergens,
         restaurantLogo,
         customLayout,
-        layoutType: customLayout.type,
-        menuTitle: siteSettings?.menuTitle,
-        menuSubtitle: siteSettings?.menuSubtitle
+        layoutType: customLayout.type // Usiamo il tipo dal layout selezionato
       });
       
       toast.success("PDF generato con successo");

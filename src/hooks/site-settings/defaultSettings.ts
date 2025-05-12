@@ -2,17 +2,15 @@
 import { SiteSettings } from "./types";
 
 /**
- * Impostazioni predefinite del sito
+ * Default settings for the site
  */
 export const defaultSettings: SiteSettings = {
-  siteName: "Menu Manager",
-  siteDescription: "Gestione menu per ristoranti",
   sidebarLogo: null,
   menuLogo: null,
-  menuTitle: "Menu",
-  menuSubtitle: "Ristorante",
-  restaurantName: "Ristorante",
-  footerText: `© ${new Date().getFullYear()} - Tutti i diritti riservati`,
-  adminTitle: "Menu Manager - Admin",
-  defaultProductImage: null
+  restaurantName: "Sa Morisca",
+  footerText: `© ${new Date().getFullYear()} Sa Morisca - Tutti i diritti riservati`,
+  adminTitle: "Sa Morisca Menu - Amministrazione",
+  defaultProductImage: null,
+  siteName: "Sa Morisca",
+  siteDescription: "Ristorante Sa Morisca",
 };

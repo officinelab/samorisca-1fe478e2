@@ -36,38 +36,6 @@ export const updateMenuLogo = (logoUrl: string): boolean => {
 };
 
 /**
- * Update the menu title
- */
-export const updateMenuTitle = (title: string): boolean => {
-  console.log("Updating menu title:", title);
-  if (saveSetting('menuTitle', title)) {
-    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
-      detail: { key: 'menuTitle', value: title } 
-    }));
-    
-    toast.success("Titolo del menu aggiornato");
-    return true;
-  }
-  return false;
-};
-
-/**
- * Update the menu subtitle
- */
-export const updateMenuSubtitle = (subtitle: string): boolean => {
-  console.log("Updating menu subtitle:", subtitle);
-  if (saveSetting('menuSubtitle', subtitle)) {
-    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
-      detail: { key: 'menuSubtitle', value: subtitle } 
-    }));
-    
-    toast.success("Sottotitolo del menu aggiornato");
-    return true;
-  }
-  return false;
-};
-
-/**
  * Update the restaurant name
  */
 export const updateRestaurantName = (name: string): boolean => {

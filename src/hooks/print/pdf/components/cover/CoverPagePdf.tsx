@@ -8,18 +8,9 @@ interface CoverPagePdfProps {
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
   isPageZero?: boolean;
-  menuTitle?: string;
-  menuSubtitle?: string;
 }
 
-const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ 
-  styles, 
-  restaurantLogo, 
-  customLayout, 
-  isPageZero = false,
-  menuTitle = "Menu",
-  menuSubtitle = "Ristorante"
-}) => {
+const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout, isPageZero = false }) => {
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>
@@ -33,11 +24,11 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({
         )}
         
         <Text style={styles.coverTitle}>
-          {customLayout?.cover?.title?.visible !== false ? menuTitle : ""}
+          {customLayout?.cover?.title?.visible !== false ? "Menu" : ""}
         </Text>
         
         <Text style={styles.coverSubtitle}>
-          {customLayout?.cover?.subtitle?.visible !== false ? menuSubtitle : ""}
+          {customLayout?.cover?.subtitle?.visible !== false ? "Ristorante" : ""}
         </Text>
       </View>
       
