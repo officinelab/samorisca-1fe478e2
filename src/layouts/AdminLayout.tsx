@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,15 +10,34 @@ import {
   Menu as MenuIcon, 
   LogOut,
   X,
-  Settings
+  Settings,
+  ChevronUp
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Controlla quando mostrare il pulsante "Torna in alto"
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -75,7 +94,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold">Sa Morisca Menu - Amministrazione</h1>
+            <h1 className="text-xl font-semibold">{siteSettings?.adminHeaderTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
           <div className="lg:hidden">
             <Button
@@ -90,6 +109,7 @@ const AdminLayout = () => {
 
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
+          <BackToTopButton show={showBackToTop} onClick={handleScrollToTop} />
         </main>
       </div>
     </div>
