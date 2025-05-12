@@ -11,10 +11,17 @@ interface CoverPagePdfProps {
 }
 
 const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout, isPageZero = false }) => {
+  // Ensure the cover structure exists with default values
+  const coverConfig = customLayout?.cover || {
+    title: { visible: true },
+    subtitle: { visible: true },
+    logo: { visible: true }
+  };
+  
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>
-        {restaurantLogo && (
+        {restaurantLogo && coverConfig.logo?.visible !== false && (
           <View style={styles.coverLogoContainer}>
             <Image 
               src={restaurantLogo} 
@@ -24,11 +31,11 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, cus
         )}
         
         <Text style={styles.coverTitle}>
-          {customLayout?.cover?.title?.visible !== false ? "Menu" : ""}
+          {coverConfig.title?.visible !== false ? "Menu" : ""}
         </Text>
         
         <Text style={styles.coverSubtitle}>
-          {customLayout?.cover?.subtitle?.visible !== false ? "Ristorante" : ""}
+          {coverConfig.subtitle?.visible !== false ? "Ristorante" : ""}
         </Text>
       </View>
       

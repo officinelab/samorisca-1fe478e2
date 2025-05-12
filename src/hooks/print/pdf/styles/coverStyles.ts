@@ -8,20 +8,48 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     return defaultCoverStyles();
   }
   
+  // Ensure the cover structure exists with default values
+  const cover = customLayout.cover || {};
+  const coverLogo = cover.logo || { 
+    marginBottom: 10, 
+    marginTop: 0, 
+    alignment: 'center', 
+    maxWidth: 60, 
+    maxHeight: 50 
+  };
+  
+  const coverTitle = cover.title || {
+    fontSize: 24,
+    fontStyle: 'normal',
+    fontColor: '#000000',
+    fontFamily: 'Helvetica',
+    margin: { top: 10, right: 0, bottom: 20, left: 0 },
+    alignment: 'center'
+  };
+  
+  const coverSubtitle = cover.subtitle || {
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontColor: '#000000',
+    fontFamily: 'Helvetica',
+    margin: { top: 0, right: 0, bottom: 10, left: 0 },
+    alignment: 'center'
+  };
+  
   return StyleSheet.create({
     coverPage: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: mapAlignment(customLayout.cover.title.alignment || 'center'),
+      alignItems: mapAlignment(coverTitle.alignment || 'center'),
       padding: '10mm'
     },
     coverLogoContainer: {
-      marginBottom: `${customLayout.cover.logo.marginBottom}mm`,
-      marginTop: `${customLayout.cover.logo.marginTop}mm`,
-      alignSelf: mapAlignment(customLayout.cover.logo.alignment || 'center'),
-      width: `${customLayout.cover.logo.maxWidth}%`,
+      marginBottom: `${coverLogo.marginBottom}mm`,
+      marginTop: `${coverLogo.marginTop}mm`,
+      alignSelf: mapAlignment(coverLogo.alignment || 'center'),
+      width: `${coverLogo.maxWidth}%`,
       height: 'auto',
-      maxHeight: `${customLayout.cover.logo.maxHeight}mm`
+      maxHeight: `${coverLogo.maxHeight}mm`
     },
     coverLogo: {
       width: '100%',
@@ -29,28 +57,28 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       objectFit: 'contain'
     },
     coverTitle: {
-      fontSize: customLayout.cover.title.fontSize,
-      fontWeight: customLayout.cover.title.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: customLayout.cover.title.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: customLayout.cover.title.fontColor || '#000000',
-      fontFamily: customLayout.cover.title.fontFamily || 'Helvetica',
-      marginTop: `${customLayout.cover.title.margin.top}mm`,
-      marginRight: `${customLayout.cover.title.margin.right}mm`,
-      marginBottom: `${customLayout.cover.title.margin.bottom}mm`,
-      marginLeft: `${customLayout.cover.title.margin.left}mm`,
-      textAlign: customLayout.cover.title.alignment || 'center',
+      fontSize: coverTitle.fontSize,
+      fontWeight: coverTitle.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: coverTitle.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: coverTitle.fontColor || '#000000',
+      fontFamily: coverTitle.fontFamily || 'Helvetica',
+      marginTop: `${coverTitle.margin.top}mm`,
+      marginRight: `${coverTitle.margin.right}mm`,
+      marginBottom: `${coverTitle.margin.bottom}mm`,
+      marginLeft: `${coverTitle.margin.left}mm`,
+      textAlign: coverTitle.alignment || 'center',
     },
     coverSubtitle: {
-      fontSize: customLayout.cover.subtitle.fontSize,
-      fontWeight: customLayout.cover.subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: customLayout.cover.subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: customLayout.cover.subtitle.fontColor || '#000000',
-      fontFamily: customLayout.cover.subtitle.fontFamily || 'Helvetica',
-      marginTop: `${customLayout.cover.subtitle.margin.top}mm`,
-      marginRight: `${customLayout.cover.subtitle.margin.right}mm`,
-      marginBottom: `${customLayout.cover.subtitle.margin.bottom}mm`,
-      marginLeft: `${customLayout.cover.subtitle.margin.left}mm`,
-      textAlign: customLayout.cover.subtitle.alignment || 'center',
+      fontSize: coverSubtitle.fontSize,
+      fontWeight: coverSubtitle.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: coverSubtitle.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: coverSubtitle.fontColor || '#000000',
+      fontFamily: coverSubtitle.fontFamily || 'Helvetica',
+      marginTop: `${coverSubtitle.margin.top}mm`,
+      marginRight: `${coverSubtitle.margin.right}mm`,
+      marginBottom: `${coverSubtitle.margin.bottom}mm`,
+      marginLeft: `${coverSubtitle.margin.left}mm`,
+      textAlign: coverSubtitle.alignment || 'center',
     },
   });
 };
