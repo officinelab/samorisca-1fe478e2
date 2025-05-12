@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Category, Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CategoryGroup from './CategoryGroup';
 
 interface ContentPageProps {
@@ -12,6 +13,7 @@ interface ContentPageProps {
   language: string;
   allergens: Allergen[];
   pageIndex: number;
+  customLayout?: PrintLayout | null;
 }
 
 const AllergensContentPage: React.FC<ContentPageProps> = ({
@@ -22,13 +24,19 @@ const AllergensContentPage: React.FC<ContentPageProps> = ({
   products,
   language,
   allergens,
-  pageIndex
+  pageIndex,
+  customLayout
 }) => {
+  // Use custom layout margins if available, otherwise allergens default margins
+  const pageMargins = customLayout 
+    ? `${customLayout.page.marginTop}mm ${customLayout.page.marginRight}mm ${customLayout.page.marginBottom}mm ${customLayout.page.marginLeft}mm`
+    : '20mm 15mm 20mm 15mm';
+    
   return (
     <div className="page relative bg-white" style={{
       width: `${A4_WIDTH_MM}mm`,
       height: `${A4_HEIGHT_MM}mm`,
-      padding: '20mm 15mm',
+      padding: pageMargins,
       boxSizing: 'border-box',
       margin: '0 auto 60px auto',
       pageBreakAfter: 'always',
@@ -48,6 +56,7 @@ const AllergensContentPage: React.FC<ContentPageProps> = ({
             products={products[category.id] || []}
             language={language}
             allergens={allergens}
+            customLayout={customLayout}
           />
         ))}
       </div>

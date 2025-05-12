@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Category } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import CategoryGroup from './CategoryGroup';
 
 interface ContentPageProps {
@@ -11,6 +12,7 @@ interface ContentPageProps {
   products: Record<string, any[]>;
   language: string;
   pageIndex: number;
+  customLayout?: PrintLayout | null;
 }
 
 const ContentPage: React.FC<ContentPageProps> = ({
@@ -20,10 +22,13 @@ const ContentPage: React.FC<ContentPageProps> = ({
   pageCategories,
   products,
   language,
-  pageIndex
+  pageIndex,
+  customLayout
 }) => {
-  // Margini standard per tutte le pagine
-  const pageMargins = '20mm 15mm 20mm 15mm';
+  // Use custom layout margins if available, otherwise default margins
+  const pageMargins = customLayout 
+    ? `${customLayout.page.marginTop}mm ${customLayout.page.marginRight}mm ${customLayout.page.marginBottom}mm ${customLayout.page.marginLeft}mm`
+    : '20mm 15mm 20mm 15mm';
   
   return (
     <div className="page relative bg-white" style={{
@@ -48,6 +53,7 @@ const ContentPage: React.FC<ContentPageProps> = ({
             category={category}
             products={products[category.id] || []}
             language={language}
+            customLayout={customLayout}
           />
         ))}
       </div>
