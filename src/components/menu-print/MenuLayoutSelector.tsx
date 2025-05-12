@@ -54,11 +54,14 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   // When selectedLayout changes, update activeLayout
   useEffect(() => {
     if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
+      console.log("MenuLayoutSelector - Ricerca layout per tipo:", selectedLayout);
       // Find layout by type
       const matchingLayout = layouts.find(layout => layout.type === selectedLayout);
       if (matchingLayout) {
-        console.log("MenuLayoutSelector - Setting active layout by type:", matchingLayout);
+        console.log("MenuLayoutSelector - Trovato layout corrispondente:", matchingLayout);
         changeActiveLayout(matchingLayout.id);
+      } else {
+        console.log("MenuLayoutSelector - Nessun layout trovato per il tipo:", selectedLayout);
       }
     }
   }, [selectedLayout, layouts, isLoading, changeActiveLayout]);

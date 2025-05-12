@@ -44,9 +44,11 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
 
   return (
     <div style={containerStyle} className="category">
-      <h2 style={categoryStyle} className="category-title">
-        {category[`title_${language}`] || category.title}
-      </h2>
+      {(!customLayout || customLayout.elements.category.visible) && (
+        <h2 style={categoryStyle} className="category-title">
+          {category[`title_${language}`] || category.title}
+        </h2>
+      )}
       
       <div>
         {products?.map((product) => (

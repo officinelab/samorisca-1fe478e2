@@ -24,7 +24,8 @@ export const getElementStyle = (config: PrintLayoutElementConfig | undefined, de
     fontWeight = 'normal';
   }
   
-  return {
+  // Costruisci l'oggetto stile
+  const style: React.CSSProperties = {
     ...defaultStyle,
     fontFamily: config.fontFamily,
     fontSize: `${config.fontSize}pt`,
@@ -39,4 +40,11 @@ export const getElementStyle = (config: PrintLayoutElementConfig | undefined, de
     visibility: config.visible ? 'visible' : 'hidden',
     display: config.visible ? 'block' : 'none',
   };
+  
+  // Se defaultStyle include textTransform, mantienilo nello stile risultante
+  if ('textTransform' in defaultStyle) {
+    style.textTransform = defaultStyle.textTransform;
+  }
+  
+  return style;
 };
