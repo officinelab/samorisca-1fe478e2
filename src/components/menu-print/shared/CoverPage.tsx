@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getElementStyle } from '@/components/menu-print/utils/styleUtils';
@@ -9,7 +10,7 @@ type CoverPageProps = {
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  pageIndex?: number; // Added this prop to fix the type error
+  pageIndex?: number;
 };
 
 const CoverPage: React.FC<CoverPageProps> = ({
@@ -19,7 +20,7 @@ const CoverPage: React.FC<CoverPageProps> = ({
   layoutType,
   restaurantLogo,
   customLayout,
-  pageIndex = 0 // Default to 0 for the cover page
+  pageIndex = 0
 }) => {
   const [imageError, setImageError] = useState(false);
   
@@ -44,12 +45,14 @@ const CoverPage: React.FC<CoverPageProps> = ({
   const getLogoStyle = () => {
     if (customLayout?.cover?.logo) {
       const { maxWidth, maxHeight, alignment, marginTop, marginBottom } = customLayout.cover.logo;
+      
+      const alignSelf = alignment === 'left' ? 'flex-start' : 
+                        alignment === 'right' ? 'flex-end' : 
+                        'center';
+                        
       return {
         maxWidth: `${maxWidth}%`,
         maxHeight: `${maxHeight}%`,
-        marginTop: `${marginTop}mm`,
-        marginBottom: `${marginBottom}mm`,
-        alignSelf: alignment,
         objectFit: 'contain' as const,
       };
     }
@@ -165,13 +168,22 @@ const CoverPage: React.FC<CoverPageProps> = ({
     setImageError(true);
   };
 
+  // Controlla se il logo esiste e non ha errori
+  const hasValidLogo = restaurantLogo && !imageError && restaurantLogo.trim() !== '';
+  
+  // Controlla se titolo e sottotitolo dovrebbero essere visibili
+  const showTitle = !customLayout?.cover?.title || customLayout.cover.title.visible !== false;
+  const showSubtitle = !customLayout?.cover?.subtitle || customLayout.cover.subtitle.visible !== false;
+
   return (
     <div className="page cover-page bg-white" style={getPageStyle()}>
-      {(restaurantLogo && !imageError) ? (
+      {hasValidLogo ? (
         <div style={{
           width: '100%',
           display: 'flex',
-          justifyContent: customLayout?.cover?.logo?.alignment || 'center',
+          justifyContent: customLayout?.cover?.logo?.alignment === 'left' ? 'flex-start' : 
+                         customLayout?.cover?.logo?.alignment === 'right' ? 'flex-end' : 
+                         'center',
           marginTop: customLayout?.cover?.logo?.marginTop ? `${customLayout.cover.logo.marginTop}mm` : '0',
           marginBottom: customLayout?.cover?.logo?.marginBottom ? `${customLayout.cover.logo.marginBottom}mm` : '0',
         }}>
@@ -184,8 +196,8 @@ const CoverPage: React.FC<CoverPageProps> = ({
         </div>
       ) : (
         <>
-          <h1 style={getTitleStyle()}>Menu</h1>
-          <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>
+          {showTitle && <h1 style={getTitleStyle()}>Menu</h1>}
+          {showSubtitle && <p style={getSubtitleStyle()}>La nostra selezione di piatti</p>}
         </>
       )}
       

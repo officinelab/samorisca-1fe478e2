@@ -1,97 +1,88 @@
+import React from 'react';
+import { CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button"
+import { ReloadIcon } from "@radix-ui/react-icons"
 
-import React from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import LayoutSelector from "./options/LayoutSelector";
-import RestaurantLogoUploader from "./RestaurantLogoUploader";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PrintLogoUploader from './PrintLogoUploader';
 
 interface OptionsPanelProps {
-  restaurantLogo?: string | null;
-  updateRestaurantLogo: (logo: string) => void;
+  layoutId: string;
+  setLayoutId: (layoutId: string) => void;
   language: string;
   setLanguage: (language: string) => void;
-  layoutId: string; // Cambiato da layoutType a layoutId
-  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
   showPageBoundaries: boolean;
-  setShowPageBoundaries: (value: boolean) => void;
+  setShowPageBoundaries: (show: boolean) => void;
   isLoading: boolean;
   forceLayoutRefresh: () => void;
 }
 
 const OptionsPanel: React.FC<OptionsPanelProps> = ({
-  restaurantLogo,
-  updateRestaurantLogo,
+  layoutId,
+  setLayoutId,
   language,
   setLanguage,
-  layoutId, // Cambiato da layoutType a layoutId
-  setLayoutId, // Cambiato da setLayoutType a setLayoutId
   showPageBoundaries,
   setShowPageBoundaries,
   isLoading,
-  forceLayoutRefresh
+  forceLayoutRefresh,
 }) => {
   return (
-    <Accordion type="multiple" defaultValue={["layout", "options"]} className="w-full">
-      <AccordionItem value="layout" className="border-b">
-        <AccordionTrigger className="text-base font-medium">
-          Layout e Logo
-        </AccordionTrigger>
-        <AccordionContent className="space-y-4">
-          <LayoutSelector
-            selectedLayoutId={layoutId} // Cambiato da selectedLayout a selectedLayoutId
-            setSelectedLayoutId={setLayoutId} // Cambiato da setSelectedLayout a setSelectedLayoutId
-          />
-          
-          <div className="pt-4">
-            <h3 className="text-sm font-medium mb-2">Logo Ristorante</h3>
-            <RestaurantLogoUploader
-              currentLogo={restaurantLogo}
-              onLogoUploaded={updateRestaurantLogo}
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-medium text-base mb-3">Logo del menu</h3>
+        <PrintLogoUploader
+          title="Logo di Stampa"
+          description="Questo logo apparirà nella copertina del menu quando stampato"
+          uploadPath="restaurant/print-logo"
+        />
+      </div>
       
-      <AccordionItem value="options" className="border-b">
-        <AccordionTrigger className="text-base font-medium">
-          Opzioni
-        </AccordionTrigger>
-        <AccordionContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="language" className="text-sm font-medium">
-              Lingua
-            </Label>
-            <Select
-              value={language}
-              onValueChange={setLanguage}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-24">
-                <SelectValue placeholder="Lingua" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="it">Italiano</SelectItem>
-                <SelectItem value="en">Inglese</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="show-boundaries" className="text-sm font-medium">
-              Mostra bordi pagina
-            </Label>
-            <Switch
-              id="show-boundaries"
-              checked={showPageBoundaries}
-              onCheckedChange={setShowPageBoundaries}
-              disabled={isLoading}
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+      <div>
+        <h3 className="font-medium text-base mb-3">Layout</h3>
+        <Select value={layoutId} onValueChange={setLayoutId} disabled={isLoading}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Seleziona un layout" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="classic">Classico</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <h3 className="font-medium text-base mb-3">Lingua</h3>
+        <Select value={language} onValueChange={setLanguage} disabled={isLoading}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Seleziona una lingua" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="it">Italiano</SelectItem>
+            <SelectItem value="en">Inglese</SelectItem>
+            <SelectItem value="fr">Francese</SelectItem>
+            <SelectItem value="de">Tedesco</SelectItem>
+            <SelectItem value="es">Spagnolo</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <h3 className="font-medium text-base">Mostra i margini</h3>
+          <p className="text-sm text-muted-foreground">
+            Mostra i margini della pagina per il debug
+          </p>
+        </div>
+        <Switch id="show-page-boundaries" checked={showPageBoundaries} onCheckedChange={setShowPageBoundaries} disabled={isLoading} />
+      </div>
+
+      <Button variant="outline" onClick={forceLayoutRefresh} disabled={isLoading} className="w-full">
+        <ReloadIcon className="mr-2 h-4 w-4" />
+        Forza il ricaricamento del layout
+      </Button>
+    </div>
   );
 };
 

@@ -8,20 +8,30 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
     return defaultCoverStyles();
   }
   
+  // Assicuriamoci che tutti i campi necessari esistano
+  const cover = customLayout.cover || {};
+  const logoSettings = cover.logo || {
+    maxWidth: 60,
+    maxHeight: 50,
+    alignment: 'center',
+    marginTop: 20,
+    marginBottom: 20
+  };
+  
   return StyleSheet.create({
     coverPage: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: mapAlignment(customLayout.cover.title.alignment || 'center'),
+      alignItems: mapAlignment(cover.title?.alignment || 'center'),
       padding: '10mm'
     },
     coverLogoContainer: {
-      marginBottom: `${customLayout.cover.logo.marginBottom}mm`,
-      marginTop: `${customLayout.cover.logo.marginTop}mm`,
-      alignSelf: mapAlignment(customLayout.cover.logo.alignment || 'center'),
-      width: `${customLayout.cover.logo.maxWidth}%`,
+      marginBottom: `${logoSettings.marginBottom}mm`,
+      marginTop: `${logoSettings.marginTop}mm`,
+      alignSelf: mapAlignment(logoSettings.alignment || 'center'),
+      width: `${logoSettings.maxWidth}%`,
       height: 'auto',
-      maxHeight: `${customLayout.cover.logo.maxHeight}mm`
+      maxHeight: `${logoSettings.maxHeight}mm`
     },
     coverLogo: {
       width: '100%',
@@ -29,28 +39,28 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       objectFit: 'contain'
     },
     coverTitle: {
-      fontSize: customLayout.cover.title.fontSize,
-      fontWeight: customLayout.cover.title.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: customLayout.cover.title.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: customLayout.cover.title.fontColor || '#000000',
-      fontFamily: customLayout.cover.title.fontFamily || 'Helvetica',
-      marginTop: `${customLayout.cover.title.margin.top}mm`,
-      marginRight: `${customLayout.cover.title.margin.right}mm`,
-      marginBottom: `${customLayout.cover.title.margin.bottom}mm`,
-      marginLeft: `${customLayout.cover.title.margin.left}mm`,
-      textAlign: customLayout.cover.title.alignment || 'center',
+      fontSize: cover.title?.fontSize || 24,
+      fontWeight: cover.title?.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: cover.title?.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: cover.title?.fontColor || '#000000',
+      fontFamily: cover.title?.fontFamily || 'Helvetica',
+      marginTop: `${cover.title?.margin?.top || 10}mm`,
+      marginRight: `${cover.title?.margin?.right || 0}mm`,
+      marginBottom: `${cover.title?.margin?.bottom || 5}mm`,
+      marginLeft: `${cover.title?.margin?.left || 0}mm`,
+      textAlign: cover.title?.alignment || 'center',
     },
     coverSubtitle: {
-      fontSize: customLayout.cover.subtitle.fontSize,
-      fontWeight: customLayout.cover.subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: customLayout.cover.subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: customLayout.cover.subtitle.fontColor || '#000000',
-      fontFamily: customLayout.cover.subtitle.fontFamily || 'Helvetica',
-      marginTop: `${customLayout.cover.subtitle.margin.top}mm`,
-      marginRight: `${customLayout.cover.subtitle.margin.right}mm`,
-      marginBottom: `${customLayout.cover.subtitle.margin.bottom}mm`,
-      marginLeft: `${customLayout.cover.subtitle.margin.left}mm`,
-      textAlign: customLayout.cover.subtitle.alignment || 'center',
+      fontSize: cover.subtitle?.fontSize || 16,
+      fontWeight: cover.subtitle?.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: cover.subtitle?.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: cover.subtitle?.fontColor || '#000000',
+      fontFamily: cover.subtitle?.fontFamily || 'Helvetica',
+      marginTop: `${cover.subtitle?.margin?.top || 5}mm`,
+      marginRight: `${cover.subtitle?.margin?.right || 0}mm`,
+      marginBottom: `${cover.subtitle?.margin?.bottom || 0}mm`,
+      marginLeft: `${cover.subtitle?.margin?.left || 0}mm`,
+      textAlign: cover.subtitle?.alignment || 'center',
     },
   });
 };
