@@ -23,11 +23,14 @@ export type PageMargins = {
   marginLeft: number;
 };
 
+export type ProductSchema = 'schema1' | 'schema2' | 'schema3';
+
 export type PrintLayout = {
   id: string;
   name: string;
-  type: 'classic' | 'modern' | 'allergens' | 'custom';
+  type: 'classic' | 'custom';
   isDefault: boolean;
+  productSchema: ProductSchema;
   elements: {
     category: PrintLayoutElementConfig;
     title: PrintLayoutElementConfig;

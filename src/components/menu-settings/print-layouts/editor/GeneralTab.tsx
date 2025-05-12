@@ -1,34 +1,43 @@
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PrintLayout } from "@/types/printLayout";
+import React from 'react';
+import { PrintLayout, ProductSchema } from '@/types/printLayout';
+import { FormItem } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import ProductSchemaSelector from './ProductSchemaSelector';
 
 interface GeneralTabProps {
   layout: PrintLayout;
-  onGeneralChange: (field: keyof PrintLayout, value: any) => void;
+  onGeneralChange: (field: string, value: string | boolean | ProductSchema) => void;
 }
 
-const GeneralTab = ({ layout, onGeneralChange }: GeneralTabProps) => {
+const GeneralTab: React.FC<GeneralTabProps> = ({ layout, onGeneralChange }) => {
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="layout-name">Nome Layout</Label>
-        <Input
-          id="layout-name"
-          value={layout.name}
-          onChange={(e) => onGeneralChange("name", e.target.value)}
-          className="mt-1"
-        />
+    <div className="grid gap-6">
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">Informazioni generali</h3>
+        <p className="text-sm text-muted-foreground">
+          Modifica le informazioni di base del layout
+        </p>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="is-default"
-          checked={layout.isDefault}
-          onCheckedChange={(checked) => onGeneralChange("isDefault", Boolean(checked))}
+      <div className="grid gap-4">
+        <FormItem>
+          <Label htmlFor="layout-name">Nome layout</Label>
+          <Input
+            id="layout-name"
+            value={layout.name}
+            onChange={(e) => onGeneralChange('name', e.target.value)}
+            placeholder="Nome del layout"
+          />
+        </FormItem>
+      </div>
+      
+      <div className="border-t pt-6 mt-4">
+        <ProductSchemaSelector
+          value={layout.productSchema || 'schema1'}
+          onChange={(value) => onGeneralChange('productSchema', value)}
         />
-        <Label htmlFor="is-default">Layout predefinito</Label>
       </div>
     </div>
   );

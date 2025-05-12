@@ -3,8 +3,6 @@ import React, { useEffect } from 'react';
 import { Category, Product, Allergen } from "@/types/database";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import ClassicLayout from "./layouts/ClassicLayout";
-import ModernLayout from "./layouts/ModernLayout";
-import AllergensLayout from "./layouts/AllergensLayout";
 
 type MenuLayoutSelectorProps = {
   selectedLayout: string;
@@ -56,20 +54,17 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
       console.log("MenuLayoutSelector - Ricerca layout per tipo:", selectedLayout);
       // Find layout by type
-      const matchingLayout = layouts.find(layout => layout.type === selectedLayout);
+      const matchingLayout = layouts.find(layout => layout.id === selectedLayout);
       if (matchingLayout) {
         console.log("MenuLayoutSelector - Trovato layout corrispondente:", matchingLayout);
         changeActiveLayout(matchingLayout.id);
       } else {
-        console.log("MenuLayoutSelector - Nessun layout trovato per il tipo:", selectedLayout);
+        console.log("MenuLayoutSelector - Nessun layout trovato per l'ID:", selectedLayout);
       }
     }
   }, [selectedLayout, layouts, isLoading, changeActiveLayout]);
   
-  // Determine which layout type to use based on available data
-  const effectiveLayoutType = selectedLayout || (activeLayout?.type || defaultLayoutType);
-  
-  console.log("MenuLayoutSelector - Layout selezionato:", effectiveLayoutType);
+  console.log("MenuLayoutSelector - Layout selezionato:", selectedLayout);
   console.log("MenuLayoutSelector - activeLayout utilizzato:", activeLayout);
   
   const commonProps = {
@@ -86,17 +81,8 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     customLayout: activeLayout
   };
   
-  switch (effectiveLayoutType) {
-    case "modern":
-      return <ModernLayout {...commonProps} />;
-    case "allergens":
-      return <AllergensLayout {...commonProps} />;
-    case "custom":
-      return <ClassicLayout {...commonProps} />;
-    case "classic":
-    default:
-      return <ClassicLayout {...commonProps} />;
-  }
+  // Ora utilizzamo solo ClassicLayout
+  return <ClassicLayout {...commonProps} />;
 };
 
 export default MenuLayoutSelector;
