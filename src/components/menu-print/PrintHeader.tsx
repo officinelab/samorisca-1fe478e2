@@ -1,34 +1,49 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, FileDown } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import PrintPreviewActions from "./PrintPreviewActions";
 
 interface PrintHeaderProps {
-  handlePrint: () => void;
-  handleDownloadPDF: () => void;
+  layoutType: string;
+  language: string;
+  printAllergens: boolean;
+  selectedCategories: string[];
+  restaurantLogo?: string | null;
 }
 
-const PrintHeader: React.FC<PrintHeaderProps> = ({ handlePrint, handleDownloadPDF }) => {
+const PrintHeader: React.FC<PrintHeaderProps> = ({
+  layoutType,
+  language,
+  printAllergens,
+  selectedCategories,
+  restaurantLogo
+}) => {
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Stampa Menu</h1>
-        <div className="flex space-x-2">
-          <Button onClick={handlePrint} className="flex items-center">
-            <Printer className="mr-2 h-4 w-4" />
-            Stampa
-          </Button>
-          <Button onClick={handleDownloadPDF} variant="outline" className="flex items-center">
-            <FileDown className="mr-2 h-4 w-4" />
-            Scarica PDF
-          </Button>
-        </div>
+    <div className="flex justify-between items-center">
+      <div>
+        <h1 className="text-2xl font-bold flex items-center">
+          <Link to="/admin/menu">
+            <Button variant="outline" size="sm" className="mr-3">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          Stampa Menu
+        </h1>
+        <p className="text-muted-foreground">
+          Configura e stampa il menu in diversi formati
+        </p>
       </div>
-
-      <p className="text-gray-600">
-        Personalizza e stampa il menu per il tuo ristorante. Scegli il layout, le categorie da includere e la lingua.
-      </p>
-    </>
+      
+      <PrintPreviewActions
+        layoutType={layoutType}
+        language={language}
+        printAllergens={printAllergens}
+        selectedCategories={selectedCategories}
+        restaurantLogo={restaurantLogo}
+      />
+    </div>
   );
 };
 

@@ -31,8 +31,6 @@ const MenuPrint = () => {
     
     // Print operations
     printContentRef,
-    handlePrint,
-    handleDownloadPDF,
     
     // Constants
     A4_WIDTH_MM,
@@ -44,8 +42,11 @@ const MenuPrint = () => {
     <div className="space-y-6">
       {/* Header with title and action buttons */}
       <PrintHeader
-        handlePrint={handlePrint}
-        handleDownloadPDF={handleDownloadPDF}
+        layoutType={layoutType}
+        language={language}
+        printAllergens={printAllergens}
+        selectedCategories={selectedCategories}
+        restaurantLogo={restaurantLogo}
       />
 
       {/* Options card with print settings */}

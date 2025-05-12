@@ -23,3 +23,4 @@ export type ProductItem = {
 export type PageContent = CategoryTitleContent | ProductsGroupContent;
 
 export type PrintPageContent = PageContent[];
+

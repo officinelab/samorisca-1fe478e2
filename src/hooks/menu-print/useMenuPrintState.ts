@@ -1,45 +1,59 @@
 
 import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/sonner";
-import { useMenuData } from "@/hooks/useMenuData";
-import { usePrintOperations } from "@/hooks/usePrintOperations";
-import { usePrintConstants } from "./usePrintConstants";
+import { useMenuData } from "../useMenuData";
+import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
 
 export const useMenuPrintState = () => {
-  // Paper dimensions
-  const { A4_WIDTH_MM, A4_HEIGHT_MM } = usePrintConstants();
+  // Constants for A4 paper size
+  const A4_WIDTH_MM = 210;
+  const A4_HEIGHT_MM = 297;
   
-  // UI state
-  const [layoutType, setLayoutType] = useState("classic");
-  const [language, setLanguage] = useState("it");
-  const [printAllergens, setPrintAllergens] = useState(true);
-  const [showPageBoundaries, setShowPageBoundaries] = useState(true);
+  // State for layout options
+  const [layoutType, setLayoutType] = useState<string>("classic");
+  const [language, setLanguage] = useState<string>("it");
+  const [printAllergens, setPrintAllergens] = useState<boolean>(true);
+  const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(true);
+  const [pageCount, setPageCount] = useState<number>(0); // Stima del numero di pagine
   
-  // Menu data and operations
-  const { 
-    categories, 
-    products, 
-    allergens, 
-    isLoading: isLoadingMenu, 
-    selectedCategories, 
-    handleCategoryToggle, 
-    handleToggleAllCategories,
+  // Import menu data
+  const {
+    categories,
+    products,
+    allergens,
+    labels,
+    features,
     restaurantLogo,
-    updateRestaurantLogo
+    updateRestaurantLogo,
+    isLoading: isLoadingMenu,
+    error,
+    retryLoading,
+    selectedCategories,
+    setSelectedCategories,
+    handleCategoryToggle,
+    handleToggleAllCategories
   } = useMenuData();
   
-  const { printContentRef, handlePrint, handleDownloadPDF } = usePrintOperations();
-
-  // Calculate approximate page count
-  const pageCount = Math.max(1, Math.ceil(selectedCategories.length / 3) + (printAllergens ? 1 : 0) + 1);
-
-  // Error handling
+  // Import print operations
+  const {
+    printContentRef,
+    handlePrint,
+    handleDownloadPDF
+  } = usePrintOperationsManager();
+  
+  // Stima del numero di pagine in base al numero di categorie e prodotti selezionati
   useEffect(() => {
-    if (!isLoadingMenu && (!categories || !Array.isArray(categories) || categories.length === 0)) {
-      toast.error("Errore nel caricamento delle categorie");
+    if (!isLoadingMenu && categories && products && selectedCategories) {
+      // Calcola il numero di prodotti totali nelle categorie selezionate
+      const totalProducts = selectedCategories.reduce((acc, catId) => {
+        return acc + (products[catId]?.length || 0);
+      }, 0);
+      
+      // Stima grossolana: una pagina di copertina + una pagina ogni ~10 prodotti + allergeni
+      const estimatedPages = 1 + Math.ceil(totalProducts / 10) + (printAllergens && allergens.length > 0 ? 1 : 0);
+      setPageCount(estimatedPages);
     }
-  }, [isLoadingMenu, categories]);
-
+  }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu]);
+  
   return {
     // Layout and display options
     layoutType,
@@ -52,11 +66,16 @@ export const useMenuPrintState = () => {
     setShowPageBoundaries,
     
     // Menu data
-    categories: categories || [],
-    products: products || {},
-    allergens: allergens || [],
+    categories,
+    products,
+    allergens,
+    labels,
+    features,
     isLoadingMenu,
+    error,
+    retryLoading,
     selectedCategories,
+    setSelectedCategories,
     handleCategoryToggle,
     handleToggleAllCategories,
     restaurantLogo,
