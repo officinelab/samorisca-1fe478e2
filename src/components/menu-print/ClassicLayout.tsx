@@ -55,7 +55,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         showPageBoundaries={showPageBoundaries}
         layoutType={customLayout?.type || "classic"}
         restaurantLogo={restaurantLogo}
-        customLayout={customLayout}  {/* Aggiungiamo la prop customLayout */}
+        customLayout={customLayout}  /* Corretto la sintassi qui */
       />
 
       {/* Content pages */}
