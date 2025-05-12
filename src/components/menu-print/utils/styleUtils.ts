@@ -1,7 +1,7 @@
 
-import { PrintLayout } from '@/types/printLayout';
+import { PrintLayoutElementConfig } from '@/types/printLayout';
 
-export const getElementStyle = (config: PrintLayout["elements"]["category"] | undefined, defaultStyle: React.CSSProperties = {}) => {
+export const getElementStyle = (config: PrintLayoutElementConfig | undefined, defaultStyle: React.CSSProperties = {}) => {
   if (!config) return defaultStyle;
   
   return {

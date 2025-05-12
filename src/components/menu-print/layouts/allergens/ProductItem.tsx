@@ -1,17 +1,21 @@
 
 import React from 'react';
 import { Product, Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
+import { getElementStyle } from '../../utils/styleUtils';
 
 interface ProductItemProps {
   product: Product;
   language: string;
   allergens: Allergen[];
+  customLayout?: PrintLayout | null;
 }
 
 const ProductItem: React.FC<ProductItemProps> = ({ 
   product, 
   language,
-  allergens
+  allergens,
+  customLayout
 }) => {
   // Funzione per ottenere il nome dell'allergene dal numero
   const getAllergenName = (number: number) => {
@@ -22,7 +26,9 @@ const ProductItem: React.FC<ProductItemProps> = ({
   return (
     <div 
       style={{
-        marginBottom: '8mm',
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.betweenProducts}mm` : 
+          '8mm',
         breakInside: 'avoid',
         pageBreakInside: 'avoid',
         backgroundColor: 'white',
@@ -41,43 +47,49 @@ const ProductItem: React.FC<ProductItemProps> = ({
         paddingBottom: '5px',
         marginBottom: '5px',
       }} className="item-header">
-        <div style={{
-          fontWeight: 'bold',
-          fontSize: '14pt',
-          width: 'auto',
-          maxWidth: '70%'
-        }} className="item-title">
-          {product[`title_${language}`] || product.title}
-        </div>
+        {(!customLayout || customLayout.elements.title.visible) && (
+          <div style={getElementStyle(customLayout?.elements.title, {
+            fontWeight: 'bold',
+            fontSize: '14pt',
+            width: 'auto',
+            maxWidth: '70%'
+          })} className="item-title">
+            {product[`title_${language}`] || product.title}
+          </div>
+        )}
         
-        <div style={{
-          textAlign: 'right',
-          fontWeight: 'bold',
-          width: 'auto',
-          whiteSpace: 'nowrap',
-        }} className="item-price">
-          € {product.price_standard}
-        </div>
+        {(!customLayout || customLayout.elements.price.visible) && (
+          <div style={getElementStyle(customLayout?.elements.price, {
+            textAlign: 'right',
+            fontWeight: 'bold',
+            width: 'auto',
+            whiteSpace: 'nowrap',
+          })} className="item-price">
+            € {product.price_standard}
+          </div>
+        )}
       </div>
       
-      {(product[`description_${language}`] || product.description) && (
-        <div style={{
+      {(!customLayout || customLayout.elements.description.visible) && 
+        (product[`description_${language}`] || product.description) && (
+        <div style={getElementStyle(customLayout?.elements.description, {
           fontSize: '10pt',
           marginBottom: '5px',
           fontStyle: 'italic',
-        }} className="item-description">
+        })} className="item-description">
           {product[`description_${language}`] || product.description}
         </div>
       )}
       
-      {product.has_multiple_prices && (
-        <div style={{
+      {(!customLayout || customLayout.elements.priceVariants.visible) && 
+        product.has_multiple_prices && (
+        <div style={getElementStyle(customLayout?.elements.priceVariants, {
           fontSize: '10pt',
           display: 'flex',
           justifyContent: 'flex-end',
           gap: '1rem',
           marginBottom: '5px',
-        }}>
+        })}>
           {product.price_variant_1_name && (
             <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
           )}
@@ -88,14 +100,15 @@ const ProductItem: React.FC<ProductItemProps> = ({
       )}
       
       {/* Visualizzazione allergeni più prominente */}
-      {product.allergens && product.allergens.length > 0 && (
-        <div style={{
+      {(!customLayout || customLayout.elements.allergensList.visible) && 
+        product.allergens && product.allergens.length > 0 && (
+        <div style={getElementStyle(customLayout?.elements.allergensList, {
           marginTop: '5px',
           padding: '5px',
           backgroundColor: '#f5f5f5',
           borderRadius: '4px',
           fontSize: '10pt',
-        }} className="allergens-detail">
+        })} className="allergens-detail">
           <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Allergeni:</div>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {product.allergens.map(allergen => (

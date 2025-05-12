@@ -25,10 +25,42 @@ const ContentPage: React.FC<ContentPageProps> = ({
   pageIndex,
   customLayout
 }) => {
-  // Use custom layout margins if available, otherwise default modern margins
-  const pageMargins = customLayout 
-    ? `${customLayout.page.marginTop}mm ${customLayout.page.marginRight}mm ${customLayout.page.marginBottom}mm ${customLayout.page.marginLeft}mm`
-    : '25mm 20mm 25mm 20mm';
+  // Determine page margins based on layout settings
+  const getPageMargins = () => {
+    if (!customLayout) {
+      return '25mm 20mm 25mm 20mm'; // Default margins
+    }
+
+    // If distinct margins are not enabled
+    if (!customLayout.page.useDistinctMarginsForPages) {
+      return `${customLayout.page.marginTop}mm ${customLayout.page.marginRight}mm ${customLayout.page.marginBottom}mm ${customLayout.page.marginLeft}mm`;
+    }
+    
+    // Get appropriate margins based on page index (odd/even)
+    // Page index is 0-based, so even indexes are odd pages (1, 3, 5...)
+    const oddPages = customLayout.page.oddPages || {
+      marginTop: customLayout.page.marginTop,
+      marginRight: customLayout.page.marginRight,
+      marginBottom: customLayout.page.marginBottom,
+      marginLeft: customLayout.page.marginLeft
+    };
+    
+    const evenPages = customLayout.page.evenPages || {
+      marginTop: customLayout.page.marginTop,
+      marginRight: customLayout.page.marginRight,
+      marginBottom: customLayout.page.marginBottom,
+      marginLeft: customLayout.page.marginLeft
+    };
+    
+    // Use odd page margins for even indices (0, 2, 4...) which correspond to pages 1, 3, 5...
+    if (pageIndex % 2 === 0) {
+      return `${oddPages.marginTop}mm ${oddPages.marginRight}mm ${oddPages.marginBottom}mm ${oddPages.marginLeft}mm`;
+    } else {
+      return `${evenPages.marginTop}mm ${evenPages.marginRight}mm ${evenPages.marginBottom}mm ${evenPages.marginLeft}mm`;
+    }
+  };
+  
+  const pageMargins = getPageMargins();
   
   return (
     <div className="page relative bg-white" style={{

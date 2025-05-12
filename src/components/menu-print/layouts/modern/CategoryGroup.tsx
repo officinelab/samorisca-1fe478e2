@@ -1,34 +1,47 @@
 
 import React from 'react';
 import { Category, Product } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 import ProductItem from './ProductItem';
 
 interface CategoryGroupProps {
   category: Category;
   products: Product[];
   language: string;
+  customLayout?: PrintLayout | null;
 }
 
 const CategoryGroup: React.FC<CategoryGroupProps> = ({ 
   category, 
   products, 
-  language 
+  language,
+  customLayout
 }) => {
   return (
     <div 
       style={{
-        marginBottom: '18mm',
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.betweenCategories}mm` : 
+          '18mm',
         breakInside: 'avoid',
         pageBreakInside: 'avoid',
       }} 
       className="category"
     >
       <h2 style={{
-        fontSize: '22pt',
-        fontWeight: 'bold',
-        marginBottom: '8mm',
-        textTransform: 'uppercase',
-        textAlign: 'center',
+        fontSize: customLayout?.elements.category.fontSize ? 
+          `${customLayout.elements.category.fontSize}pt` : 
+          '22pt',
+        fontWeight: customLayout?.elements.category.fontStyle === 'bold' || !customLayout ? 
+          'bold' : 
+          'normal',
+        fontStyle: customLayout?.elements.category.fontStyle === 'italic' ? 
+          'italic' : 
+          'normal',
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.categoryTitleBottomMargin}mm` : 
+          '8mm',
+        textAlign: customLayout?.elements.category.alignment || 'center',
         position: 'relative',
         paddingBottom: '3mm',
       }} className="category-title">
@@ -48,7 +61,8 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
           <ProductItem 
             key={product.id} 
             product={product} 
-            language={language} 
+            language={language}
+            customLayout={customLayout}
           />
         ))}
       </div>
