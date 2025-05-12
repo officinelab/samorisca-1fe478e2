@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,14 +22,97 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Pencil, Trash } from 'lucide-react';
-import { Product } from "@/types";
-import ProductForm from "@/components/menu-form/ProductForm";
+import { MoreVertical, Pencil, Trash, ChevronUp } from 'lucide-react';
+import { Product } from "@/types/database";
+import ProductForm from "@/components/product/ProductForm";
 import { toast } from "@/components/ui/sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteProduct, getProducts } from "@/lib/api/products";
-import { CategoriesSelect } from "@/components/menu-form/CategoriesSelect";
+import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area"
+
+// Funzione per ottenere i prodotti
+const getProducts = async (searchTerm: string, categoryId: string | null) => {
+  let query = supabase
+    .from('products')
+    .select('*, category:category_id(*), label:label_id(*)');
+  
+  if (searchTerm) {
+    query = query.ilike('title', `%${searchTerm}%`);
+  }
+  
+  if (categoryId) {
+    query = query.eq('category_id', categoryId);
+  }
+  
+  const { data, error } = await query.order('display_order');
+  
+  if (error) {
+    throw error;
+  }
+  
+  return data || [];
+};
+
+// Funzione per eliminare un prodotto
+const deleteProduct = async (id: string) => {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+  return true;
+};
+
+// Componente per selezionare le categorie
+const CategoriesSelect = ({ onChange, value }: { onChange: (value: string | null) => void, value: string | null }) => {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('display_order');
+        
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Errore nel caricamento categorie:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+  
+  return (
+    <div className="space-y-2">
+      <Button
+        variant={value === null ? "default" : "outline"}
+        className="w-full justify-start"
+        onClick={() => onChange(null)}
+      >
+        Tutte le categorie
+      </Button>
+      
+      {isLoading ? (
+        <div className="py-2 text-center text-sm text-muted-foreground">Caricamento...</div>
+      ) : (
+        categories.map(category => (
+          <Button
+            key={category.id}
+            variant={value === category.id ? "default" : "outline"}
+            className="w-full justify-start"
+            onClick={() => onChange(category.id)}
+          >
+            {category.title}
+          </Button>
+        ))
+      )}
+    </div>
+  );
+};
 
 // Componente di ricerca ottimizzato che mantiene il focus
 const SearchBar = ({ onSearch }: { onSearch: (term: string) => void }) => {
@@ -61,6 +145,24 @@ const Dashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Gestione del pulsante "Torna su"
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   // Fetch products
   const { data: products, isLoading, isError } = useQuery({
@@ -86,6 +188,8 @@ const Dashboard = () => {
 
   const handleEdit = (product: Product) => {
     setSelectedProduct(product);
+    // Scorrimento automatico verso l'alto quando si modifica un prodotto
+    scrollToTop();
   };
 
   const handleCancelEdit = () => {
@@ -106,7 +210,6 @@ const Dashboard = () => {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Gestione Menu</h1>
-        {/* <Button variant="outline">Nuovo Prodotto</Button> */}
       </div>
 
       <Card className="mb-6">
@@ -153,8 +256,8 @@ const Dashboard = () => {
                     )}
                     {products && products.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell>{product.name}</TableCell>
-                        <TableCell>{product.category?.name}</TableCell>
+                        <TableCell>{product.title}</TableCell>
+                        <TableCell>{product.category?.title}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -195,6 +298,17 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:bg-primary/90 transition-all"
+          aria-label="Torna all'inizio"
+        >
+          <ChevronUp className="h-6 w-6" />
+        </button>
       )}
     </div>
   );
