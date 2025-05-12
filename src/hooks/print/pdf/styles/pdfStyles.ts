@@ -1,6 +1,15 @@
-
 import { StyleSheet } from '@react-pdf/renderer';
 import { PrintLayout } from "@/types/printLayout";
+
+// Maps our custom alignment values to valid @react-pdf/renderer values
+const mapAlignment = (alignment: 'left' | 'center' | 'right'): string => {
+  switch (alignment) {
+    case 'left': return 'flex-start';
+    case 'center': return 'center';
+    case 'right': return 'flex-end';
+    default: return 'center';
+  }
+};
 
 export const createPdfStyles = (customLayout?: PrintLayout | null) => {
   if (!customLayout) {
@@ -34,13 +43,13 @@ export const createPdfStyles = (customLayout?: PrintLayout | null) => {
     coverPage: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: customLayout.cover.title.alignment || 'center',
+      alignItems: mapAlignment(customLayout.cover.title.alignment || 'center'),
       padding: '10mm'
     },
     coverLogoContainer: {
       marginBottom: `${customLayout.cover.logo.marginBottom}mm`,
       marginTop: `${customLayout.cover.logo.marginTop}mm`,
-      alignSelf: customLayout.cover.logo.alignment || 'center',
+      alignSelf: mapAlignment(customLayout.cover.logo.alignment || 'center'),
       width: `${customLayout.cover.logo.maxWidth}%`,
       height: 'auto',
       maxHeight: `${customLayout.cover.logo.maxHeight}mm`
