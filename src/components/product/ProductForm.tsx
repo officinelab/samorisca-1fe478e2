@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Form } from "@/components/ui/form";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
@@ -21,6 +21,8 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+  const formRef = useRef<HTMLFormElement>(null);
+  
   const {
     form,
     isSubmitting,
@@ -34,9 +36,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     handleSubmit
   } = useProductForm(product, onSave);
 
+  // Scorrimento automatico al form quando viene caricato
+  useEffect(() => {
+    if (formRef.current) {
+      // Usando setTimeout per assicurarsi che lo scorrimento avvenga dopo il rendering completo
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+      }, 100);
+    }
+  }, [product]);
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form 
+        ref={formRef}
+        onSubmit={form.handleSubmit(handleSubmit)} 
+        className="space-y-6 bg-card p-6 rounded-lg shadow-sm border"
+      >
         {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
         <ProductBasicInfo form={form} />
         
