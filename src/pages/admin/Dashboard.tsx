@@ -182,7 +182,7 @@ const Dashboard: React.FC = () => {
               
               return (
                 <div key={categoryId} className="bg-white p-6 rounded-lg shadow-sm">
-                  <h2 className="text-xl font-semibold mb-6">{category?.name}</h2>
+                  <h2 className="text-xl font-semibold mb-6">{category?.title}</h2>
                   {categoryProducts.length > 0 ? (
                     <ProductList 
                       products={categoryProducts} 
