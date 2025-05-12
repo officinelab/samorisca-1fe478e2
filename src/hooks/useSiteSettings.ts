@@ -9,7 +9,9 @@ import {
   updateRestaurantName,
   updateFooterText,
   updateDefaultProductImage,
-  updateAdminTitle
+  updateAdminTitle,
+  updateMenuTitle,
+  updateMenuSubtitle
 } from "./site-settings/updateFunctions";
 
 /**
@@ -60,6 +62,8 @@ export const useSiteSettings = () => {
     saveSetting,
     updateSidebarLogo,
     updateMenuLogo,
+    updateMenuTitle,
+    updateMenuSubtitle,
     updateRestaurantName,
     updateFooterText,
     updateDefaultProductImage,

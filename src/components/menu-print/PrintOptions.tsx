@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Category } from "@/types/database";
 import BasicOptions from "./options/BasicOptions";
 import CategorySelector from "./options/CategorySelector";
+import CoverSettingsTab from "./options/CoverSettingsTab";
 
 interface PrintOptionsProps {
   language: string;
@@ -44,8 +45,9 @@ const PrintOptions = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="base">Opzioni base</TabsTrigger>
+        <TabsTrigger value="copertina">Copertina</TabsTrigger>
         <TabsTrigger value="categorie">Categorie</TabsTrigger>
       </TabsList>
 
@@ -60,6 +62,13 @@ const PrintOptions = ({
           showPageBoundaries={showPageBoundaries}
           setShowPageBoundaries={setShowPageBoundaries}
           isLoading={isLoading}
+          restaurantLogo={restaurantLogo}
+          updateRestaurantLogo={updateRestaurantLogo}
+        />
+      </TabsContent>
+
+      <TabsContent value="copertina" className="space-y-4 pt-4">
+        <CoverSettingsTab
           restaurantLogo={restaurantLogo}
           updateRestaurantLogo={updateRestaurantLogo}
         />
