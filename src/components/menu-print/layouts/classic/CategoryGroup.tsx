@@ -18,12 +18,12 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
   language,
   customLayout
 }) => {
-  // Get style from custom layout if available, otherwise use default styles
-  const categoryStyle = customLayout 
+  // Define properly typed CSS properties
+  const categoryStyle: React.CSSProperties = customLayout 
     ? getElementStyle(customLayout.elements.category, {
         marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
         fontWeight: 'bold',
-        textTransform: 'uppercase',
+        textTransform: 'uppercase' as const,
         borderBottom: '1px solid #000',
         paddingBottom: '2mm'
       })
@@ -31,16 +31,16 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
         fontSize: '18pt',
         fontWeight: 'bold',
         marginBottom: '5mm',
-        textTransform: 'uppercase',
+        textTransform: 'uppercase' as const,
         borderBottom: '1px solid #000',
         paddingBottom: '2mm'
       };
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     marginBottom: customLayout ? `${customLayout.spacing.betweenCategories}mm` : '15mm',
     breakInside: 'avoid',
     pageBreakInside: 'avoid',
-  } as React.CSSProperties;
+  };
 
   return (
     <div style={containerStyle} className="category">
