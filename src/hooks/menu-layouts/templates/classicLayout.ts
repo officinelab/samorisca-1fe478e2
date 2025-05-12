@@ -86,7 +86,7 @@ export const classicLayout: PrintLayout = {
       marginLeft: 15
     }
   },
-  // Aggiungiamo le sezioni mancanti
+  // Sezioni per copertina e allergeni
   cover: {
     logo: {
       maxWidth: 80,

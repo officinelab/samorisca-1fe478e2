@@ -4,8 +4,10 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Creates a new layout with default values and the given name
+ * @param name The name of the new layout
+ * @param existingLayouts Optional parameter for compatibility with cloning and migration
  */
-export const createNewLayoutFromTemplate = (name: string): PrintLayout => {
+export const createNewLayoutFromTemplate = (name: string, existingLayouts?: PrintLayout[]): PrintLayout => {
   return {
     id: uuidv4(),
     name,
