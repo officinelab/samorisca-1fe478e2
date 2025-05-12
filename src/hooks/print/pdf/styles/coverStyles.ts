@@ -4,59 +4,24 @@ import { PrintLayout } from "@/types/printLayout";
 import { mapAlignment } from './utils/alignmentUtils';
 
 export const createCoverStyles = (customLayout?: PrintLayout | null) => {
-  // Se customLayout è null o undefined, usiamo gli stili predefiniti
   if (!customLayout) {
     return defaultCoverStyles();
   }
-  
-  // Se la proprietà cover è mancante o vuota, inizializziamola con un oggetto vuoto
-  const cover = customLayout.cover || {};
-  
-  // Definiamo valori predefiniti per il logo e assicuriamoci che esistano
-  const logoSettings = cover.logo || {
-    maxWidth: 60,
-    maxHeight: 50,
-    alignment: 'center' as const,
-    marginTop: 20,
-    marginBottom: 20
-  };
-  
-  // Definiamo valori predefiniti per il titolo e assicuriamoci che esista
-  const title = cover.title || {
-    fontSize: 24,
-    fontStyle: 'normal' as const,
-    fontColor: '#000000',
-    fontFamily: 'Helvetica',
-    alignment: 'center' as const,
-    visible: true,
-    margin: { top: 10, right: 0, bottom: 5, left: 0 }
-  };
-  
-  // Definiamo valori predefiniti per il sottotitolo e assicuriamoci che esista
-  const subtitle = cover.subtitle || {
-    fontSize: 16,
-    fontStyle: 'normal' as const,
-    fontColor: '#000000',
-    fontFamily: 'Helvetica',
-    alignment: 'center' as const,
-    visible: true,
-    margin: { top: 5, right: 0, bottom: 0, left: 0 }
-  };
   
   return StyleSheet.create({
     coverPage: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: mapAlignment(title.alignment || 'center'),
+      alignItems: mapAlignment(customLayout.cover.title.alignment || 'center'),
       padding: '10mm'
     },
     coverLogoContainer: {
-      marginBottom: `${logoSettings.marginBottom}mm`,
-      marginTop: `${logoSettings.marginTop}mm`,
-      alignSelf: mapAlignment(logoSettings.alignment || 'center'),
-      width: `${logoSettings.maxWidth}%`,
+      marginBottom: `${customLayout.cover.logo.marginBottom}mm`,
+      marginTop: `${customLayout.cover.logo.marginTop}mm`,
+      alignSelf: mapAlignment(customLayout.cover.logo.alignment || 'center'),
+      width: `${customLayout.cover.logo.maxWidth}%`,
       height: 'auto',
-      maxHeight: `${logoSettings.maxHeight}mm`
+      maxHeight: `${customLayout.cover.logo.maxHeight}mm`
     },
     coverLogo: {
       width: '100%',
@@ -64,28 +29,28 @@ export const createCoverStyles = (customLayout?: PrintLayout | null) => {
       objectFit: 'contain'
     },
     coverTitle: {
-      fontSize: title.fontSize || 24,
-      fontWeight: title.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: title.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: title.fontColor || '#000000',
-      fontFamily: title.fontFamily || 'Helvetica',
-      marginTop: `${title.margin?.top || 10}mm`,
-      marginRight: `${title.margin?.right || 0}mm`,
-      marginBottom: `${title.margin?.bottom || 5}mm`,
-      marginLeft: `${title.margin?.left || 0}mm`,
-      textAlign: title.alignment || 'center',
+      fontSize: customLayout.cover.title.fontSize,
+      fontWeight: customLayout.cover.title.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: customLayout.cover.title.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: customLayout.cover.title.fontColor || '#000000',
+      fontFamily: customLayout.cover.title.fontFamily || 'Helvetica',
+      marginTop: `${customLayout.cover.title.margin.top}mm`,
+      marginRight: `${customLayout.cover.title.margin.right}mm`,
+      marginBottom: `${customLayout.cover.title.margin.bottom}mm`,
+      marginLeft: `${customLayout.cover.title.margin.left}mm`,
+      textAlign: customLayout.cover.title.alignment || 'center',
     },
     coverSubtitle: {
-      fontSize: subtitle.fontSize || 16,
-      fontWeight: subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: subtitle.fontColor || '#000000',
-      fontFamily: subtitle.fontFamily || 'Helvetica',
-      marginTop: `${subtitle.margin?.top || 5}mm`,
-      marginRight: `${subtitle.margin?.right || 0}mm`,
-      marginBottom: `${subtitle.margin?.bottom || 0}mm`,
-      marginLeft: `${subtitle.margin?.left || 0}mm`,
-      textAlign: subtitle.alignment || 'center',
+      fontSize: customLayout.cover.subtitle.fontSize,
+      fontWeight: customLayout.cover.subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: customLayout.cover.subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
+      color: customLayout.cover.subtitle.fontColor || '#000000',
+      fontFamily: customLayout.cover.subtitle.fontFamily || 'Helvetica',
+      marginTop: `${customLayout.cover.subtitle.margin.top}mm`,
+      marginRight: `${customLayout.cover.subtitle.margin.right}mm`,
+      marginBottom: `${customLayout.cover.subtitle.margin.bottom}mm`,
+      marginLeft: `${customLayout.cover.subtitle.margin.left}mm`,
+      textAlign: customLayout.cover.subtitle.alignment || 'center',
     },
   });
 };

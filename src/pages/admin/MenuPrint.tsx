@@ -50,16 +50,16 @@ const MenuPrint = () => {
         {/* Pannello opzioni (1/3 dello spazio su desktop) */}
         <Card className="md:col-span-1 p-5 h-fit">
           <OptionsPanel
-            layoutId={layoutId}
-            setLayoutId={setLayoutId}
+            restaurantLogo={restaurantLogo}
+            updateRestaurantLogo={updateRestaurantLogo}
             language={language}
             setLanguage={setLanguage}
+            layoutId={layoutId} // Cambiato da layoutType a layoutId
+            setLayoutId={setLayoutId} // Cambiato da setLayoutType a setLayoutId
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
             isLoading={isLoadingMenu}
             forceLayoutRefresh={forceLayoutRefresh}
-            restaurantLogo={restaurantLogo}
-            updateRestaurantLogo={updateRestaurantLogo}
           />
         </Card>
 
@@ -68,7 +68,7 @@ const MenuPrint = () => {
           <ScrollArea className="h-[80vh] md:h-[85vh] p-4">
             <PrintPreview
               printContentRef={printContentRef}
-              layoutId={layoutId}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
               showPageBoundaries={showPageBoundaries}
               categories={categories}
               products={products}

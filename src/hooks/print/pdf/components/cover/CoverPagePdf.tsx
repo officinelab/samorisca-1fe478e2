@@ -11,18 +11,10 @@ interface CoverPagePdfProps {
 }
 
 const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout, isPageZero = false }) => {
-  // Controllo se il logo è visibile
-  const showLogo = restaurantLogo && restaurantLogo.trim() !== '';
-
-  // Controllo se la copertina ha i campi titolo e sottotitolo visibili
-  const showTitle = !customLayout?.cover?.title || customLayout.cover.title.visible !== false;
-  const showSubtitle = !customLayout?.cover?.subtitle || customLayout.cover.subtitle.visible !== false;
-
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>
-        {/* Logo del ristorante (se presente) */}
-        {showLogo && (
+        {restaurantLogo && (
           <View style={styles.coverLogoContainer}>
             <Image 
               src={restaurantLogo} 
@@ -31,19 +23,13 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, cus
           </View>
         )}
         
-        {/* Titolo del menu (se visibile) */}
-        {showTitle && (
-          <Text style={styles.coverTitle}>
-            Menu
-          </Text>
-        )}
+        <Text style={styles.coverTitle}>
+          {customLayout?.cover?.title?.visible !== false ? "Menu" : ""}
+        </Text>
         
-        {/* Sottotitolo del menu (se visibile) */}
-        {showSubtitle && (
-          <Text style={styles.coverSubtitle}>
-            Ristorante
-          </Text>
-        )}
+        <Text style={styles.coverSubtitle}>
+          {customLayout?.cover?.subtitle?.visible !== false ? "Ristorante" : ""}
+        </Text>
       </View>
       
       {/* Se non è impostato come pagina zero, mostra il numero di pagina */}

@@ -9,7 +9,7 @@ export interface CoverPageProps {
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  pageIndex?: number;
+  pageIndex?: number; // Added this prop to fix the type error
 }
 
 declare const CoverPage: React.FC<CoverPageProps>;

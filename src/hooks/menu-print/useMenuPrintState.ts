@@ -1,69 +1,102 @@
 
-import { useState, useEffect, useRef } from "react";
-import { useMenuData } from "@/hooks/useMenuData";
-import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { usePrintLogoStorage } from './usePrintLogoStorage';
-
-// Definiamo le costanti qui invece di importarle
-const A4_WIDTH = 210; // mm
-const A4_HEIGHT = 297; // mm
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMenuData } from "../useMenuData";
+import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
+import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
 
 export const useMenuPrintState = () => {
-  // Layout and display options
+  // Constants for A4 paper size
+  const A4_WIDTH_MM = 210;
+  const A4_HEIGHT_MM = 297;
+  
+  // Import layout management
+  const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
+  
+  // State for layout options
   const [layoutId, setLayoutId] = useState<string>("");
   const [language, setLanguage] = useState<string>("it");
-  const [printAllergens, setPrintAllergens] = useState<boolean>(false);
-  const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(false);
+  const [printAllergens, setPrintAllergens] = useState<boolean>(true);
+  const [showPageBoundaries, setShowPageBoundaries] = useState<boolean>(true);
   
-  // Menu data
+  // Import menu data
   const {
     categories,
     products,
     allergens,
+    labels,
+    features,
+    restaurantLogo,
+    updateRestaurantLogo,
     isLoading: isLoadingMenu,
-    error: menuError,
+    error,
+    retryLoading,
+    selectedCategories,
+    setSelectedCategories,
+    handleCategoryToggle,
+    handleToggleAllCategories
   } = useMenuData();
   
-  // Print operations
-  const printContentRef = useRef<HTMLDivElement>(null);
+  // Import print operations
+  const {
+    printContentRef
+  } = usePrintOperationsManager();
   
-  // Layouts
-  const { layouts, isLoading: isLoadingLayouts } = useMenuLayouts();
+  // Function to force layout refresh when needed
+  const forceLayoutRefresh = useCallback(() => {
+    console.log("Forzando refresh dei layout...");
+    forceRefresh();
+  }, [forceRefresh]);
   
-  // Utilizziamo il nuovo hook per il logo di stampa
-  const { printLogo, updatePrintLogo, isLoading: isLoadingLogo } = usePrintLogoStorage();
-  
-  // Constants
-  const A4_WIDTH_MM = A4_WIDTH;
-  const A4_HEIGHT_MM = A4_HEIGHT;
-  
-  // Page count
-  const [pageCount, setPageCount] = useState<number>(0);
-  
-  // Force layout refresh
-  const [forceUpdate, setForceUpdate] = useState(0);
-  const forceLayoutRefresh = () => {
-    setForceUpdate(prev => prev + 1);
-  };
-  
-  // Selected categories
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  // Imposta il layout predefinito all'avvio
   useEffect(() => {
-    if (categories && categories.length > 0) {
-      setSelectedCategories(categories.map((cat) => cat.id));
+    if (layouts && layouts.length > 0 && !layoutId) {
+      // Trova il layout predefinito o usa il primo disponibile
+      const defaultLayout = layouts.find(l => l.isDefault) || layouts[0];
+      if (defaultLayout) {
+        console.log("Impostazione layout predefinito:", defaultLayout.id);
+        setLayoutId(defaultLayout.id);
+      }
     }
-  }, [categories]);
+  }, [layouts, layoutId]);
   
-  useEffect(() => {
-    if (layouts && layouts.length > 0) {
-      setLayoutId(layouts[0].id);
+  // Calcola il numero di pagine in base alle categorie e prodotti selezionati
+  const pageCount = useMemo(() => {
+    if (isLoadingMenu || !categories || !products) {
+      return 1;
     }
-  }, [layouts]);
-
+    
+    // Per semplificare, selezioniamo tutte le categorie automaticamente
+    if (!selectedCategories || selectedCategories.length === 0) {
+      const allCategoryIds = categories.map(cat => cat.id);
+      setSelectedCategories(allCategoryIds);
+    }
+    
+    // Calcola il numero di prodotti nelle categorie disponibili
+    const totalProducts = categories.reduce((acc, cat) => {
+      return acc + (products[cat.id]?.length || 0);
+    }, 0);
+    
+    // Stima: pagina copertina + pagine prodotti + pagina allergeni
+    return 1 + Math.ceil(totalProducts / 10) + (printAllergens && allergens.length > 0 ? 1 : 0);
+  }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu, setSelectedCategories]);
+  
+  // Quando si carica la pagina, forza un aggiornamento dei layout
+  useEffect(() => {
+    forceLayoutRefresh();
+  }, [forceLayoutRefresh]);
+  
+  // Seleziona tutte le categorie per default
+  useEffect(() => {
+    if (!isLoadingMenu && categories && categories.length > 0 && (!selectedCategories || selectedCategories.length === 0)) {
+      const allCategoryIds = categories.map(cat => cat.id);
+      setSelectedCategories(allCategoryIds);
+    }
+  }, [isLoadingMenu, categories, selectedCategories, setSelectedCategories]);
+  
   return {
     // Layout and display options
-    layoutId,
-    setLayoutId,
+    layoutId, // Cambiato da layoutType a layoutId
+    setLayoutId, // Cambiato da setLayoutType a setLayoutId
     language,
     setLanguage,
     printAllergens,
@@ -75,10 +108,17 @@ export const useMenuPrintState = () => {
     categories,
     products,
     allergens,
+    labels,
+    features,
     isLoadingMenu,
-    menuError,
+    error,
+    retryLoading,
     selectedCategories,
     setSelectedCategories,
+    handleCategoryToggle,
+    handleToggleAllCategories,
+    restaurantLogo,
+    updateRestaurantLogo,
     
     // Print operations
     printContentRef,
@@ -87,15 +127,8 @@ export const useMenuPrintState = () => {
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
     pageCount,
-    setPageCount,
     
-    // Force layout refresh if needed
-    forceUpdate,
-    forceLayoutRefresh,
-
-    // Restituiamo il logo di stampa invece del logo del ristorante
-    restaurantLogo: printLogo,
-    updateRestaurantLogo: updatePrintLogo,
-    isLoadingLogo
+    // Refresh layout
+    forceLayoutRefresh
   };
 };
