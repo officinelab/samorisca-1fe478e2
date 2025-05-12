@@ -1,28 +1,27 @@
 
-import { toast } from "@/components/ui/sonner";
 import { usePrintPreparation } from "./usePrintPreparation";
-import { usePrintWindow } from "./usePrintWindow";
+import { useBrowserPrint } from "./useBrowserPrint";
+import { useSystemPrint } from "./useSystemPrint";
 
+/**
+ * Main hook that manages print operations by delegating to specialized hooks
+ */
 export const usePrintOperationsManager = () => {
-  const { printContentRef, getPrintContent } = usePrintPreparation();
-  const { createPrintWindow, writeToPrintWindow } = usePrintWindow();
+  // Get the printContentRef from the preparation hook
+  const { printContentRef } = usePrintPreparation();
   
-  // Open the browser's print dialog with specific handling
+  // Import browser print functionality
+  const { handleBrowserPrint } = useBrowserPrint();
+  
+  // Import system print functionality
+  const { handleSystemPrint } = useSystemPrint();
+  
+  // Handle print - currently uses the browser print method
   const handlePrint = () => {
-    const content = getPrintContent();
-    
-    if (!content) {
-      toast.error("Errore durante la preparazione della stampa.");
-      return;
-    }
-    
-    const printWindow = createPrintWindow();
-    if (printWindow) {
-      writeToPrintWindow(printWindow, content);
-    }
+    handleBrowserPrint();
   };
 
-  // Download the menu as PDF - currently uses the print function
+  // Download as PDF - currently just calls the print function
   // This could be enhanced with a PDF generation library in the future
   const handleDownloadPDF = () => {
     handlePrint();
@@ -34,4 +33,3 @@ export const usePrintOperationsManager = () => {
     handleDownloadPDF
   };
 };
-
