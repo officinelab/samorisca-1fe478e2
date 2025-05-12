@@ -30,33 +30,46 @@ export const LayoutSelector = ({
   const [open, setOpen] = useState(false);
   const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
   
-  // Create a safe version of layouts that's always a valid array
+  // Creiamo una versione sicura dei layout che è sempre un array valido
   const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
+
+  // Aggiungiamo log per debug
+  useEffect(() => {
+    console.log("LayoutSelector - Props:", { selectedLayout });
+    console.log("LayoutSelector - useMenuLayouts:", { layouts, activeLayout, isLoading, error });
+  }, [selectedLayout, layouts, activeLayout, isLoading, error]);
 
   useEffect(() => {
     if (error) {
       toast.error("Errore nel caricamento dei layout: " + error);
     }
     
-    // Make sure layouts is always an array even if undefined
+    // Assicuriamoci che layouts sia sempre un array anche se undefined
     if (Array.isArray(layouts)) {
+      console.log("LayoutSelector - Setting safeLayouts from layouts:", layouts);
       setSafeLayouts(layouts);
     } else {
+      console.warn("LayoutSelector - Layouts non è un array valido:", layouts);
       setSafeLayouts([]);
     }
   }, [error, layouts]);
 
   // Select layout based on active layout or selected layout
   const handleLayoutChange = (layoutId: string) => {
-    if (!layoutId) return;
+    if (!layoutId) {
+      console.warn("LayoutSelector - Layout ID non valido:", layoutId);
+      return;
+    }
     
     try {
+      console.log("LayoutSelector - Cambio layout:", layoutId);
       // Find the selected layout first
       const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
         changeActiveLayout(layoutId);
         setSelectedLayout(layout.type);
         setOpen(false);
+        console.log("LayoutSelector - Layout cambiato con successo:", layout);
       } else {
         console.error("Layout non trovato:", layoutId);
         toast.error("Layout selezionato non trovato");
@@ -95,10 +108,10 @@ export const LayoutSelector = ({
             <CommandInput placeholder="Cerca layout..." />
             <CommandEmpty>Nessun layout trovato.</CommandEmpty>
             <CommandGroup>
-              {safeLayouts.map((layout) => (
+              {Array.isArray(safeLayouts) && safeLayouts.map((layout) => (
                 <CommandItem
                   key={layout.id}
-                  value={layout.id}
+                  value={layout.id || `item-${Math.random()}`} // Garantiamo che value sia sempre definito
                   onSelect={() => handleLayoutChange(layout.id)}
                 >
                   <Check
@@ -107,7 +120,7 @@ export const LayoutSelector = ({
                       (activeLayout && activeLayout.id === layout.id) ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {layout.name}
+                  {layout.name || "Layout senza nome"}
                   {layout.isDefault && (
                     <span className="ml-auto text-xs text-muted-foreground">(Predefinito)</span>
                   )}

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { useLayoutStorage } from "./hooks/useLayoutStorage";
 import { useLayoutOperations } from "./hooks/useLayoutOperations";
@@ -19,6 +19,13 @@ export const useMenuLayouts = () => {
     setError
   } = useLayoutStorage();
 
+  // Aggiungiamo log per debug
+  useEffect(() => {
+    console.log("useMenuLayouts - layouts:", layouts);
+    console.log("useMenuLayouts - activeLayout:", activeLayout);
+    console.log("useMenuLayouts - isLoading:", isLoading);
+  }, [layouts, activeLayout, isLoading]);
+
   // Use operations hook for layout operations
   const {
     addLayout,
@@ -37,17 +44,25 @@ export const useMenuLayouts = () => {
 
   // Change active layout
   const changeActiveLayout = (layoutId: string) => {
-    if (!layouts || !Array.isArray(layouts)) return;
+    // Precauzioni extra per evitare errori con layouts undefined
+    if (!layouts || !Array.isArray(layouts)) {
+      console.warn("useMenuLayouts - changeActiveLayout: layouts non è un array valido", layouts);
+      return;
+    }
     
+    console.log("useMenuLayouts - changeActiveLayout:", layoutId);
     const newActiveLayout = layouts.find((layout) => layout.id === layoutId);
     if (newActiveLayout) {
+      console.log("useMenuLayouts - nuovo activeLayout:", newActiveLayout);
       setActiveLayout(newActiveLayout);
+    } else {
+      console.warn(`useMenuLayouts - Layout con id ${layoutId} non trovato`);
     }
   };
 
   return {
     // Garantisce che layouts sia sempre un array, anche se è undefined
-    layouts: layouts || [],
+    layouts: Array.isArray(layouts) ? layouts : [],
     activeLayout,
     isLoading,
     error,

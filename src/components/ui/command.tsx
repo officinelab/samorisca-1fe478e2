@@ -113,12 +113,23 @@ const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
 >(({ className, ...props }, ref) => {
-  // Make sure props are valid to prevent "not iterable" errors
+  // Aggiorniamo per garantire che props siano validi ed evitare errori "not iterable"
   const safeProps = { ...props };
+  
+  // Controllo di sicurezza per il valore, che deve essere sempre definito
+  // Questo è cruciale perché cmdk usa Array.from(value) internamente
   if (!safeProps.value) {
-    safeProps.value = String(Math.random()); // Generate a random value if none provided
-    console.warn("CommandItem received undefined value, using fallback");
+    console.warn("CommandItem ha ricevuto un value undefined, usando fallback");
+    safeProps.value = String(Math.random()); // Genera un valore casuale se non fornito
   }
+  
+  // Garantiamo che children sia sempre definito
+  if (!safeProps.children) {
+    console.warn("CommandItem ha ricevuto children undefined, usando fallback");
+    safeProps.children = "Item";
+  }
+  
+  console.log("CommandItem - rendering con value:", safeProps.value);
   
   return (
     <CommandPrimitive.Item

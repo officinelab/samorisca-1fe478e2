@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category, Product, Allergen } from "@/types/database";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import ClassicLayout from "./ClassicLayout";
@@ -33,11 +33,26 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
-  const { activeLayout } = useMenuLayouts();
+  const { activeLayout, layouts } = useMenuLayouts();
+  
+  // Aggiungiamo log per debug
+  useEffect(() => {
+    console.log("MenuLayoutSelector - Props:", { 
+      selectedLayout, 
+      showPageBoundaries, 
+      selectedCategories, 
+      language, 
+      printAllergens 
+    });
+    console.log("MenuLayoutSelector - activeLayout:", activeLayout);
+    console.log("MenuLayoutSelector - layouts disponibili:", layouts);
+  }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
   // Use selected layout as fallback if activeLayout is not available
   // Ensure we always have a valid layout type
   const effectiveLayoutType = activeLayout?.type || selectedLayout || "classic";
+  
+  console.log("MenuLayoutSelector - Layout selezionato:", effectiveLayoutType);
   
   const commonProps = {
     A4_WIDTH_MM,
@@ -59,7 +74,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
     case "allergens":
       return <AllergensLayout {...commonProps} />;
     case "custom":
-      // For custom layouts, use ClassicLayout as base
+      // Per i layout personalizzati, usa ClassicLayout come base
       return <ClassicLayout {...commonProps} />;
     case "classic":
     default:
