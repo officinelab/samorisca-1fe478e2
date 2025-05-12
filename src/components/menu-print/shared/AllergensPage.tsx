@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Allergen } from '@/types/database';
+import { PrintLayout } from '@/types/printLayout';
 
 type AllergensPageProps = {
   A4_WIDTH_MM: number;
@@ -9,6 +10,7 @@ type AllergensPageProps = {
   allergens: Allergen[];
   layoutType: 'classic' | 'modern' | 'allergens';
   restaurantLogo?: string | null;
+  customLayout?: PrintLayout | null;
 };
 
 const AllergensPage: React.FC<AllergensPageProps> = ({
@@ -17,7 +19,8 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   showPageBoundaries,
   allergens,
   layoutType,
-  restaurantLogo
+  restaurantLogo,
+  customLayout
 }) => {
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,

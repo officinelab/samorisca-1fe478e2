@@ -1,203 +1,91 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Printer, FileDown } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
-
-// Import dei componenti necessari
-import PrintOptions from "@/components/menu-print/PrintOptions";
-import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
-import { useMenuData } from "@/hooks/useMenuData";
-import { usePrintOperations } from "@/hooks/usePrintOperations";
-import MenuPrintPreview from "@/components/menu-print/MenuPrintPreview";
-
-// Dimensioni standard A4 in mm
-const A4_WIDTH_MM = 210;
-const A4_HEIGHT_MM = 297;
-const MM_TO_PX_FACTOR = 3.78; // Fattore di conversione approssimativo da mm a px
+import React from "react";
+import { useMenuPrintState } from "@/hooks/menu-print/useMenuPrintState";
+import PrintHeader from "@/components/menu-print/PrintHeader";
+import PrintPreview from "@/components/menu-print/PrintPreview";
+import OptionsCard from "@/components/menu-print/OptionsCard";
+import PrintStylesheet from "@/components/menu-print/PrintStylesheet";
 
 const MenuPrint = () => {
-  // Stati e hook necessari
-  const [layoutType, setLayoutType] = useState("classic");
-  const [language, setLanguage] = useState("it");
-  const [printAllergens, setPrintAllergens] = useState(true);
-  const [showPageBoundaries, setShowPageBoundaries] = useState(true);
-  
-  // Utilizzo degli hook esistenti
-  const { 
-    categories, 
-    products, 
-    allergens, 
-    isLoading: isLoadingMenu, 
-    selectedCategories, 
-    handleCategoryToggle, 
+  const {
+    // Layout and display options
+    layoutType,
+    setLayoutType,
+    language,
+    setLanguage,
+    printAllergens,
+    setPrintAllergens,
+    showPageBoundaries,
+    setShowPageBoundaries,
+    
+    // Menu data
+    categories,
+    products,
+    allergens,
+    isLoadingMenu,
+    selectedCategories,
+    handleCategoryToggle,
     handleToggleAllCategories,
     restaurantLogo,
-    updateRestaurantLogo
-  } = useMenuData();
-  
-  const { printContentRef, handlePrint, handleDownloadPDF } = usePrintOperations();
-
-  // Calcolo del numero approssimativo di pagine
-  const pageCount = Math.max(1, Math.ceil(selectedCategories.length / 3) + (printAllergens ? 1 : 0) + 1);
-
-  // Gestione errori di caricamento
-  useEffect(() => {
-    if (!isLoadingMenu && (!categories || !Array.isArray(categories) || categories.length === 0)) {
-      toast.error("Errore nel caricamento delle categorie");
-    }
-  }, [isLoadingMenu, categories]);
+    updateRestaurantLogo,
+    
+    // Print operations
+    printContentRef,
+    handlePrint,
+    handleDownloadPDF,
+    
+    // Constants
+    A4_WIDTH_MM,
+    A4_HEIGHT_MM,
+    pageCount
+  } = useMenuPrintState();
 
   return (
     <div className="space-y-6">
-      {/* Header con titolo e pulsanti di azione */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Stampa Menu</h1>
-        <div className="flex space-x-2">
-          <Button onClick={handlePrint} className="flex items-center">
-            <Printer className="mr-2 h-4 w-4" />
-            Stampa
-          </Button>
-          <Button onClick={handleDownloadPDF} variant="outline" className="flex items-center">
-            <FileDown className="mr-2 h-4 w-4" />
-            Scarica PDF
-          </Button>
-        </div>
-      </div>
+      {/* Header with title and action buttons */}
+      <PrintHeader
+        handlePrint={handlePrint}
+        handleDownloadPDF={handleDownloadPDF}
+      />
 
-      <p className="text-gray-600">
-        Personalizza e stampa il menu per il tuo ristorante. Scegli il layout, le categorie da includere e la lingua.
-      </p>
+      {/* Options card with print settings */}
+      <OptionsCard
+        restaurantLogo={restaurantLogo}
+        updateRestaurantLogo={updateRestaurantLogo}
+        language={language}
+        setLanguage={setLanguage}
+        layoutType={layoutType}
+        setLayoutType={setLayoutType}
+        printAllergens={printAllergens}
+        setPrintAllergens={setPrintAllergens}
+        showPageBoundaries={showPageBoundaries}
+        setShowPageBoundaries={setShowPageBoundaries}
+        categories={categories}
+        selectedCategories={selectedCategories}
+        handleCategoryToggle={handleCategoryToggle}
+        handleToggleAllCategories={handleToggleAllCategories}
+        isLoading={isLoadingMenu}
+      />
 
-      {/* Opzioni di stampa */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <RestaurantLogoUploader 
-            currentLogo={restaurantLogo} 
-            onLogoUploaded={updateRestaurantLogo} 
-          />
+      {/* Print preview */}
+      <PrintPreview
+        printContentRef={printContentRef}
+        layoutType={layoutType}
+        showPageBoundaries={showPageBoundaries}
+        categories={categories}
+        products={products}
+        selectedCategories={selectedCategories}
+        language={language}
+        allergens={allergens}
+        printAllergens={printAllergens}
+        restaurantLogo={restaurantLogo}
+        pageCount={pageCount}
+        A4_WIDTH_MM={A4_WIDTH_MM}
+        A4_HEIGHT_MM={A4_HEIGHT_MM}
+      />
 
-          <PrintOptions
-            language={language}
-            setLanguage={setLanguage}
-            layoutType={layoutType}
-            setLayoutType={setLayoutType}
-            printAllergens={printAllergens}
-            setPrintAllergens={setPrintAllergens}
-            showPageBoundaries={showPageBoundaries}
-            setShowPageBoundaries={setShowPageBoundaries}
-            categories={categories || []}
-            selectedCategories={selectedCategories}
-            handleCategoryToggle={handleCategoryToggle}
-            handleToggleAllCategories={handleToggleAllCategories}
-            isLoading={isLoadingMenu}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Anteprima di stampa */}
-      <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
-        <h2 className="text-lg font-semibold mb-2 print:hidden">Anteprima:</h2>
-        <div className="border rounded-md overflow-visible shadow print:border-0 print:shadow-none relative">
-          <ScrollArea className="h-[80vh] print:h-auto">
-            <div id="print-content" className="bg-white print:p-0 relative" ref={printContentRef}>
-              <MenuPrintPreview
-                layoutType={layoutType}
-                A4_WIDTH_MM={A4_WIDTH_MM}
-                A4_HEIGHT_MM={A4_HEIGHT_MM}
-                showPageBoundaries={showPageBoundaries}
-                categories={categories || []}
-                products={products || {}}
-                selectedCategories={selectedCategories}
-                language={language}
-                allergens={allergens || []}
-                printAllergens={printAllergens}
-                restaurantLogo={restaurantLogo}
-                pageCount={pageCount}
-              />
-            </div>
-          </ScrollArea>
-        </div>
-      </div>
-
-      {/* Stili per la stampa - visibili solo quando si stampa */}
-      <style>
-        {`
-        @media print {
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          html, body {
-            width: 210mm;
-            height: 297mm;
-            margin: 0;
-            padding: 0;
-          }
-          body * {
-            visibility: hidden;
-          }
-          #print-content, #print-content * {
-            visibility: visible;
-          }
-          .print\\:p-0, .print\\:p-0 * {
-            visibility: visible;
-          }
-          .print\\:p-0 {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .print-hidden {
-            display: none !important;
-          }
-          
-          /* Stile per il supporto corretto alla paginazione */
-          .page {
-            page-break-after: always;
-            break-after: page;
-            overflow: visible !important;
-            display: block;
-            height: auto !important;
-          }
-          .page:last-of-type {
-            page-break-after: avoid;
-            break-after: avoid;
-          }
-          .category {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            overflow: visible !important;
-          }
-          .menu-item {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            overflow: visible !important;
-          }
-          .allergen-item {
-            break-inside: avoid;
-          }
-
-          /* Assicurarsi che tutti i contenuti siano visibili */
-          .item-title, .item-description {
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            hyphens: auto;
-            max-width: 100%;
-          }
-          
-          /* Assicurarsi che il contenuto fluisca correttamente tra le pagine */
-          .menu-container {
-            height: auto !important;
-            max-height: none !important;
-            overflow: visible !important;
-          }
-        }
-      `}
-      </style>
+      {/* Print styles */}
+      <PrintStylesheet />
     </div>
   );
 };
