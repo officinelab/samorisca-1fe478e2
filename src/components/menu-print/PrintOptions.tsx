@@ -1,14 +1,15 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Category } from "@/types/database";
-import { BasicOptions } from "./options/BasicOptions";
-import { CategoriesOptions } from "./options/CategoriesOptions";
+import BasicOptions from "./options/BasicOptions";
+import CategorySelector from "./options/CategorySelector";
 
 interface PrintOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  selectedLayout: string;
-  setSelectedLayout: (layout: string) => void;
+  layoutType: string;
+  setLayoutType: (layout: string) => void;
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
@@ -16,14 +17,15 @@ interface PrintOptionsProps {
   categories: Category[];
   selectedCategories: string[];
   handleCategoryToggle: (categoryId: string) => void;
-  handleToggleAllCategories: () => void;
+  handleToggleAllCategories: (selected: boolean) => void;
+  isLoading: boolean;
 }
 
 const PrintOptions = ({
   language,
   setLanguage,
-  selectedLayout,
-  setSelectedLayout,
+  layoutType,
+  setLayoutType,
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
@@ -32,33 +34,38 @@ const PrintOptions = ({
   selectedCategories,
   handleCategoryToggle,
   handleToggleAllCategories,
+  isLoading
 }: PrintOptionsProps) => {
+  const [activeTab, setActiveTab] = useState("base");
+
   return (
-    <Tabs defaultValue="basic" className="w-full">
-      <TabsList>
-        <TabsTrigger value="basic">Opzioni Base</TabsTrigger>
-        <TabsTrigger value="categories">Categorie</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="base">Opzioni base</TabsTrigger>
+        <TabsTrigger value="categorie">Categorie</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="basic">
+      <TabsContent value="base" className="space-y-4 pt-4">
         <BasicOptions
           language={language}
           setLanguage={setLanguage}
-          selectedLayout={selectedLayout}
-          setSelectedLayout={setSelectedLayout}
+          layoutType={layoutType}
+          setLayoutType={setLayoutType}
           printAllergens={printAllergens}
           setPrintAllergens={setPrintAllergens}
           showPageBoundaries={showPageBoundaries}
           setShowPageBoundaries={setShowPageBoundaries}
+          isLoading={isLoading}
         />
       </TabsContent>
 
-      <TabsContent value="categories">
-        <CategoriesOptions
+      <TabsContent value="categorie" className="space-y-4 pt-4">
+        <CategorySelector
           categories={categories}
           selectedCategories={selectedCategories}
           handleCategoryToggle={handleCategoryToggle}
           handleToggleAllCategories={handleToggleAllCategories}
+          isLoading={isLoading}
         />
       </TabsContent>
     </Tabs>

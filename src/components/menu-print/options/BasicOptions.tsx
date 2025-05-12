@@ -1,74 +1,83 @@
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { LayoutSelector } from "./LayoutSelector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SimpleLayoutSelector } from './SimpleLayoutSelector';
 
 interface BasicOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  selectedLayout: string;
-  setSelectedLayout: (layout: string) => void;
+  layoutType: string;
+  setLayoutType: (layout: string) => void;
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
   setShowPageBoundaries: (show: boolean) => void;
+  isLoading: boolean;
 }
 
-export const BasicOptions = ({
+const BasicOptions: React.FC<BasicOptionsProps> = ({
   language,
   setLanguage,
-  selectedLayout,
-  setSelectedLayout,
+  layoutType,
+  setLayoutType,
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
   setShowPageBoundaries,
-}: BasicOptionsProps) => {
+  isLoading
+}) => {
   return (
-    <div className="space-y-4 pt-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <div className="text-sm font-medium mb-2">Lingua</div>
-        <RadioGroup value={language} onValueChange={setLanguage} className="flex gap-4">
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="it" id="r1" />
-            <Label htmlFor="r1">Italiano</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="en" id="r2" />
-            <Label htmlFor="r2">Inglese</Label>
-          </div>
-        </RadioGroup>
+        <Select 
+          value={language} 
+          onValueChange={setLanguage} 
+          disabled={isLoading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Seleziona lingua" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="it">Italiano</SelectItem>
+            <SelectItem value="en">Inglese</SelectItem>
+            <SelectItem value="de">Tedesco</SelectItem>
+            <SelectItem value="fr">Francese</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <LayoutSelector 
-        selectedLayout={selectedLayout} 
-        setSelectedLayout={setSelectedLayout} 
-      />
-
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">Stampa allergeni</span>
-          <span className="text-sm text-gray-500">Aggiunge una pagina con la legenda degli allergeni</span>
-        </div>
-        <Switch 
-          checked={printAllergens} 
-          onCheckedChange={setPrintAllergens} 
-          id="print-allergens" 
+      <div>
+        <SimpleLayoutSelector 
+          selectedLayout={layoutType}
+          setSelectedLayout={setLayoutType}
+          isLoading={isLoading}
         />
       </div>
-      
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">Mostra bordi pagina</span>
-          <span className="text-sm text-gray-500">Visualizza i bordi delle pagine nell'anteprima</span>
-        </div>
-        <Switch 
-          checked={showPageBoundaries} 
-          onCheckedChange={setShowPageBoundaries} 
-          id="show-boundaries" 
+
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="print-allergens"
+          checked={printAllergens}
+          onCheckedChange={setPrintAllergens}
+          disabled={isLoading}
         />
+        <Label htmlFor="print-allergens">Includi pagina allergeni</Label>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="page-boundaries"
+          checked={showPageBoundaries}
+          onCheckedChange={setShowPageBoundaries}
+          disabled={isLoading}
+        />
+        <Label htmlFor="page-boundaries">Mostra bordi pagina</Label>
       </div>
     </div>
   );
 };
+
+export default BasicOptions;

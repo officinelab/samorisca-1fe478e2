@@ -1,16 +1,17 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Printer, FileDown } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+
+// Import dei componenti necessari
 import PrintOptions from "@/components/menu-print/PrintOptions";
-import MenuLayoutSelector from "@/components/menu-print/MenuLayoutSelector";
-import PageBoundaries from "@/components/menu-print/PageBoundaries";
-import PageEstimator from "@/components/menu-print/PageEstimator";
 import RestaurantLogoUploader from "@/components/menu-print/RestaurantLogoUploader";
 import { useMenuData } from "@/hooks/useMenuData";
 import { usePrintOperations } from "@/hooks/usePrintOperations";
+import MenuPrintPreview from "@/components/menu-print/MenuPrintPreview";
 
 // Dimensioni standard A4 in mm
 const A4_WIDTH_MM = 210;
@@ -18,11 +19,18 @@ const A4_HEIGHT_MM = 297;
 const MM_TO_PX_FACTOR = 3.78; // Fattore di conversione approssimativo da mm a px
 
 const MenuPrint = () => {
+  // Stati e hook necessari
+  const [layoutType, setLayoutType] = useState("classic");
+  const [language, setLanguage] = useState("it");
+  const [printAllergens, setPrintAllergens] = useState(true);
+  const [showPageBoundaries, setShowPageBoundaries] = useState(true);
+  
+  // Utilizzo degli hook esistenti
   const { 
     categories, 
     products, 
     allergens, 
-    isLoading, 
+    isLoading: isLoadingMenu, 
     selectedCategories, 
     handleCategoryToggle, 
     handleToggleAllCategories,
@@ -31,22 +39,20 @@ const MenuPrint = () => {
   } = useMenuData();
   
   const { printContentRef, handlePrint, handleDownloadPDF } = usePrintOperations();
-  
-  const [language, setLanguage] = useState("it");
-  const [selectedLayout, setSelectedLayout] = useState("classic");
-  const [printAllergens, setPrintAllergens] = useState(true);
-  const [showPageBoundaries, setShowPageBoundaries] = useState(true);
 
-  const pageCount = PageEstimator({ 
-    selectedLayout, 
-    selectedCategories, 
-    categories, 
-    allergens, 
-    printAllergens 
-  });
+  // Calcolo del numero approssimativo di pagine
+  const pageCount = Math.max(1, Math.ceil(selectedCategories.length / 3) + (printAllergens ? 1 : 0) + 1);
+
+  // Gestione errori di caricamento
+  useEffect(() => {
+    if (!isLoadingMenu && (!categories || !Array.isArray(categories) || categories.length === 0)) {
+      toast.error("Errore nel caricamento delle categorie");
+    }
+  }, [isLoadingMenu, categories]);
 
   return (
     <div className="space-y-6">
+      {/* Header con titolo e pulsanti di azione */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Stampa Menu</h1>
         <div className="flex space-x-2">
@@ -76,16 +82,17 @@ const MenuPrint = () => {
           <PrintOptions
             language={language}
             setLanguage={setLanguage}
-            selectedLayout={selectedLayout}
-            setSelectedLayout={setSelectedLayout}
+            layoutType={layoutType}
+            setLayoutType={setLayoutType}
             printAllergens={printAllergens}
             setPrintAllergens={setPrintAllergens}
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
-            categories={categories}
+            categories={categories || []}
             selectedCategories={selectedCategories}
             handleCategoryToggle={handleCategoryToggle}
             handleToggleAllCategories={handleToggleAllCategories}
+            isLoading={isLoadingMenu}
           />
         </CardContent>
       </Card>
@@ -96,28 +103,21 @@ const MenuPrint = () => {
         <div className="border rounded-md overflow-visible shadow print:border-0 print:shadow-none relative">
           <ScrollArea className="h-[80vh] print:h-auto">
             <div id="print-content" className="bg-white print:p-0 relative" ref={printContentRef}>
-              <MenuLayoutSelector
-                selectedLayout={selectedLayout}
+              <MenuPrintPreview
+                layoutType={layoutType}
                 A4_WIDTH_MM={A4_WIDTH_MM}
                 A4_HEIGHT_MM={A4_HEIGHT_MM}
                 showPageBoundaries={showPageBoundaries}
-                categories={categories}
-                products={products}
+                categories={categories || []}
+                products={products || {}}
                 selectedCategories={selectedCategories}
                 language={language}
-                allergens={allergens}
+                allergens={allergens || []}
                 printAllergens={printAllergens}
                 restaurantLogo={restaurantLogo}
+                pageCount={pageCount}
               />
             </div>
-            {showPageBoundaries && (
-              <PageBoundaries
-                pageCount={pageCount}
-                A4_WIDTH_MM={A4_WIDTH_MM}
-                A4_HEIGHT_MM={A4_HEIGHT_MM}
-                MM_TO_PX_FACTOR={MM_TO_PX_FACTOR}
-              />
-            )}
           </ScrollArea>
         </div>
       </div>
