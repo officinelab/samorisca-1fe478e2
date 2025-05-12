@@ -1,11 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { loadLayouts } from "../storage";
 import { toast } from "@/components/ui/sonner";
 
 /**
  * Hook to load layouts from localStorage or default layouts
+ * with improved caching and synchronization
  */
 export const useLayoutStorage = () => {
   // Inizializza con array vuoto per evitare undefined
@@ -13,10 +14,16 @@ export const useLayoutStorage = () => {
   const [activeLayout, setActiveLayout] = useState<PrintLayout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cacheKey, setCacheKey] = useState<string>(Date.now().toString());
 
   // Aggiungiamo log per debug
   useEffect(() => {
     console.log("useLayoutStorage - Stato iniziale:", { layouts, activeLayout, isLoading });
+  }, []);
+
+  // Funzione per forzare un ricaricamento dei layout
+  const forceRefresh = useCallback(() => {
+    setCacheKey(Date.now().toString());
   }, []);
 
   // Load saved layouts from localStorage or default ones
@@ -24,7 +31,7 @@ export const useLayoutStorage = () => {
     const fetchLayouts = async () => {
       setIsLoading(true);
       try {
-        console.log("useLayoutStorage - Avvio caricamento layouts");
+        console.log("useLayoutStorage - Avvio caricamento layouts con cache key:", cacheKey);
         const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
         
         console.log("useLayoutStorage - Layout caricati:", loadedLayouts);
@@ -32,10 +39,24 @@ export const useLayoutStorage = () => {
         
         // Always ensure layouts is an array
         const safeLayouts = Array.isArray(loadedLayouts) ? loadedLayouts : [];
-        setLayouts(safeLayouts);
+        
+        // Assicuriamo che eventuali valori di colore esistenti non vengano persi
+        // Questo previene il problema della visualizzazione errata dei colori
+        const layoutsWithFixedColors = safeLayouts.map(layout => {
+          // Verifica e correggi i colori eventualmente invalidi
+          if (layout.elements?.category?.fontColor) {
+            // Assicura che tutti i colori siano in formato esadecimale valido
+            if (!layout.elements.category.fontColor.startsWith('#')) {
+              layout.elements.category.fontColor = '#000000';
+            }
+          }
+          return layout;
+        });
+        
+        setLayouts(layoutsWithFixedColors);
         
         // Make sure defaultLayout exists
-        setActiveLayout(defaultLayout || (safeLayouts.length > 0 ? safeLayouts[0] : null));
+        setActiveLayout(defaultLayout || (layoutsWithFixedColors.length > 0 ? layoutsWithFixedColors[0] : null));
         
         if (loadError) {
           console.error("useLayoutStorage - Errore durante il caricamento:", loadError);
@@ -56,7 +77,7 @@ export const useLayoutStorage = () => {
     };
     
     fetchLayouts();
-  }, []);
+  }, [cacheKey]); // Ora dipende anche da cacheKey per forzare il refresh
 
   // Aggiungiamo un effetto per debug dei cambiamenti
   useEffect(() => {
@@ -72,6 +93,7 @@ export const useLayoutStorage = () => {
     setActiveLayout,
     isLoading,
     error,
-    setError
+    setError,
+    forceRefresh // Nuova funzione per ricaricare i layout
   };
 };

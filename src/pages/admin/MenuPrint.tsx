@@ -35,8 +35,16 @@ const MenuPrint = () => {
     // Constants
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
-    pageCount
+    pageCount,
+    
+    // Force layout refresh if needed
+    forceLayoutRefresh
   } = useMenuPrintState();
+
+  // Log della pagina di stampa per debug
+  React.useEffect(() => {
+    console.log("MenuPrint - Rendering della pagina, layout:", layoutType);
+  }, [layoutType]);
 
   return (
     <div className="space-y-6">
@@ -66,6 +74,7 @@ const MenuPrint = () => {
         handleCategoryToggle={handleCategoryToggle}
         handleToggleAllCategories={handleToggleAllCategories}
         isLoading={isLoadingMenu}
+        forceLayoutRefresh={forceLayoutRefresh}
       />
 
       {/* Print preview */}

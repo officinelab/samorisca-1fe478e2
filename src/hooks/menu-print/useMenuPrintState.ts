@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMenuData } from "../useMenuData";
 import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
+import { useMenuLayouts } from "../menu-layouts/useMenuLayouts";
 
 export const useMenuPrintState = () => {
   // Constants for A4 paper size
@@ -40,6 +41,20 @@ export const useMenuPrintState = () => {
     handleDownloadPDF
   } = usePrintOperationsManager();
   
+  // Import layout management to force layout refresh
+  const { forceRefresh } = useMenuLayouts();
+  
+  // Function to force layout refresh when needed
+  const forceLayoutRefresh = useCallback(() => {
+    console.log("Forzando refresh dei layout...");
+    forceRefresh();
+    // Aggiorna anche il tipo di layout per forzare un re-render
+    setLayoutType(prevType => {
+      console.log("Re-impostazione del layout type:", prevType);
+      return prevType;
+    });
+  }, [forceRefresh]);
+  
   // Stima del numero di pagine in base al numero di categorie e prodotti selezionati
   useEffect(() => {
     if (!isLoadingMenu && categories && products && selectedCategories) {
@@ -53,6 +68,12 @@ export const useMenuPrintState = () => {
       setPageCount(estimatedPages);
     }
   }, [categories, products, selectedCategories, allergens, printAllergens, isLoadingMenu]);
+  
+  // Quando si carica la pagina, forza un aggiornamento dei layout
+  useEffect(() => {
+    // Forza un aggiornamento iniziale dei layout
+    forceLayoutRefresh();
+  }, [forceLayoutRefresh]);
   
   return {
     // Layout and display options
@@ -89,6 +110,9 @@ export const useMenuPrintState = () => {
     // Constants
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
-    pageCount
+    pageCount,
+    
+    // New function to force layout refresh
+    forceLayoutRefresh
   };
 };
