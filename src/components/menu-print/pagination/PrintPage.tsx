@@ -20,6 +20,23 @@ const PrintPage: React.FC<PrintPageProps> = ({
   showPageBoundaries,
   customLayout
 }) => {
+  // Aggiunge un numero di pagina in basso a destra (visibile solo in modalità anteprima)
+  const renderPageNumber = () => {
+    if (!showPageBoundaries) return null;
+    
+    return (
+      <div 
+        className="absolute text-xs text-muted-foreground" 
+        style={{
+          right: '5mm',
+          bottom: '5mm'
+        }}
+      >
+        Pagina {pageIndex}
+      </div>
+    );
+  };
+
   return (
     <div 
       className="page relative bg-white" 
@@ -45,6 +62,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
       >
         {children}
       </div>
+      {renderPageNumber()}
     </div>
   );
 };

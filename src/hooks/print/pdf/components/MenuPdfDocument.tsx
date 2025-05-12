@@ -34,6 +34,7 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
         styles={styles} 
         restaurantLogo={restaurantLogo} 
         customLayout={customLayout} 
+        isPageZero={true}
       />
       
       {categories.map((category, index) => (
@@ -44,7 +45,7 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({
           products={products} 
           language={language}
           customLayout={customLayout}
-          pageIndex={index + 1} // +1 perché la copertina è la pagina 0
+          pageIndex={index + 1} // Consideriamo la prima pagina di contenuto come pagina 1
         />
       ))}
       

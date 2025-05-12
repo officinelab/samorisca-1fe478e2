@@ -2,7 +2,6 @@
 import React from 'react';
 import { Category } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import { getElementStyle } from '../utils/styleUtils';
 
 interface RepeatedCategoryTitleProps {
   category: Category;
@@ -11,34 +10,52 @@ interface RepeatedCategoryTitleProps {
   isRepeated?: boolean;
 }
 
-const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
-  category,
+const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({ 
+  category, 
   language,
   customLayout,
-  isRepeated = false
+  isRepeated = false 
 }) => {
-  // Se non c'è un layout personalizzato o se la categoria non è visibile, non mostrare nulla
-  if (!customLayout || !customLayout.elements.category.visible) {
-    return null;
-  }
+  // Utilizza lo stile del layout personalizzato se disponibile
+  const getCategoryStyle = () => {
+    if (!customLayout || !customLayout.elements.category) {
+      return {
+        fontFamily: 'Arial',
+        fontSize: '18pt',
+        color: '#000',
+        fontWeight: 'bold',
+        fontStyle: 'normal',
+        textAlign: 'left',
+        marginBottom: '10px',
+      };
+    }
+    
+    const element = customLayout.elements.category;
+    return {
+      fontFamily: element.fontFamily || 'Arial',
+      fontSize: `${element.fontSize}pt`,
+      color: element.fontColor,
+      fontWeight: element.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: element.fontStyle === 'italic' ? 'italic' : 'normal',
+      textAlign: element.alignment as any, // casting necessario per TypeScript
+      marginTop: `${element.margin.top}mm`,
+      marginRight: `${element.margin.right}mm`,
+      marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
+      marginLeft: `${element.margin.left}mm`,
+    };
+  };
   
-  // Ottieni lo stile base per il titolo della categoria
-  const baseStyle = getElementStyle(customLayout.elements.category, {
-    marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-  });
-  
-  // Manteniamo lo stesso stile sia per i titoli originali che per quelli ripetuti
-  const titleStyle = baseStyle;
-
   return (
-    <h2 
-      style={titleStyle} 
-      className={isRepeated ? "category-title" : "category-title"}
-    >
-      {category[`title_${language}`] || category.title}
-    </h2>
+    <div className="category">
+      <h2 
+        className="category-title" 
+        style={getCategoryStyle()}
+      >
+        {/* Se è un titolo ripetuto, aggiungi un indicatore visivo (cont.) */}
+        {category[`title_${language}`] || category.title}
+        {isRepeated && <span className="text-muted-foreground text-sm"> (cont.)</span>}
+      </h2>
+    </div>
   );
 };
 

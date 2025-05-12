@@ -43,9 +43,17 @@ export const usePagination = ({
       let currentHeight = 0;
       let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
       let lastCategoryId: string | null = null;
+
+      // Aggiungiamo una guardia di sicurezza per prevenire loop infiniti
+      const MAX_PAGES = 100;
       
       // Funzione per aggiungere una nuova pagina
       const addNewPage = () => {
+        if (allPages.length >= MAX_PAGES) {
+          console.error("Limite massimo di pagine raggiunto, possibile loop infinito");
+          return false;
+        }
+        
         allPages.push([...currentPageContent]);
         
         // Reset per la prossima pagina
@@ -53,6 +61,7 @@ export const usePagination = ({
         currentPageIndex++;
         currentHeight = 0;
         availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
+        return true;
       };
       
       // Generiamo i contenuti per ciascuna pagina
@@ -70,7 +79,7 @@ export const usePagination = ({
         
         // Se non c'è spazio per il titolo della categoria nella pagina corrente, crea una nuova pagina
         if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
-          addNewPage();
+          if (!addNewPage()) return;
         }
         
         // Segna che abbiamo processato questa categoria
@@ -87,12 +96,16 @@ export const usePagination = ({
         currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
         
+        // Aggiungi spazio extra dopo il titolo della categoria
+        const categoryBottomMargin = customLayout?.spacing.categoryTitleBottomMargin || 5;
+        currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
+        
         // Contenitore per i prodotti di questa categoria in questa pagina
         let currentCategoryProducts: ProductItem[] = [];
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto
+          // Stima dell'altezza del prodotto (più accurata)
           const productHeight = estimateProductHeight(product, language);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
@@ -107,7 +120,7 @@ export const usePagination = ({
             }
             
             // Chiudi questa pagina e inizia una nuova
-            addNewPage();
+            if (!addNewPage()) return;
             
             // Nella nuova pagina, ripeti il titolo della categoria
             const repeatedCategoryTitle: CategoryTitleContent = {
@@ -120,6 +133,9 @@ export const usePagination = ({
             currentPageContent.push(repeatedCategoryTitle);
             currentHeight += categoryTitleHeight;
             
+            // Aggiungi spazio extra dopo il titolo ripetuto
+            currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
+            
             // Reset per i prodotti della nuova pagina
             currentCategoryProducts = [];
           }
@@ -127,11 +143,15 @@ export const usePagination = ({
           // Aggiungi il prodotto ai prodotti correnti
           currentCategoryProducts.push({
             type: 'product',
-            key: `product-${product.id}`,
+            key: `product-${product.id}-${currentPageIndex}-${productIndex}`,
             product
           });
           
           currentHeight += productHeight;
+          
+          // Aggiungi lo spazio tra prodotti
+          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
+          currentHeight += spacingBetweenProducts;
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
@@ -144,7 +164,8 @@ export const usePagination = ({
         }
         
         // Aggiungi lo spazio tra categorie
-        currentHeight += customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15;
+        const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
+        currentHeight += spacingBetweenCategories;
       });
       
       // Aggiungi l'ultima pagina se ci sono contenuti rimanenti
@@ -152,6 +173,7 @@ export const usePagination = ({
         allPages.push([...currentPageContent]);
       }
       
+      console.log(`Generato totale ${allPages.length} pagine`);
       setPages(allPages);
     };
     

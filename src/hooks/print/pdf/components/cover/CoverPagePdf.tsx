@@ -7,9 +7,10 @@ interface CoverPagePdfProps {
   styles: any;
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
+  isPageZero?: boolean;
 }
 
-const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout }) => {
+const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, customLayout, isPageZero = false }) => {
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.coverPage}>
@@ -30,6 +31,14 @@ const CoverPagePdf: React.FC<CoverPagePdfProps> = ({ styles, restaurantLogo, cus
           {customLayout?.cover?.subtitle?.visible !== false ? "Ristorante" : ""}
         </Text>
       </View>
+      
+      {/* Se non è impostato come pagina zero, mostra il numero di pagina */}
+      {!isPageZero && (
+        <Text 
+          style={styles.pageNumber} 
+          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} 
+        />
+      )}
     </Page>
   );
 };

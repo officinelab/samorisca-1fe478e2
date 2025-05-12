@@ -40,16 +40,18 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
 
   return (
     <>
-      {/* Pagina di copertina */}
+      {/* Pagina di copertina (considerata come pagina 0) */}
       <CoverPage 
         A4_WIDTH_MM={A4_WIDTH_MM} 
         A4_HEIGHT_MM={A4_HEIGHT_MM} 
         showPageBoundaries={showPageBoundaries}
         layoutType={customLayout?.type || "classic"}
         restaurantLogo={restaurantLogo}
+        pageIndex={0} // Imposta esplicitamente come pagina 0
       />
 
       {/* Contenuto paginato che gestisce automaticamente l'interruzione delle pagine */}
+      {/* La numerazione inizia da 1 dopo la copertina */}
       <PaginatedContent
         A4_WIDTH_MM={A4_WIDTH_MM}
         A4_HEIGHT_MM={A4_HEIGHT_MM}
@@ -59,6 +61,7 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         selectedCategories={selectedCategories}
         language={language}
         customLayout={customLayout}
+        startPageIndex={1} // Inizia da pagina 1
       />
           
       {/* Pagina degli allergeni */}

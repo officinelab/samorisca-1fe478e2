@@ -17,6 +17,7 @@ interface PaginatedContentProps {
   selectedCategories: string[];
   language: string;
   customLayout?: PrintLayout | null;
+  startPageIndex?: number;
 }
 
 const PaginatedContent: React.FC<PaginatedContentProps> = ({
@@ -27,7 +28,8 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   products,
   selectedCategories,
   language,
-  customLayout
+  customLayout,
+  startPageIndex = 1 // Inizia da pagina 1 per default (dopo la copertina)
 }) => {
   // Utilizziamo l'hook di paginazione per generare le pagine
   const { pages } = usePagination({
@@ -45,7 +47,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
       {pages.map((pageContent, pageIndex) => (
         <PrintPage
           key={`page-${pageIndex}`}
-          pageIndex={pageIndex}
+          pageIndex={startPageIndex + pageIndex}
           A4_WIDTH_MM={A4_WIDTH_MM}
           A4_HEIGHT_MM={A4_HEIGHT_MM}
           showPageBoundaries={showPageBoundaries}

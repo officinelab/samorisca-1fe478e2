@@ -8,10 +8,11 @@ export const getPrintScript = (): string => {
       // Add page numbers
       const pages = document.querySelectorAll('.page');
       pages.forEach((page, index) => {
-        if (index > 0) { // Skip the cover page
+        // Skip numbering for cover page (page 0)
+        if (!page.classList.contains('cover-page') && index > 0) { 
           const pageNumber = document.createElement('div');
           pageNumber.className = 'page-number';
-          pageNumber.textContent = index;
+          pageNumber.textContent = (index); // La pagina 1 inizia dopo la copertina
           page.appendChild(pageNumber);
         }
       });
