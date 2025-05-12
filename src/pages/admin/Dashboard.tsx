@@ -1,29 +1,54 @@
+
 // Importiamo i componenti necessari
 import React, { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BackToTopButton } from "@/components/ui/back-to-top-button";
 import { Product } from "@/types/database";
 import { Category } from "@/types/database";
-import { ProductForm } from "@/components/product/ProductForm";
-import { useProducts } from "@/hooks/products/useProducts";
-import { useCategories } from "@/hooks/categories/useCategories";
-import { Edit, Plus } from "lucide-react";
+import ProductForm from "@/components/product/ProductForm";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { deleteProduct } from "@/services/productService";
-import { confirm } from "@/components/ui/confirm-dialog";
+import { Edit, Plus } from "lucide-react";
 
 // Il componente Dashboard principale
 const Dashboard = () => {
   // Definiamo gli stati per la gestione dei prodotti e delle categorie
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { products, isLoading: isLoadingProducts, mutate: mutateProducts } = useProducts();
-  const { categories, isLoading: isLoadingCategories, mutate: mutateCategories } = useCategories();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   // Aggiungiamo un ref per mantenere il focus durante la ricerca
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+  
+  // Caricamento dei dati all'avvio
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Carica le categorie
+        setIsLoadingCategories(true);
+        const { data: categoriesData } = await fetch('/api/categories').then(res => res.json());
+        setCategories(categoriesData || []);
+        setIsLoadingCategories(false);
+        
+        // Carica i prodotti
+        setIsLoadingProducts(true);
+        const { data: productsData } = await fetch('/api/products').then(res => res.json());
+        setProducts(productsData || []);
+        setIsLoadingProducts(false);
+      } catch (error) {
+        console.error("Errore nel caricamento dei dati:", error);
+        toast.error("Errore nel caricamento dei dati");
+        setIsLoadingCategories(false);
+        setIsLoadingProducts(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
   
   // Assicuriamoci che il ref sia impostato dopo il rendering
   useEffect(() => {
@@ -41,31 +66,33 @@ const Dashboard = () => {
   const handleProductSave = () => {
     // After saving, clear the selected product and refresh the product list
     setSelectedProduct(null);
-    mutateProducts();
+    // Rifetch products
+    fetch('/api/products').then(res => res.json()).then(({ data }) => {
+      setProducts(data || []);
+    });
   };
 
   // Funzione per eliminare un prodotto
   const handleProductDelete = async (product: Product) => {
-    confirm({
-      title: "Sei sicuro di voler eliminare questo prodotto?",
-      description: "Questa azione è irreversibile.",
-      onConfirm: async () => {
-        try {
-          await deleteProduct(product.id);
-          mutateProducts();
-          setSelectedProduct(null);
-          toast.success("Prodotto eliminato con successo!");
-        } catch (error: any) {
-          toast.error(`Errore durante l'eliminazione del prodotto: ${error.message}`);
-        }
-      },
-    });
+    if (!confirm("Sei sicuro di voler eliminare questo prodotto?")) {
+      return;
+    }
+    
+    try {
+      await fetch(`/api/products/${product.id}`, { method: 'DELETE' });
+      // Aggiorna la lista dei prodotti dopo l'eliminazione
+      setProducts(products.filter(p => p.id !== product.id));
+      setSelectedProduct(null);
+      toast.success("Prodotto eliminato con successo!");
+    } catch (error: any) {
+      toast.error(`Errore durante l'eliminazione del prodotto: ${error.message}`);
+    }
   };
 
   // Filtra i prodotti in base al termine di ricerca
   const filteredProducts = products
     ? products.filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.title.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : [];
 
@@ -102,7 +129,7 @@ const Dashboard = () => {
                         if (product.category_id === category.id) {
                           return (
                             <li key={product.id} className="flex items-center justify-between py-2 border-b">
-                              <span>{product.name}</span>
+                              <span>{product.title}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"

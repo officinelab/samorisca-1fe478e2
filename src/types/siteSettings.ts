@@ -20,4 +20,5 @@ export interface SiteSettings {
   restaurantName?: string;
   footerText?: string;
   headerTitle?: string;
+  faviconUrl?: string | null;
 }
