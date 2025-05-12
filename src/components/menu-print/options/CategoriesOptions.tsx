@@ -65,4 +65,5 @@ export const CategoriesOptions = ({
   );
 };
 
+// Add a default export as well
 export default CategoriesOptions;
