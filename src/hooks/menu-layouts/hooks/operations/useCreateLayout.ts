@@ -19,7 +19,7 @@ export const useCreateLayout = (
       return createNewLayoutFromTemplate(name);
     }
     
-    const newLayout = createNewLayoutFromTemplate(name);
+    const newLayout = createNewLayoutFromTemplate(name, layouts);
     const updatedLayouts = [...layouts, newLayout];
     
     const { success, error: saveError } = await saveLayouts(updatedLayouts);
