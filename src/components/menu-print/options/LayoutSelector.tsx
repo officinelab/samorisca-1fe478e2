@@ -9,42 +9,36 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface LayoutSelectorProps {
-  selectedLayoutId: string; // Cambiato da selectedLayout a selectedLayoutId
-  setSelectedLayoutId: (layoutId: string) => void; // Cambiato da setSelectedLayout a setSelectedLayoutId
+  selectedLayoutId: string;
+  setSelectedLayoutId: (layoutId: string) => void;
+  isLoading: boolean;
+  forceLayoutRefresh: () => void;
+  showPageBoundaries: boolean;
+  setShowPageBoundaries: (show: boolean) => void;
 }
 
-export const LayoutSelector = ({
-  selectedLayoutId, // Cambiato da selectedLayout a selectedLayoutId
-  setSelectedLayoutId // Cambiato da setSelectedLayout a setSelectedLayoutId
-}: LayoutSelectorProps) => {
-  const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
+const LayoutSelector: React.FC<LayoutSelectorProps> = ({
+  selectedLayoutId,
+  setSelectedLayoutId,
+  isLoading: isExternalLoading,
+  forceLayoutRefresh,
+  showPageBoundaries,
+  setShowPageBoundaries
+}) => {
+  const { layouts = [], activeLayout, setActiveLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
   
   // Creiamo una versione sicura dei layout che è sempre un array valido
   const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
-
-  // Debug log
-  useEffect(() => {
-    console.log("LayoutSelector - Props:", { selectedLayoutId }); // selectedLayout -> selectedLayoutId
-    console.log("LayoutSelector - useMenuLayouts:", { 
-      layouts, 
-      activeLayout, 
-      isLoading, 
-      error,
-      layoutsLength: layouts?.length
-    });
-  }, [selectedLayoutId, layouts, activeLayout, isLoading, error]); // selectedLayout -> selectedLayoutId
+  const isLoading = isExternalLoading || isLayoutsLoading;
 
   // Controlla e gestisci i layout quando sono disponibili
   useEffect(() => {
-    if (error) {
-      toast.error("Errore nel caricamento dei layout: " + error);
-    }
-    
     // Assicuriamoci che layouts sia sempre un array anche se undefined
     if (Array.isArray(layouts)) {
-      console.log("LayoutSelector - Setting safeLayouts from layouts:", layouts);
       setSafeLayouts(layouts);
     } else {
       console.warn("LayoutSelector - Layouts non è un array valido:", layouts);
@@ -52,14 +46,14 @@ export const LayoutSelector = ({
     }
 
     // Se non c'è un layout selezionato, usa il layout attivo o il primo disponibile
-    if (!selectedLayoutId && !isLoading) { // selectedLayout -> selectedLayoutId
+    if (!selectedLayoutId && !isLoading) {
       if (activeLayout) {
-        setSelectedLayoutId(activeLayout.id); // Usa l'ID invece del tipo
+        setSelectedLayoutId(activeLayout.id);
       } else if (Array.isArray(layouts) && layouts.length > 0) {
-        setSelectedLayoutId(layouts[0].id); // Usa l'ID invece del tipo
+        setSelectedLayoutId(layouts[0].id);
       }
     }
-  }, [error, layouts, activeLayout, isLoading, selectedLayoutId, setSelectedLayoutId]); // selectedLayout -> selectedLayoutId
+  }, [layouts, activeLayout, isLoading, selectedLayoutId, setSelectedLayoutId]);
 
   // Gestisce il cambio di layout
   const handleLayoutChange = (layoutId: string) => {
@@ -69,13 +63,11 @@ export const LayoutSelector = ({
     }
     
     try {
-      console.log("LayoutSelector - Cambio layout:", layoutId);
       // Trova il layout selezionato
       const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
-        changeActiveLayout(layoutId);
-        setSelectedLayoutId(layoutId); // Imposta l'ID direttamente
-        console.log("LayoutSelector - Layout cambiato con successo:", layout);
+        setActiveLayout(layoutId);
+        setSelectedLayoutId(layoutId);
       } else {
         console.error("Layout non trovato:", layoutId);
         toast.error("Layout selezionato non trovato");
@@ -86,9 +78,19 @@ export const LayoutSelector = ({
     }
   };
 
+  // Forza il refresh del layout
+  const handleRefreshLayout = () => {
+    forceLayoutRefresh();
+    toast.success("Layout aggiornato");
+  };
+
   // Determine il testo da mostrare nel pulsante del layout
   const getLayoutButtonText = () => {
     if (isLoading) return "Caricamento...";
+    
+    const selectedLayout = safeLayouts.find(l => l.id === selectedLayoutId);
+    if (selectedLayout) return selectedLayout.name;
+    
     if (activeLayout) return activeLayout.name;
     return "Seleziona layout...";
   };
@@ -96,42 +98,55 @@ export const LayoutSelector = ({
   // Fallback se non ci sono layout disponibili
   if (safeLayouts.length === 0 && !isLoading) {
     return (
-      <div>
-        <div className="text-sm font-medium mb-2">Layout</div>
-        <Select disabled defaultValue="">
-          <SelectTrigger>
-            <SelectValue placeholder="Nessun layout disponibile" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Nessun layout disponibile</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="space-y-4">
+        <div>
+          <div className="text-sm font-medium mb-2">Layout</div>
+          <Select disabled defaultValue="">
+            <SelectTrigger>
+              <SelectValue placeholder="Nessun layout disponibile" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nessun layout disponibile</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="text-sm font-medium mb-2">Layout</div>
-      <Select 
-        value={selectedLayoutId} // Usa selectedLayoutId invece di activeLayout?.id
-        onValueChange={handleLayoutChange}
-        disabled={isLoading || safeLayouts.length === 0}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder={getLayoutButtonText()} />
-        </SelectTrigger>
-        <SelectContent>
-          {safeLayouts.map((layout) => (
-            <SelectItem key={layout.id} value={layout.id}>
-              {layout.name || "Layout senza nome"}
-              {layout.isDefault && (
-                <span className="ml-2 text-xs text-muted-foreground">(Predefinito)</span>
-              )}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="space-y-4">
+      <div>
+        <div className="text-sm font-medium mb-2">Layout</div>
+        <Select 
+          value={selectedLayoutId}
+          onValueChange={handleLayoutChange}
+          disabled={isLoading || safeLayouts.length === 0}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={getLayoutButtonText()} />
+          </SelectTrigger>
+          <SelectContent>
+            {safeLayouts.map((layout) => (
+              <SelectItem key={layout.id} value={layout.id}>
+                {layout.name || "Layout senza nome"}
+                {layout.isDefault && (
+                  <span className="ml-2 text-xs text-muted-foreground">(Predefinito)</span>
+                )}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Switch 
+          id="show-boundaries"
+          checked={showPageBoundaries}
+          onCheckedChange={setShowPageBoundaries}
+        />
+        <Label htmlFor="show-boundaries">Mostra margini pagina</Label>
+      </div>
     </div>
   );
 };

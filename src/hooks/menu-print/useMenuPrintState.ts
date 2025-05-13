@@ -12,7 +12,7 @@ const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 
 export const useMenuPrintState = () => {
-  const { settings, updateSettings } = useSiteSettings();
+  const { siteSettings, saveSetting } = useSiteSettings();
   const { layouts, activeLayout, forceRefresh, isLoading: isLayoutsLoading } = useMenuLayouts();
   const { language, setLanguage } = useLanguageStore();
   
@@ -60,15 +60,15 @@ export const useMenuPrintState = () => {
   
   // Carica il logo del ristorante dalle impostazioni
   useEffect(() => {
-    if (settings.restaurant_logo) {
-      setRestaurantLogo(settings.restaurant_logo);
+    if (siteSettings?.restaurant_logo) {
+      setRestaurantLogo(siteSettings.restaurant_logo);
     }
-  }, [settings.restaurant_logo]);
+  }, [siteSettings?.restaurant_logo]);
   
   // Funzione per aggiornare il logo del ristorante
   const updateRestaurantLogo = async (logoUrl: string) => {
     setRestaurantLogo(logoUrl);
-    await updateSettings({ restaurant_logo: logoUrl });
+    await saveSetting('restaurant_logo', logoUrl);
   };
   
   // Funzione per forzare l'aggiornamento del layout
