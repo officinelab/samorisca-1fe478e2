@@ -1,13 +1,9 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 
 // Fattore di conversione più preciso da millimetri a pixel
 // Incrementato leggermente rispetto al precedente per migliorare la precisione
 const MM_TO_PX = 3.85;
-
-// Margine di sicurezza aggiuntivo (in mm) per prevenire sovrapposizioni
-const SAFETY_MARGIN_MM = 5;
 
 /**
  * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
@@ -19,6 +15,7 @@ export const calculateAvailableHeight = (
 ): number => {
   let marginTop = 20;
   let marginBottom = 20;
+  let safetyMargin = 20; // Valore predefinito per il margine di sicurezza
   
   if (customLayout) {
     if (customLayout.page.useDistinctMarginsForPages) {
@@ -26,19 +23,22 @@ export const calculateAvailableHeight = (
         // Pagina dispari (1,3,5)
         marginTop = customLayout.page.oddPages?.marginTop || customLayout.page.marginTop;
         marginBottom = customLayout.page.oddPages?.marginBottom || customLayout.page.marginBottom;
+        safetyMargin = marginBottom; // Imposta il margine di sicurezza uguale al margine inferiore
       } else {
         // Pagina pari (2,4,6)
         marginTop = customLayout.page.evenPages?.marginTop || customLayout.page.marginTop;
         marginBottom = customLayout.page.evenPages?.marginBottom || customLayout.page.marginBottom;
+        safetyMargin = marginBottom; // Imposta il margine di sicurezza uguale al margine inferiore
       }
     } else {
       marginTop = customLayout.page.marginTop;
       marginBottom = customLayout.page.marginBottom;
+      safetyMargin = marginBottom; // Imposta il margine di sicurezza uguale al margine inferiore
     }
   }
   
-  // Sottraiamo un margine di sicurezza per evitare di riempire troppo la pagina
-  return (A4_HEIGHT_MM - marginTop - marginBottom - SAFETY_MARGIN_MM) * MM_TO_PX;
+  // Sottraiamo un margine di sicurezza pari al margine inferiore per evitare di riempire troppo la pagina
+  return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
 /**

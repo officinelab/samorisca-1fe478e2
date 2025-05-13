@@ -131,6 +131,20 @@ const PrintPage: React.FC<PrintPageProps> = ({
             </div>
           </div>
           
+          {/* Area di sicurezza (uguale al margine inferiore) */}
+          <div 
+            className="absolute left-0 right-0 pointer-events-none" 
+            style={{
+              bottom: `${margins.bottom * 2}mm`, // Posizionata al doppio del margine inferiore dal basso
+              borderTop: '1px dashed rgba(239, 68, 68, 0.5)',
+              zIndex: 40,
+            }}
+          >
+            <div className="absolute left-2 top-0 transform -translate-y-full bg-white/80 px-1 py-0.5 text-[10px] text-red-600 rounded">
+              Zona sicurezza ({margins.bottom}mm)
+            </div>
+          </div>
+          
           {/* Linea di divisione pagina */}
           <div className="absolute left-0 right-0 bottom-0 flex justify-center">
             <div 
@@ -165,18 +179,18 @@ const PrintPage: React.FC<PrintPageProps> = ({
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}
     >
-      {/* Linea che indica il limite del contenuto sicuro (escluso il margine di sicurezza) */}
+      {/* Linea che indica il limite del contenuto sicuro (basato sul margine inferiore) */}
       {showPageBoundaries && (
         <div 
           className="absolute left-0 right-0 pointer-events-none" 
           style={{
-            bottom: `${5}mm`, // Margine di sicurezza di 5mm
+            bottom: `${margins.bottom}mm`, // Margine di sicurezza uguale al margine inferiore
             borderTop: '1px dashed rgba(239, 68, 68, 0.5)',
             zIndex: 40,
           }}
         >
           <div className="absolute left-2 top-0 transform -translate-y-full bg-white/80 px-1 py-0.5 text-[10px] text-red-600 rounded">
-            Limite contenuto sicuro (5mm)
+            Limite contenuto sicuro ({margins.bottom}mm)
           </div>
         </div>
       )}
