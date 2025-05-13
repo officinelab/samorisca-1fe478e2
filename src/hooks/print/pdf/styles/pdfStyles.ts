@@ -6,6 +6,19 @@ import { createCoverStyles } from './coverStyles';
 import { createContentStyles } from './contentStyles';
 import { createAllergensStyles } from './allergensStyles';
 
+// Font registration for PDF renderer
+import { Font } from '@react-pdf/renderer';
+
+// Register Roboto font for PDF use
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular.ttf', fontWeight: 'normal' },
+    { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold.ttf', fontWeight: 'bold' },
+    { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-italic.ttf', fontStyle: 'italic' },
+  ]
+});
+
 export const createPdfStyles = (customLayout?: PrintLayout | null) => {
   if (!customLayout) {
     return defaultStyles();
