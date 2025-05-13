@@ -73,9 +73,15 @@ serve(async (req) => {
     }
 
     // Prepare prompt for Perplexity
-    const prompt = `Translate the following Italian text into ${languageNames[targetLanguage]}. Maintain any special formatting or terms. Only respond with the translation, nothing else. No explanations, no original text.
+    const prompt = `Sei un esperto traduttore specializzato in cucina italiana. Traduci il seguente testo italiano in ${languageNames[targetLanguage]} come se fosse destinato a un menu di un ristorante italiano, usando termini culinari appropriati e naturali. 
 
-Text to translate: "${text}"`;
+Importante:
+- Mantieni ESATTAMENTE lo stesso formato di maiuscole e minuscole del testo originale
+- Non tradurre i nomi propri di piatti italiani tradizionali
+- Usa la terminologia culinaria appropriata per la lingua di destinazione
+- Restituisci SOLO la traduzione, senza spiegazioni o testo aggiuntivo
+
+Testo da tradurre: "${text}"`;
 
     console.log(`Translating text to ${targetLanguage}. Text length: ${text.length}`);
 
@@ -91,14 +97,20 @@ Text to translate: "${text}"`;
         messages: [
           {
             role: 'system',
-            content: `You are a professional translator specializing in translating Italian to ${languageNames[targetLanguage]}. Provide only the translation without any additional text or explanations.`
+            content: `Sei un traduttore professionista specializzato nella traduzione dall'italiano al ${languageNames[targetLanguage]}, con particolare expertise nella terminologia gastronomica e nei menu di ristoranti italiani. 
+            
+Devi rispettare rigorosamente le seguenti regole:
+1. Mantieni ESATTAMENTE lo stesso formato di maiuscole e minuscole del testo originale
+2. Non tradurre i nomi propri dei piatti italiani tradizionali (es. lasagne, tagliatelle, panna cotta)
+3. Usa esclusivamente la terminologia culinaria appropriata e naturale per la lingua di destinazione
+4. Non aggiungere alcun testo, spiegazione o commento oltre alla traduzione richiesta`
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 500,
       }),
     });
