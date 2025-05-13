@@ -14,6 +14,7 @@ import MenuPreview from "./pages/admin/MenuPreview";
 import MenuPrint from "./pages/admin/MenuPrint";
 import PublicMenu from "./pages/public/PublicMenu";
 import NotFound from "./pages/NotFound";
+import MultilingualPage from "./pages/admin/MultilingualPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="settings" element={<MenuSettings />} />
               <Route path="preview" element={<MenuPreview />} />
               <Route path="print" element={<MenuPrint />} />
+              <Route path="multilingual" element={<MultilingualPage />} />
               
               {/* Redirect old allergens route to settings */}
               <Route path="allergens" element={<Navigate to="/admin/settings" state={{ activeTab: 'allergens' }} replace />} />

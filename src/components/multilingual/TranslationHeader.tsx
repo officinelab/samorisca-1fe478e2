@@ -1,0 +1,45 @@
+
+import { LanguageSelector } from "./LanguageSelector";
+import { TokenStatus } from "./TokenStatus";
+import { SupportedLanguage } from "@/types/translation";
+import { Progress } from "@/components/ui/progress";
+import { useTranslationStats } from "@/hooks/useTranslationStats";
+
+interface TranslationHeaderProps {
+  selectedLanguage: SupportedLanguage;
+  onLanguageChange: (language: SupportedLanguage) => void;
+}
+
+export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: TranslationHeaderProps) => {
+  const { stats, isLoading } = useTranslationStats(selectedLanguage);
+
+  return (
+    <div className="sticky top-0 z-10 bg-white border-b p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-6 justify-between">
+        <div className="flex gap-4 items-center">
+          <LanguageSelector 
+            selectedLanguage={selectedLanguage} 
+            onChange={onLanguageChange} 
+          />
+          <TokenStatus />
+        </div>
+        
+        <div className="w-full md:w-64">
+          <div className="flex justify-between mb-1">
+            <span className="text-sm font-medium">Progresso traduzione:</span>
+            <span className="text-sm font-medium">
+              {isLoading ? '...' : `${stats.translated}/${stats.total}`}
+            </span>
+          </div>
+          <Progress 
+            value={isLoading ? 0 : stats.percentage} 
+            className="h-2" 
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            {isLoading ? 'Caricamento statistiche...' : `${stats.percentage}% completato`}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
