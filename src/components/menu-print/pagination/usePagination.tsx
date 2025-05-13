@@ -117,8 +117,8 @@ export const usePagination = ({
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Usa la nuova funzione di misurazione precisa dell'altezza
-          const productHeight = estimateProductHeight(product, language, customLayout);
+          // Stima dell'altezza del prodotto
+          const productHeight = estimateProductHeight(product, language);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {

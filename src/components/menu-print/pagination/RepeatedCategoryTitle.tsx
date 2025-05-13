@@ -10,72 +10,48 @@ interface RepeatedCategoryTitleProps {
   isRepeated?: boolean;
 }
 
-const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
-  category,
+const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({ 
+  category, 
   language,
   customLayout,
-  isRepeated = false
+  isRepeated = false 
 }) => {
-  // Funzione per ottenere gli stili del titolo
-  const getTitleStyle = (): React.CSSProperties => {
-    const baseStyle: React.CSSProperties = {
-      fontFamily: 'Arial',
-      fontSize: '16pt',
-      fontWeight: 'bold',
-      color: '#000000',
-      marginBottom: '10px',
-      paddingBottom: '5px',
-      borderBottom: '1px solid #000',
-      textAlign: 'left',
-    };
-    
-    // Se non c'è un layout personalizzato, usa lo stile base
-    if (!customLayout) {
-      return baseStyle;
+  // Utilizza lo stile del layout personalizzato se disponibile
+  const getCategoryStyle = () => {
+    if (!customLayout || !customLayout.elements.category) {
+      return {
+        fontFamily: 'Arial',
+        fontSize: '18pt',
+        color: '#000',
+        fontWeight: 'bold' as const,
+        fontStyle: 'normal' as const,
+        textAlign: 'left' as React.CSSProperties['textAlign'],
+        marginBottom: '10px',
+      };
     }
     
-    // Usa le configurazioni dal layout personalizzato
-    const categoryStyle = customLayout.elements.category;
-    
+    const element = customLayout.elements.category;
     return {
-      fontFamily: categoryStyle.fontFamily,
-      fontSize: `${categoryStyle.fontSize}pt`,
-      fontWeight: categoryStyle.fontStyle === 'bold' ? 'bold' : 'normal',
-      fontStyle: categoryStyle.fontStyle === 'italic' ? 'italic' : 'normal',
-      color: categoryStyle.fontColor,
-      textAlign: categoryStyle.alignment as "left" | "center" | "right" | "justify",
-      marginTop: `${categoryStyle.margin.top}mm`,
-      marginRight: `${categoryStyle.margin.right}mm`,
+      fontFamily: element.fontFamily || 'Arial',
+      fontSize: `${element.fontSize}pt`,
+      color: element.fontColor,
+      fontWeight: element.fontStyle === 'bold' ? 'bold' as const : 'normal' as const,
+      fontStyle: element.fontStyle === 'italic' ? 'italic' as const : 'normal' as const,
+      textAlign: element.alignment as React.CSSProperties['textAlign'],
+      marginTop: `${element.margin.top}mm`,
+      marginRight: `${element.margin.right}mm`,
       marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
-      marginLeft: `${categoryStyle.margin.left}mm`,
-      paddingBottom: '5px',
-      borderBottom: '1px solid #000',
-      // Se è un titolo ripetuto, aggiungi un'indicazione visiva
-      ...(isRepeated && {
-        fontSize: `${Math.max(categoryStyle.fontSize - 2, 12)}pt`, // Leggermente più piccolo
-        opacity: 0.9,
-        fontStyle: 'italic'
-      })
+      marginLeft: `${element.margin.left}mm`,
     };
   };
   
-  // Non renderizzare se il titolo non deve essere visibile
-  if (customLayout && customLayout.elements.category.visible === false) {
-    return null;
-  }
-  
   return (
-    <div className="category-title">
+    <div className="category">
       <h2 
-        style={getTitleStyle()}
-        className={`category-heading ${isRepeated ? 'repeated-title' : ''}`}
+        className="category-title" 
+        style={getCategoryStyle()}
       >
         {category[`title_${language}`] || category.title}
-        {isRepeated && (
-          <span style={{ fontSize: '0.8em', opacity: 0.7, marginLeft: '8px' }}>
-            (continua)
-          </span>
-        )}
       </h2>
     </div>
   );
