@@ -70,12 +70,42 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
                 });
                 
                 if (detailsError) throw detailsError;
-                productAllergensDetails = allergensDetails || [];
+                
+                // Applica le traduzioni agli allergeni se disponibili
+                productAllergensDetails = (allergensDetails || []).map(allergen => {
+                  // Prima controlla se esiste una traduzione per la lingua corrente
+                  const translatedTitle = language !== 'it' && allergen[`title_${language}`] 
+                    ? allergen[`title_${language}`] 
+                    : allergen.title;
+                    
+                  const translatedDescription = language !== 'it' && allergen[`description_${language}`]
+                    ? allergen[`description_${language}`]
+                    : allergen.description;
+                  
+                  return {
+                    ...allergen,
+                    // Manteniamo i campi originali ma aggiungiamo i campi di visualizzazione
+                    displayTitle: translatedTitle,
+                    displayDescription: translatedDescription
+                  };
+                });
               }
+              
+              // Applica le traduzioni ai prodotti se disponibili
+              const displayTitle = language !== 'it' && product[`title_${language}`]
+                ? product[`title_${language}`]
+                : product.title;
+                
+              const displayDescription = language !== 'it' && product[`description_${language}`]
+                ? product[`description_${language}`]
+                : product.description;
               
               return {
                 ...product,
-                allergens: productAllergensDetails
+                allergens: productAllergensDetails,
+                // Aggiungiamo campi di visualizzazione che non alterano la struttura originale
+                displayTitle,
+                displayDescription
               } as Product;
             }));
             
@@ -94,7 +124,25 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
         });
         
         if (allergensError) throw allergensError;
-        setAllergens(allergensData || []);
+        
+        // Applica le traduzioni agli allergeni se disponibili
+        const translatedAllergens = (allergensData || []).map(allergen => {
+          const translatedTitle = language !== 'it' && allergen[`title_${language}`]
+            ? allergen[`title_${language}`]
+            : allergen.title;
+            
+          const translatedDescription = language !== 'it' && allergen[`description_${language}`]
+            ? allergen[`description_${language}`]
+            : allergen.description;
+          
+          return {
+            ...allergen,
+            displayTitle: translatedTitle,
+            displayDescription: translatedDescription
+          };
+        });
+        
+        setAllergens(translatedAllergens);
         
       } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
@@ -105,7 +153,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     };
     
     loadData();
-  }, [isPreview, previewLanguage]);
+  }, [language, isPreview, previewLanguage]);
 
   return {
     categories,

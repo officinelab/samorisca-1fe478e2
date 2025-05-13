@@ -21,14 +21,18 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
   addToCart,
   truncateText
 }) => {
+  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
+  const title = product.displayTitle || product.title;
+  const description = product.displayDescription || product.description;
+
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-lg mb-1">{product.title}</h3>
+            <h3 className="font-bold text-lg mb-1">{title}</h3>
             <p className="text-gray-600 text-sm mb-2">
-              {truncateText(product.description, 110)}
+              {truncateText(description, 110)}
             </p>
             
             {product.allergens && product.allergens.length > 0 && (
@@ -45,7 +49,7 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
           </div>
           
           <div className="relative">
-            <CardImage src={product.image_url} alt={product.title} mobileView />
+            <CardImage src={product.image_url} alt={title} mobileView />
             
             <Button 
               variant="default" 
@@ -73,12 +77,16 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
 }) => {
   const isMobileView = useIsMobile() || deviceView === 'mobile';
   
+  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
+  const title = product.displayTitle || product.title;
+  const description = product.displayDescription || product.description;
+  
   return (
     <Card horizontal className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
       {product.image_url ? (
         <CardImage 
           src={product.image_url} 
-          alt={product.title} 
+          alt={title} 
           className="w-1/6 h-auto" 
           square={isMobileView} 
         />
@@ -91,7 +99,7 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
       <CardContent className="flex-1 p-4">
         <div className="flex justify-between items-start mb-1">
           <h3 className="font-medium text-lg">
-            {product.title}
+            {title}
           </h3>
           
           {!product.has_multiple_prices && (
@@ -99,8 +107,8 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
           )}
         </div>
         
-        {product.description && (
-          <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+        {description && (
+          <p className="text-gray-600 text-sm mb-2">{description}</p>
         )}
         
         {product.allergens && product.allergens.length > 0 && (

@@ -14,6 +14,7 @@ interface CategorySectionProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
+  language?: string;
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -23,14 +24,20 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   onSelectProduct,
   addToCart,
   deviceView,
-  truncateText
+  truncateText,
+  language = 'it'
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
 
+  // Usa il titolo tradotto se disponibile nella lingua selezionata, altrimenti usa il titolo italiano
+  const categoryTitle = language !== 'it' && category[`title_${language}`] 
+    ? category[`title_${language}`] 
+    : category.title;
+
   return (
     <section id={`category-${category.id}`} className="scroll-mt-20">
-      <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
+      <h2 className="text-2xl font-bold mb-4">{categoryTitle}</h2>
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-24 w-full" />

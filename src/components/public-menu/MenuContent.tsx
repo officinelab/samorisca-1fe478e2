@@ -17,6 +17,7 @@ interface MenuContentProps {
   setSelectedProduct: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
+  language: string;
 }
 
 export const MenuContent: React.FC<MenuContentProps> = ({
@@ -30,7 +31,8 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   toggleAllergensInfo,
   setSelectedProduct,
   addToCart,
-  truncateText
+  truncateText,
+  language
 }) => {
   return (
     <div className={deviceView === 'desktop' ? 'col-span-3' : ''}>
@@ -46,6 +48,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
               addToCart={addToCart}
               deviceView={deviceView}
               truncateText={truncateText}
+              language={language}
             />
           ))}
 

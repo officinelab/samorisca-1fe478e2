@@ -1,57 +1,77 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Category } from "@/types/database";
+import { Category } from '@/types/database';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CategorySidebarProps {
   categories: Category[];
   selectedCategory: string | null;
   deviceView: 'mobile' | 'desktop';
   onSelectCategory: (categoryId: string) => void;
+  language?: string;
 }
 
 export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   categories,
   selectedCategory,
   deviceView,
-  onSelectCategory
+  onSelectCategory,
+  language = 'it'
 }) => {
-  return (
-    <div className={`${deviceView === 'desktop' ? '' : 'mb-4'}`}>
-      <div className="sticky top-20">
-        {deviceView === 'mobile' ? (
-          <ScrollArea className="w-full">
-            <div className="flex space-x-2 pb-2 px-1">
-              {categories.map(category => (
-                <Button 
-                  key={category.id} 
-                  variant={selectedCategory === category.id ? "default" : "outline"} 
-                  className="whitespace-nowrap" 
-                  onClick={() => onSelectCategory(category.id)}
-                >
-                  {category.title}
-                </Button>
-              ))}
+  // Se deviceView è desktop, mostra la sidebar laterale
+  if (deviceView === 'desktop') {
+    return (
+      <div className="col-span-1">
+        <div className="sticky top-24">
+          <h3 className="text-lg font-semibold mb-2">Categorie</h3>
+          <ScrollArea className="h-[calc(100vh-180px)]">
+            <div className="space-y-1 pr-4">
+              {categories.map(category => {
+                // Usa il titolo tradotto se disponibile nella lingua selezionata
+                const categoryTitle = language !== 'it' && category[`title_${language}`]
+                  ? category[`title_${language}`]
+                  : category.title;
+                
+                return (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "ghost"}
+                    className="w-full justify-start"
+                    onClick={() => onSelectCategory(category.id)}
+                  >
+                    {categoryTitle}
+                  </Button>
+                );
+              })}
             </div>
           </ScrollArea>
-        ) : (
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="font-bold text-lg mb-3">Categorie</h2>
-            <div className="space-y-1">
-              {categories.map(category => (
-                <Button 
-                  key={category.id} 
-                  variant={selectedCategory === category.id ? "default" : "ghost"} 
-                  className="w-full justify-start" 
-                  onClick={() => onSelectCategory(category.id)}
-                >
-                  {category.title}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
+      </div>
+    );
+  }
+
+  // Altrimenti, mostra la navigazione orizzontale sopra
+  return (
+    <div className="mb-6 overflow-x-auto hide-scrollbar">
+      <div className="flex space-x-2 pb-2">
+        {categories.map(category => {
+          // Usa il titolo tradotto se disponibile nella lingua selezionata
+          const categoryTitle = language !== 'it' && category[`title_${language}`]
+            ? category[`title_${language}`]
+            : category.title;
+          
+          return (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              onClick={() => onSelectCategory(category.id)}
+              className="whitespace-nowrap"
+            >
+              {categoryTitle}
+            </Button>
+          );
+        })}
       </div>
     </div>
   );

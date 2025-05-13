@@ -36,7 +36,7 @@ export const AllergensSection: React.FC<AllergensSectionProps> = ({
                 <Badge variant="outline" className="mr-2">
                   {allergen.number}
                 </Badge>
-                <span className="text-sm">{allergen.title}</span>
+                <span className="text-sm">{allergen.displayTitle || allergen.title}</span>
               </div>
             ))}
           </div>

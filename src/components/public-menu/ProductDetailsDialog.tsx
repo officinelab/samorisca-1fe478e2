@@ -22,12 +22,16 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   const handleClose = () => onClose();
   
   if (!product) return null;
+
+  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
+  const title = product.displayTitle || product.title;
+  const description = product.displayDescription || product.description;
   
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{product.title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
@@ -35,7 +39,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
             <div className="w-full h-48 relative rounded-md overflow-hidden">
               <img 
                 src={product.image_url} 
-                alt={product.title} 
+                alt={title} 
                 className="w-full h-full object-cover" 
               />
             </div>
@@ -43,7 +47,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           
           <div>
             <h4 className="font-semibold mb-1">Descrizione</h4>
-            <p className="text-gray-600">{product.description || "Nessuna descrizione disponibile."}</p>
+            <p className="text-gray-600">{description || "Nessuna descrizione disponibile."}</p>
           </div>
           
           {product.allergens && product.allergens.length > 0 && (
@@ -52,7 +56,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
               <div className="flex flex-wrap gap-2">
                 {product.allergens.map(allergen => (
                   <Badge key={allergen.id} variant="outline">
-                    {allergen.number} - {allergen.title}
+                    {allergen.number} - {allergen.displayTitle || allergen.title}
                   </Badge>
                 ))}
               </div>

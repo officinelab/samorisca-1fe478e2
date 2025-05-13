@@ -8,6 +8,17 @@ export interface Allergen {
   display_order: number;
   created_at?: string;
   updated_at?: string;
+  title_en?: string | null;
+  title_fr?: string | null;
+  title_es?: string | null;
+  title_de?: string | null;
+  description_en?: string | null;
+  description_fr?: string | null;
+  description_es?: string | null;
+  description_de?: string | null;
+  // Campi di visualizzazione per le traduzioni
+  displayTitle?: string;
+  displayDescription?: string;
 }
 
 export interface Category {
@@ -19,6 +30,14 @@ export interface Category {
   display_order: number;
   created_at?: string;
   updated_at?: string;
+  title_en?: string | null;
+  title_fr?: string | null;
+  title_es?: string | null;
+  title_de?: string | null;
+  description_en?: string | null;
+  description_fr?: string | null;
+  description_es?: string | null;
+  description_de?: string | null;
 }
 
 export interface ProductLabel {
@@ -38,6 +57,10 @@ export interface ProductFeature {
   display_order: number;
   created_at?: string;
   updated_at?: string;
+  title_en?: string | null;
+  title_fr?: string | null;
+  title_es?: string | null;
+  title_de?: string | null;
 }
 
 export interface Product {
@@ -62,6 +85,17 @@ export interface Product {
   allergens?: Allergen[];
   features?: ProductFeature[];
   label?: ProductLabel;
+  title_en?: string | null;
+  title_fr?: string | null;
+  title_es?: string | null;
+  title_de?: string | null;
+  description_en?: string | null;
+  description_fr?: string | null;
+  description_es?: string | null;
+  description_de?: string | null;
+  // Campi di visualizzazione per le traduzioni
+  displayTitle?: string;
+  displayDescription?: string;
 }
 
 export interface ProductAllergen {

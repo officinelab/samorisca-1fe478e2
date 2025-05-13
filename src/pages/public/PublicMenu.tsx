@@ -94,6 +94,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             selectedCategory={selectedCategory}
             deviceView={deviceView}
             onSelectCategory={scrollToCategory}
+            language={language}
           />
 
           {/* Main menu content */}
@@ -109,6 +110,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             setSelectedProduct={setSelectedProduct}
             addToCart={addToCart}
             truncateText={truncateText}
+            language={language}
           />
         </div>
       </div>
