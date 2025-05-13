@@ -27,7 +27,7 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
       try {
         const { data, error } = await supabase
           .from('categories')
-          .select('id, title')
+          .select('id, title, is_active, display_order, image_url, description')
           .order('display_order', { ascending: true });
           
         if (error) {
@@ -64,7 +64,7 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
             price_standard, price_suffix, 
             price_variant_1_name, price_variant_2_name,
             has_price_suffix, has_multiple_prices,
-            image_url
+            image_url, category_id, is_active, display_order
           `)
           .eq('category_id', selectedCategoryId)
           .order('display_order', { ascending: true });
@@ -97,7 +97,7 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
           price_standard, price_suffix, 
           price_variant_1_name, price_variant_2_name,
           has_price_suffix, has_multiple_prices,
-          image_url, 
+          image_url, category_id, is_active, display_order,
           label:label_id(id, title, color),
           allergens:product_allergens(allergen:allergen_id(id, title, number)),
           features:product_to_features(feature:feature_id(id, title))
@@ -114,7 +114,7 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
         ...data,
         allergens: data.allergens?.map((a: any) => a.allergen) || [],
         features: data.features?.map((f: any) => f.feature) || []
-      };
+      } as unknown as Product;
       
       setSelectedProduct(formattedProduct);
     } catch (error) {

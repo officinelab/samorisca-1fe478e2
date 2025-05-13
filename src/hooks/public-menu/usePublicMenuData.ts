@@ -58,18 +58,14 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
               
               if (allergensError) throw allergensError;
               
-              let productAllergensDetails: {
-                id: string;
-                number: number;
-                title: string;
-              }[] = [];
+              let productAllergensDetails: Allergen[] = [];
               
               if (productAllergens && productAllergens.length > 0) {
                 const allergenIds = productAllergens.map(pa => pa.allergen_id);
                 const {
                   data: allergensDetails,
                   error: detailsError
-                } = await supabase.from('allergens').select('id, number, title').in('id', allergenIds).order('number', {
+                } = await supabase.from('allergens').select('*').in('id', allergenIds).order('number', {
                   ascending: true
                 });
                 

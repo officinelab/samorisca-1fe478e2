@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TranslationField } from "./TranslationField";
@@ -50,7 +50,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
           throw error;
         }
         
-        setItems(data.map(item => ({ 
+        setItems(data.map((item: any) => ({ 
           ...item, 
           type: selectedEntityType.type 
         })));
