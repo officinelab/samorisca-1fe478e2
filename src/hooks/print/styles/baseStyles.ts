@@ -20,6 +20,8 @@ export const getBaseStyles = (): string => {
     
     * {
       box-sizing: border-box;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
     
     .page {
@@ -30,7 +32,7 @@ export const getBaseStyles = (): string => {
       page-break-after: always;
       break-after: page;
       position: relative;
-      overflow: hidden; /* Modificato da "visible" a "hidden" per contenere correttamente il contenuto */
+      overflow: hidden;
     }
     
     .page:last-of-type {
@@ -41,8 +43,19 @@ export const getBaseStyles = (): string => {
     .menu-container {
       margin: 0 auto;
       max-width: 100%;
-      overflow: hidden; /* Modificato da "visible" a "hidden" */
+      overflow: hidden;
       height: 100%;
+    }
+    
+    /* Previeni divisioni di elementi critici */
+    .category-title {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    
+    .menu-item {
+      break-inside: avoid !important; 
+      page-break-inside: avoid !important;
     }
 
     @media print {
@@ -61,12 +74,14 @@ export const getBaseStyles = (): string => {
       
       .page-break {
         page-break-before: always;
+        break-before: page;
       }
       
       /* Assicura che gli elementi non siano divisi tra pagine */
+      .category-title,
       .menu-item {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
     }
   `;

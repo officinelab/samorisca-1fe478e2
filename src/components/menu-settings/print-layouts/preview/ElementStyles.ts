@@ -16,6 +16,9 @@ export const getElementStyle = (config: PrintLayout['elements']['category']) => 
       fontStyle: 'normal',
       textAlign: 'left',
       margin: '0',
+      maxWidth: '100%',
+      overflowWrap: 'break-word',
+      wordWrap: 'break-word',
     } as React.CSSProperties;
   }
   
@@ -30,6 +33,9 @@ export const getElementStyle = (config: PrintLayout['elements']['category']) => 
     marginRight: `${config.margin.right}mm`,
     marginBottom: `${config.margin.bottom}mm`,
     marginLeft: `${config.margin.left}mm`,
+    maxWidth: '100%',
+    overflowWrap: 'break-word',
+    wordWrap: 'break-word',
   } as React.CSSProperties;
 };
 

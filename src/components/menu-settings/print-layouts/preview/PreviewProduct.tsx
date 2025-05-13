@@ -12,7 +12,10 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
   return (
     <div 
       style={{
-        marginBottom: `${layout.spacing.betweenProducts}mm`
+        marginBottom: `${layout.spacing.betweenProducts}mm`,
+        maxWidth: '100%',
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word'
       }}
     >
       <div style={{
@@ -66,7 +69,8 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
         <div style={{
           ...getElementStyle(layout.elements.description),
           maxWidth: '95%',
-          width: '100%'
+          width: '100%',
+          hyphens: 'auto'
         }}>
           {product.description}
         </div>
