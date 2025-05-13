@@ -43,31 +43,22 @@ export const calculateAvailableHeight = (
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
   if (!customLayout) return 35; // Valore di default aumentato per sicurezza
   
-  // Prendiamo il font size della categoria come base
-  const fontSize = customLayout.elements.category.fontSize || 16;
-  const marginBottom = customLayout.spacing.categoryTitleBottomMargin || 5;
+  // Aumentiamo il fattore di scala per garantire spazio sufficiente
+  const baseFontSize = customLayout.elements.category.fontSize * 1.6; 
+  const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
   
-  // Altezza base in base al font size + margini
-  return (fontSize * 1.5) + (marginBottom * MM_TO_PX); 
+  return (baseFontSize + marginBottom) * 1.3; // Fattore moltiplicativo aumentato
 };
 
 /**
- * Stima l'altezza di un prodotto in base alle sue caratteristiche e al layout
+ * Stima l'altezza di un prodotto in base alle sue caratteristiche
  */
 export const estimateProductHeight = (
   product: Product,
   language: string,
-  customLayout?: PrintLayout | null,
 ): number => {
-  // Ottieni i font size dal layout o usa valori di default
-  const titleFontSize = customLayout?.elements.title.fontSize || 12;
-  const descriptionFontSize = customLayout?.elements.description.fontSize || 10;
-  const allergensFontSize = customLayout?.elements.allergensList.fontSize || 10;
-  const priceVariantsFontSize = customLayout?.elements.priceVariants.fontSize || 10;
-  
-  // Altezza base per l'intestazione (titolo + prezzo) che è sempre presente
-  // La altezza base dipende dalla dimensione del font del titolo
-  let height = titleFontSize * 2.2;
+  // Altezza base aumentata per tutti i prodotti
+  let height = 35;
   
   // Incrementa altezza se c'è una descrizione
   const hasDescription = !!product.description || !!product[`description_${language}`];
@@ -75,32 +66,27 @@ export const estimateProductHeight = (
     const descriptionText = (product[`description_${language}`] as string) || product.description || "";
     const descriptionLength = descriptionText.length;
     
-    // Calcolo più preciso in base alla lunghezza del testo e alla dimensione del font
-    const lineHeight = descriptionFontSize * 1.5; // Altezza di una linea di testo
-    const charsPerLine = 90; // Caratteri approssimati per linea a 10pt
-    const estimatedLines = Math.ceil(descriptionLength / charsPerLine);
-    
-    height += estimatedLines * lineHeight;
-    
-    // Aggiungi un po' di spazio per il margine tra titolo e descrizione
-    height += 8;
+    // Stima più precisa dell'altezza della descrizione basata sulla lunghezza del testo
+    if (descriptionLength > 200) {
+      height += 70; // Per descrizioni molto lunghe
+    } else if (descriptionLength > 100) {
+      height += 45; // Per descrizioni lunghe
+    } else if (descriptionLength > 50) {
+      height += 30; // Per descrizioni medie
+    } else {
+      height += 20; // Per descrizioni brevi
+    }
   }
   
-  // Spazio aggiuntivo se ci sono allergeni
-  if (product.allergens && product.allergens.length > 0) {
-    height += allergensFontSize * 1.7;
-  }
-  
-  // Spazio aggiuntivo per varianti di prezzo
+  // Aumenta altezza per varianti di prezzo multiple
   if (product.has_multiple_prices) {
-    const variantsCount = (product.price_variant_1_name ? 1 : 0) + 
-                         (product.price_variant_2_name ? 1 : 0);
-    height += priceVariantsFontSize * 1.8 * variantsCount;
+    height += 25;
   }
   
-  // Considera lo spazio tra prodotti definito nel layout
-  const betweenProductsSpace = customLayout?.spacing?.betweenProducts || 5;
-  height += betweenProductsSpace * MM_TO_PX / 2; // Solo metà dello spazio perché l'altra metà è già considerata nel prodotto successivo
+  // Aumenta altezza se il prodotto ha allergeni
+  if (product.allergens && product.allergens.length > 0) {
+    height += 15;
+  }
   
   return height;
 };

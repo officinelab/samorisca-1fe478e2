@@ -83,7 +83,7 @@ export const usePagination = ({
         }
       };
       
-      // Flag che indica se stiamo iniziando una nuova categoria
+      // Stiamo per iniziare una nuova categoria?
       let startingNewCategory = true;
       
       // Generiamo i contenuti per ciascuna pagina con un algoritmo migliorato
@@ -93,7 +93,7 @@ export const usePagination = ({
         // Se la categoria è vuota, saltiamo
         if (categoryProducts.length === 0) return;
         
-        // Altezza stimata del titolo della categoria più accurata
+        // Altezza stimata del titolo della categoria
         const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
         
         // Verifica se il titolo della categoria può entrare nella pagina corrente
@@ -115,12 +115,16 @@ export const usePagination = ({
         currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
         
-        // Processa tutti i prodotti della categoria con stime più precise
+        // Aggiungi spazio extra dopo il titolo della categoria
+        const categoryBottomMargin = customLayout?.spacing?.categoryTitleBottomMargin || 5;
+        currentHeight += categoryBottomMargin * MM_TO_PX / 3.8; // Conversione più precisa
+        
+        // Processa tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
           // Stima dell'altezza del prodotto con miglior precisione
-          const productHeight = estimateProductHeight(product, language, customLayout);
+          const productHeight = estimateProductHeight(product, language);
           
-          // Controllo rigoroso: se il prodotto NON entra nella pagina corrente, inizia una nuova pagina
+          // Se il prodotto NON entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
             // Aggiungi i prodotti correnti al contenuto della pagina
             addRemainingProducts();
@@ -138,6 +142,9 @@ export const usePagination = ({
             
             currentPageContent.push(repeatedCategoryTitle);
             currentHeight += categoryTitleHeight;
+            
+            // Aggiungi spazio extra dopo il titolo ripetuto
+            currentHeight += categoryBottomMargin * MM_TO_PX / 3.8;
           }
           
           // Aggiungi il prodotto ai prodotti correnti
@@ -149,8 +156,11 @@ export const usePagination = ({
           
           currentHeight += productHeight;
           
-          // Debug logging per verificare l'altezza stimata
-          console.log(`Prodotto: ${product.title}, Altezza stimata: ${productHeight}px, Altezza corrente pagina: ${currentHeight}px, Altezza disponibile: ${availableHeight}px`);
+          // Aggiungi lo spazio tra prodotti
+          const spacingBetweenProducts = customLayout?.spacing?.betweenProducts 
+            ? customLayout.spacing.betweenProducts * MM_TO_PX / 3.8
+            : 10;
+          currentHeight += spacingBetweenProducts;
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
@@ -158,8 +168,10 @@ export const usePagination = ({
         
         // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
         if (categoryIndex < filteredCategories.length - 1) {
-          const spacingBetweenCategories = customLayout?.spacing?.betweenCategories || 15;
-          currentHeight += spacingBetweenCategories * MM_TO_PX;
+          const spacingBetweenCategories = customLayout?.spacing?.betweenCategories 
+            ? customLayout.spacing.betweenCategories * MM_TO_PX / 3.8
+            : 15;
+          currentHeight += spacingBetweenCategories;
         }
         
         // La prossima categoria sarà nuova (non una continuazione)
