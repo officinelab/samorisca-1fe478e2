@@ -1,78 +1,83 @@
 
-import React from 'react';
+import React from "react";
 
-/**
- * Componente che aggiunge stili dedicati alla stampa,
- * per garantire una corretta visualizzazione del menu quando stampato
- */
-const PrintStylesheet = () => {
+const PrintStylesheet: React.FC = () => {
   return (
-    <style jsx global>{`
-      /* Reset per tutti i margini e padding di default */
-      @page {
-        size: A4;
-        margin: 0;
-        padding: 0;
-      }
+    <style>
+      {`
+        @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          html, body {
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            padding: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #print-content, #print-content * {
+            visibility: visible;
+          }
+          .print\\:p-0, .print\\:p-0 * {
+            visibility: visible;
+          }
+          .print\\:p-0 {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          .print-hidden {
+            display: none !important;
+          }
+          
+          /* Stile per il supporto corretto alla paginazione */
+          .page {
+            page-break-after: always;
+            break-after: page;
+            overflow: visible !important;
+            display: block;
+            height: auto !important;
+          }
+          .page:last-of-type {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+          .category {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            overflow: visible !important;
+          }
+          .menu-item {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            overflow: visible !important;
+          }
+          .allergen-item {
+            break-inside: avoid;
+          }
 
-      /* Stili per la stampa */
-      @media print {
-        body, html {
-          width: 100%;
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          background-color: white;
+          /* Assicurarsi che tutti i contenuti siano visibili */
+          .item-title, .item-description {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+            max-width: 100%;
+          }
+          
+          /* Assicurarsi che il contenuto fluisca correttamente tra le pagine */
+          .menu-container {
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+          }
         }
-
-        .page {
-          overflow: hidden !important; /* Nasconde il contenuto che esce dai confini */
-          page-break-after: always !important;
-          break-after: page !important;
-          display: block;
-          background-color: white;
-          box-shadow: none !important;
-          position: relative;
-        }
-
-        .menu-container {
-          overflow: hidden !important; /* Nasconde il contenuto che esce dai confini */
-          background-color: white;
-        }
-
-        /* Non spezzare a metà titolo o singolo prodotto */
-        .category-title,
-        .repeated-category-title,
-        .menu-item,
-        .product-item {
-          page-break-inside: avoid !important;
-          break-inside: avoid !important;
-        }
-
-        /* Nascondi gli elementi che non servono in stampa */
-        button, .print:hidden, .print-hidden,
-        nav, header, .header, .navbar,
-        .print-actions, .page-controls,
-        .scroll-area-scrollbar, .actions-bar {
-          display: none !important;
-        }
-        
-        /* Rimuove lo scrollbar */
-        ::-webkit-scrollbar {
-          width: 0px;
-          background: transparent;
-        }
-        
-        /* Altri stili di stampa */
-        a {
-          text-decoration: none;
-          color: inherit;
-        }
-      }
-    `}</style>
+      `}
+    </style>
   );
 };
 

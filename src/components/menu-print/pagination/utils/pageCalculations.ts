@@ -1,61 +1,103 @@
 
-import { Category, Product } from '@/types/database';
-import { PrintLayout } from '@/types/printLayout';
-import { estimateCategoryTitleHeight, estimateProductHeight } from '@/hooks/pagination/useTextMeasurement';
-import { MM_TO_PX } from '@/hooks/menu-layouts/constants';
+import { PrintLayout } from "@/types/printLayout";
+import { Category, Product } from "@/types/database";
+
+// Fattore di conversione più preciso da millimetri a pixel
+const MM_TO_PX = 3.78;
 
 /**
- * Calcola l'altezza disponibile in una pagina
+ * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
  */
 export const calculateAvailableHeight = (
   pageIndex: number, 
   A4_HEIGHT_MM: number, 
   customLayout?: PrintLayout | null
 ): number => {
-  if (!customLayout) {
-    // Default margins: top 20mm, bottom 20mm
-    return (A4_HEIGHT_MM - 20 - 20) * MM_TO_PX;
-  }
+  let marginTop = 20;
+  let marginBottom = 20;
   
-  let marginTop = customLayout.page.marginTop;
-  let marginBottom = customLayout.page.marginBottom;
-  
-  if (customLayout.page.useDistinctMarginsForPages) {
-    // Pagina dispari (pageIndex 0, 2, 4... corrispondono alle pagine 1, 3, 5...)
-    if (pageIndex % 2 === 0) {
-      marginTop = customLayout.page.oddPages?.marginTop ?? marginTop;
-      marginBottom = customLayout.page.oddPages?.marginBottom ?? marginBottom;
+  if (customLayout) {
+    if (customLayout.page.useDistinctMarginsForPages) {
+      if (pageIndex % 2 === 0) {
+        // Pagina dispari (1,3,5)
+        marginTop = customLayout.page.oddPages?.marginTop || customLayout.page.marginTop;
+        marginBottom = customLayout.page.oddPages?.marginBottom || customLayout.page.marginBottom;
+      } else {
+        // Pagina pari (2,4,6)
+        marginTop = customLayout.page.evenPages?.marginTop || customLayout.page.marginTop;
+        marginBottom = customLayout.page.evenPages?.marginBottom || customLayout.page.marginBottom;
+      }
     } else {
-      // Pagina pari (pageIndex 1, 3, 5... corrispondono alle pagine 2, 4, 6...)
-      marginTop = customLayout.page.evenPages?.marginTop ?? marginTop;
-      marginBottom = customLayout.page.evenPages?.marginBottom ?? marginBottom;
+      marginTop = customLayout.page.marginTop;
+      marginBottom = customLayout.page.marginBottom;
     }
   }
   
-  // Converti da mm a pixel
-  return (A4_HEIGHT_MM - marginTop - marginBottom) * MM_TO_PX;
+  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
+  const safetyMargin = 5;
+  return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
 /**
- * Filtra le categorie in base alla selezione
+ * Stima l'altezza di un titolo categoria in base al layout
  */
-export const getFilteredCategories = (
-  categories: Category[], 
-  selectedCategories: string[]
-): Category[] => {
-  if (!selectedCategories || selectedCategories.length === 0) {
-    return categories;
+export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
+  if (!customLayout) return 30;
+  
+  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
+  const baseFontSize = customLayout.elements.category.fontSize * 1.5;
+  const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
+  
+  return (baseFontSize + marginBottom) * 1.2;
+};
+
+/**
+ * Stima l'altezza di un prodotto in base alle sue caratteristiche
+ */
+export const estimateProductHeight = (
+  product: Product,
+  language: string,
+): number => {
+  // Base height for all products
+  let height = 30;
+  
+  // Increase height if there's a description
+  const hasDescription = !!product.description || !!product[`description_${language}`];
+  if (hasDescription) {
+    const descriptionText = (product[`description_${language}`] as string) || product.description || "";
+    const descriptionLength = descriptionText.length;
+    
+    // Stima l'altezza della descrizione in base alla lunghezza del testo
+    if (descriptionLength > 200) {
+      height += 60; // Descrizioni molto lunghe
+    } else if (descriptionLength > 100) {
+      height += 40; // Descrizioni lunghe
+    } else if (descriptionLength > 50) {
+      height += 25; // Descrizioni medie
+    } else {
+      height += 15; // Descrizioni brevi
+    }
   }
   
-  return categories.filter(category => selectedCategories.includes(category.id));
+  // Increase height for multiple price variants
+  if (product.has_multiple_prices) {
+    height += 20;
+  }
+  
+  // Increase height if product has allergens
+  if (product.allergens && product.allergens.length > 0) {
+    height += 10;
+  }
+  
+  return height;
 };
 
 /**
- * Utilizza le funzioni di misurazione del testo per stimare l'altezza del titolo di categoria
+ * Filtra le categorie selezionate dall'elenco completo
  */
-export { estimateCategoryTitleHeight };
-
-/**
- * Utilizza le funzioni di misurazione del testo per stimare l'altezza del prodotto
- */
-export { estimateProductHeight };
+export const getFilteredCategories = (
+  categories: Category[],
+  selectedCategories: string[]
+): Category[] => {
+  return categories.filter(cat => selectedCategories.includes(cat.id));
+};
