@@ -114,15 +114,14 @@ export const usePagination = ({
         
         // Aggiungi spazio extra dopo il titolo della categoria
         const categoryBottomMargin = customLayout?.spacing?.categoryTitleBottomMargin || 5;
-        currentHeight += categoryBottomMargin * 3.85; // Usa il fattore di conversione aggiornato
+        currentHeight += categoryBottomMargin * MM_TO_PX / 3.8; // Conversione più precisa
         
         // Processa tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto (usando la funzione migliorata)
+          // Stima dell'altezza del prodotto con miglior precisione
           const productHeight = estimateProductHeight(product, language);
           
           // Se il prodotto NON entra nella pagina corrente, crea una nuova pagina
-          // Usiamo una valutazione più conservativa per garantire che non ci siano sovrapposizioni
           if (currentHeight + productHeight > availableHeight) {
             // Aggiungi i prodotti correnti al contenuto della pagina
             addRemainingProducts();
@@ -142,7 +141,7 @@ export const usePagination = ({
             currentHeight += categoryTitleHeight;
             
             // Aggiungi spazio extra dopo il titolo ripetuto
-            currentHeight += categoryBottomMargin * 3.85;
+            currentHeight += categoryBottomMargin * MM_TO_PX / 3.8;
           }
           
           // Aggiungi il prodotto ai prodotti correnti
@@ -156,7 +155,7 @@ export const usePagination = ({
           
           // Aggiungi lo spazio tra prodotti
           const spacingBetweenProducts = customLayout?.spacing?.betweenProducts 
-            ? customLayout.spacing.betweenProducts * 3.85  // Usa il fattore di conversione aggiornato
+            ? customLayout.spacing.betweenProducts * MM_TO_PX / 3.8
             : 10;
           currentHeight += spacingBetweenProducts;
         });
@@ -167,7 +166,7 @@ export const usePagination = ({
         // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
         if (categoryIndex < filteredCategories.length - 1) {
           const spacingBetweenCategories = customLayout?.spacing?.betweenCategories 
-            ? customLayout.spacing.betweenCategories * 3.85  // Usa il fattore di conversione aggiornato
+            ? customLayout.spacing.betweenCategories * MM_TO_PX / 3.8
             : 15;
           currentHeight += spacingBetweenCategories;
         }
