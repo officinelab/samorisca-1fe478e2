@@ -10,6 +10,9 @@ import {
 } from './utils/pageCalculations';
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
 
+// Fattore di conversione più preciso da millimetri a pixel
+const MM_TO_PX = 3.85;
+
 interface UsePaginationProps {
   categories: Category[];
   products: Record<string, Product[]>;
