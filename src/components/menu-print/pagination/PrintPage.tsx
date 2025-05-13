@@ -2,6 +2,7 @@
 import React from 'react';
 import { getPageMargins } from '@/hooks/print/getPageMargins';
 import { PrintLayout } from '@/types/printLayout';
+import { getSafetyMarginStyle } from './utils/pageCalculations';
 
 interface PrintPageProps {
   children: React.ReactNode;
@@ -131,6 +132,16 @@ const PrintPage: React.FC<PrintPageProps> = ({
             </div>
           </div>
           
+          {/* Visualizza il margine di sicurezza */}
+          <div 
+            style={{
+              ...getSafetyMarginStyle(true),
+              bottom: `${margins.bottom + 5}mm`, // 5mm sopra il margine inferiore
+            }}
+          >
+            Margine di sicurezza (5mm)
+          </div>
+          
           {/* Linea di divisione pagina */}
           <div className="absolute left-0 right-0 bottom-0 flex justify-center">
             <div 
@@ -160,9 +171,11 @@ const PrintPage: React.FC<PrintPageProps> = ({
         boxSizing: 'border-box',
         margin: '0 auto 60px auto',
         pageBreakAfter: 'always',
-        breakAfter: 'page',
+        breakAfter: 'page' as React.CSSProperties['breakAfter'],
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
       <div 
