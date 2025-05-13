@@ -18,10 +18,6 @@ type ClassicLayoutProps = {
   printAllergens: boolean;
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
-  safetyMargin?: {
-    vertical: number;
-    horizontal: number;
-  };
 };
 
 const ClassicLayout: React.FC<ClassicLayoutProps> = ({
@@ -35,14 +31,12 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  customLayout,
-  safetyMargin = { vertical: 8, horizontal: 3 }
+  customLayout
 }) => {
   // Debug log per verificare che il customLayout venga passato correttamente
   useEffect(() => {
     console.log("ClassicLayout - customLayout:", customLayout);
-    console.log("ClassicLayout - safetyMargin:", safetyMargin);
-  }, [customLayout, safetyMargin]);
+  }, [customLayout]);
 
   return (
     <>
@@ -55,7 +49,6 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         restaurantLogo={restaurantLogo}
         customLayout={customLayout}
         pageIndex={0} // Imposta esplicitamente come pagina 0
-        safetyMargin={safetyMargin}
       />
 
       {/* Contenuto paginato che gestisce automaticamente l'interruzione delle pagine */}
@@ -70,7 +63,6 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         language={language}
         customLayout={customLayout}
         startPageIndex={1} // Inizia da pagina 1
-        safetyMargin={safetyMargin}
       />
           
       {/* Pagina degli allergeni */}
@@ -83,7 +75,6 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
           layoutType={customLayout?.type || "classic"}
           restaurantLogo={restaurantLogo}
           customLayout={customLayout}
-          safetyMargin={safetyMargin}
         />
       )}
     </>

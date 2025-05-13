@@ -6,7 +6,7 @@ import { Allergen, Category } from "@/types/database";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type MenuPrintPreviewProps = {
-  layoutId: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
@@ -18,14 +18,10 @@ type MenuPrintPreviewProps = {
   printAllergens: boolean;
   restaurantLogo?: string | null;
   pageCount: number;
-  safetyMargin?: {
-    vertical: number;
-    horizontal: number;
-  };
 };
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
-  layoutId,
+  layoutId, // Cambiato da layoutType a layoutId
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
@@ -37,7 +33,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   printAllergens,
   restaurantLogo,
   pageCount,
-  safetyMargin = { vertical: 8, horizontal: 3 }
 }) => {
   const { layouts, activeLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
   
@@ -50,13 +45,12 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   // Debug logs
   React.useEffect(() => {
     console.log("MenuPrintPreview - Props:", { 
-      layoutId,
+      layoutId, // Cambiato da layoutType a layoutId
       selectedCategories, 
-      pageCount,
-      safetyMargin
+      pageCount 
     });
     console.log("MenuPrintPreview - Selected layout:", selectedLayout);
-  }, [layoutId, selectedCategories, pageCount, selectedLayout, safetyMargin]);
+  }, [layoutId, selectedCategories, pageCount, selectedLayout]); // Cambiato da layoutType a layoutId
 
   if (isLayoutsLoading || !selectedLayout) {
     return (
@@ -69,7 +63,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 
   return (
     <MenuLayoutSelector
-      selectedLayout={layoutId}
+      selectedLayout={layoutId} // Manteniamo layoutId per compatibilità
       A4_WIDTH_MM={A4_WIDTH_MM}
       A4_HEIGHT_MM={A4_HEIGHT_MM}
       showPageBoundaries={showPageBoundaries}
@@ -80,7 +74,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       allergens={allergens}
       printAllergens={printAllergens}
       restaurantLogo={restaurantLogo}
-      safetyMargin={safetyMargin}
     />
   );
 };

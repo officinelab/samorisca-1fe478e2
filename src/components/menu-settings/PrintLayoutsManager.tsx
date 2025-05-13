@@ -17,17 +17,23 @@ const PrintLayoutsManager = () => {
     layouts,
     activeLayout,
     isLoading,
+    error,
     updateLayout,
     deleteLayout,
     setDefaultLayout,
     cloneLayout,
     createNewLayout,
-    setActiveLayout
+    changeActiveLayout
   } = useMenuLayouts();
   
   const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
   const [editorTab, setEditorTab] = useState("lista");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  
+  // Gestisci gli errori
+  if (error) {
+    toast.error(error);
+  }
 
   const handleSelectLayout = (layout: PrintLayout) => {
     setSelectedLayout(layout);
@@ -35,7 +41,7 @@ const PrintLayoutsManager = () => {
   };
 
   const handleUpdateLayout = (updatedLayout: PrintLayout) => {
-    updateLayout(updatedLayout.id, updatedLayout);
+    updateLayout(updatedLayout);
     toast.success("Layout aggiornato con successo");
     setSelectedLayout(updatedLayout);
   };

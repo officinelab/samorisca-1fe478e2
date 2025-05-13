@@ -1,13 +1,16 @@
 
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
+import { getSubtitleStyle } from './coverStyleUtils';
 
-export interface CoverSubtitleProps {
+interface CoverSubtitleProps {
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   customLayout?: PrintLayout | null;
   children?: React.ReactNode;
 }
 
 const CoverSubtitle: React.FC<CoverSubtitleProps> = ({ 
+  layoutType, 
   customLayout, 
   children = "I nostri piatti" 
 }) => {
@@ -18,19 +21,8 @@ const CoverSubtitle: React.FC<CoverSubtitleProps> = ({
     return null;
   }
 
-  // Get subtitle style from custom layout or use defaults
-  const subtitleStyle = {
-    fontFamily: customLayout?.cover?.subtitle?.fontFamily || 'inherit',
-    fontSize: `${customLayout?.cover?.subtitle?.fontSize || 24}px`,
-    color: customLayout?.cover?.subtitle?.fontColor || '#666666',
-    fontWeight: (customLayout?.cover?.subtitle?.fontStyle === 'bold') ? 'bold' : 'normal',
-    fontStyle: (customLayout?.cover?.subtitle?.fontStyle === 'italic') ? 'italic' : 'normal',
-    textAlign: (customLayout?.cover?.subtitle?.alignment || 'center') as 'center' | 'left' | 'right',
-    margin: `${customLayout?.cover?.subtitle?.margin?.top || 0}px ${customLayout?.cover?.subtitle?.margin?.right || 0}px ${customLayout?.cover?.subtitle?.margin?.bottom || 0}px ${customLayout?.cover?.subtitle?.margin?.left || 0}px`,
-  } as React.CSSProperties;
-
   return (
-    <p style={subtitleStyle}>
+    <p style={getSubtitleStyle(layoutType, customLayout)}>
       {children}
     </p>
   );

@@ -1,64 +1,62 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
+import { getPageStyle } from './cover/coverStyleUtils';
 import CoverLogo from './cover/CoverLogo';
 import CoverTitle from './cover/CoverTitle';
 import CoverSubtitle from './cover/CoverSubtitle';
-import PageContainer from './PageContainer';
+import PageNumber from './cover/PageNumber';
 
-export interface CoverPageProps {
-  A4_WIDTH_MM: number;
+type CoverPageProps = {
+  A4_WIDTH_MM: number; 
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
-  layoutType?: 'classic' | 'modern' | 'allergens' | 'custom';
+  layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
   restaurantLogo?: string | null;
   customLayout?: PrintLayout | null;
   pageIndex?: number;
-  safetyMargin?: {
-    vertical: number;
-    horizontal: number;
-  };
-}
+};
 
 const CoverPage: React.FC<CoverPageProps> = ({
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
+  layoutType,
   restaurantLogo,
   customLayout,
-  pageIndex = 0,
-  safetyMargin = { vertical: 8, horizontal: 3 }
+  pageIndex = 0
 }) => {
+  // Debug logs for development
+  useEffect(() => {
+    console.log("CoverPage - customLayout:", customLayout);
+    console.log("CoverPage - logo config:", customLayout?.cover?.logo);
+  }, [customLayout]);
+  
   return (
-    <PageContainer 
-      A4_WIDTH_MM={A4_WIDTH_MM} 
-      A4_HEIGHT_MM={A4_HEIGHT_MM} 
-      showPageBoundaries={showPageBoundaries}
-      safetyMargin={safetyMargin}
+    <div 
+      className="page cover-page bg-white" 
+      style={getPageStyle(A4_WIDTH_MM, A4_HEIGHT_MM, showPageBoundaries)}
     >
-      <div className="flex flex-col items-center justify-center h-full relative">
-        {/* Logo */}
-        <CoverLogo 
-          restaurantLogo={restaurantLogo} 
-          customLayout={customLayout}
-        />
-        
-        {/* Title */}
-        <CoverTitle 
-          customLayout={customLayout}
-        />
-        
-        {/* Subtitle */}
-        <CoverSubtitle 
-          customLayout={customLayout}
-        />
-        
-        {/* Page number */}
-        <div className="absolute bottom-4 right-4 text-sm text-gray-500">
-          {pageIndex + 1}
-        </div>
-      </div>
-    </PageContainer>
+      <CoverLogo 
+        restaurantLogo={restaurantLogo} 
+        customLayout={customLayout} 
+      />
+      
+      <CoverTitle 
+        layoutType={layoutType} 
+        customLayout={customLayout} 
+      />
+      
+      <CoverSubtitle 
+        layoutType={layoutType} 
+        customLayout={customLayout} 
+      />
+      
+      <PageNumber 
+        showPageBoundaries={showPageBoundaries} 
+        pageIndex={pageIndex} 
+      />
+    </div>
   );
 };
 

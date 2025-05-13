@@ -10,138 +10,45 @@ interface ProductItemProps {
 }
 
 const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayout }) => {
-  // Assicuriamo che il prodotto venga renderizzato correttamente
-  // con le proprietà di interruzione di pagina
   return (
-    <div 
-      className="menu-item" 
-      style={{
-        marginBottom: customLayout ? `${customLayout.spacing.betweenProducts}mm` : '5mm',
-        breakInside: 'avoid',
-        pageBreakInside: 'avoid',
-        wordBreak: 'break-word', // Garantisce che il testo vada a capo invece di fuoriuscire
-        overflowWrap: 'break-word',
-        maxWidth: '100%',
-        width: '100%' // Assicurati che occupi tutta la larghezza disponibile
-      }}
-    >
-      {/* Header con titolo, allergeni e prezzo */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'baseline',
-        width: '100%',
-        flexWrap: 'wrap', // Permette il wrapping se lo spazio è insufficiente
-        minHeight: '1.5em' // Altezza minima per garantire lo spazio
-      }}>
-        {/* Titolo del prodotto */}
-        {(!customLayout || customLayout.elements.title.visible !== false) && (
-          <div style={{
-            fontFamily: customLayout?.elements.title.fontFamily || 'Arial',
-            fontSize: `${customLayout?.elements.title.fontSize || 12}pt`,
-            color: customLayout?.elements.title.fontColor || '#000',
-            fontWeight: customLayout?.elements.title.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: customLayout?.elements.title.fontStyle === 'italic' ? 'italic' : 'normal',
-            marginRight: '10px',
-            maxWidth: '60%', // Limita la larghezza del titolo
-            overflowWrap: 'break-word',
-            lineHeight: '1.3',
-            hyphens: 'auto'
-          }}>
-            {product[`title_${language}`] || product.title}
-          </div>
-        )}
-        
-        {/* Allergeni */}
-        {(!customLayout || customLayout.elements.allergensList.visible !== false) && 
-          product.allergens && product.allergens.length > 0 && (
-          <div style={{
-            fontFamily: customLayout?.elements.allergensList.fontFamily || 'Arial',
-            fontSize: `${customLayout?.elements.allergensList.fontSize || 10}pt`,
-            color: customLayout?.elements.allergensList.fontColor || '#666',
-            fontWeight: customLayout?.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: customLayout?.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
-            marginRight: '10px',
-            whiteSpace: 'nowrap',
-            flexShrink: 0 // Impedisce che venga rimpicciolito troppo
-          }}>
-            {product.allergens.map(allergen => allergen.number).join(", ")}
-          </div>
-        )}
-        
-        {/* Linea punteggiata */}
-        <div style={{
-          flexGrow: 1,
-          position: 'relative',
-          top: '-3px',
-          borderBottom: '1px dotted #000',
-          minWidth: '20px', // Garantisce una linea punteggiata minima
-          marginLeft: '4px',
-          marginRight: '4px'
-        }}></div>
-        
-        {/* Prezzo */}
-        {(!customLayout || customLayout.elements.price.visible !== false) && (
-          <div style={{
-            fontFamily: customLayout?.elements.price.fontFamily || 'Arial',
-            fontSize: `${customLayout?.elements.price.fontSize || 12}pt`,
-            color: customLayout?.elements.price.fontColor || '#000',
-            fontWeight: customLayout?.elements.price.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: customLayout?.elements.price.fontStyle === 'italic' ? 'italic' : 'normal',
-            marginLeft: '10px',
-            whiteSpace: 'nowrap',
-            flexShrink: 0 // Impedisce che venga rimpicciolito troppo
-          }}>
-            € {product.price_standard}
-          </div>
-        )}
-      </div>
-      
-      {/* Descrizione */}
-      {(!customLayout || customLayout.elements.description.visible !== false) && 
-        (product[`description_${language}`] || product.description) && (
-        <div style={{
-          fontFamily: customLayout?.elements.description.fontFamily || 'Arial',
-          fontSize: `${customLayout?.elements.description.fontSize || 10}pt`,
-          color: customLayout?.elements.description.fontColor || '#666',
-          fontWeight: customLayout?.elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
-          fontStyle: customLayout?.elements.description.fontStyle === 'italic' ? 'italic' : 'normal',
-          marginTop: '2mm',
-          width: '100%',
-          maxWidth: '95%',
-          wordBreak: 'break-word',
-          overflowWrap: 'break-word',
-          hyphens: 'auto', // Abilita la sillabazione automatica
-          lineHeight: '1.4'
-        }}>
-          {product[`description_${language}`] || product.description}
-        </div>
-      )}
-      
-      {/* Varianti di prezzo */}
-      {(!customLayout || customLayout.elements.priceVariants.visible !== false) && 
-        product.has_multiple_prices && (
-        <div style={{
-          fontFamily: customLayout?.elements.priceVariants.fontFamily || 'Arial',
-          fontSize: `${customLayout?.elements.priceVariants.fontSize || 10}pt`,
-          color: customLayout?.elements.priceVariants.fontColor || '#000',
-          fontWeight: customLayout?.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-          fontStyle: customLayout?.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-          display: 'flex',
-          flexWrap: 'wrap', // Permette il wrapping se necessario
-          justifyContent: 'flex-end',
-          gap: '1rem',
-          marginTop: '1mm',
-          width: '100%'
-        }}>
-          {product.price_variant_1_name && (
-            <div style={{ flexShrink: 0 }}>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
-          )}
-          {product.price_variant_2_name && (
-            <div style={{ flexShrink: 0 }}>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
-          )}
-        </div>
-      )}
+    <div className="menu-item" style={{
+      marginBottom: customLayout ? `${customLayout.spacing.betweenProducts}mm` : '5mm',
+      breakInside: 'avoid',
+      pageBreakInside: 'avoid',
+      maxWidth: '100%',
+    }}>
+      {React.createElement('div', {
+        className: 'product-component',
+        dangerouslySetInnerHTML: {
+          __html: `
+            <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
+              <div style="font-weight: bold; font-size: ${customLayout?.elements.title.fontSize || 12}pt; width: auto; margin-right: 10px; max-width: 60%; overflow-wrap: break-word; word-wrap: break-word; word-break: normal;">
+                ${product[`title_${language}`] || product.title}
+              </div>
+              ${product.allergens && product.allergens.length > 0 
+                ? `<div style="width: auto; font-size: ${customLayout?.elements.allergensList.fontSize || 10}pt; white-space: nowrap; margin-right: 10px;">
+                    ${product.allergens.map(allergen => allergen.number).join(", ")}
+                  </div>` 
+                : ''}
+              <div style="flex-grow: 1; position: relative; top: -3px; border-bottom: 1px dotted #000;"></div>
+              <div style="text-align: right; font-weight: bold; width: auto; white-space: nowrap; margin-left: 10px;">
+                € ${product.price_standard}
+              </div>
+            </div>
+            ${(product[`description_${language}`] || product.description) 
+              ? `<div style="font-size: ${customLayout?.elements.description.fontSize || 10}pt; font-style: italic; margin-top: 2mm; width: 100%; max-width: 95%; overflow-wrap: break-word; word-wrap: break-word; hyphens: auto;">
+                  ${product[`description_${language}`] || product.description}
+                </div>` 
+              : ''}
+            ${product.has_multiple_prices 
+              ? `<div style="margin-top: 1mm; font-size: ${customLayout?.elements.priceVariants.fontSize || 10}pt; display: flex; justify-content: flex-end; gap: 1rem;">
+                  ${product.price_variant_1_name ? `<div>${product.price_variant_1_name}: € ${product.price_variant_1_value}</div>` : ''}
+                  ${product.price_variant_2_name ? `<div>${product.price_variant_2_name}: € ${product.price_variant_2_value}</div>` : ''}
+                </div>` 
+              : ''}
+          `
+        }
+      })}
     </div>
   );
 };

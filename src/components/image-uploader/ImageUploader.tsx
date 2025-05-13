@@ -12,7 +12,6 @@ interface ImageUploaderProps {
   onImageUploaded: (url: string) => void;
   currentImage?: string | null;
   label?: string;
-  description?: string; // Added description prop
   bucketName?: string;
   folderPath?: string;
   maxSizeInMB?: number;
@@ -25,7 +24,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageUploaded,
   currentImage = null,
   label = "Carica immagine",
-  description, // Added description prop
   bucketName = "menu-images",
   folderPath = "uploads",
   maxSizeInMB = 5,
@@ -89,8 +87,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   
   return (
     <Card className="p-4 relative overflow-hidden">
-      {description && <p className="text-sm text-muted-foreground mb-4">{description}</p>}
-      
       {(imageUrl && !imageError) ? (
         <div className="relative">
           <ImagePreview 

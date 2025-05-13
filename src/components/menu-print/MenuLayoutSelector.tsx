@@ -1,31 +1,25 @@
 
-import React from "react";
-import ClassicLayout from "./layouts/ClassicLayout";
-import ModernLayout from "./layouts/ModernLayout";
-import { Allergen, Category } from "@/types/database";
+import React, { useEffect } from 'react';
+import { Category, Product, Allergen } from "@/types/database";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { toast } from "../ui/use-toast";
+import ClassicLayout from "./layouts/ClassicLayout";
 
-interface MenuLayoutSelectorProps {
-  selectedLayout: string;
+type MenuLayoutSelectorProps = {
+  selectedLayout: string; // Continua a chiamarlo selectedLayout per compatibilità, ma ora è l'ID
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   categories: Category[];
-  products: Record<string, any[]>;
+  products: Record<string, Product[]>;
   selectedCategories: string[];
   language: string;
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
-  safetyMargin?: {
-    vertical: number;
-    horizontal: number;
-  };
-}
+};
 
 const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
-  selectedLayout,
+  selectedLayout, // Ora è l'ID del layout selezionato
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
@@ -36,47 +30,56 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  safetyMargin = { vertical: 8, horizontal: 3 }
 }) => {
-  const { layouts } = useMenuLayouts();
+  const { layouts, activeLayout, changeActiveLayout, isLoading } = useMenuLayouts();
   
-  // Trova il layout personalizzato in base all'ID
-  const customLayout = React.useMemo(() => {
-    return layouts.find(layout => layout.id === selectedLayout) || null;
-  }, [layouts, selectedLayout]);
+  // Debug logs
+  useEffect(() => {
+    console.log("MenuLayoutSelector - Props:", { 
+      selectedLayout, 
+      showPageBoundaries, 
+      selectedCategories, 
+      language, 
+      printAllergens 
+    });
+    console.log("MenuLayoutSelector - activeLayout:", activeLayout);
+    console.log("MenuLayoutSelector - layouts disponibili:", layouts);
+  }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
-  // Debug
-  React.useEffect(() => {
-    if (!customLayout) {
-      console.warn(`Layout con ID ${selectedLayout} non trovato`);
+  // Quando cambia selectedLayout (ora è l'ID), aggiorna activeLayout
+  useEffect(() => {
+    if (selectedLayout && !isLoading && Array.isArray(layouts) && layouts.length > 0) {
+      console.log("MenuLayoutSelector - Ricerca layout per ID:", selectedLayout);
+      // Trova layout per ID
+      const matchingLayout = layouts.find(layout => layout.id === selectedLayout);
+      if (matchingLayout) {
+        console.log("MenuLayoutSelector - Trovato layout corrispondente:", matchingLayout);
+        changeActiveLayout(matchingLayout.id);
+      } else {
+        console.log("MenuLayoutSelector - Nessun layout trovato per l'ID:", selectedLayout);
+      }
     }
-  }, [customLayout, selectedLayout]);
+  }, [selectedLayout, layouts, isLoading, changeActiveLayout]);
   
-  // Scegli il tipo di layout appropriato
-  const layoutType = customLayout?.type || "classic";
+  console.log("MenuLayoutSelector - Layout ID selezionato:", selectedLayout);
+  console.log("MenuLayoutSelector - activeLayout utilizzato:", activeLayout);
   
   const commonProps = {
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
     showPageBoundaries,
-    categories,
-    products,
-    selectedCategories,
-    language,
-    allergens,
-    printAllergens,
+    categories: Array.isArray(categories) ? categories : [],
+    products: products || {},
+    selectedCategories: Array.isArray(selectedCategories) ? selectedCategories : [],
+    language: language || "it",
+    allergens: Array.isArray(allergens) ? allergens : [],
+    printAllergens: Boolean(printAllergens),
     restaurantLogo,
-    customLayout,
-    safetyMargin
+    customLayout: activeLayout
   };
   
-  switch (layoutType) {
-    case "modern":
-      return <ModernLayout {...commonProps} />;
-    case "classic":
-    default:
-      return <ClassicLayout {...commonProps} />;
-  }
+  // Utilizziamo solo ClassicLayout che è in grado di adattarsi al layout personalizzato
+  return <ClassicLayout {...commonProps} />;
 };
 
 export default MenuLayoutSelector;
