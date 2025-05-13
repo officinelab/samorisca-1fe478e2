@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMenuData } from "../useMenuData";
 import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
@@ -10,7 +9,7 @@ export const useMenuPrintState = () => {
   const A4_HEIGHT_MM = 297;
   
   // Import layout management
-  const { layouts, activeLayout, refreshLayouts } = useMenuLayouts();
+  const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
   
   // State for layout options
   const [layoutId, setLayoutId] = useState<string>("");
@@ -44,8 +43,8 @@ export const useMenuPrintState = () => {
   // Function to force layout refresh when needed
   const forceLayoutRefresh = useCallback(() => {
     console.log("Forzando refresh dei layout...");
-    refreshLayouts();
-  }, [refreshLayouts]);
+    forceRefresh();
+  }, [forceRefresh]);
   
   // Imposta il layout predefinito all'avvio
   useEffect(() => {
@@ -95,8 +94,8 @@ export const useMenuPrintState = () => {
   
   return {
     // Layout and display options
-    layoutId, // Cambiato da layoutType a layoutId
-    setLayoutId, // Cambiato da setLayoutType a setLayoutId
+    layoutId, 
+    setLayoutId, 
     language,
     setLanguage,
     printAllergens,

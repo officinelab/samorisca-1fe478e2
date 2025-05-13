@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { PrintLayout } from '@/types/printLayout';
 import { toast } from "@/components/ui/sonner";
 
@@ -8,6 +8,8 @@ import { toast } from "@/components/ui/sonner";
  */
 export const fetchLayoutsFromSupabase = async () => {
   try {
+    console.log('Fetching layouts from Supabase...');
+    
     const { data, error } = await supabase
       .from('print_layouts')
       .select('*')
@@ -18,11 +20,18 @@ export const fetchLayoutsFromSupabase = async () => {
       throw error;
     }
     
+    if (!data || data.length === 0) {
+      console.warn('Nessun layout trovato in Supabase');
+      return { layouts: [], defaultLayout: null, error: 'Nessun layout trovato nel database' };
+    }
+    
     // Converte i layout recuperati al formato PrintLayout
     const layouts = data.map(transformDbLayoutToLayout);
     
     // Trova il layout predefinito
     const defaultLayout = layouts.find(layout => layout.isDefault) || null;
+    
+    console.log(`Caricati ${layouts.length} layout da Supabase, layout predefinito:`, defaultLayout?.name || 'nessuno');
     
     return { layouts, defaultLayout, error: null };
   } catch (err) {

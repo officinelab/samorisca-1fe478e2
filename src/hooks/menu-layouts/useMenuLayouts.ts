@@ -1,7 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { loadLayouts, saveLayouts } from './storage';
 import { v4 as uuidv4 } from 'uuid'; // Assicurati che uuid sia installato
+import { toast } from "@/components/ui/sonner";
 
 /**
  * Hook per gestire i layout di stampa del menu
@@ -25,10 +27,12 @@ export function useMenuLayouts() {
       
       if (loadError) {
         setError(loadError);
+        toast.error(`Errore nel caricamento dei layout: ${loadError}`);
       }
     } catch (err) {
       console.error("Errore durante il caricamento dei layout:", err);
       setError("Si è verificato un errore durante il caricamento dei layout.");
+      toast.error("Si è verificato un errore durante il caricamento dei layout.");
     } finally {
       setIsLoading(false);
     }
@@ -36,6 +40,7 @@ export function useMenuLayouts() {
   
   // Forza un refresh dei layout
   const forceRefresh = useCallback(() => {
+    console.log('Forcing refresh of layouts...');
     fetchLayouts();
   }, [fetchLayouts]);
   
@@ -118,7 +123,7 @@ export function useMenuLayouts() {
   }, [layouts, activeLayout]);
   
   // Imposta un layout come attivo (cambio layout)
-  const changeActiveLayout = useCallback((layoutId: string) => {
+  const setActive = useCallback((layoutId: string) => {
     const layout = layouts.find(l => l.id === layoutId);
     if (layout) {
       setActiveLayout(layout);
@@ -128,7 +133,7 @@ export function useMenuLayouts() {
   }, [layouts]);
   
   // Imposta un layout come predefinito
-  const setDefaultLayout = useCallback(async (layoutId: string) => {
+  const setDefault = useCallback(async (layoutId: string) => {
     const updatedLayouts = layouts.map(layout => ({
       ...layout,
       isDefault: layout.id === layoutId
@@ -298,7 +303,7 @@ export function useMenuLayouts() {
           title: {
             visible: true,
             fontFamily: 'Arial',
-            fontSize: 12, // Correggo l'errore di battitura a riga 302
+            fontSize: 12,
             fontColor: '#000000',
             fontStyle: 'normal',
             alignment: 'left',
@@ -359,14 +364,13 @@ export function useMenuLayouts() {
     isLoading,
     error,
     updateLayout,
-    createLayout,
+    createLayout: createNewLayout,
     deleteLayout,
-    // Aggiungiamo le funzioni mancanti
-    setActive: changeActiveLayout,
-    setDefault: setDefaultLayout,
+    setActive,
+    setDefault,
     cloneLayout,
     createNewLayout,
-    changeActiveLayout,
+    changeActiveLayout: setActive,
     refreshLayouts: fetchLayouts,
     forceRefresh
   };

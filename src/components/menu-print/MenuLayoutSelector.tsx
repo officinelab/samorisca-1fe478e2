@@ -43,7 +43,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
       printAllergens 
     });
     console.log("MenuLayoutSelector - activeLayout:", activeLayout);
-    console.log("MenuLayoutSelector - layouts disponibili:", layouts);
+    console.log("MenuLayoutSelector - layouts disponibili:", layouts?.length || 0);
   }, [selectedLayout, activeLayout, layouts, showPageBoundaries, selectedCategories, language, printAllergens]);
   
   // Quando cambia selectedLayout, aggiorna activeLayout

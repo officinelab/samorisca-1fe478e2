@@ -6,7 +6,7 @@ import PrintPage from './PrintPage';
 import RepeatedCategoryTitle from './RepeatedCategoryTitle';
 import ProductItem from './ProductItem';
 import { usePagination } from './usePagination';
-import { CategoryTitleContent, PageContent, ProductsGroupContent, PrintPageContent } from './types/paginationTypes';
+import { CategoryTitleContent, PageContent, ProductsGroupContent } from './types/paginationTypes';
 
 interface PaginatedContentProps {
   A4_WIDTH_MM: number;
