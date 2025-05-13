@@ -1,26 +1,19 @@
 
 import { Category, Product } from "@/types/database";
 
-export type CategoryTitleContent = {
+// Tipo per il contenuto del titolo di una categoria
+export interface CategoryTitleContent {
   type: 'category-title';
-  key: string;
   category: Category;
-  isRepeated: boolean;
-};
+  isRepeated?: boolean;
+}
 
-export type ProductsGroupContent = {
+// Tipo per il contenuto dei prodotti di una categoria
+export interface ProductsGroupContent {
   type: 'products-group';
-  key: string;
-  products: ProductItem[];
-};
+  category: Category;
+  products: Product[];
+}
 
-export type ProductItem = {
-  type: 'product';
-  key: string;
-  product: Product;
-};
-
+// Unione dei tipi di contenuto possibile
 export type PageContent = CategoryTitleContent | ProductsGroupContent;
-
-export type PrintPageContent = PageContent[];
-
