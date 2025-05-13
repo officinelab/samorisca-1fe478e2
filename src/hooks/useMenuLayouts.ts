@@ -1,3 +1,5 @@
 
 // Re-export from the refactored hook
-export { useMenuLayouts } from "./menu-layouts/useMenuLayouts";
+import { useMenuLayouts } from "./menu-layouts/useMenuLayouts";
+
+export { useMenuLayouts };
