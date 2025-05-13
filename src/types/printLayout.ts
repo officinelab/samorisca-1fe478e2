@@ -7,7 +7,6 @@ export type PrintLayoutElementConfig = {
   fontSize: number;
   fontColor: string;
   fontStyle: FontStyle;
-  lineHeight: number; // Nuova proprietà per l'interlinea
   alignment: 'left' | 'center' | 'right';
   margin: {
     top: number;
