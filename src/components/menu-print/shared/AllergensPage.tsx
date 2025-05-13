@@ -2,9 +2,9 @@
 import React from 'react';
 import { Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import AllergenHeader from '../allergens/AllergenHeader';
-import AllergensList from '../allergens/AllergensList';
-import PageContainer from '../layouts/classic/ContentPage';
+import AllergenHeader from './AllergenHeader';
+import AllergensList from './AllergensList';
+import PageContainer from './PageContainer';
 
 export interface AllergensPageProps {
   A4_WIDTH_MM: number;
@@ -25,7 +25,6 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
   A4_HEIGHT_MM,
   showPageBoundaries,
   allergens,
-  layoutType = 'classic',
   restaurantLogo,
   customLayout,
   safetyMargin = { vertical: 8, horizontal: 3 }

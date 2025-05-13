@@ -12,12 +12,15 @@ const RestaurantLogoUploader: React.FC<RestaurantLogoUploaderProps> = ({
   updateRestaurantLogo 
 }) => {
   return (
-    <ImageUploader
-      currentImage={restaurantLogo}
-      onImageUploaded={updateRestaurantLogo}
-      label="Logo del Ristorante"
-      description="Carica il logo del tuo ristorante che apparirà nella stampa del menu"
-    />
+    <div>
+      <h4 className="text-sm font-medium mb-2">Logo del Ristorante</h4>
+      <ImageUploader
+        currentImage={restaurantLogo}
+        onImageUploaded={updateRestaurantLogo}
+        label="Logo del Ristorante"
+        description="Carica il logo del tuo ristorante che apparirà nella stampa del menu"
+      />
+    </div>
   );
 };
 

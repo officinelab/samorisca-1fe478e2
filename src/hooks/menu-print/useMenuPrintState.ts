@@ -11,7 +11,7 @@ const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 
 export const useMenuPrintState = () => {
-  const { siteSettings, updateSetting } = useSiteSettings();
+  const { siteSettings, saveSetting } = useSiteSettings();
   const { layouts, activeLayout, forceRefresh, isLoading: isLayoutsLoading } = useMenuLayouts();
   
   // Stato del contenuto del menu
@@ -67,7 +67,7 @@ export const useMenuPrintState = () => {
   // Funzione per aggiornare il logo del ristorante
   const updateRestaurantLogo = async (logoUrl: string) => {
     setRestaurantLogo(logoUrl);
-    await updateSetting('restaurant_logo', logoUrl);
+    await saveSetting('restaurant_logo', logoUrl);
   };
   
   // Funzione per forzare l'aggiornamento del layout
