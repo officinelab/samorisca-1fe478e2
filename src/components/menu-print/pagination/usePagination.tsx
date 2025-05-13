@@ -89,8 +89,8 @@ export const usePagination = ({
         // Se la categoria è vuota, saltiamo
         if (categoryProducts.length === 0) return;
         
-        // Altezza approssimativa del titolo della categoria
-        const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
+        // Calcola l'altezza del titolo della categoria usando Canvas API
+        const categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout);
         
         // Se il titolo della categoria non entra nella pagina corrente e abbiamo già contenuto,
         // crea una nuova pagina, ma solo se non siamo all'inizio di una pagina
@@ -111,14 +111,10 @@ export const usePagination = ({
         currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
         
-        // Aggiungi spazio extra dopo il titolo della categoria
-        const categoryBottomMargin = customLayout?.spacing.categoryTitleBottomMargin || 5;
-        currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
-        
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto
-          const productHeight = estimateProductHeight(product, language);
+          // Calcola l'altezza del prodotto usando Canvas API
+          const productHeight = estimateProductHeight(product, language, customLayout);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
@@ -137,10 +133,9 @@ export const usePagination = ({
             };
             
             currentPageContent.push(repeatedCategoryTitle);
-            currentHeight += categoryTitleHeight;
             
-            // Aggiungi spazio extra dopo il titolo ripetuto
-            currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
+            // Aggiorna l'altezza corrente con l'altezza del titolo della categoria
+            currentHeight = estimateCategoryTitleHeight(category, language, customLayout);
           }
           
           // Aggiungi il prodotto ai prodotti correnti
@@ -151,10 +146,6 @@ export const usePagination = ({
           });
           
           currentHeight += productHeight;
-          
-          // Aggiungi lo spazio tra prodotti
-          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
-          currentHeight += spacingBetweenProducts;
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
@@ -162,7 +153,7 @@ export const usePagination = ({
         
         // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
         if (categoryIndex < filteredCategories.length - 1) {
-          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
+          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories : 15;
           currentHeight += spacingBetweenCategories;
         }
         

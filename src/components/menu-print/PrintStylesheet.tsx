@@ -39,9 +39,10 @@ const PrintStylesheet: React.FC = () => {
           .page {
             page-break-after: always;
             break-after: page;
-            overflow: visible !important;
+            overflow: hidden;
             display: block;
             height: auto !important;
+            position: relative;
           }
           .page:last-of-type {
             page-break-after: avoid;
@@ -50,12 +51,15 @@ const PrintStylesheet: React.FC = () => {
           .category {
             break-inside: avoid;
             page-break-inside: avoid;
-            overflow: visible !important;
           }
           .menu-item {
             break-inside: avoid;
             page-break-inside: avoid;
-            overflow: visible !important;
+          }
+          .category-title, 
+          .repeated-category-title {
+            break-inside: avoid;
+            page-break-inside: avoid;
           }
           .allergen-item {
             break-inside: avoid;
@@ -73,7 +77,7 @@ const PrintStylesheet: React.FC = () => {
           .menu-container {
             height: auto !important;
             max-height: none !important;
-            overflow: visible !important;
+            overflow: hidden;
           }
         }
       `}

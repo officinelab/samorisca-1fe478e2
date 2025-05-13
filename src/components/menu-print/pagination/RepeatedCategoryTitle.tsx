@@ -27,6 +27,8 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
         fontStyle: 'normal' as const,
         textAlign: 'left' as React.CSSProperties['textAlign'],
         marginBottom: '10px',
+        breakInside: 'avoid' as const,
+        pageBreakInside: 'avoid' as const,
       };
     }
     
@@ -42,6 +44,8 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
       marginRight: `${element.margin.right}mm`,
       marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
       marginLeft: `${element.margin.left}mm`,
+      breakInside: 'avoid' as const,
+      pageBreakInside: 'avoid' as const,
     };
   };
   

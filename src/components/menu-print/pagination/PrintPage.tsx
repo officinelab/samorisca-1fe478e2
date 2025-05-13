@@ -150,29 +150,32 @@ const PrintPage: React.FC<PrintPageProps> = ({
     );
   };
 
+  const pageStyle = {
+    width: `${A4_WIDTH_MM}mm`,
+    height: `${A4_HEIGHT_MM}mm`,
+    padding: '0',
+    boxSizing: 'border-box' as React.CSSProperties['boxSizing'],
+    margin: '0 auto 60px auto',
+    pageBreakAfter: 'always',
+    breakAfter: 'page',
+    border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
+    boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+    position: 'relative' as React.CSSProperties['position'],
+    overflow: 'hidden'
+  };
+
+  const contentStyle = {
+    width: `${A4_WIDTH_MM - margins.left - margins.right}mm`,
+    height: `${A4_HEIGHT_MM - margins.top - margins.bottom}mm`,
+    position: 'absolute' as React.CSSProperties['position'],
+    top: `${margins.top}mm`,
+    left: `${margins.left}mm`,
+    overflow: 'hidden',
+  };
+
   return (
-    <div 
-      className="page relative bg-white" 
-      style={{
-        width: `${A4_WIDTH_MM}mm`,
-        height: `${A4_HEIGHT_MM}mm`,
-        padding: getPageMargins(customLayout, pageIndex),
-        boxSizing: 'border-box',
-        margin: '0 auto 60px auto',
-        pageBreakAfter: 'always',
-        breakAfter: 'page',
-        border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
-        boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
-      }}
-    >
-      <div 
-        className="menu-container" 
-        style={{ 
-          overflow: 'visible',
-          height: 'auto',
-          position: 'relative'
-        }}
-      >
+    <div className="page relative bg-white" style={pageStyle}>
+      <div className="menu-container" style={contentStyle}>
         {children}
       </div>
       {showPageBoundaries && renderPageDebugInfo()}
