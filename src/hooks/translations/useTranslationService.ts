@@ -92,12 +92,28 @@ export const useTranslationService = () => {
     try {
       setIsLoading(true);
       
-      // Correggiamo questo accesso all'URL delle funzioni
-      const response = await fetch(`${process.env.VITE_SUPABASE_URL}/functions/v1/translate`, {
+      // Otteniamo l'URL corretto dalla variabile di ambiente
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      
+      if (!supabaseUrl) {
+        throw new Error("VITE_SUPABASE_URL non è definito");
+      }
+      
+      // Otteniamo il token di autenticazione
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      
+      if (!accessToken) {
+        throw new Error("Token di autenticazione non disponibile");
+      }
+      
+      console.log("Chiamando API di traduzione con URL:", `${supabaseUrl}/functions/v1/translate`);
+      
+      const response = await fetch(`${supabaseUrl}/functions/v1/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           text,
@@ -107,8 +123,24 @@ export const useTranslationService = () => {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Errore sconosciuto');
+        // Log dettagliato in caso di errore
+        const textResponse = await response.text();
+        console.error('Risposta errore non-JSON:', textResponse);
+        
+        let errorMessage = `Errore HTTP: ${response.status}`;
+        
+        try {
+          // Prova a convertire in JSON se possibile
+          const errorData = JSON.parse(textResponse);
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Se non è JSON, usa il testo completo
+          if (textResponse && textResponse.length < 100) {
+            errorMessage = textResponse;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const result = await response.json();

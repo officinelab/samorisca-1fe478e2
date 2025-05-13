@@ -23,12 +23,36 @@ serve(async (req) => {
 
   try {
     if (req.method === 'POST') {
-      const { text, targetLanguage, sourceLanguage = 'Italian' } = await req.json() as TranslationRequest;
+      // Log per debugging
+      console.log("Ricevuta richiesta di traduzione");
+      
+      let requestData;
+      try {
+        requestData = await req.json() as TranslationRequest;
+        console.log("Dati richiesta:", JSON.stringify(requestData));
+      } catch (e) {
+        console.error("Errore nel parsing del JSON:", e);
+        return new Response(
+          JSON.stringify({ error: 'Errore nel parsing del JSON della richiesta' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const { text, targetLanguage, sourceLanguage = 'Italian' } = requestData;
       
       if (!text) {
         return new Response(
           JSON.stringify({ error: 'Il testo da tradurre è obbligatorio' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verifica che la API key sia presente
+      if (!perplexityApiKey) {
+        console.error("API key di Perplexity non configurata");
+        return new Response(
+          JSON.stringify({ error: 'Configurazione del servizio di traduzione mancante' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -38,6 +62,15 @@ serve(async (req) => {
       // Crea una connessione al client Supabase
       const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        console.error("Configurazione Supabase mancante");
+        return new Response(
+          JSON.stringify({ error: 'Configurazione Supabase mancante' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       const supabaseClient = createClient(supabaseUrl, supabaseKey);
       
       // Verifica se ci sono token sufficienti
@@ -89,58 +122,83 @@ serve(async (req) => {
       // Crea il prompt per la traduzione
       const prompt = `Translate the following text from ${sourceLanguage} to ${targetLangName}. Only return the translated text without any additional notes or explanations. Here is the text to translate: "${text}"`;
 
-      // Chiama l'API di Perplexity
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${perplexityApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-sonar-small-128k-online',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional translator. Translate the text accurately, maintaining the meaning, tone, and style of the original text. Only return the translated text without any additional notes or explanations.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.2,
-          max_tokens: 1000,
-        }),
-      });
+      console.log(`Traduzione da ${sourceLanguage} a ${targetLangName}`);
+      console.log(`Testo da tradurre: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Errore API Perplexity:', errorData);
+      try {
+        // Chiama l'API di Perplexity
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${perplexityApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-sonar-small-128k-online',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a professional translator. Translate the text accurately, maintaining the meaning, tone, and style of the original text. Only return the translated text without any additional notes or explanations.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            temperature: 0.2,
+            max_tokens: 1000,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Errore API Perplexity. Status:', response.status, 'Risposta:', errorText);
+          
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { error: errorText };
+          }
+          
+          return new Response(
+            JSON.stringify({ 
+              error: 'Errore nell\'elaborazione della traduzione', 
+              details: errorData 
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const data = await response.json();
+        console.log("Risposta API ricevuta con successo");
+        
+        const translatedText = data.choices[0].message.content.trim();
+        console.log(`Traduzione completata: "${translatedText.substring(0, 50)}${translatedText.length > 50 ? '...' : ''}"`);
+
+        // Incrementa il conteggio dei token
+        const { data: incrementResult, error: incrementError } = await supabaseClient
+          .rpc('increment_tokens', { token_count: estimatedTokens });
+          
+        if (incrementError) {
+          console.error('Errore nell\'incremento dei token:', incrementError);
+        }
+
         return new Response(
-          JSON.stringify({ error: 'Errore nell\'elaborazione della traduzione' }),
+          JSON.stringify({ 
+            translatedText, 
+            tokensUsed: estimatedTokens,
+            remainingTokens: remainingTokens - estimatedTokens
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Errore nella chiamata API:', error);
+        return new Response(
+          JSON.stringify({ error: 'Errore nella chiamata al servizio di traduzione' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const data = await response.json();
-      const translatedText = data.choices[0].message.content.trim();
-
-      // Incrementa il conteggio dei token
-      const { data: incrementResult, error: incrementError } = await supabaseClient
-        .rpc('increment_tokens', { token_count: estimatedTokens });
-        
-      if (incrementError) {
-        console.error('Errore nell\'incremento dei token:', incrementError);
-      }
-
-      return new Response(
-        JSON.stringify({ 
-          translatedText, 
-          tokensUsed: estimatedTokens,
-          remainingTokens: remainingTokens - estimatedTokens
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
     return new Response(
