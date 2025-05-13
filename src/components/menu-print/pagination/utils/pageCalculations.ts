@@ -3,16 +3,17 @@ import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { measureProductHeight as dynamicMeasureProductHeight } from "@/hooks/menu-layouts/utils/textMeasurement";
 
-// Fattore di conversione più preciso da millimetri a pixel
+// More accurate conversion factor from millimeters to pixels
 const MM_TO_PX = 3.78;
 
 /**
- * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
+ * Calculate available height for content (respecting margins)
  */
 export const calculateAvailableHeight = (
   pageIndex: number, 
   A4_HEIGHT_MM: number, 
-  customLayout?: PrintLayout | null
+  customLayout?: PrintLayout | null,
+  safetyMargin?: { vertical: number; horizontal: number }
 ): number => {
   let marginTop = 20;
   let marginBottom = 20;
@@ -20,11 +21,11 @@ export const calculateAvailableHeight = (
   if (customLayout) {
     if (customLayout.page.useDistinctMarginsForPages) {
       if (pageIndex % 2 === 0) {
-        // Pagina dispari (1,3,5)
+        // Odd page (1,3,5)
         marginTop = customLayout.page.oddPages?.marginTop || customLayout.page.marginTop;
         marginBottom = customLayout.page.oddPages?.marginBottom || customLayout.page.marginBottom;
       } else {
-        // Pagina pari (2,4,6)
+        // Even page (2,4,6)
         marginTop = customLayout.page.evenPages?.marginTop || customLayout.page.marginTop;
         marginBottom = customLayout.page.evenPages?.marginBottom || customLayout.page.marginBottom;
       }
@@ -34,18 +35,19 @@ export const calculateAvailableHeight = (
     }
   }
   
-  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
-  const safetyMargin = 5;
-  return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
+  // Subtract a small safety margin to avoid overfilling the page
+  // Use custom safety margin if provided
+  const verticalSafetyMargin = safetyMargin?.vertical || 5;
+  return (A4_HEIGHT_MM - marginTop - marginBottom - verticalSafetyMargin) * MM_TO_PX;
 };
 
 /**
- * Stima l'altezza di un titolo categoria in base al layout
+ * Estimate the height of a category title based on layout
  */
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
   if (!customLayout) return 30;
   
-  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
+  // Increase slightly to ensure enough space
   const baseFontSize = customLayout.elements.category.fontSize * 1.5;
   const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
   
@@ -53,23 +55,25 @@ export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): 
 };
 
 /**
- * Calcola l'altezza di un prodotto utilizzando Canvas per misurazioni precise
+ * Calculate product height using Canvas for precise measurements
  */
 export const estimateProductHeight = (
   product: Product,
   language: string,
-  customLayout?: PrintLayout | null
+  customLayout?: PrintLayout | null,
+  safetyMargin?: { vertical: number; horizontal: number }
 ): number => {
-  // Utilizza la funzione di misurazione dinamica del testo
+  // Use dynamic text measurement function
   try {
-    // Calcola la larghezza disponibile (approssimata in base al formato A4)
-    // Un foglio A4 è circa 210mm di larghezza, sottraiamo i margini laterali
+    // Calculate available width (approximated based on A4 format)
+    // An A4 sheet is about 210mm wide, subtract side margins
     const marginLeft = customLayout?.page.marginLeft || 15;
     const marginRight = customLayout?.page.marginRight || 15;
-    const availableWidthMM = 210 - marginLeft - marginRight;
+    const horizontalSafetyMargin = safetyMargin?.horizontal || 0;
+    const availableWidthMM = 210 - marginLeft - marginRight - (horizontalSafetyMargin * 2);
     const availableWidthPx = availableWidthMM * MM_TO_PX;
     
-    // Configura le impostazioni dei font in base al layout
+    // Configure font settings based on layout
     const fontSettings = customLayout ? {
       titleFont: {
         family: customLayout.elements.title.fontFamily || 'Arial',
@@ -85,12 +89,12 @@ export const estimateProductHeight = (
       }
     } : undefined;
     
-    // Misura l'altezza precisa del prodotto
+    // Measure precise product height
     return dynamicMeasureProductHeight(product, language, availableWidthPx, fontSettings);
   } catch (error) {
-    console.error('Errore nella misurazione dinamica del prodotto:', error);
+    console.error('Error in dynamic product measurement:', error);
     
-    // Fallback al metodo precedente in caso di errori
+    // Fallback to previous method in case of errors
     // Base height for all products
     let height = 30;
     
@@ -100,15 +104,15 @@ export const estimateProductHeight = (
       const descriptionText = (product[`description_${language}`] as string) || product.description || "";
       const descriptionLength = descriptionText.length;
       
-      // Stima l'altezza della descrizione in base alla lunghezza del testo
+      // Estimate description height based on text length
       if (descriptionLength > 200) {
-        height += 60; // Descrizioni molto lunghe
+        height += 60; // Very long descriptions
       } else if (descriptionLength > 100) {
-        height += 40; // Descrizioni lunghe
+        height += 40; // Long descriptions
       } else if (descriptionLength > 50) {
-        height += 25; // Descrizioni medie
+        height += 25; // Medium descriptions
       } else {
-        height += 15; // Descrizioni brevi
+        height += 15; // Short descriptions
       }
     }
     
@@ -127,7 +131,7 @@ export const estimateProductHeight = (
 };
 
 /**
- * Filtra le categorie selezionate dall'elenco completo
+ * Filter selected categories from the complete list
  */
 export const getFilteredCategories = (
   categories: Category[],

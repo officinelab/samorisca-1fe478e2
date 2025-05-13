@@ -10,6 +10,7 @@ interface PrintPageProps {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   customLayout?: PrintLayout | null;
+  safetyMargin?: { vertical: number; horizontal: number };
 }
 
 const PrintPage: React.FC<PrintPageProps> = ({
@@ -18,9 +19,10 @@ const PrintPage: React.FC<PrintPageProps> = ({
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
-  customLayout
+  customLayout,
+  safetyMargin = { vertical: 8, horizontal: 3 }
 }) => {
-  // Calcola i margini in base al layout e all'indice della pagina
+  // Calculate margins based on layout and page index
   const margins = React.useMemo(() => {
     if (!customLayout) {
       return { top: 20, right: 15, bottom: 20, left: 15 };
@@ -35,7 +37,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
       };
     }
     
-    // Pagina dispari (0-based, quindi pageIndex 0, 2, 4... sono pagine 1, 3, 5...)
+    // Odd page (0-based, so pageIndex 0, 2, 4... are pages 1, 3, 5...)
     if (pageIndex % 2 === 0) {
       return {
         top: customLayout.page.oddPages?.marginTop || customLayout.page.marginTop,
@@ -44,7 +46,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
         left: customLayout.page.oddPages?.marginLeft || customLayout.page.marginLeft
       };
     } 
-    // Pagina pari (1, 3, 5...)
+    // Even page (1, 3, 5...)
     else {
       return {
         top: customLayout.page.evenPages?.marginTop || customLayout.page.marginTop,
@@ -55,13 +57,13 @@ const PrintPage: React.FC<PrintPageProps> = ({
     }
   }, [customLayout, pageIndex]);
   
-  // Aggiunge un numero di pagina e indicatori di margine (visibili solo in modalità anteprima)
+  // Add page number and margin indicators (visible only in preview mode)
   const renderPageDebugInfo = () => {
     if (!showPageBoundaries) return null;
     
     return (
       <>
-        {/* Numero di pagina */}
+        {/* Page number */}
         <div 
           className="absolute text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded" 
           style={{
@@ -70,12 +72,12 @@ const PrintPage: React.FC<PrintPageProps> = ({
             zIndex: 50
           }}
         >
-          Pagina {pageIndex + 1}
+          Page {pageIndex + 1}
         </div>
         
-        {/* Indicatori dei margini */}
+        {/* Margin indicators */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Margine superiore */}
+          {/* Top margin */}
           <div className="absolute left-0 right-0 flex justify-center">
             <div 
               className="bg-blue-500/20 px-2 rounded text-xs text-blue-800"
@@ -85,11 +87,11 @@ const PrintPage: React.FC<PrintPageProps> = ({
                 lineHeight: `${margins.top}mm`
               }}
             >
-              Margine superiore: {margins.top}mm
+              Top margin: {margins.top}mm
             </div>
           </div>
           
-          {/* Margine inferiore */}
+          {/* Bottom margin */}
           <div className="absolute left-0 right-0 bottom-0 flex justify-center">
             <div 
               className="bg-blue-500/20 px-2 rounded text-xs text-blue-800"
@@ -99,11 +101,11 @@ const PrintPage: React.FC<PrintPageProps> = ({
                 lineHeight: `${margins.bottom}mm`
               }}
             >
-              Margine inferiore: {margins.bottom}mm
+              Bottom margin: {margins.bottom}mm
             </div>
           </div>
           
-          {/* Margine sinistro */}
+          {/* Left margin */}
           <div 
             className="absolute top-0 bottom-0 left-0 flex flex-col justify-center items-center"
             style={{
@@ -113,11 +115,11 @@ const PrintPage: React.FC<PrintPageProps> = ({
             <div 
               className="bg-blue-500/20 px-1 py-2 rounded text-xs text-blue-800 rotate-90"
             >
-              Margine sx: {margins.left}mm
+              Left: {margins.left}mm
             </div>
           </div>
           
-          {/* Margine destro */}
+          {/* Right margin */}
           <div 
             className="absolute top-0 bottom-0 right-0 flex flex-col justify-center items-center"
             style={{
@@ -127,11 +129,32 @@ const PrintPage: React.FC<PrintPageProps> = ({
             <div 
               className="bg-blue-500/20 px-1 py-2 rounded text-xs text-blue-800 rotate-90"
             >
-              Margine dx: {margins.right}mm
+              Right: {margins.right}mm
             </div>
           </div>
           
-          {/* Linea di divisione pagina */}
+          {/* Safety margins */}
+          {safetyMargin && (
+            <>
+              {/* Display safety margins */}
+              <div 
+                className="absolute border border-dashed border-red-400 pointer-events-none"
+                style={{
+                  top: `${margins.top + safetyMargin.vertical}mm`,
+                  left: `${margins.left + safetyMargin.horizontal}mm`,
+                  right: `${margins.right + safetyMargin.horizontal}mm`,
+                  bottom: `${margins.bottom + safetyMargin.vertical}mm`,
+                  zIndex: 5
+                }}
+              >
+                <div className="bg-red-100/30 text-xs text-red-700 px-1 absolute -top-3 left-2">
+                  Safety margin
+                </div>
+              </div>
+            </>
+          )}
+          
+          {/* Page break line */}
           <div className="absolute left-0 right-0 bottom-0 flex justify-center">
             <div 
               className="bg-red-300/50 py-1 px-4 text-xs text-red-800 rounded"
@@ -142,7 +165,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
                 display: 'inline-block',
               }}
             >
-              FINE PAGINA {pageIndex + 1} - INIZIO PAGINA {pageIndex + 2}
+              END PAGE {pageIndex} - START PAGE {pageIndex + 1}
             </div>
           </div>
         </div>
@@ -170,7 +193,11 @@ const PrintPage: React.FC<PrintPageProps> = ({
         style={{ 
           overflow: 'visible',
           height: 'auto',
-          position: 'relative'
+          position: 'relative',
+          // Apply safety margins to content container
+          ...(safetyMargin && {
+            margin: `${safetyMargin.vertical}mm ${safetyMargin.horizontal}mm`,
+          })
         }}
       >
         {children}

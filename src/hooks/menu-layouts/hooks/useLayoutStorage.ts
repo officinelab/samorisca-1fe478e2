@@ -1,99 +1,79 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { loadLayouts } from "../storage";
-import { toast } from "@/components/ui/sonner";
+import { loadLayouts, saveLayouts } from "../layoutStorage";
+import { createDefaultLayout } from "../utils/operations/createDefaultLayout";
+import { generateUniqueId } from "../utils/operations/idGenerator";
 
-/**
- * Hook to load layouts from Supabase or default layouts
- * with improved caching and synchronization
- */
 export const useLayoutStorage = () => {
-  // Inizializza con array vuoto per evitare undefined
   const [layouts, setLayouts] = useState<PrintLayout[]>([]);
-  const [activeLayout, setActiveLayout] = useState<PrintLayout | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cacheKey, setCacheKey] = useState<string>(Date.now().toString());
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [defaultLayout, setDefaultLayout] = useState<PrintLayout | null>(null);
 
-  // Aggiungiamo log per debug
   useEffect(() => {
-    console.log("useLayoutStorage - Stato iniziale:", { layouts, activeLayout, isLoading });
-  }, []);
-
-  // Funzione per forzare un ricaricamento dei layout
-  const forceRefresh = useCallback(() => {
-    setCacheKey(Date.now().toString());
-  }, []);
-
-  // Load saved layouts from Supabase or default ones
-  useEffect(() => {
-    const fetchLayouts = async () => {
-      setIsLoading(true);
+    const initLayouts = async () => {
       try {
-        console.log("useLayoutStorage - Avvio caricamento layouts con cache key:", cacheKey);
-        const { layouts: loadedLayouts, defaultLayout, error: loadError } = await loadLayouts();
+        setIsLoading(true);
         
-        console.log("useLayoutStorage - Layout caricati:", loadedLayouts);
-        console.log("useLayoutStorage - Default layout caricato:", defaultLayout);
+        // Try to load existing layouts
+        const existingLayouts = await loadLayouts();
         
-        // Always ensure layouts is an array
-        const safeLayouts = Array.isArray(loadedLayouts) ? loadedLayouts : [];
-        
-        // Assicuriamo che eventuali valori di colore esistenti non vengano persi
-        // Questo previene il problema della visualizzazione errata dei colori
-        const layoutsWithFixedColors = safeLayouts.map(layout => {
-          // Verifica e correggi i colori eventualmente invalidi
-          if (layout.elements?.category?.fontColor) {
-            // Assicura che tutti i colori siano in formato esadecimale valido
-            if (!layout.elements.category.fontColor.startsWith('#')) {
-              layout.elements.category.fontColor = '#000000';
-            }
+        // If no layouts exist, create default layout
+        if (!existingLayouts || !existingLayouts.length) {
+          const newDefaultLayout = createDefaultLayout();
+          const layoutWithId = {
+            ...newDefaultLayout,
+            id: generateUniqueId(),
+          };
+          
+          await saveLayouts([layoutWithId]);
+          setLayouts([layoutWithId]);
+          setDefaultLayout(layoutWithId);
+        } else {
+          setLayouts(existingLayouts);
+          
+          // Find the default layout or set the first one as default
+          const foundDefault = existingLayouts.find(layout => layout.isDefault);
+          if (foundDefault) {
+            setDefaultLayout(foundDefault);
+          } else if (existingLayouts.length > 0) {
+            const firstLayout = existingLayouts[0];
+            const updatedFirstLayout = { ...firstLayout, isDefault: true };
+            const updatedLayouts = [
+              updatedFirstLayout,
+              ...existingLayouts.slice(1).map(l => ({ ...l, isDefault: false }))
+            ];
+            
+            await saveLayouts(updatedLayouts);
+            setLayouts(updatedLayouts);
+            setDefaultLayout(updatedFirstLayout);
           }
-          return layout;
-        });
-        
-        setLayouts(layoutsWithFixedColors);
-        
-        // Make sure defaultLayout exists
-        setActiveLayout(defaultLayout || (layoutsWithFixedColors.length > 0 ? layoutsWithFixedColors[0] : null));
-        
-        if (loadError) {
-          console.error("useLayoutStorage - Errore durante il caricamento:", loadError);
-          setError(loadError);
-          toast.error(loadError);
         }
-      } catch (e) {
-        console.error("Error loading layouts:", e);
-        setError("Failed to load layouts");
-        toast.error("Errore nel caricamento dei layout");
         
-        // Set empty array as fallback
-        setLayouts([]);
+        setError(null);
+      } catch (err) {
+        console.error("Error initializing layouts:", err);
+        setError("Impossibile caricare i layout. Riprovare più tardi.");
+        
+        // Create an emergency default layout if loading fails
+        const emergencyLayout = createDefaultLayout();
+        const layoutWithId = {
+          ...emergencyLayout,
+          id: generateUniqueId(),
+        };
+        
+        setLayouts([layoutWithId]);
+        setDefaultLayout(layoutWithId);
       } finally {
         setIsLoading(false);
-        console.log("useLayoutStorage - Caricamento completato");
       }
     };
     
-    fetchLayouts();
-  }, [cacheKey]); // Ora dipende anche da cacheKey per forzare il refresh
-
-  // Aggiungiamo un effetto per debug dei cambiamenti
-  useEffect(() => {
-    console.log("useLayoutStorage - Layouts aggiornati:", layouts);
-    console.log("useLayoutStorage - ActiveLayout aggiornato:", activeLayout);
-  }, [layouts, activeLayout]);
-
-  return {
-    // Garantiamo che layouts sia sempre un array
-    layouts: Array.isArray(layouts) ? layouts : [],
-    setLayouts,
-    activeLayout,
-    setActiveLayout,
-    isLoading,
-    error,
-    setError,
-    forceRefresh // Funzione per ricaricare i layout
-  };
+    initLayouts();
+  }, []);
+  
+  return { layouts, defaultLayout, error, isLoading };
 };
+
+export default useLayoutStorage;
