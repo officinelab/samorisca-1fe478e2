@@ -8,7 +8,23 @@ import {
   getProductHeight,
   getFilteredCategories
 } from './utils/pageCalculations';
-import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
+import { CategoryTitleContent, PageContent } from './types/paginationTypes';
+
+// Define a proper ProductItem type for use in the pagination logic
+interface ProductItem {
+  type: 'product';
+  id: string; // Using id instead of key
+  product: Product;
+}
+
+interface ProductsGroupContent extends PageContent {
+  type: 'products-group';
+  id: string; // Using id instead of key
+  products: ProductItem[];
+}
+
+// Define the type for page content array
+type PrintPageContent = PageContent[];
 
 interface UsePaginationProps {
   categories: Category[];
@@ -71,11 +87,12 @@ export const usePagination = ({
       // Funzione per aggiungere i prodotti rimanenti della categoria corrente alla pagina
       const addRemainingProducts = () => {
         if (currentCategoryProducts.length > 0) {
-          currentPageContent.push({ 
+          const productsGroup: ProductsGroupContent = { 
             type: 'products-group', 
-            key: `cat-products-${lastCategoryId}-${currentPageIndex}`,
+            id: `cat-products-${lastCategoryId}-${currentPageIndex}`,
             products: [...currentCategoryProducts]
-          });
+          };
+          currentPageContent.push(productsGroup);
           currentCategoryProducts = [];
         }
       };
@@ -104,7 +121,7 @@ export const usePagination = ({
         // Aggiungi il titolo categoria (originale o ripetuto)
         const categoryTitleContent: CategoryTitleContent = {
           type: 'category-title',
-          key: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
+          id: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
           category,
           isRepeated: !startingNewCategory
         };
@@ -128,7 +145,7 @@ export const usePagination = ({
             // Nella nuova pagina, ripeti il titolo della categoria
             const repeatedCategoryTitle: CategoryTitleContent = {
               type: 'category-title',
-              key: `cat-title-${category.id}-${currentPageIndex}-repeat`,
+              id: `cat-title-${category.id}-${currentPageIndex}-repeat`,
               category,
               isRepeated: true
             };
@@ -140,7 +157,7 @@ export const usePagination = ({
           // Aggiungi il prodotto ai prodotti correnti
           currentCategoryProducts.push({
             type: 'product',
-            key: `product-${product.id}-${currentPageIndex}-${productIndex}`,
+            id: `product-${product.id}-${currentPageIndex}-${productIndex}`,
             product
           });
           

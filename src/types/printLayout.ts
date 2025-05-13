@@ -1,76 +1,119 @@
 
-export type FontStyle = 'normal' | 'italic' | 'bold';
+// Define available fonts
+export type FontFamily = "Arial" | "Times New Roman" | "Georgia" | "Verdana" | "Tahoma" | "Trebuchet MS" | "Courier";
 
-export type PrintLayoutElementConfig = {
+// Define font style options
+export type FontStyle = "normal" | "bold" | "italic";
+
+// Define text alignment options
+export type TextAlignment = "left" | "center" | "right" | "justify";
+
+// Define image alignment options
+export type ImageAlignment = "left" | "center" | "right";
+
+// Define product schema options
+export type ProductSchema = "schema1" | "schema2" | "schema3";
+
+// Define layout types
+export type LayoutType = "classic" | "modern" | "minimal";
+
+// Define margins
+export interface Margins {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+// Define element style
+export interface ElementStyle {
   visible: boolean;
-  fontFamily: string;
+  fontFamily: FontFamily;
   fontSize: number;
   fontColor: string;
   fontStyle: FontStyle;
-  alignment: 'left' | 'center' | 'right';
-  margin: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
+  alignment: TextAlignment;
+  margin: Margins;
 }
 
-export type PageMargins = {
+// Define text element with content
+export interface TextElement extends ElementStyle {
+  text: string;
+}
+
+// Define image element
+export interface ImageElement {
+  visible: boolean;
+  maxWidth: number;
+  maxHeight: number;
+  alignment: ImageAlignment;
+  margin: Margins;
+}
+
+// Define page margins configuration
+export interface PageMargins {
   marginTop: number;
   marginRight: number;
   marginBottom: number;
   marginLeft: number;
-};
+  useDistinctMarginsForPages: boolean;
+  oddPages?: {
+    marginTop: number;
+    marginRight: number;
+    marginBottom: number;
+    marginLeft: number;
+  };
+  evenPages?: {
+    marginTop: number;
+    marginRight: number;
+    marginBottom: number;
+    marginLeft: number;
+  };
+}
 
-export type ProductSchema = 'schema1' | 'schema2' | 'schema3';
+// Define page spacing
+export interface Spacing {
+  betweenCategories: number;
+  categoryTitleBottomMargin: number;
+  betweenProducts: number;
+}
 
-export type PrintLayout = {
+// Define allergens page elements
+export interface AllergensElements {
+  title: TextElement;
+  description: TextElement;
+  itemNumber: ElementStyle;
+  itemTitle: ElementStyle;
+  item: ElementStyle;
+}
+
+// Define cover page elements
+export interface CoverElements {
+  logo: ImageElement;
+  title: TextElement;
+  subtitle: TextElement;
+}
+
+// Define menu content elements
+export interface MenuElements {
+  category: ElementStyle;
+  title: ElementStyle;
+  description: ElementStyle;
+  price: ElementStyle;
+  allergensList: ElementStyle;
+  priceVariants: ElementStyle;
+}
+
+// Define PrintLayout
+export interface PrintLayout {
   id: string;
   name: string;
-  type: 'classic' | 'custom' | 'modern' | 'allergens';
+  type: LayoutType;
   isDefault: boolean;
   productSchema: ProductSchema;
-  elements: {
-    category: PrintLayoutElementConfig;
-    title: PrintLayoutElementConfig;
-    description: PrintLayoutElementConfig;
-    price: PrintLayoutElementConfig;
-    allergensList: PrintLayoutElementConfig;
-    priceVariants: PrintLayoutElementConfig;
-  };
-  cover: {
-    logo: {
-      maxWidth: number; // percentuale della larghezza del foglio
-      maxHeight: number; // percentuale dell'altezza del foglio
-      alignment: 'left' | 'center' | 'right';
-      marginTop: number;
-      marginBottom: number;
-      visible: boolean; // Aggiunta questa proprietà mancante
-    };
-    title: PrintLayoutElementConfig;
-    subtitle: PrintLayoutElementConfig;
-  };
-  allergens: {
-    title: PrintLayoutElementConfig;
-    description: PrintLayoutElementConfig;
-    item: {
-      number: PrintLayoutElementConfig;
-      title: PrintLayoutElementConfig;
-      spacing: number;
-      backgroundColor: string;
-      borderRadius: number;
-      padding: number;
-    };
-  };
-  spacing: {
-    betweenCategories: number;
-    betweenProducts: number;
-    categoryTitleBottomMargin: number;
-  };
-  page: PageMargins & {
-    useDistinctMarginsForPages: boolean;
-    oddPages: PageMargins;
-    evenPages: PageMargins;
-  };
+  elements: MenuElements;
+  cover: CoverElements;
+  allergens: AllergensElements;
+  spacing: Spacing;
+  page: PageMargins;
 }

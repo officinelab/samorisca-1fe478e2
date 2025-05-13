@@ -1,26 +1,32 @@
 
-import { Category, Product } from "@/types/database";
+import { Category, Product } from '@/types/database';
 
-export type CategoryTitleContent = {
+// Base page content interface
+export interface PageContent {
+  type: 'category-title' | 'products-group';
+  id: string; // Using id instead of key
+}
+
+// Category title content
+export interface CategoryTitleContent extends PageContent {
   type: 'category-title';
-  key: string;
   category: Category;
   isRepeated: boolean;
-};
+}
 
-export type ProductsGroupContent = {
+// Products group content
+export interface ProductsGroupContent extends PageContent {
   type: 'products-group';
-  key: string;
-  products: ProductItem[];
-};
+  products: {
+    type: 'product';
+    id: string; // Using id instead of key
+    product: Product;
+  }[];
+}
 
-export type ProductItem = {
+// Export the product item type for reuse
+export interface ProductItem {
   type: 'product';
-  key: string;
+  id: string;
   product: Product;
-};
-
-export type PageContent = CategoryTitleContent | ProductsGroupContent;
-
-export type PrintPageContent = PageContent[];
-
+}

@@ -58,7 +58,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
               const categoryContent = content as CategoryTitleContent;
               return (
                 <RepeatedCategoryTitle
-                  key={categoryContent.key}
+                  key={categoryContent.id}
                   category={categoryContent.category}
                   language={language}
                   customLayout={customLayout}
@@ -68,10 +68,10 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
             } else if (content.type === 'products-group') {
               const productsContent = content as ProductsGroupContent;
               return (
-                <div key={productsContent.key} className="category-products">
+                <div key={productsContent.id} className="category-products">
                   {productsContent.products.map(productItem => (
                     <ProductItem
-                      key={productItem.key}
+                      key={productItem.id}
                       product={productItem.product}
                       language={language}
                       customLayout={customLayout}

@@ -11,80 +11,82 @@ interface Schema3LayoutProps {
 }
 
 const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, customLayout }) => {
-  // Schema 3 - Layout espanso con titolo in evidenza e dettagli separati
+  // Schema 3 - Layout espanso con titolo, descrizione e poi riquadro per prezzo, allergeni e varianti
   return (
     <>
-      {/* Titolo principale in evidenza */}
+      {/* Prima riga: Titolo */}
       {(!customLayout || customLayout.elements.title.visible) && (
         <div style={getElementStyle(customLayout?.elements.title, {
           fontWeight: 'bold',
-          fontSize: '14pt',
-          marginBottom: '2mm',
-          borderBottom: '1px solid #ccc',
-          paddingBottom: '1mm'
+          fontSize: '12pt',
+          width: '100%',
+          borderBottom: '1px solid #eaeaea',
+          paddingBottom: '1mm',
+          marginBottom: '1mm'
         })}>
           {product[`title_${language}`] || product.title}
         </div>
       )}
       
-      {/* Descrizione se disponibile */}
+      {/* Seconda riga: Descrizione */}
       {(!customLayout || customLayout.elements.description.visible) && 
         (product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
-          fontSize: '11pt',
+          fontSize: '10pt',
+          fontStyle: 'italic',
           marginBottom: '2mm',
-          fontStyle: 'italic'
+          width: '100%'
         })}>
           {product[`description_${language}`] || product.description}
         </div>
       )}
       
-      {/* Box con prezzo, allergeni e varianti */}
+      {/* Riquadro informazioni: Prezzo, Allergeni, Varianti */}
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'center',
         backgroundColor: '#f9f9f9',
+        border: '1px solid #eaeaea',
+        borderRadius: '4px',
         padding: '2mm',
-        borderRadius: '2mm'
+        marginTop: '1mm'
       }}>
-        {/* Prezzo principale */}
-        {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            fontWeight: 'bold',
-            fontSize: '13pt'
-          })}>
-            € {product.price_standard}
-          </div>
-        )}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%'
+        }}>
+          {/* Prezzo standard */}
+          {(!customLayout || customLayout.elements.price.visible) && (
+            <div style={getElementStyle(customLayout?.elements.price, {
+              fontWeight: 'bold',
+              fontSize: '11pt'
+            })}>
+              € {product.price_standard}
+            </div>
+          )}
+          
+          {/* Allergeni */}
+          {(!customLayout || customLayout.elements.allergensList.visible) && 
+            product.allergens && product.allergens.length > 0 && (
+            <div style={getElementStyle(customLayout?.elements.allergensList, {
+              fontSize: '9pt'
+            })}>
+              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
+            </div>
+          )}
+        </div>
         
-        {/* Allergeni */}
-        {(!customLayout || customLayout.elements.allergensList.visible) && 
-          product.allergens && product.allergens.length > 0 && (
-          <div style={getElementStyle(customLayout?.elements.allergensList, {
-            fontSize: '10pt',
-            fontStyle: 'italic'
-          })}>
-            Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
-          </div>
-        )}
-        
-        {/* Varianti di prezzo in fondo */}
+        {/* Varianti di prezzo */}
         {(!customLayout || customLayout.elements.priceVariants.visible) && 
           product.has_multiple_prices && (
-          <div style={{
-            ...getElementStyle(customLayout?.elements.priceVariants, {
-              fontSize: '10pt'
-            }),
-            width: '100%',
-            marginTop: '2mm',
-            display: 'flex',
-            justifyContent: 'flex-start',
-            gap: '2rem',
+          <div style={getElementStyle(customLayout?.elements.priceVariants, {
             borderTop: '1px dotted #ccc',
-            paddingTop: '1mm'
-          }}>
+            marginTop: '1mm',
+            paddingTop: '1mm',
+            fontSize: '9pt',
+            display: 'flex',
+            gap: '15px'
+          })}>
             {product.price_variant_1_name && (
               <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
             )}
