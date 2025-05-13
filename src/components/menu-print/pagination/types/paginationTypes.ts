@@ -1,25 +1,26 @@
 
 import { Category, Product } from "@/types/database";
 
-export interface CategoryTitleContent {
+export type CategoryTitleContent = {
   type: 'category-title';
+  key: string;
   category: Category;
   isRepeated: boolean;
-  key: string; // Added key property
-}
+};
 
-export interface ProductItemContent {
-  product: Product;
-  key: string; // Added key property
-}
-
-export interface ProductsGroupContent {
+export type ProductsGroupContent = {
   type: 'products-group';
-  products: ProductItemContent[];
-  key: string; // Added key property
-}
+  key: string;
+  products: ProductItem[];
+};
+
+export type ProductItem = {
+  type: 'product';
+  key: string;
+  product: Product;
+};
 
 export type PageContent = CategoryTitleContent | ProductsGroupContent;
 
-// Renamed from PrintPageContent to PageContent
-export type PageItems = PageContent[];
+export type PrintPageContent = PageContent[];
+

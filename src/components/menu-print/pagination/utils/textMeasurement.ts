@@ -1,65 +1,88 @@
 
-import { PrintLayout } from '@/types/printLayout';
+/**
+ * Utility per misurare l'altezza effettiva del testo usando Canvas API
+ * e tecniche avanzate di calcolo del layout
+ */
 
-// Cache for already calculated text heights to improve performance
-const textHeightCache = new Map<string, number>();
+import { PrintLayout } from "@/types/printLayout";
+import { 
+  calculateProductHeight, 
+  calculateTextHeight, 
+  getAvailableWidth,
+  clearTextHeightCache
+} from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
- * Calculates the height of text given font parameters and available width
+ * Misura l'altezza effettiva di un testo con determinati stili
+ * @param text Il testo da misurare
+ * @param fontSize Dimensione del font in pt
+ * @param fontFamily Famiglia del font
+ * @param fontWeight Peso del font (bold, normal)
+ * @param fontStyle Stile del font (italic, normal)
+ * @param maxWidth Larghezza massima in pixel dopo la quale il testo va a capo
+ * @returns Altezza del testo in pixel
  */
-export const calculateTextHeight = (
-  text: string,
-  fontSize: number,
-  fontFamily: string,
-  availableWidth: number
+export const measureTextHeight = (
+  text: string, 
+  fontSize: number = 12,
+  fontFamily: string = 'Arial',
+  fontWeight: string = 'normal',
+  fontStyle: string = 'normal',
+  maxWidth: number = 800
 ): number => {
-  // Generate cache key
-  const cacheKey = `${text}-${fontSize}-${fontFamily}-${availableWidth}`;
-  
-  // Use cached value if available
-  if (textHeightCache.has(cacheKey)) {
-    return textHeightCache.get(cacheKey) || 0;
-  }
-  
-  // Create temporary element to measure text height
-  const tempElement = document.createElement('div');
-  tempElement.style.position = 'absolute';
-  tempElement.style.visibility = 'hidden';
-  tempElement.style.fontFamily = fontFamily;
-  tempElement.style.fontSize = `${fontSize}px`;
-  tempElement.style.width = `${availableWidth}px`;
-  tempElement.style.whiteSpace = 'normal';
-  tempElement.style.lineHeight = '1.2'; // Default line height
-  tempElement.textContent = text || '';
-  
-  document.body.appendChild(tempElement);
-  const height = tempElement.offsetHeight;
-  document.body.removeChild(tempElement);
-  
-  // Cache the result
-  textHeightCache.set(cacheKey, height);
-  
-  return height;
+  // Utilizziamo la nuova utility ottimizzata per il calcolo
+  const effectiveFontStyle = fontWeight === 'bold' ? 'bold' : (fontStyle === 'italic' ? 'italic' : 'normal');
+  return calculateTextHeight(text, fontSize, effectiveFontStyle, maxWidth, fontFamily);
 };
 
 /**
- * Returns the available width for content based on layout settings
+ * Misura l'altezza di un elemento del prodotto in base ai suoi contenuti
  */
-export const getAvailableWidth = (
-  A4_WIDTH_MM: number,
+export const measureProductElementHeight = (
+  text: string | null | undefined,
+  fontSize: number = 10,
+  fontFamily: string = 'Arial',
+  fontWeight: string = 'normal',
+  fontStyle: string = 'normal',
+  isVisible: boolean = true,
+  maxWidth: number = 800
+): number => {
+  if (!text || !isVisible) return 0;
+  
+  return measureTextHeight(text, fontSize, fontFamily, fontWeight, fontStyle, maxWidth);
+};
+
+/**
+ * Calcola l'altezza totale di un prodotto considerando tutti i suoi elementi
+ * Utilizza l'utility avanzata di calcolo altezza
+ */
+export const calculateProductTotalHeight = (
+  product: any,
+  language: string,
   customLayout?: PrintLayout | null
 ): number => {
-  if (!customLayout) return A4_WIDTH_MM - 30; // Default 15mm margins on each side
-  
-  const leftMargin = customLayout.page.marginLeft || 15;
-  const rightMargin = customLayout.page.marginRight || 15;
-  
-  return A4_WIDTH_MM - (leftMargin + rightMargin);
+  // Utilizziamo la nuova utility per un calcolo più preciso
+  return calculateProductHeight(product, language, customLayout);
 };
 
 /**
- * Clears the text height cache
+ * Stima l'altezza di un prodotto (usata come fallback)
+ * NOTA: Questa funzione viene mantenuta per compatibilità, ma ora
+ * utilizza la nuova utility più precisa
  */
-export const clearTextHeightCache = (): void => {
-  textHeightCache.clear();
+export const estimateProductHeight = (
+  product: any,
+  language: string,
+  customLayout?: PrintLayout | null
+): number => {
+  // Ricadiamo sulla funzione di calcolo avanzata
+  return calculateProductHeight(product, language, customLayout);
+};
+
+/**
+ * Funzione per liberare la cache delle misurazioni quando non più necessarie
+ * Da chiamare ad esempio dopo il completamento della stampa
+ */
+export const resetMeasurementCache = (): void => {
+  clearTextHeightCache();
 };

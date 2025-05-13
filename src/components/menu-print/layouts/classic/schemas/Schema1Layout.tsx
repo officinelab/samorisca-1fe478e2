@@ -18,7 +18,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
         justifyContent: 'space-between',
         alignItems: 'baseline',
         width: '100%'
-      }}>
+      }} className="item-header">
         {(!customLayout || customLayout.elements.title.visible) && (
           <div style={getElementStyle(customLayout?.elements.title, {
             fontWeight: 'bold',
@@ -27,7 +27,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
             whiteSpace: 'normal',
             marginRight: '10px',
             maxWidth: '60%'
-          })}>
+          })} className="item-title">
             {product[`title_${language}`] || product.title}
           </div>
         )}
@@ -39,21 +39,8 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
             fontSize: '10pt',
             whiteSpace: 'nowrap',
             marginRight: '10px'
-          })}>
+          })} className="item-allergens">
             {product.allergens.map(allergen => allergen.number).join(", ")}
-            {product.features && product.features.length > 0 && (
-              <span style={{ marginLeft: '4px', display: 'inline-flex', verticalAlign: 'middle' }}>
-                {product.features.map((feature, index) => (
-                  <img 
-                    key={index}
-                    src={feature.icon_url || ''}
-                    alt={feature.title}
-                    title={feature.title}
-                    style={{ height: '12px', width: 'auto', marginLeft: '2px', display: 'inline' }}
-                  />
-                ))}
-              </span>
-            )}
           </div>
         )}
         
@@ -62,7 +49,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
           position: 'relative',
           top: '-3px',
           borderBottom: '1px dotted #000'
-        }}></div>
+        }} className="item-dots"></div>
         
         {(!customLayout || customLayout.elements.price.visible) && (
           <div style={getElementStyle(customLayout?.elements.price, {
@@ -71,7 +58,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
             width: 'auto',
             whiteSpace: 'nowrap',
             marginLeft: '10px'
-          })}>
+          })} className="item-price">
             € {product.price_standard}
           </div>
         )}
@@ -89,7 +76,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
           wordWrap: 'break-word',
           wordBreak: 'normal',
           hyphens: 'auto'
-        })}>
+        })} className="item-description">
           {product[`description_${language}`] || product.description}
         </div>
       )}

@@ -11,102 +11,92 @@ interface Schema2LayoutProps {
 }
 
 const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, customLayout }) => {
+  // Schema 2 - Layout compatto con titolo e prezzo affiancati, e descrizione sotto
   return (
     <>
-      {/* Riga 1: Titolo e prezzo */}
       <div style={{
         display: 'flex',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
-        paddingBottom: '1mm',
         borderBottom: '1px solid #eee',
+        paddingBottom: '2mm',
       }}>
-        {(!customLayout || customLayout.elements.title.visible) && (
-          <div style={getElementStyle(customLayout?.elements.title, {
-            maxWidth: '80%',
-            flexGrow: 1,
-            paddingRight: '5mm',
-            fontWeight: 'bold',
-            fontSize: '12pt',
-          })}>
-            {product[`title_${language}`] || product.title}
-          </div>
-        )}
-        
-        {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            textAlign: 'right',
-            width: '20%',
-            fontWeight: 'bold',
-            fontSize: '12pt',
-          })}>
-            € {product.price_standard}
-          </div>
-        )}
-      </div>
-      
-      {/* Riga 2: Allergeni e varianti di prezzo */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        width: '100%',
-        marginTop: '1mm',
-      }}>
-        <div style={{ maxWidth: '80%' }}>
-          {(!customLayout || customLayout.elements.allergensList.visible) && 
-            (product.allergens || product.features) && (
-            <div style={getElementStyle(customLayout?.elements.allergensList, {
-              fontSize: '10pt',
-              fontStyle: 'italic',
+        {/* Titolo e prezzo affiancati */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+        }}>
+          {(!customLayout || customLayout.elements.title.visible) && (
+            <div style={getElementStyle(customLayout?.elements.title, {
+              fontWeight: 'bold',
+              fontSize: '12pt',
+              maxWidth: '70%'
             })}>
-              {product.allergens && product.allergens.length > 0 && (
-                <span>Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}</span>
-              )}
-              {product.features && product.features.length > 0 && (
-                <span style={{ marginLeft: product.allergens?.length ? '4px' : '0', display: 'inline-flex', verticalAlign: 'middle' }}>
-                  {product.features.map((feature, index) => (
-                    <img 
-                      key={index}
-                      src={feature.icon_url || ''}
-                      alt={feature.title}
-                      title={feature.title}
-                      style={{ height: '12px', width: 'auto', marginLeft: '2px', display: 'inline' }}
-                    />
-                  ))}
-                </span>
-              )}
+              {product[`title_${language}`] || product.title}
+            </div>
+          )}
+          
+          {(!customLayout || customLayout.elements.price.visible) && (
+            <div style={getElementStyle(customLayout?.elements.price, {
+              textAlign: 'right',
+              fontWeight: 'bold',
+              fontSize: '12pt'
+            })}>
+              € {product.price_standard}
             </div>
           )}
         </div>
         
-        <div style={{ width: '20%', textAlign: 'right' }}>
+        {/* Allergeni e varianti di prezzo sotto */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          marginTop: '1mm',
+        }}>
+          {(!customLayout || customLayout.elements.allergensList.visible) && 
+            product.allergens && product.allergens.length > 0 && (
+            <div style={getElementStyle(customLayout?.elements.allergensList, {
+              fontSize: '9pt',
+              fontStyle: 'italic',
+            })}>
+              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
+            </div>
+          )}
+          
           {(!customLayout || customLayout.elements.priceVariants.visible) && 
             product.has_multiple_prices && (
             <div style={getElementStyle(customLayout?.elements.priceVariants, {
-              fontSize: '10pt',
-              textAlign: 'right',
+              fontSize: '9pt',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px'
             })}>
               {product.price_variant_1_name && (
-                <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
+                <span>{product.price_variant_1_name}: € {product.price_variant_1_value}</span>
               )}
               {product.price_variant_2_name && (
-                <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
+                <span>{product.price_variant_2_name}: € {product.price_variant_2_value}</span>
               )}
             </div>
           )}
         </div>
       </div>
       
-      {/* Riga 3: Descrizione */}
+      {/* Descrizione sotto */}
       {(!customLayout || customLayout.elements.description.visible) && 
         (product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
-          marginTop: '1mm',
-          maxWidth: '80%',
           fontSize: '10pt',
           fontStyle: 'italic',
+          marginTop: '1mm',
+          width: '100%',
+          maxWidth: '95%'
         })}>
           {product[`description_${language}`] || product.description}
         </div>

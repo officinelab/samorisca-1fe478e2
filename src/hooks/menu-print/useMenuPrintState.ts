@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMenuData } from "../useMenuData";
 import { usePrintOperationsManager } from "../print/usePrintOperationsManager";
@@ -94,8 +95,8 @@ export const useMenuPrintState = () => {
   
   return {
     // Layout and display options
-    layoutId, 
-    setLayoutId, 
+    layoutId, // Cambiato da layoutType a layoutId
+    setLayoutId, // Cambiato da setLayoutType a setLayoutId
     language,
     setLanguage,
     printAllergens,

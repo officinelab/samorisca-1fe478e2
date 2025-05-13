@@ -1,145 +1,238 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { PrintLayout } from '@/types/printLayout';
+import { supabase } from "@/integrations/supabase/client";
+import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
+import { defaultLayouts } from "../utils/defaultLayouts";
+import { v4 as uuidv4 } from "uuid";
 
-/**
- * Carica i layout da Supabase
- */
-export const fetchLayoutsFromSupabase = async () => {
+// Recupera tutti i layout da Supabase
+export const fetchLayoutsFromSupabase = async (): Promise<{
+  layouts: PrintLayout[];
+  defaultLayout: PrintLayout | null;
+  error: string | null;
+}> => {
   try {
-    console.log('Fetching layouts from Supabase...');
-    
     const { data, error } = await supabase
       .from('print_layouts')
       .select('*')
       .order('created_at', { ascending: true });
-      
+
     if (error) {
-      console.error('Errore nel caricamento dei layout da Supabase:', error);
-      throw error;
+      console.error("Errore nel recupero dei layout da Supabase:", error);
+      return {
+        layouts: [],
+        defaultLayout: null,
+        error: `Errore nel recupero dei layout: ${error.message}`
+      };
     }
-    
+
+    // Se non ci sono layout, inizializza con quelli predefiniti
     if (!data || data.length === 0) {
-      console.warn('Nessun layout trovato in Supabase');
-      return { layouts: [], defaultLayout: null, error: 'Nessun layout trovato nel database' };
+      console.log("Nessun layout trovato, inizializzo con i layout predefiniti");
+      const { success, layouts } = await initializeDefaultLayouts();
+      
+      if (!success || !layouts) {
+        return {
+          layouts: [],
+          defaultLayout: null,
+          error: "Errore nell'inizializzazione dei layout predefiniti"
+        };
+      }
+      
+      return {
+        layouts,
+        defaultLayout: layouts.find(layout => layout.isDefault) || layouts[0],
+        error: null
+      };
     }
-    
-    // Converte i layout recuperati al formato PrintLayout
-    const layouts = data.map(transformDbLayoutToLayout);
-    
-    // Trova il layout predefinito
-    const defaultLayout = layouts.find(layout => layout.isDefault) || null;
-    
-    console.log(`Caricati ${layouts.length} layout da Supabase, layout predefinito:`, defaultLayout?.name || 'nessuno');
-    
-    return { layouts, defaultLayout, error: null };
+
+    // Trasforma i dati dal formato DB al formato dell'applicazione
+    const layouts = data.map(dbLayout => transformDbToLayout(dbLayout));
+    const defaultLayout = layouts.find(layout => layout.isDefault) || layouts[0];
+
+    return {
+      layouts,
+      defaultLayout,
+      error: null
+    };
   } catch (err) {
-    console.error('Errore imprevisto nel caricamento dei layout:', err);
-    return { layouts: [], defaultLayout: null, error: 'Errore nel caricamento dei layout' };
+    console.error("Errore imprevisto durante il recupero dei layout:", err);
+    return {
+      layouts: [],
+      defaultLayout: null,
+      error: "Errore imprevisto durante il recupero dei layout"
+    };
   }
 };
 
-/**
- * Salva un layout su Supabase
- */
-export const saveLayoutToSupabase = async (layout: PrintLayout) => {
+// Salva un layout su Supabase
+export const saveLayoutToSupabase = async (layout: PrintLayout): Promise<{
+  success: boolean;
+  error: string | null;
+  layout?: PrintLayout;
+}> => {
   try {
-    // Converti il layout nel formato accettato dal database
-    const dbLayout = transformLayoutToDbLayout(layout);
+    // Prepara il layout per il salvataggio su DB
+    const dbLayout = transformLayoutToDb(layout);
     
-    // Salva/aggiorna il layout nel database
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('print_layouts')
       .upsert(dbLayout)
-      .select();
-      
+      .select()
+      .single();
+
     if (error) {
-      console.error('Errore nel salvataggio del layout su Supabase:', error);
-      return { success: false, error: error.message };
+      console.error("Errore nel salvataggio del layout:", error);
+      
+      // Gestisci l'errore del limite di 4 layout
+      if (error.message.includes('Non è possibile creare più di 4 layout')) {
+        return {
+          success: false,
+          error: "Non è possibile creare più di 4 layout"
+        };
+      }
+      
+      return {
+        success: false,
+        error: `Errore nel salvataggio del layout: ${error.message}`
+      };
     }
-    
-    toast.success('Layout salvato con successo');
-    return { success: true, error: null };
+
+    // Trasforma il layout salvato nel formato dell'applicazione
+    const savedLayout = transformDbToLayout(data);
+
+    return {
+      success: true,
+      error: null,
+      layout: savedLayout
+    };
   } catch (err) {
-    console.error('Errore imprevisto nel salvataggio del layout:', err);
-    return { success: false, error: 'Errore nel salvataggio del layout' };
+    console.error("Errore imprevisto durante il salvataggio del layout:", err);
+    return {
+      success: false,
+      error: "Errore imprevisto durante il salvataggio del layout"
+    };
   }
 };
 
-/**
- * Converte un layout dal formato del database al tipo PrintLayout
- */
-function transformDbLayoutToLayout(dbLayout: any): PrintLayout {
+// Elimina un layout da Supabase
+export const deleteLayoutFromSupabase = async (layoutId: string): Promise<{
+  success: boolean;
+  error: string | null;
+}> => {
+  try {
+    // Prima verifico quanti layout ci sono
+    const { count } = await supabase
+      .from('print_layouts')
+      .select('*', { count: 'exact', head: true });
+    
+    if (count === 1) {
+      return {
+        success: false,
+        error: "Non è possibile eliminare l'ultimo layout rimanente"
+      };
+    }
+    
+    // Verifico se il layout è predefinito
+    const { data: layoutData } = await supabase
+      .from('print_layouts')
+      .select('is_default')
+      .eq('id', layoutId)
+      .single();
+      
+    if (layoutData && layoutData.is_default) {
+      // Se eliminiamo il layout predefinito, dobbiamo impostarne un altro come predefinito
+      const { data: otherLayouts } = await supabase
+        .from('print_layouts')
+        .select('id')
+        .neq('id', layoutId)
+        .limit(1)
+        .single();
+        
+      if (otherLayouts) {
+        // Imposta un altro layout come predefinito
+        await supabase
+          .from('print_layouts')
+          .update({ is_default: true })
+          .eq('id', otherLayouts.id);
+      }
+    }
+
+    const { error } = await supabase
+      .from('print_layouts')
+      .delete()
+      .eq('id', layoutId);
+
+    if (error) {
+      console.error("Errore nell'eliminazione del layout:", error);
+      return {
+        success: false,
+        error: `Errore nell'eliminazione del layout: ${error.message}`
+      };
+    }
+
+    return {
+      success: true,
+      error: null
+    };
+  } catch (err) {
+    console.error("Errore imprevisto durante l'eliminazione del layout:", err);
+    return {
+      success: false,
+      error: "Errore imprevisto durante l'eliminazione del layout"
+    };
+  }
+};
+
+// Imposta un layout come predefinito
+export const setLayoutAsDefault = async (layoutId: string): Promise<{
+  success: boolean;
+  error: string | null;
+}> => {
+  try {
+    const { error } = await supabase
+      .from('print_layouts')
+      .update({ is_default: true })
+      .eq('id', layoutId);
+
+    if (error) {
+      console.error("Errore nell'impostazione del layout predefinito:", error);
+      return {
+        success: false,
+        error: `Errore nell'impostazione del layout predefinito: ${error.message}`
+      };
+    }
+
+    return {
+      success: true,
+      error: null
+    };
+  } catch (err) {
+    console.error("Errore imprevisto durante l'impostazione del layout predefinito:", err);
+    return {
+      success: false,
+      error: "Errore imprevisto durante l'impostazione del layout predefinito"
+    };
+  }
+};
+
+// Funzioni di utilità per la conversione tra formati
+function transformDbToLayout(dbLayout: any): PrintLayout {
   return {
     id: dbLayout.id,
     name: dbLayout.name,
-    type: dbLayout.type || 'classic',
-    isDefault: dbLayout.is_default || false,
-    productSchema: dbLayout.product_schema || 'schema1',
-    elements: dbLayout.elements || {
-      category: getDefaultElementConfig(),
-      title: getDefaultElementConfig(),
-      description: getDefaultElementConfig(),
-      price: getDefaultElementConfig(),
-      allergensList: getDefaultElementConfig(),
-      priceVariants: getDefaultElementConfig()
-    },
-    cover: dbLayout.cover || {
-      logo: {
-        maxWidth: 50,
-        maxHeight: 30,
-        alignment: 'center',
-        marginTop: 20,
-        marginBottom: 20,
-        visible: true
-      },
-      title: getDefaultElementConfig(),
-      subtitle: getDefaultElementConfig()
-    },
-    allergens: dbLayout.allergens || {
-      title: getDefaultElementConfig(),
-      description: getDefaultElementConfig(),
-      item: {
-        number: getDefaultElementConfig(),
-        title: getDefaultElementConfig(),
-        spacing: 10,
-        backgroundColor: '#f8f8f8',
-        borderRadius: 4,
-        padding: 10
-      }
-    },
-    spacing: dbLayout.spacing || {
-      betweenCategories: 15,
-      betweenProducts: 5,
-      categoryTitleBottomMargin: 10
-    },
-    page: dbLayout.page || {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15,
-      useDistinctMarginsForPages: false,
-      oddPages: {
-        marginTop: 20,
-        marginRight: 15,
-        marginBottom: 20,
-        marginLeft: 15
-      },
-      evenPages: {
-        marginTop: 20,
-        marginRight: 15,
-        marginBottom: 20,
-        marginLeft: 15
-      }
-    }
+    type: dbLayout.type,
+    isDefault: dbLayout.is_default,
+    productSchema: dbLayout.product_schema,
+    elements: dbLayout.elements,
+    cover: dbLayout.cover,
+    allergens: dbLayout.allergens,
+    spacing: dbLayout.spacing,
+    page: dbLayout.page
   };
 }
 
-/**
- * Converte un layout dal tipo PrintLayout al formato del database
- */
-function transformLayoutToDbLayout(layout: PrintLayout): any {
+function transformLayoutToDb(layout: PrintLayout): any {
   return {
     id: layout.id,
     name: layout.name,
@@ -154,22 +247,47 @@ function transformLayoutToDbLayout(layout: PrintLayout): any {
   };
 }
 
-/**
- * Crea una configurazione predefinita per gli elementi del layout
- */
-function getDefaultElementConfig() {
-  return {
-    visible: true,
-    fontFamily: 'Arial',
-    fontSize: 12,
-    fontColor: '#000000',
-    fontStyle: 'normal',
-    alignment: 'left',
-    margin: {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0
+// Inizializza i layout predefiniti su Supabase
+async function initializeDefaultLayouts(): Promise<{
+  success: boolean;
+  layouts?: PrintLayout[];
+  error?: string;
+}> {
+  try {
+    // Trasforma i layout predefiniti aggiungendo UUID
+    const layoutsWithId = defaultLayouts.map(layout => ({
+      ...layout,
+      id: uuidv4()
+    }));
+
+    // Salva i layout predefiniti su Supabase
+    const dbLayouts = layoutsWithId.map(transformLayoutToDb);
+    
+    const { data, error } = await supabase
+      .from('print_layouts')
+      .insert(dbLayouts)
+      .select();
+
+    if (error) {
+      console.error("Errore nell'inizializzazione dei layout predefiniti:", error);
+      return {
+        success: false,
+        error: `Errore nell'inizializzazione dei layout predefiniti: ${error.message}`
+      };
     }
-  };
+
+    // Trasforma i layout salvati nel formato dell'applicazione
+    const savedLayouts = data.map(transformDbToLayout);
+
+    return {
+      success: true,
+      layouts: savedLayouts
+    };
+  } catch (err) {
+    console.error("Errore imprevisto durante l'inizializzazione dei layout predefiniti:", err);
+    return {
+      success: false,
+      error: "Errore imprevisto durante l'inizializzazione dei layout predefiniti"
+    };
+  }
 }

@@ -11,22 +11,22 @@ import {
 } from "@/components/ui/select";
 
 interface LayoutSelectorProps {
-  selectedLayoutId: string;
-  setSelectedLayoutId: (layoutId: string) => void;
+  selectedLayoutId: string; // Cambiato da selectedLayout a selectedLayoutId
+  setSelectedLayoutId: (layoutId: string) => void; // Cambiato da setSelectedLayout a setSelectedLayoutId
 }
 
 export const LayoutSelector = ({
-  selectedLayoutId,
-  setSelectedLayoutId
+  selectedLayoutId, // Cambiato da selectedLayout a selectedLayoutId
+  setSelectedLayoutId // Cambiato da setSelectedLayout a setSelectedLayoutId
 }: LayoutSelectorProps) => {
-  const { layouts = [], activeLayout, setActive, isLoading, error } = useMenuLayouts();
+  const { layouts = [], activeLayout, changeActiveLayout, isLoading, error } = useMenuLayouts();
   
   // Creiamo una versione sicura dei layout che è sempre un array valido
   const [safeLayouts, setSafeLayouts] = useState<any[]>([]);
 
   // Debug log
   useEffect(() => {
-    console.log("LayoutSelector - Props:", { selectedLayoutId });
+    console.log("LayoutSelector - Props:", { selectedLayoutId }); // selectedLayout -> selectedLayoutId
     console.log("LayoutSelector - useMenuLayouts:", { 
       layouts, 
       activeLayout, 
@@ -34,7 +34,7 @@ export const LayoutSelector = ({
       error,
       layoutsLength: layouts?.length
     });
-  }, [selectedLayoutId, layouts, activeLayout, isLoading, error]);
+  }, [selectedLayoutId, layouts, activeLayout, isLoading, error]); // selectedLayout -> selectedLayoutId
 
   // Controlla e gestisci i layout quando sono disponibili
   useEffect(() => {
@@ -52,14 +52,14 @@ export const LayoutSelector = ({
     }
 
     // Se non c'è un layout selezionato, usa il layout attivo o il primo disponibile
-    if (!selectedLayoutId && !isLoading) {
+    if (!selectedLayoutId && !isLoading) { // selectedLayout -> selectedLayoutId
       if (activeLayout) {
-        setSelectedLayoutId(activeLayout.id);
+        setSelectedLayoutId(activeLayout.id); // Usa l'ID invece del tipo
       } else if (Array.isArray(layouts) && layouts.length > 0) {
-        setSelectedLayoutId(layouts[0].id);
+        setSelectedLayoutId(layouts[0].id); // Usa l'ID invece del tipo
       }
     }
-  }, [error, layouts, activeLayout, isLoading, selectedLayoutId, setSelectedLayoutId]);
+  }, [error, layouts, activeLayout, isLoading, selectedLayoutId, setSelectedLayoutId]); // selectedLayout -> selectedLayoutId
 
   // Gestisce il cambio di layout
   const handleLayoutChange = (layoutId: string) => {
@@ -73,8 +73,8 @@ export const LayoutSelector = ({
       // Trova il layout selezionato
       const layout = safeLayouts.find(l => l.id === layoutId);
       if (layout) {
-        setActive(layoutId);
-        setSelectedLayoutId(layoutId);
+        changeActiveLayout(layoutId);
+        setSelectedLayoutId(layoutId); // Imposta l'ID direttamente
         console.log("LayoutSelector - Layout cambiato con successo:", layout);
       } else {
         console.error("Layout non trovato:", layoutId);
@@ -114,7 +114,7 @@ export const LayoutSelector = ({
     <div>
       <div className="text-sm font-medium mb-2">Layout</div>
       <Select 
-        value={selectedLayoutId}
+        value={selectedLayoutId} // Usa selectedLayoutId invece di activeLayout?.id
         onValueChange={handleLayoutChange}
         disabled={isLoading || safeLayouts.length === 0}
       >

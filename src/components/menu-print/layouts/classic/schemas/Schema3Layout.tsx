@@ -11,91 +11,80 @@ interface Schema3LayoutProps {
 }
 
 const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, customLayout }) => {
+  // Schema 3 - Layout espanso con titolo in evidenza e dettagli separati
   return (
-    <div style={{
-      padding: '2mm',
-      border: '1px solid #eee',
-      borderRadius: '2mm'
-    }}>
-      {/* Titolo */}
+    <>
+      {/* Titolo principale in evidenza */}
       {(!customLayout || customLayout.elements.title.visible) && (
         <div style={getElementStyle(customLayout?.elements.title, {
           fontWeight: 'bold',
-          fontSize: '12pt',
+          fontSize: '14pt',
+          marginBottom: '2mm',
+          borderBottom: '1px solid #ccc',
+          paddingBottom: '1mm'
         })}>
           {product[`title_${language}`] || product.title}
         </div>
       )}
       
-      {/* Descrizione */}
+      {/* Descrizione se disponibile */}
       {(!customLayout || customLayout.elements.description.visible) && 
         (product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
-          margin: '1mm 0',
-          fontSize: '10pt',
-          fontStyle: 'italic',
+          fontSize: '11pt',
+          marginBottom: '2mm',
+          fontStyle: 'italic'
         })}>
           {product[`description_${language}`] || product.description}
         </div>
       )}
       
-      {/* Footer con prezzo, allergeni e varianti */}
+      {/* Box con prezzo, allergeni e varianti */}
       <div style={{
-        marginTop: '2mm',
-        padding: '1mm',
-        backgroundColor: '#f9f9f9',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '1mm'
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#f9f9f9',
+        padding: '2mm',
+        borderRadius: '2mm'
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between'
-        }}>
-          {/* Prezzo */}
-          {(!customLayout || customLayout.elements.price.visible) && (
-            <div style={getElementStyle(customLayout?.elements.price, {
-              fontWeight: 'bold',
-              fontSize: '12pt',
-            })}>
-              € {product.price_standard}
-            </div>
-          )}
-          
-          {/* Allergeni */}
-          {(!customLayout || customLayout.elements.allergensList.visible) && 
-            product.allergens && product.allergens.length > 0 && (
-            <div style={getElementStyle(customLayout?.elements.allergensList, {
-              fontSize: '10pt',
-            })}>
-              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
-              {product.features && product.features.length > 0 && (
-                <span style={{ marginLeft: '4px', display: 'inline-flex', verticalAlign: 'middle' }}>
-                  {product.features.map((feature, index) => (
-                    <img 
-                      key={index}
-                      src={feature.icon_url || ''}
-                      alt={feature.title}
-                      title={feature.title}
-                      style={{ height: '12px', width: 'auto', marginLeft: '2px', display: 'inline' }}
-                    />
-                  ))}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Prezzo principale */}
+        {(!customLayout || customLayout.elements.price.visible) && (
+          <div style={getElementStyle(customLayout?.elements.price, {
+            fontWeight: 'bold',
+            fontSize: '13pt'
+          })}>
+            € {product.price_standard}
+          </div>
+        )}
         
-        {/* Varianti di prezzo */}
+        {/* Allergeni */}
+        {(!customLayout || customLayout.elements.allergensList.visible) && 
+          product.allergens && product.allergens.length > 0 && (
+          <div style={getElementStyle(customLayout?.elements.allergensList, {
+            fontSize: '10pt',
+            fontStyle: 'italic'
+          })}>
+            Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
+          </div>
+        )}
+        
+        {/* Varianti di prezzo in fondo */}
         {(!customLayout || customLayout.elements.priceVariants.visible) && 
           product.has_multiple_prices && (
-          <div style={getElementStyle(customLayout?.elements.priceVariants, {
-            borderTop: '1px dotted #ddd',
-            paddingTop: '1mm',
+          <div style={{
+            ...getElementStyle(customLayout?.elements.priceVariants, {
+              fontSize: '10pt'
+            }),
+            width: '100%',
+            marginTop: '2mm',
             display: 'flex',
-            gap: '10px',
-            fontSize: '10pt',
-          })}>
+            justifyContent: 'flex-start',
+            gap: '2rem',
+            borderTop: '1px dotted #ccc',
+            paddingTop: '1mm'
+          }}>
             {product.price_variant_1_name && (
               <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
             )}
@@ -105,7 +94,7 @@ const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, custom
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
