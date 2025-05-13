@@ -157,7 +157,7 @@ const PrintPage: React.FC<PrintPageProps> = ({
     boxSizing: 'border-box' as React.CSSProperties['boxSizing'],
     margin: '0 auto 60px auto',
     pageBreakAfter: 'always',
-    breakAfter: 'page',
+    breakAfter: 'page' as React.CSSProperties['breakAfter'],
     border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
     boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
     position: 'relative' as React.CSSProperties['position'],
@@ -184,3 +184,4 @@ const PrintPage: React.FC<PrintPageProps> = ({
 };
 
 export default PrintPage;
+
