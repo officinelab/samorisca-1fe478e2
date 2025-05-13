@@ -33,13 +33,47 @@ export const calculateAvailableHeight = (
     }
   }
   
-  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
-  const safetyMargin = 5;
+  // Sottrai un margine di sicurezza esplicito per evitare overflow
+  const safetyMargin = 8; // 8mm di margine di sicurezza
   return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
 /**
+ * Calcola la larghezza disponibile per il contenuto (rispettando i margini)
+ */
+export const calculateAvailableWidth = (
+  pageIndex: number, 
+  A4_WIDTH_MM: number, 
+  customLayout?: PrintLayout | null
+): number => {
+  let marginLeft = 15;
+  let marginRight = 15;
+  
+  if (customLayout) {
+    if (customLayout.page.useDistinctMarginsForPages) {
+      if (pageIndex % 2 === 0) {
+        // Pagina dispari (1,3,5)
+        marginLeft = customLayout.page.oddPages?.marginLeft || customLayout.page.marginLeft;
+        marginRight = customLayout.page.oddPages?.marginRight || customLayout.page.marginRight;
+      } else {
+        // Pagina pari (2,4,6)
+        marginLeft = customLayout.page.evenPages?.marginLeft || customLayout.page.marginLeft;
+        marginRight = customLayout.page.evenPages?.marginRight || customLayout.page.marginRight;
+      }
+    } else {
+      marginLeft = customLayout.page.marginLeft;
+      marginRight = customLayout.page.marginRight;
+    }
+  }
+  
+  // Sottrai un piccolo margine di sicurezza laterale
+  const safetyMargin = 3; // 3mm di margine di sicurezza laterale
+  return (A4_WIDTH_MM - marginLeft - marginRight - safetyMargin) * MM_TO_PX;
+};
+
+/**
  * Stima l'altezza di un titolo categoria in base al layout
+ * @deprecated Usa useTextMeasurement.estimateCategoryTitleHeight invece
  */
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
   if (!customLayout) return 30;
@@ -53,6 +87,7 @@ export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): 
 
 /**
  * Stima l'altezza di un prodotto in base alle sue caratteristiche
+ * @deprecated Usa useTextMeasurement.estimateProductHeight invece
  */
 export const estimateProductHeight = (
   product: Product,

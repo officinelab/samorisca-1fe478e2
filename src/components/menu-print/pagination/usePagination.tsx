@@ -4,11 +4,11 @@ import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { 
   calculateAvailableHeight,
-  estimateCategoryTitleHeight,
-  estimateProductHeight,
+  calculateAvailableWidth,
   getFilteredCategories
 } from './utils/pageCalculations';
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
+import { useTextMeasurement } from '@/hooks/useTextMeasurement';
 
 interface UsePaginationProps {
   categories: Category[];
@@ -16,6 +16,7 @@ interface UsePaginationProps {
   selectedCategories: string[];
   language: string;
   A4_HEIGHT_MM: number;
+  A4_WIDTH_MM: number;
   customLayout?: PrintLayout | null;
 }
 
@@ -25,10 +26,14 @@ export const usePagination = ({
   selectedCategories,
   language,
   A4_HEIGHT_MM,
+  A4_WIDTH_MM,
   customLayout
 }: UsePaginationProps) => {
   const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
+  
+  // Utilizziamo il nuovo hook per la misurazione del testo
+  const { estimateProductHeight, estimateCategoryTitleHeight } = useTextMeasurement();
 
   useEffect(() => {
     const generatePages = () => {
@@ -41,7 +46,11 @@ export const usePagination = ({
       let currentPageContent: PageContent[] = [];
       let currentPageIndex = 0;
       let currentHeight = 0;
+      
+      // Calcoliamo l'altezza e la larghezza disponibile per la prima pagina
       let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
+      let availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout);
+      
       let lastCategoryId: string | null = null;
       let currentCategoryProducts: ProductItem[] = [];
       
@@ -63,7 +72,11 @@ export const usePagination = ({
         currentPageContent = [];
         currentPageIndex++;
         currentHeight = 0;
+        
+        // Ricalcola l'altezza e larghezza disponibile per la nuova pagina
         availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
+        availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout);
+        
         return true;
       };
 
@@ -89,7 +102,7 @@ export const usePagination = ({
         // Se la categoria è vuota, saltiamo
         if (categoryProducts.length === 0) return;
         
-        // Altezza approssimativa del titolo della categoria
+        // Altezza del titolo della categoria calcolata dinamicamente
         const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
         
         // Se il titolo della categoria non entra nella pagina corrente e abbiamo già contenuto,
@@ -117,8 +130,13 @@ export const usePagination = ({
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto
-          const productHeight = estimateProductHeight(product, language);
+          // Calcola dinamicamente l'altezza del prodotto basata sulle sue caratteristiche e lo stile
+          const productHeight = estimateProductHeight(
+            product, 
+            language, 
+            customLayout || null,
+            availableWidth
+          );
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
@@ -151,10 +169,6 @@ export const usePagination = ({
           });
           
           currentHeight += productHeight;
-          
-          // Aggiungi lo spazio tra prodotti
-          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
-          currentHeight += spacingBetweenProducts;
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
@@ -184,7 +198,7 @@ export const usePagination = ({
     const timer = setTimeout(generatePages, 100);
     return () => clearTimeout(timer);
     
-  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM]);
+  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, A4_WIDTH_MM, estimateProductHeight, estimateCategoryTitleHeight]);
   
   return { pages };
 };

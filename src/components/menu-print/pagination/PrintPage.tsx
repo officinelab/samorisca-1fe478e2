@@ -55,6 +55,12 @@ const PrintPage: React.FC<PrintPageProps> = ({
     }
   }, [customLayout, pageIndex]);
   
+  // Definisci il margine di sicurezza esplicito (in mm)
+  const safetyMargin = {
+    vertical: 8, // 8mm in verticale
+    horizontal: 3 // 3mm in orizzontale
+  };
+  
   // Aggiunge un numero di pagina e indicatori di margine (visibili solo in modalità anteprima)
   const renderPageDebugInfo = () => {
     if (!showPageBoundaries) return null;
@@ -131,6 +137,66 @@ const PrintPage: React.FC<PrintPageProps> = ({
             </div>
           </div>
           
+          {/* Margine di sicurezza superiore */}
+          <div 
+            className="absolute left-0 right-0 flex justify-center"
+            style={{
+              top: `${margins.top}mm`,
+              height: `${safetyMargin.vertical}mm`
+            }}
+          >
+            <div 
+              className="bg-red-500/20 w-full px-2 rounded text-xs text-red-800 flex items-center justify-center"
+            >
+              Margine di sicurezza: {safetyMargin.vertical}mm
+            </div>
+          </div>
+          
+          {/* Margine di sicurezza inferiore */}
+          <div 
+            className="absolute left-0 right-0 flex justify-center"
+            style={{
+              bottom: `${margins.bottom}mm`,
+              height: `${safetyMargin.vertical}mm`
+            }}
+          >
+            <div 
+              className="bg-red-500/20 w-full px-2 rounded text-xs text-red-800 flex items-center justify-center"
+            >
+              Margine di sicurezza: {safetyMargin.vertical}mm
+            </div>
+          </div>
+          
+          {/* Margine di sicurezza sinistro */}
+          <div 
+            className="absolute top-0 bottom-0 flex flex-col justify-center"
+            style={{
+              left: `${margins.left}mm`,
+              width: `${safetyMargin.horizontal}mm`
+            }}
+          >
+            <div 
+              className="bg-red-500/20 h-full rounded text-xs text-red-800 rotate-90 flex items-center justify-center"
+            >
+              Margine sicurezza: {safetyMargin.horizontal}mm
+            </div>
+          </div>
+          
+          {/* Margine di sicurezza destro */}
+          <div 
+            className="absolute top-0 bottom-0 flex flex-col justify-center"
+            style={{
+              right: `${margins.right}mm`,
+              width: `${safetyMargin.horizontal}mm`
+            }}
+          >
+            <div 
+              className="bg-red-500/20 h-full rounded text-xs text-red-800 rotate-90 flex items-center justify-center"
+            >
+              Margine sicurezza: {safetyMargin.horizontal}mm
+            </div>
+          </div>
+          
           {/* Linea di divisione pagina */}
           <div className="absolute left-0 right-0 bottom-0 flex justify-center">
             <div 
@@ -166,11 +232,16 @@ const PrintPage: React.FC<PrintPageProps> = ({
       }}
     >
       <div 
-        className="menu-container" 
+        className="menu-container relative" 
         style={{ 
           overflow: 'visible',
           height: 'auto',
-          position: 'relative'
+          position: 'relative',
+          // Aggiungi margini di sicurezza per il contenuto
+          paddingTop: showPageBoundaries ? `${safetyMargin.vertical}mm` : 0,
+          paddingBottom: showPageBoundaries ? `${safetyMargin.vertical}mm` : 0,
+          paddingLeft: showPageBoundaries ? `${safetyMargin.horizontal}mm` : 0,
+          paddingRight: showPageBoundaries ? `${safetyMargin.horizontal}mm` : 0,
         }}
       >
         {children}

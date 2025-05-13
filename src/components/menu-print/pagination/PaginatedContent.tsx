@@ -38,6 +38,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
     selectedCategories,
     language,
     A4_HEIGHT_MM,
+    A4_WIDTH_MM, // Ora passiamo anche la larghezza
     customLayout
   });
   
