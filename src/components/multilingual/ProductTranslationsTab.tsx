@@ -7,6 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Category, Product } from "@/types/database";
+import { Button } from "@/components/ui/button";
+import { Loader2, Globe } from "lucide-react";
+import { useTranslationService } from "@/hooks/useTranslationService";
+import { toast } from "@/components/ui/use-toast";
 
 interface ProductTranslationsTabProps {
   language: SupportedLanguage;
@@ -19,6 +23,8 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [translatingAll, setTranslatingAll] = useState(false);
+  const { translateText, getExistingTranslation } = useTranslationService();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -122,6 +128,106 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
     }
   };
 
+  // Funzione per tradurre tutti i prodotti nella categoria selezionata
+  const translateAllProducts = async () => {
+    if (!selectedCategoryId || products.length === 0) return;
+    
+    setTranslatingAll(true);
+    const totalProducts = products.length;
+    let completedProducts = 0;
+    let skippedTranslations = 0;
+    let successfulTranslations = 0;
+    
+    toast({
+      title: "Traduzione in corso",
+      description: `Inizio traduzione di ${totalProducts} prodotti...`,
+    });
+    
+    try {
+      for (const product of products) {
+        // Traduzione del titolo
+        if (product.title) {
+          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', language);
+          if (!existingTitle) {
+            const result = await translateText(product.title, language, product.id, 'products', 'title');
+            if (result.success) successfulTranslations++;
+          } else {
+            skippedTranslations++;
+          }
+        }
+        
+        // Traduzione della descrizione
+        if (product.description) {
+          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', language);
+          if (!existingDescription) {
+            const result = await translateText(product.description, language, product.id, 'products', 'description');
+            if (result.success) successfulTranslations++;
+          } else {
+            skippedTranslations++;
+          }
+        }
+        
+        // Traduzione del suffisso prezzo
+        if (product.has_price_suffix && product.price_suffix) {
+          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', language);
+          if (!existingSuffix) {
+            const result = await translateText(product.price_suffix, language, product.id, 'products', 'price_suffix');
+            if (result.success) successfulTranslations++;
+          } else {
+            skippedTranslations++;
+          }
+        }
+        
+        // Traduzione del nome variante 1
+        if (product.has_multiple_prices && product.price_variant_1_name) {
+          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', language);
+          if (!existingVariant1) {
+            const result = await translateText(product.price_variant_1_name, language, product.id, 'products', 'price_variant_1_name');
+            if (result.success) successfulTranslations++;
+          } else {
+            skippedTranslations++;
+          }
+        }
+        
+        // Traduzione del nome variante 2
+        if (product.has_multiple_prices && product.price_variant_2_name) {
+          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', language);
+          if (!existingVariant2) {
+            const result = await translateText(product.price_variant_2_name, language, product.id, 'products', 'price_variant_2_name');
+            if (result.success) successfulTranslations++;
+          } else {
+            skippedTranslations++;
+          }
+        }
+        
+        completedProducts++;
+        
+        // Aggiorna lo stato ogni 3 prodotti
+        if (completedProducts % 3 === 0 || completedProducts === totalProducts) {
+          toast({
+            title: "Traduzione in corso",
+            description: `Completati ${completedProducts} di ${totalProducts} prodotti...`,
+          });
+        }
+      }
+      
+      toast({
+        title: "Traduzione completata",
+        description: `Tradotti ${successfulTranslations} campi, ${skippedTranslations} campi già tradotti sono stati saltati.`,
+      });
+      
+    } catch (error) {
+      console.error('Error translating all products:', error);
+      toast({
+        variant: "destructive",
+        title: "Errore di traduzione",
+        description: "Si è verificato un errore durante la traduzione automatica.",
+      });
+    } finally {
+      setTranslatingAll(false);
+    }
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -129,26 +235,50 @@ export const ProductTranslationsTab = ({ language }: ProductTranslationsTabProps
           <div className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Categoria</h3>
-              {loadingCategories ? (
-                <div>Caricamento categorie...</div>
-              ) : (
-                <Select
-                  value={selectedCategoryId}
-                  onValueChange={handleCategoryChange}
-                  disabled={categories.length === 0}
+              <div className="flex gap-2 items-start">
+                {loadingCategories ? (
+                  <div>Caricamento categorie...</div>
+                ) : (
+                  <div className="flex-1">
+                    <Select
+                      value={selectedCategoryId}
+                      onValueChange={handleCategoryChange}
+                      disabled={categories.length === 0}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleziona categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  disabled={translatingAll || loadingProducts || products.length === 0}
+                  onClick={translateAllProducts}
+                  className="whitespace-nowrap"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleziona categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+                  {translatingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Traduzione...
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="h-4 w-4 mr-2" />
+                      Traduci tutto
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
             
             <div className="space-y-4">
