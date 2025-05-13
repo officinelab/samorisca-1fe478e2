@@ -1,45 +1,58 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import PublicMenu from "@/pages/public/PublicMenu";
-import Index from "./pages/Index";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import MenuSettings from "./pages/admin/MenuSettings";
-import MenuPrint from "./pages/admin/MenuPrint";
 import MenuPreview from "./pages/admin/MenuPreview";
-import Allergens from "./pages/admin/Allergens";
-import SiteSettings from "./pages/admin/SiteSettings";
-import TranslationManager from "./pages/admin/TranslationManager";
+import MenuPrint from "./pages/admin/MenuPrint";
+import PublicMenu from "./pages/public/PublicMenu";
+import NotFound from "./pages/NotFound";
 
-import './App.css';
+const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/menu" element={<PublicMenu />} />
-          <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="menu-settings" element={<MenuSettings />} />
-            <Route path="menu-print" element={<MenuPrint />} />
-            <Route path="menu-preview" element={<MenuPreview />} />
-            <Route path="allergens" element={<Allergens />} />
-            <Route path="site-settings" element={<SiteSettings />} />
-            <Route path="translations" element={<TranslationManager />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-      <Toaster />
-    </>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Redirect root to public menu */}
+            <Route path="/" element={<Navigate to="/menu" replace />} />
+            
+            {/* Public Menu Route */}
+            <Route path="/menu" element={<PublicMenu />} />
+            
+            {/* Admin Authentication */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* Admin Dashboard - Protected Routes */}
+            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="settings" element={<MenuSettings />} />
+              <Route path="preview" element={<MenuPreview />} />
+              <Route path="print" element={<MenuPrint />} />
+              
+              {/* Redirect old allergens route to settings */}
+              <Route path="allergens" element={<Navigate to="/admin/settings" state={{ activeTab: 'allergens' }} replace />} />
+            </Route>
+            
+            {/* Catch-all Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+);
 
 export default App;

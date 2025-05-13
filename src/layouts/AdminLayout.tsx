@@ -1,138 +1,167 @@
 
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
-  Utensils, 
-  Printer, 
   Eye, 
-  AlertTriangle, 
-  Languages, 
-  Settings 
+  Printer, 
+  Menu as MenuIcon, 
+  LogOut,
+  X,
+  Settings
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const AdminLayout = () => {
-  const location = useLocation();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { siteSettings, isLoading } = useSiteSettings();
 
-  // ROUTES
-  const sidebarLinks = [
-    { to: "/admin", text: "Dashboard", icon: <LayoutDashboard className="mr-2 h-5 w-5" /> },
-    { to: "/admin/menu-settings", text: "Impostazioni Menu", icon: <Utensils className="mr-2 h-5 w-5" /> },
-    { to: "/admin/menu-print", text: "Stampa Menu", icon: <Printer className="mr-2 h-5 w-5" /> },
-    { to: "/admin/menu-preview", text: "Anteprima Menu", icon: <Eye className="mr-2 h-5 w-5" /> },
-    { to: "/admin/allergens", text: "Allergeni", icon: <AlertTriangle className="mr-2 h-5 w-5" /> },
-    { to: "/admin/translations", text: "Multilingua", icon: <Languages className="mr-2 h-5 w-5" /> },
-    { to: "/admin/site-settings", text: "Impostazioni Sito", icon: <Settings className="mr-2 h-5 w-5" /> },
-  ];
-
-  // SHOW/HIDE SIDEBAR ON MOBILE VIEW
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) setIsSidebarOpen(false);
-      else setIsSidebarOpen(true);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Handle Logout
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate("/login");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Errore durante il logout",
-        description: "Si è verificato un errore. Riprova più tardi."
-      });
-    }
+    await logout();
+    navigate("/login");
   };
 
+  const navItems = [
+    { to: "/admin/dashboard", icon: <LayoutDashboard className="mr-2 h-5 w-5" />, label: "Gestione Menu" },
+    { to: "/admin/settings", icon: <Settings className="mr-2 h-5 w-5" />, label: "Impostazioni Menu" },
+    { to: "/admin/preview", icon: <Eye className="mr-2 h-5 w-5" />, label: "Anteprima Menu" },
+    { to: "/admin/print", icon: <Printer className="mr-2 h-5 w-5" />, label: "Stampa Menu" },
+  ];
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar Background Overlay (Mobile) */}
-      {isSidebarOpen && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar per dispositivi mobili */}
+      <div className="lg:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-4 left-4 z-50"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          {sidebarOpen ? <X /> : <MenuIcon />}
+        </Button>
+        
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-40">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)}></div>
+            <div className="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-lg z-50">
+              <SidebarContent 
+                onClose={() => setSidebarOpen(false)} 
+                onLogout={handleLogout} 
+                navItems={navItems}
+                sidebarLogo={siteSettings?.sidebarLogo} 
+                key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar per desktop */}
+      <div className="hidden lg:block w-64 bg-white shadow-md">
+        <SidebarContent 
+          onLogout={handleLogout} 
+          navItems={navItems} 
+          sidebarLogo={siteSettings?.sidebarLogo}
+          key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
         />
-      )}
+      </div>
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} w-64 bg-white shadow-lg z-30 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-xl font-bold">Admin Panel</h1>
-            {isMobile && (
-              <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-gray-500 focus:outline-none">
-                ✕
-              </button>
-            )}
+      {/* Contenuto principale */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white shadow-sm h-16 flex items-center px-6">
+          <div className="flex-1">
+            <h1 className="text-xl font-semibold">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
-          
-          <div className="flex-grow overflow-y-auto">
-            <nav className="p-4">
-              <ul className="space-y-2">
-                {sidebarLinks.map((link) => (
-                  <li key={link.to}>
-                    <Link
-                      to={link.to}
-                      className={`flex items-center px-4 py-2 rounded-md transition-colors duration-200 ${location.pathname === link.to ? "bg-blue-100 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
-                      onClick={isMobile ? () => setIsSidebarOpen(false) : undefined}
-                    >
-                      {link.icon}
-                      {link.text}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
-          
-          <div className="p-4 border-t">
-            <button 
+          <div className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleLogout}
-              className="w-full px-4 py-2 text-center text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors duration-200"
             >
-              Logout
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <header className="bg-white shadow-sm lg:hidden">
-          <div className="flex items-center justify-between p-4">
-            <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="text-gray-500 focus:outline-none focus:text-gray-800"
-            >
-              ≡
-            </button>
-            <h1 className="text-lg font-medium">Admin Panel</h1>
-            <div className="w-8"></div> {/* Spacer for centering */}
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
+      </div>
+    </div>
+  );
+};
+
+interface SidebarContentProps {
+  onClose?: () => void;
+  onLogout: () => void;
+  navItems: { to: string; icon: React.ReactNode; label: string }[];
+  sidebarLogo?: string | null;
+}
+
+const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navItems, sidebarLogo }) => {
+  const [logoError, setLogoError] = useState(false);
+  
+  const handleLogoError = () => {
+    console.error("Error loading sidebar logo");
+    setLogoError(true);
+  };
+
+  return (
+    <div className="h-full flex flex-col py-4">
+      <div className="px-6 py-4 flex items-center justify-center">
+        {sidebarLogo && !logoError ? (
+          <img 
+            src={sidebarLogo} 
+            alt="Logo" 
+            className="h-21 w-auto max-w-full" 
+            onError={handleLogoError}
+            key={sidebarLogo} // Add key to force re-render when logo changes
+          />
+        ) : (
+          <img 
+            src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" 
+            alt="Default Logo" 
+            className="h-21 w-auto" 
+          />
+        )}
+      </div>
+
+      <div className="flex-1 px-4 mt-6">
+        <nav className="space-y-2">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center px-4 py-2 rounded-md transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
+                }`
+              }
+            >
+              {item.icon}
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+
+      <div className="px-4 mt-6 mb-4">
+        <Button
+          variant="outline"
+          className="w-full flex items-center justify-center"
+          onClick={onLogout}
+        >
+          <LogOut className="mr-2 h-5 w-5" />
+          Logout
+        </Button>
       </div>
     </div>
   );
