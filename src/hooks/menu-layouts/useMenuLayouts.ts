@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { loadLayouts, saveLayouts } from './storage';
+import { v4 as uuidv4 } from 'uuid'; // Assicurati che uuid sia installato
 
 /**
  * Hook per gestire i layout di stampa del menu
@@ -33,6 +33,11 @@ export function useMenuLayouts() {
       setIsLoading(false);
     }
   }, []);
+  
+  // Forza un refresh dei layout
+  const forceRefresh = useCallback(() => {
+    fetchLayouts();
+  }, [fetchLayouts]);
   
   // Aggiorna un layout esistente
   const updateLayout = useCallback(async (updatedLayout: PrintLayout) => {
@@ -112,16 +117,18 @@ export function useMenuLayouts() {
     return success;
   }, [layouts, activeLayout]);
   
-  // Imposta un layout come attivo
-  const setActive = useCallback((layoutId: string) => {
+  // Imposta un layout come attivo (cambio layout)
+  const changeActiveLayout = useCallback((layoutId: string) => {
     const layout = layouts.find(l => l.id === layoutId);
     if (layout) {
       setActiveLayout(layout);
+      return true;
     }
+    return false;
   }, [layouts]);
   
   // Imposta un layout come predefinito
-  const setDefault = useCallback(async (layoutId: string) => {
+  const setDefaultLayout = useCallback(async (layoutId: string) => {
     const updatedLayouts = layouts.map(layout => ({
       ...layout,
       isDefault: layout.id === layoutId
@@ -139,6 +146,208 @@ export function useMenuLayouts() {
     return success;
   }, [layouts]);
   
+  // Clona un layout esistente
+  const cloneLayout = useCallback(async (layoutId: string) => {
+    const layoutToClone = layouts.find(l => l.id === layoutId);
+    if (!layoutToClone) {
+      setError("Layout da clonare non trovato");
+      return null;
+    }
+    
+    const clonedLayout: PrintLayout = {
+      ...layoutToClone,
+      id: uuidv4(),
+      name: `${layoutToClone.name} (copia)`,
+      isDefault: false
+    };
+    
+    const updatedLayouts = [...layouts, clonedLayout];
+    setLayouts(updatedLayouts);
+    
+    const { success } = await saveLayouts(updatedLayouts);
+    if (success) {
+      return clonedLayout;
+    } else {
+      setError("Errore durante il salvataggio del layout clonato");
+      return null;
+    }
+  }, [layouts]);
+  
+  // Crea un nuovo layout vuoto (con template base)
+  const createNewLayout = useCallback(async (name: string) => {
+    // Template base per un nuovo layout
+    const newLayout: PrintLayout = {
+      id: uuidv4(),
+      name: name,
+      type: 'classic',
+      isDefault: false,
+      productSchema: 'schema1',
+      elements: {
+        category: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 16,
+          fontColor: '#000000',
+          fontStyle: 'bold',
+          alignment: 'left',
+          margin: { top: 10, right: 0, bottom: 5, left: 0 }
+        },
+        title: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 12,
+          fontColor: '#000000',
+          fontStyle: 'bold',
+          alignment: 'left',
+          margin: { top: 2, right: 0, bottom: 1, left: 0 }
+        },
+        description: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 10,
+          fontColor: '#666666',
+          fontStyle: 'italic',
+          alignment: 'left',
+          margin: { top: 2, right: 0, bottom: 2, left: 0 }
+        },
+        price: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 12,
+          fontColor: '#000000',
+          fontStyle: 'bold',
+          alignment: 'right',
+          margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        },
+        allergensList: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 9,
+          fontColor: '#888888',
+          fontStyle: 'italic',
+          alignment: 'left',
+          margin: { top: 1, right: 0, bottom: 1, left: 0 }
+        },
+        priceVariants: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 10,
+          fontColor: '#666666',
+          fontStyle: 'normal',
+          alignment: 'right',
+          margin: { top: 1, right: 0, bottom: 0, left: 0 }
+        }
+      },
+      cover: {
+        logo: {
+          maxWidth: 60,
+          maxHeight: 40,
+          alignment: 'center',
+          marginTop: 20,
+          marginBottom: 20,
+          visible: true
+        },
+        title: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 24,
+          fontColor: '#000000',
+          fontStyle: 'bold',
+          alignment: 'center',
+          margin: { top: 10, right: 0, bottom: 5, left: 0 }
+        },
+        subtitle: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 16,
+          fontColor: '#666666',
+          fontStyle: 'italic',
+          alignment: 'center',
+          margin: { top: 5, right: 0, bottom: 10, left: 0 }
+        }
+      },
+      allergens: {
+        title: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 18,
+          fontColor: '#000000',
+          fontStyle: 'bold',
+          alignment: 'center',
+          margin: { top: 10, right: 0, bottom: 5, left: 0 }
+        },
+        description: {
+          visible: true,
+          fontFamily: 'Arial',
+          fontSize: 12,
+          fontColor: '#666666',
+          fontStyle: 'italic',
+          alignment: 'center',
+          margin: { top: 5, right: 0, bottom: 10, left: 0 }
+        },
+        item: {
+          number: {
+            visible: true,
+            fontFamily: 'Arial',
+            fontSize: 12,
+            fontColor: '#ffffff',
+            fontStyle: 'bold',
+            alignment: 'center',
+            margin: { top: 0, right: 0, bottom: 0, left: 0 }
+          },
+          title: {
+            visible: true,
+            fontFamily: 'Arial',
+            fontSize: 12, // Correggo l'errore di battitura a riga 302
+            fontColor: '#000000',
+            fontStyle: 'normal',
+            alignment: 'left',
+            margin: { top: 0, right: 0, bottom: 0, left: 10 }
+          },
+          spacing: 10,
+          backgroundColor: '#666666',
+          borderRadius: 50,
+          padding: 5
+        }
+      },
+      spacing: {
+        betweenCategories: 20,
+        betweenProducts: 10,
+        categoryTitleBottomMargin: 10
+      },
+      page: {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15,
+        useDistinctMarginsForPages: false,
+        oddPages: {
+          marginTop: 20,
+          marginRight: 15,
+          marginBottom: 20,
+          marginLeft: 15
+        },
+        evenPages: {
+          marginTop: 20,
+          marginRight: 15,
+          marginBottom: 20,
+          marginLeft: 15
+        }
+      }
+    };
+    
+    const updatedLayouts = [...layouts, newLayout];
+    setLayouts(updatedLayouts);
+    
+    const { success } = await saveLayouts(updatedLayouts);
+    if (success) {
+      return newLayout;
+    } else {
+      setError("Errore durante il salvataggio del nuovo layout");
+      return null;
+    }
+  }, [layouts]);
+  
   // Carica i layout all'avvio
   useEffect(() => {
     fetchLayouts();
@@ -152,8 +361,13 @@ export function useMenuLayouts() {
     updateLayout,
     createLayout,
     deleteLayout,
-    setActive,
-    setDefault,
-    refreshLayouts: fetchLayouts
+    // Aggiungiamo le funzioni mancanti
+    setActive: changeActiveLayout,
+    setDefault: setDefaultLayout,
+    cloneLayout,
+    createNewLayout,
+    changeActiveLayout,
+    refreshLayouts: fetchLayouts,
+    forceRefresh
   };
 }

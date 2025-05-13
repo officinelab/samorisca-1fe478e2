@@ -20,10 +20,10 @@ const PrintLayoutsManager = () => {
     error,
     updateLayout,
     deleteLayout,
-    setDefaultLayout,
+    setDefault, // Cambiato da setDefaultLayout
     cloneLayout,
     createNewLayout,
-    changeActiveLayout
+    setActive // Cambiato da changeActiveLayout
   } = useMenuLayouts();
   
   const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
@@ -70,7 +70,7 @@ const PrintLayoutsManager = () => {
   };
 
   const handleSetDefaultLayout = (layoutId: string) => {
-    setDefaultLayout(layoutId);
+    setDefault(layoutId); // Cambiato da setDefaultLayout
     toast.success("Layout impostato come predefinito");
   };
 

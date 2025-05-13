@@ -10,7 +10,7 @@ export const useMenuPrintState = () => {
   const A4_HEIGHT_MM = 297;
   
   // Import layout management
-  const { layouts, activeLayout, forceRefresh } = useMenuLayouts();
+  const { layouts, activeLayout, refreshLayouts } = useMenuLayouts();
   
   // State for layout options
   const [layoutId, setLayoutId] = useState<string>("");
@@ -44,8 +44,8 @@ export const useMenuPrintState = () => {
   // Function to force layout refresh when needed
   const forceLayoutRefresh = useCallback(() => {
     console.log("Forzando refresh dei layout...");
-    forceRefresh();
-  }, [forceRefresh]);
+    refreshLayouts();
+  }, [refreshLayouts]);
   
   // Imposta il layout predefinito all'avvio
   useEffect(() => {
