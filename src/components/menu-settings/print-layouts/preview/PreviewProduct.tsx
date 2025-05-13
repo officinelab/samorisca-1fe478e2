@@ -26,7 +26,8 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
             ...getElementStyle(layout.elements.title),
             width: 'auto',
             marginRight: '10px',
-            maxWidth: '60%'
+            maxWidth: '60%',
+            lineHeight: layout.elements.title.lineHeight || 1.5
           }}>
             {product.title}
           </div>
@@ -37,7 +38,8 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
             ...getElementStyle(layout.elements.allergensList),
             width: 'auto',
             whiteSpace: 'nowrap',
-            marginRight: '10px'
+            marginRight: '10px',
+            lineHeight: layout.elements.allergensList.lineHeight || 1.5
           }}>
             {product.allergens.map(allergen => allergen.number).join(", ")}
           </div>
@@ -55,7 +57,8 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
             ...getElementStyle(layout.elements.price),
             width: 'auto',
             whiteSpace: 'nowrap',
-            marginLeft: '10px'
+            marginLeft: '10px',
+            lineHeight: layout.elements.price.lineHeight || 1.5
           }}>
             € {product.price_standard}
           </div>
@@ -66,7 +69,8 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
         <div style={{
           ...getElementStyle(layout.elements.description),
           maxWidth: '95%',
-          width: '100%'
+          width: '100%',
+          lineHeight: layout.elements.description.lineHeight || 1.5
         }}>
           {product.description}
         </div>

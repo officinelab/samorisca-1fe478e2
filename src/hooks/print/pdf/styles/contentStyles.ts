@@ -22,6 +22,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
       marginLeft: `${customLayout.elements.category.margin.left}mm`,
       textAlign: customLayout.elements.category.alignment || 'left',
+      lineHeight: customLayout.elements.category.lineHeight || 1.5,
       textTransform: 'uppercase',
     },
     productContainer: {
@@ -44,6 +45,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${customLayout.elements.title.margin.bottom}mm`,
       marginLeft: `${customLayout.elements.title.margin.left}mm`,
       textAlign: customLayout.elements.title.alignment || 'left',
+      lineHeight: customLayout.elements.title.lineHeight || 1.5,
       maxWidth: '60%',
     },
     priceDotted: {
@@ -64,6 +66,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${customLayout.elements.price.margin.bottom}mm`,
       marginLeft: `${customLayout.elements.price.margin.left}mm`,
       textAlign: customLayout.elements.price.alignment || 'right',
+      lineHeight: customLayout.elements.price.lineHeight || 1.5,
     },
     productDescription: {
       fontSize: customLayout.elements.description.fontSize,
@@ -76,6 +79,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${customLayout.elements.description.margin.bottom}mm`,
       marginLeft: `${customLayout.elements.description.margin.left}mm`,
       textAlign: customLayout.elements.description.alignment || 'left',
+      lineHeight: customLayout.elements.description.lineHeight || 1.5,
     },
     productAllergens: {
       fontSize: customLayout.elements.allergensList.fontSize,
@@ -88,6 +92,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       marginBottom: `${customLayout.elements.allergensList.margin.bottom}mm`,
       marginLeft: `${customLayout.elements.allergensList.margin.left}mm`,
       textAlign: customLayout.elements.allergensList.alignment || 'left',
+      lineHeight: customLayout.elements.allergensList.lineHeight || 1.5,
     },
     priceVariants: {
       flexDirection: 'row',
@@ -101,6 +106,7 @@ export const createContentStyles = (customLayout?: PrintLayout | null) => {
       fontStyle: customLayout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
       color: customLayout.elements.priceVariants.fontColor || '#000000',
       fontFamily: customLayout.elements.priceVariants.fontFamily || 'Helvetica',
+      lineHeight: customLayout.elements.priceVariants.lineHeight || 1.5,
     },
   });
 };

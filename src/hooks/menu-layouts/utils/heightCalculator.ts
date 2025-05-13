@@ -82,12 +82,16 @@ const createCacheKey = (text: string, fontSize: number, fontStyle: string, avail
 };
 
 /**
- * Ottiene il line-height appropriato per il font specificato
- * basato sulla dimensione del font e sullo stile
+ * Ottiene il line-height appropriato in base alla configurazione del layout
+ * o utilizza un fattore predefinito basato sul font
  */
-const getLineHeight = (fontSize: number, fontFamily: string = 'Arial'): number => {
-  // Le famiglie di font hanno diversi fattori di interlinea naturali
-  // Queste sono approssimazioni basate sui valori tipici
+const getLineHeight = (fontSize: number, lineHeight: number | undefined, fontFamily: string = 'Arial'): number => {
+  // Se è definito un lineHeight specifico nel layout, usalo
+  if (lineHeight && lineHeight > 0) {
+    return fontSize * lineHeight;
+  }
+  
+  // Altrimenti usa fattori predefiniti per ciascuna famiglia di font
   const lineHeightFactors: Record<string, number> = {
     'Arial': 1.5,
     'Times New Roman': 1.55,
@@ -109,11 +113,14 @@ const getLineHeight = (fontSize: number, fontFamily: string = 'Arial'): number =
 
 /**
  * Calcola l'altezza necessaria per il testo in base alla larghezza disponibile
+ * e considerando il wrapping del testo
  * @param text Testo da visualizzare
  * @param fontSize Dimensione del font in pt
  * @param fontStyle Stile del font (bold, italic, normal)
  * @param availableWidth Larghezza disponibile in px
  * @param fontFamily Famiglia del font
+ * @param configuredLineHeight Interlinea configurata nel layout
+ * @param preventWrapping Se true, il testo non andrà a capo (utile per prezzi, allergeni)
  * @returns Altezza stimata in px
  */
 export const calculateTextHeight = (
@@ -121,9 +128,17 @@ export const calculateTextHeight = (
   fontSize: number,
   fontStyle: string = 'normal',
   availableWidth: number,
-  fontFamily: string = 'Arial'
+  fontFamily: string = 'Arial',
+  configuredLineHeight?: number,
+  preventWrapping: boolean = false
 ): number => {
   if (!text) return 0;
+  
+  // Per elementi che non devono andare a capo (prezzi, allergeni)
+  if (preventWrapping) {
+    const lineHeight = getLineHeight(fontSize, configuredLineHeight, fontFamily);
+    return lineHeight; // Un'unica riga
+  }
   
   // Controlla se il risultato è già nella cache
   const cacheKey = createCacheKey(text, fontSize, fontStyle, availableWidth);
@@ -157,7 +172,7 @@ export const calculateTextHeight = (
       }
       
       // Calcola l'altezza totale del testo
-      const lineHeight = getLineHeight(fontSize, fontFamily);
+      const lineHeight = getLineHeight(fontSize, configuredLineHeight, fontFamily);
       const textHeight = lineHeight * lineCount;
       
       // Salva il risultato nella cache
@@ -170,8 +185,8 @@ export const calculateTextHeight = (
   
   // Fallback: stima basata sulla lunghezza del testo e sulla larghezza disponibile
   const charactersPerLine = Math.floor(availableWidth / (fontSize * 0.5));
-  const estimatedLines = Math.ceil(text.length / charactersPerLine) || 1;
-  const lineHeight = getLineHeight(fontSize, fontFamily);
+  const estimatedLines = Math.max(1, Math.ceil(text.length / (charactersPerLine || 1)));
+  const lineHeight = getLineHeight(fontSize, configuredLineHeight, fontFamily);
   const textHeight = lineHeight * estimatedLines;
   
   // Salva il risultato nella cache
@@ -196,13 +211,16 @@ export const calculateCategoryTitleHeight = (
   const availableWidth = getAvailableWidth(layout, pageIndex);
   const title = (category[`title_${language}`] as string) || category.title;
   
-  // Calcolo dell'altezza del testo
+  // Per le categorie, generalmente vogliamo che stiano su una sola riga
+  // ma calcoliamo comunque in caso di titoli molto lunghi
   const textHeight = calculateTextHeight(
     title,
     categoryConfig.fontSize,
     categoryConfig.fontStyle,
     availableWidth - mmToPx(categoryConfig.margin.left + categoryConfig.margin.right),
-    categoryConfig.fontFamily
+    categoryConfig.fontFamily,
+    categoryConfig.lineHeight,
+    false // Le categorie possono andare a capo se necessario
   );
   
   // Aggiungi i margini superiore e inferiore
@@ -211,6 +229,64 @@ export const calculateCategoryTitleHeight = (
                       mmToPx(layout.spacing.categoryTitleBottomMargin);
   
   return totalHeight;
+};
+
+/**
+ * Calcola la larghezza del testo del prezzo e degli allergeni per lo Schema1
+ * e determina quanto spazio rimane disponibile per il titolo
+ */
+export const calculateTitleWidthInSchema1 = (
+  product: Product,
+  layout: PrintLayout | null | undefined,
+  availableWidth: number
+): number => {
+  if (!layout || !isSchema1Layout(layout)) return availableWidth * 0.8; // Default fallback
+  
+  let reservedWidth = 0;
+  
+  // Spazio per il prezzo (se visibile)
+  if (layout.elements.price.visible) {
+    const priceText = `€ ${product.price_standard}`;
+    const priceConfig = layout.elements.price;
+    // Utilizza il canvas per misurare con precisione
+    const context = initMeasureCanvas();
+    if (context) {
+      const fontWeight = priceConfig.fontStyle === 'bold' ? 'bold' : 'normal';
+      const fontStyleText = priceConfig.fontStyle === 'italic' ? 'italic' : 'normal';
+      context.font = `${fontStyleText} ${fontWeight} ${priceConfig.fontSize}pt ${priceConfig.fontFamily}`;
+      const metrics = context.measureText(priceText);
+      reservedWidth += metrics.width + mmToPx(priceConfig.margin.left + priceConfig.margin.right) + 40; // 40px per i puntini
+    } else {
+      // Fallback
+      reservedWidth += priceText.length * priceConfig.fontSize * 0.65 + 
+                      mmToPx(priceConfig.margin.left + priceConfig.margin.right) + 40;
+    }
+  }
+  
+  // Spazio per gli allergeni (se visibili e presenti)
+  if (layout.elements.allergensList.visible && product.allergens && product.allergens.length > 0) {
+    const allergensConfig = layout.elements.allergensList;
+    // Misura precisa degli allergeni
+    const allergensText = product.allergens.map(allergen => allergen.number).join(", ");
+    const context = initMeasureCanvas();
+    if (context) {
+      const fontWeight = allergensConfig.fontStyle === 'bold' ? 'bold' : 'normal';
+      const fontStyleText = allergensConfig.fontStyle === 'italic' ? 'italic' : 'normal';
+      context.font = `${fontStyleText} ${fontWeight} ${allergensConfig.fontSize}pt ${allergensConfig.fontFamily}`;
+      const metrics = context.measureText(allergensText);
+      reservedWidth += metrics.width + mmToPx(allergensConfig.margin.left + allergensConfig.margin.right);
+    } else {
+      // Fallback
+      reservedWidth += (product.allergens.length * 20) + 
+                     mmToPx(allergensConfig.margin.left + allergensConfig.margin.right);
+    }
+  }
+  
+  // Garantisci uno spazio minimo per il titolo (almeno il 40% della larghezza disponibile)
+  const minTitleWidth = availableWidth * 0.4;
+  const calculatedTitleWidth = Math.max(minTitleWidth, availableWidth - reservedWidth);
+  
+  return calculatedTitleWidth;
 };
 
 /**
@@ -230,45 +306,21 @@ export const calculateProductHeight = (
   
   // Per Schema1, titolo, prezzo e allergeni sono sulla stessa riga
   if (isSchema1) {
-    // Calcola quanto spazio è occupato da prezzo e allergeni
-    let reservedWidth = 0;
+    // Calcola quanto spazio è disponibile per il titolo
+    const titleWidth = calculateTitleWidthInSchema1(product, layout, availableWidth);
     
-    // Spazio per il prezzo (se visibile)
-    if (layout.elements.price.visible) {
-      // Stima più precisa per il prezzo + puntini
-      const priceText = `€ ${product.price_standard}`;
-      const priceConfig = layout.elements.price;
-      const priceTextWidth = estimateTextWidth(
-        priceText, 
-        priceConfig.fontSize, 
-        priceConfig.fontStyle, 
-        priceConfig.fontFamily
-      );
-      // Aggiungi lo spazio per i margini e i puntini
-      reservedWidth += priceTextWidth + mmToPx(priceConfig.margin.left + priceConfig.margin.right) + 30;
-    }
-    
-    // Spazio per gli allergeni (se visibili e presenti)
-    if (layout.elements.allergensList.visible && product.allergens && product.allergens.length > 0) {
-      const allergensConfig = layout.elements.allergensList;
-      // Stima migliore: circa 15-20px per ogni numero di allergene + margini
-      reservedWidth += (product.allergens.length * 20) + 
-                      mmToPx(allergensConfig.margin.left + allergensConfig.margin.right);
-    }
-    
-    // Calcola altezza riga titolo/prezzo/allergeni
+    // Calcola l'altezza del titolo considerando il suo wrapping in base allo spazio disponibile
     const title = (product[`title_${language}`] as string) || product.title;
     const titleConfig = layout.elements.title;
-    
-    // Larghezza disponibile per il titolo = larghezza totale - spazio riservato
-    const titleWidth = availableWidth - reservedWidth;
     
     const titleHeight = calculateTextHeight(
       title,
       titleConfig.fontSize,
       titleConfig.fontStyle,
       titleWidth,
-      titleConfig.fontFamily
+      titleConfig.fontFamily,
+      titleConfig.lineHeight,
+      false // Il titolo può andare a capo se necessario
     );
     
     // Aggiungi i margini superiore e inferiore del titolo
@@ -287,7 +339,9 @@ export const calculateProductHeight = (
         titleConfig.fontSize,
         titleConfig.fontStyle,
         availableWidth - mmToPx(titleConfig.margin.left + titleConfig.margin.right),
-        titleConfig.fontFamily
+        titleConfig.fontFamily,
+        titleConfig.lineHeight,
+        false // Il titolo può andare a capo se necessario
       );
       
       // Aggiungi i margini superiore e inferiore
@@ -298,8 +352,16 @@ export const calculateProductHeight = (
     // Prezzo (se visibile e non in Schema1)
     if (layout.elements.price.visible) {
       const priceConfig = layout.elements.price;
-      // Usa l'altezza calcolata in base a dimensione font e family
-      const priceHeight = priceConfig.fontSize * 1.2;
+      // I prezzi non vanno mai a capo
+      const priceHeight = calculateTextHeight(
+        `€ ${product.price_standard}`,
+        priceConfig.fontSize,
+        priceConfig.fontStyle,
+        availableWidth,
+        priceConfig.fontFamily,
+        priceConfig.lineHeight,
+        true // Il prezzo NON deve andare a capo
+      );
       
       // Aggiungi i margini superiore e inferiore
       totalHeight += priceHeight + 
@@ -310,8 +372,16 @@ export const calculateProductHeight = (
     if (layout.elements.allergensList.visible && product.allergens && 
         product.allergens.length > 0) {
       const allergensConfig = layout.elements.allergensList;
-      // Calcola l'altezza in base alla dimensione del font
-      const allergensHeight = allergensConfig.fontSize * 1.2;
+      // Gli allergeni non vanno mai a capo
+      const allergensHeight = calculateTextHeight(
+        product.allergens.map(allergen => allergen.number).join(", "),
+        allergensConfig.fontSize,
+        allergensConfig.fontStyle,
+        availableWidth,
+        allergensConfig.fontFamily,
+        allergensConfig.lineHeight,
+        true // Gli allergeni NON devono andare a capo
+      );
       
       // Aggiungi i margini superiore e inferiore
       totalHeight += allergensHeight + 
@@ -331,7 +401,9 @@ export const calculateProductHeight = (
         descriptionConfig.fontSize,
         descriptionConfig.fontStyle,
         availableWidth - mmToPx(descriptionConfig.margin.left + descriptionConfig.margin.right),
-        descriptionConfig.fontFamily
+        descriptionConfig.fontFamily,
+        descriptionConfig.lineHeight,
+        false // La descrizione può andare a capo
       );
       
       // Aggiungi i margini superiore e inferiore
@@ -344,7 +416,7 @@ export const calculateProductHeight = (
   if (layout.elements.priceVariants.visible && product.has_multiple_prices) {
     const priceVariantsConfig = layout.elements.priceVariants;
     
-    // Calcola l'altezza delle varianti di prezzo in base al testo effettivo
+    // Le varianti di prezzo non vanno a capo
     let variantsText = '';
     if (product.price_variant_1_name) {
       variantsText += `${product.price_variant_1_name}: € ${product.price_variant_1_value} `;
@@ -357,8 +429,10 @@ export const calculateProductHeight = (
       variantsText,
       priceVariantsConfig.fontSize,
       priceVariantsConfig.fontStyle,
-      availableWidth - mmToPx(priceVariantsConfig.margin.left + priceVariantsConfig.margin.right),
-      priceVariantsConfig.fontFamily
+      availableWidth,
+      priceVariantsConfig.fontFamily,
+      priceVariantsConfig.lineHeight,
+      true // Le varianti di prezzo NON devono andare a capo
     );
     
     // Aggiungi i margini superiore e inferiore
