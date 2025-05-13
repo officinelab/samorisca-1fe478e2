@@ -1,6 +1,5 @@
-
 import { PrintLayout } from "@/types/printLayout";
-import { supabaseClient } from "@/lib/supabase";
+import { supabaseClient } from "@/integrations/supabase/client";
 
 // Interfaccia per il servizio di gestione dei layout di stampa
 export interface LayoutService {
