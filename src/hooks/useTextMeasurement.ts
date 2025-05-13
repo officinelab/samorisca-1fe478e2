@@ -1,5 +1,5 @@
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 
 /**
@@ -33,7 +33,8 @@ export const useTextMeasurement = () => {
     if (!ctx) return 0;
     
     // Imposta lo stile del font sul contesto del canvas
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    const fontSizePx = fontSize * 1.33; // Conversione approssimativa da pt a px
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSizePx}px ${fontFamily}`;
     
     // Dividi il testo per andare a capo quando raggiungi la larghezza massima
     const words = text.split(' ');
@@ -58,10 +59,12 @@ export const useTextMeasurement = () => {
     }
     
     // Calcola l'altezza totale in base al numero di righe e line-height
-    const singleLineHeight = fontSize;
+    // Considera anche lo spazio aggiuntivo per gli accenti e caratteri speciali
+    const singleLineHeight = fontSizePx;
     const totalHeight = lines.length * singleLineHeight * lineHeight;
     
-    return totalHeight;
+    // Aggiungi un piccolo buffer del 10% per maggiore sicurezza
+    return Math.ceil(totalHeight * 1.1);
   };
   
   /**
@@ -71,7 +74,8 @@ export const useTextMeasurement = () => {
     product: any, 
     language: string,
     layout: PrintLayout | null,
-    availableWidth: number
+    availableWidth: number,
+    safetyMargin: number = 0
   ): number => {
     if (!product || !layout) return 30; // Altezza minima predefinita
     
@@ -95,7 +99,7 @@ export const useTextMeasurement = () => {
         elements.title.fontFamily || 'Arial',
         elements.title.fontSize,
         titleWidth,
-        1.2,
+        1.3, // Aumentato leggermente il line-height per sicurezza
         elements.title.fontStyle === 'bold' ? 'bold' : 'normal',
         elements.title.fontStyle === 'italic' ? 'italic' : 'normal'
       ) : 0;
@@ -108,43 +112,48 @@ export const useTextMeasurement = () => {
     if (isDescriptionVisible) {
       const description = (product[`description_${language}`] || product.description || '');
       if (description) {
+        // Ridurre leggermente la larghezza disponibile per garantire margini
+        const descWidth = availableWidth * 0.92; 
         const descHeight = measureTextHeight(
           description,
           elements.description.fontFamily || 'Arial',
           elements.description.fontSize,
-          availableWidth * 0.95, // Usa il 95% della larghezza disponibile
-          1.2,
+          descWidth, 
+          1.4, // Line-height maggiore per descrizioni
           elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
           elements.description.fontStyle === 'italic' ? 'italic' : 'normal'
         );
         
-        // Aggiungi margine sopra la descrizione (2mm)
-        totalHeight += descHeight + 7.56; // 2mm * 3.78px/mm
+        // Aggiungi margine sopra la descrizione (2mm) e un buffer extra
+        totalHeight += descHeight + 9.5; // 2.5mm * 3.78px/mm
       }
     }
     
     // Calcola lo spazio necessario per gli allergeni
     if (isAllergensVisible && product.allergens && product.allergens.length > 0) {
-      totalHeight += 18.9; // Circa 5mm per gli allergeni
+      totalHeight += 22; // Circa 5.8mm per gli allergeni
     }
     
     // Calcola lo spazio necessario per varianti di prezzo
     if (isPriceVariantsVisible && product.has_multiple_prices) {
-      totalHeight += 22.68; // Circa 6mm per le varianti di prezzo
+      totalHeight += 26; // Circa 6.8mm per le varianti di prezzo
     }
     
     // Aggiungiamo un margine di sicurezza sotto il prodotto (layout.spacing.betweenProducts)
     const spacingBetweenProducts = layout.spacing.betweenProducts || 5; // Default 5mm se non specificato
-    totalHeight += spacingBetweenProducts * 3.78;
+    totalHeight += (spacingBetweenProducts + safetyMargin) * 3.78;
     
-    return totalHeight;
+    return Math.ceil(totalHeight); // Arrotondiamo per eccesso per sicurezza
   };
   
   /**
    * Stima l'altezza di un titolo categoria in base al layout
    */
-  const estimateCategoryTitleHeight = (layout: PrintLayout | null): number => {
-    if (!layout) return 30; // Altezza predefinita
+  const estimateCategoryTitleHeight = (
+    layout: PrintLayout | null, 
+    safetyMargin: number = 0
+  ): number => {
+    if (!layout) return 35; // Altezza predefinita aumentata
     
     // Calcola l'altezza in base alla configurazione
     const fontSize = layout.elements.category.fontSize || 14;
@@ -153,13 +162,13 @@ export const useTextMeasurement = () => {
     const marginBottom = layout.spacing.categoryTitleBottomMargin || 10;
     
     // Usiamo un fattore di scala in base al fontStyle (bold richiede più spazio)
-    const styleMultiplier = fontStyle === 'bold' ? 1.2 : 1;
+    const styleMultiplier = fontStyle === 'bold' ? 1.3 : 1.1;
     
     // Calcola l'altezza totale del titolo della categoria (px)
-    const titleHeight = fontSize * 1.2 * styleMultiplier;
-    const margins = (marginTop + marginBottom) * 3.78; // Converti mm in px
+    const titleHeight = fontSize * 1.33 * styleMultiplier; // 1.33 per conversione pt a px
+    const margins = (marginTop + marginBottom + safetyMargin) * 3.78; // Converti mm in px
     
-    return titleHeight + margins;
+    return Math.ceil(titleHeight + margins); // Arrotondiamo per eccesso
   };
   
   return {

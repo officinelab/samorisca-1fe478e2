@@ -29,6 +29,10 @@ const MenuPrint = () => {
     restaurantLogo,
     updateRestaurantLogo,
     
+    // Margini di sicurezza
+    safetyMargin,
+    handleSafetyMarginChange,
+    
     // Print operations
     printContentRef,
     
@@ -54,12 +58,14 @@ const MenuPrint = () => {
             updateRestaurantLogo={updateRestaurantLogo}
             language={language}
             setLanguage={setLanguage}
-            layoutId={layoutId} // Cambiato da layoutType a layoutId
-            setLayoutId={setLayoutId} // Cambiato da setLayoutType a setLayoutId
+            layoutId={layoutId}
+            setLayoutId={setLayoutId}
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
             isLoading={isLoadingMenu}
             forceLayoutRefresh={forceLayoutRefresh}
+            safetyMargin={safetyMargin}
+            onMarginChange={handleSafetyMarginChange}
           />
         </Card>
 
@@ -68,7 +74,7 @@ const MenuPrint = () => {
           <ScrollArea className="h-[80vh] md:h-[85vh] p-4">
             <PrintPreview
               printContentRef={printContentRef}
-              layoutId={layoutId} // Cambiato da layoutType a layoutId
+              layoutId={layoutId}
               showPageBoundaries={showPageBoundaries}
               categories={categories}
               products={products}
@@ -80,6 +86,7 @@ const MenuPrint = () => {
               pageCount={pageCount}
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
+              safetyMargin={safetyMargin}
             />
           </ScrollArea>
         </Card>

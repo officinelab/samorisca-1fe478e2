@@ -18,6 +18,10 @@ interface UsePaginationProps {
   A4_HEIGHT_MM: number;
   A4_WIDTH_MM: number;
   customLayout?: PrintLayout | null;
+  safetyMargin?: {
+    vertical: number;
+    horizontal: number;
+  };
 }
 
 export const usePagination = ({
@@ -27,7 +31,8 @@ export const usePagination = ({
   language,
   A4_HEIGHT_MM,
   A4_WIDTH_MM,
-  customLayout
+  customLayout,
+  safetyMargin = { vertical: 8, horizontal: 3 }
 }: UsePaginationProps) => {
   const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
@@ -48,8 +53,11 @@ export const usePagination = ({
       let currentHeight = 0;
       
       // Calcoliamo l'altezza e la larghezza disponibile per la prima pagina
-      let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
-      let availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout);
+      // Includendo i margini di sicurezza nel calcolo
+      let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout) - (safetyMargin.vertical * 2 * 3.78); // Converti mm in pixel
+      let availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout) - (safetyMargin.horizontal * 2 * 3.78); // Converti mm in pixel
+      
+      console.log(`Pagina ${currentPageIndex + 1} - Altezza disponibile: ${availableHeight}px, Larghezza disponibile: ${availableWidth}px`);
       
       let lastCategoryId: string | null = null;
       let currentCategoryProducts: ProductItem[] = [];
@@ -74,8 +82,11 @@ export const usePagination = ({
         currentHeight = 0;
         
         // Ricalcola l'altezza e larghezza disponibile per la nuova pagina
-        availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
-        availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout);
+        // Includendo i margini di sicurezza nel calcolo
+        availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout) - (safetyMargin.vertical * 2 * 3.78);
+        availableWidth = calculateAvailableWidth(currentPageIndex, A4_WIDTH_MM, customLayout) - (safetyMargin.horizontal * 2 * 3.78);
+        
+        console.log(`Pagina ${currentPageIndex + 1} - Altezza disponibile: ${availableHeight}px, Larghezza disponibile: ${availableWidth}px`);
         
         return true;
       };
@@ -103,7 +114,8 @@ export const usePagination = ({
         if (categoryProducts.length === 0) return;
         
         // Altezza del titolo della categoria calcolata dinamicamente
-        const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
+        // Passando anche il margine di sicurezza verticale
+        const categoryTitleHeight = estimateCategoryTitleHeight(customLayout, safetyMargin.vertical * 0.5);
         
         // Se il titolo della categoria non entra nella pagina corrente e abbiamo già contenuto,
         // crea una nuova pagina, ma solo se non siamo all'inizio di una pagina
@@ -131,15 +143,21 @@ export const usePagination = ({
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
           // Calcola dinamicamente l'altezza del prodotto basata sulle sue caratteristiche e lo stile
+          // Includendo anche il margine di sicurezza
           const productHeight = estimateProductHeight(
             product, 
             language, 
             customLayout || null,
-            availableWidth
+            availableWidth,
+            safetyMargin.vertical * 0.3 // Aggiungiamo una frazione del margine di sicurezza per ogni prodotto
           );
+          
+          console.log(`Prodotto ${product.title}: altezza stimata ${productHeight}px`);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
+            console.log(`Prodotto ${product.title} non entra nella pagina ${currentPageIndex + 1}. Altezza corrente: ${currentHeight}, Altezza prodotto: ${productHeight}, Disponibile: ${availableHeight}`);
+            
             // Aggiungi i prodotti correnti al contenuto della pagina
             addRemainingProducts();
             
@@ -198,7 +216,7 @@ export const usePagination = ({
     const timer = setTimeout(generatePages, 100);
     return () => clearTimeout(timer);
     
-  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, A4_WIDTH_MM, estimateProductHeight, estimateCategoryTitleHeight]);
+  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, A4_WIDTH_MM, estimateProductHeight, estimateCategoryTitleHeight, safetyMargin]);
   
   return { pages };
 };

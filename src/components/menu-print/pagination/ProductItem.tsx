@@ -21,7 +21,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         pageBreakInside: 'avoid',
         wordBreak: 'break-word', // Garantisce che il testo vada a capo invece di fuoriuscire
         overflowWrap: 'break-word',
-        maxWidth: '100%'
+        maxWidth: '100%',
+        width: '100%' // Assicurati che occupi tutta la larghezza disponibile
       }}
     >
       {/* Header con titolo, allergeni e prezzo */}
@@ -30,7 +31,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         justifyContent: 'space-between',
         alignItems: 'baseline',
         width: '100%',
-        flexWrap: 'wrap' // Permette il wrapping se lo spazio è insufficiente
+        flexWrap: 'wrap', // Permette il wrapping se lo spazio è insufficiente
+        minHeight: '1.5em' // Altezza minima per garantire lo spazio
       }}>
         {/* Titolo del prodotto */}
         {(!customLayout || customLayout.elements.title.visible !== false) && (
@@ -42,8 +44,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
             fontStyle: customLayout?.elements.title.fontStyle === 'italic' ? 'italic' : 'normal',
             marginRight: '10px',
             maxWidth: '60%', // Limita la larghezza del titolo
-            wordBreak: 'break-word',
-            overflowWrap: 'break-word'
+            overflowWrap: 'break-word',
+            lineHeight: '1.3',
+            hyphens: 'auto'
           }}>
             {product[`title_${language}`] || product.title}
           </div>
@@ -59,7 +62,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
             fontWeight: customLayout?.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
             fontStyle: customLayout?.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
             marginRight: '10px',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            flexShrink: 0 // Impedisce che venga rimpicciolito troppo
           }}>
             {product.allergens.map(allergen => allergen.number).join(", ")}
           </div>
@@ -71,7 +75,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           position: 'relative',
           top: '-3px',
           borderBottom: '1px dotted #000',
-          minWidth: '20px' // Garantisce una linea punteggiata minima
+          minWidth: '20px', // Garantisce una linea punteggiata minima
+          marginLeft: '4px',
+          marginRight: '4px'
         }}></div>
         
         {/* Prezzo */}
@@ -83,7 +89,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
             fontWeight: customLayout?.elements.price.fontStyle === 'bold' ? 'bold' : 'normal',
             fontStyle: customLayout?.elements.price.fontStyle === 'italic' ? 'italic' : 'normal',
             marginLeft: '10px',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            flexShrink: 0 // Impedisce che venga rimpicciolito troppo
           }}>
             € {product.price_standard}
           </div>
@@ -104,7 +111,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           maxWidth: '95%',
           wordBreak: 'break-word',
           overflowWrap: 'break-word',
-          hyphens: 'auto' // Abilita la sillabazione automatica
+          hyphens: 'auto', // Abilita la sillabazione automatica
+          lineHeight: '1.4'
         }}>
           {product[`description_${language}`] || product.description}
         </div>
@@ -123,13 +131,14 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           flexWrap: 'wrap', // Permette il wrapping se necessario
           justifyContent: 'flex-end',
           gap: '1rem',
-          marginTop: '1mm'
+          marginTop: '1mm',
+          width: '100%'
         }}>
           {product.price_variant_1_name && (
-            <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
+            <div style={{ flexShrink: 0 }}>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
           )}
           {product.price_variant_2_name && (
-            <div>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
+            <div style={{ flexShrink: 0 }}>{product.price_variant_2_name}: € {product.price_variant_2_value}</div>
           )}
         </div>
       )}

@@ -1,23 +1,29 @@
 
 import React from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
+import RestaurantLogoUploader from "./options/RestaurantLogoUploader";
+import LanguageSelector from "./options/LanguageSelector";
 import LayoutSelector from "./options/LayoutSelector";
-import RestaurantLogoUploader from "./RestaurantLogoUploader";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import SafetyMarginSettings from "./options/SafetyMarginSettings";
 
 interface OptionsPanelProps {
-  restaurantLogo?: string | null;
-  updateRestaurantLogo: (logo: string) => void;
+  restaurantLogo: string | null;
+  updateRestaurantLogo: (logoUrl: string) => void;
   language: string;
   setLanguage: (language: string) => void;
-  layoutId: string; // Cambiato da layoutType a layoutId
-  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
+  layoutId: string;
+  setLayoutId: (layoutId: string) => void;
   showPageBoundaries: boolean;
-  setShowPageBoundaries: (value: boolean) => void;
+  setShowPageBoundaries: (show: boolean) => void;
   isLoading: boolean;
   forceLayoutRefresh: () => void;
+  safetyMargin?: {
+    vertical: number;
+    horizontal: number;
+  };
+  onMarginChange?: (type: 'vertical' | 'horizontal', value: number) => void;
 }
 
 const OptionsPanel: React.FC<OptionsPanelProps> = ({
@@ -25,73 +31,69 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   updateRestaurantLogo,
   language,
   setLanguage,
-  layoutId, // Cambiato da layoutType a layoutId
-  setLayoutId, // Cambiato da setLayoutType a setLayoutId
+  layoutId,
+  setLayoutId,
   showPageBoundaries,
   setShowPageBoundaries,
   isLoading,
-  forceLayoutRefresh
+  forceLayoutRefresh,
+  safetyMargin = { vertical: 8, horizontal: 3 },
+  onMarginChange
 }) => {
+  const handlePrint = () => {
+    window.print();
+  };
+  
   return (
-    <Accordion type="multiple" defaultValue={["layout", "options"]} className="w-full">
-      <AccordionItem value="layout" className="border-b">
-        <AccordionTrigger className="text-base font-medium">
-          Layout e Logo
-        </AccordionTrigger>
-        <AccordionContent className="space-y-4">
-          <LayoutSelector
-            selectedLayoutId={layoutId} // Cambiato da selectedLayout a selectedLayoutId
-            setSelectedLayoutId={setLayoutId} // Cambiato da setSelectedLayout a setSelectedLayoutId
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium mb-4">Opzioni Stampa</h3>
+        
+        {/* Logo uploader */}
+        <RestaurantLogoUploader
+          restaurantLogo={restaurantLogo}
+          updateRestaurantLogo={updateRestaurantLogo}
+        />
+      </div>
+
+      <Separator />
+
+      {/* Selettori */}
+      <div className="space-y-4">
+        <LanguageSelector 
+          language={language} 
+          setLanguage={setLanguage}
+        />
+        
+        <LayoutSelector 
+          layoutId={layoutId}
+          setLayoutId={setLayoutId}
+          isLoading={isLoading}
+          forceLayoutRefresh={forceLayoutRefresh}
+          showPageBoundaries={showPageBoundaries}
+          setShowPageBoundaries={setShowPageBoundaries}
+        />
+        
+        {/* Impostazioni margini di sicurezza */}
+        {onMarginChange && (
+          <SafetyMarginSettings 
+            safetyMargin={safetyMargin}
+            onMarginChange={onMarginChange}
           />
-          
-          <div className="pt-4">
-            <h3 className="text-sm font-medium mb-2">Logo Ristorante</h3>
-            <RestaurantLogoUploader
-              currentLogo={restaurantLogo}
-              onLogoUploaded={updateRestaurantLogo}
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+        )}
+      </div>
       
-      <AccordionItem value="options" className="border-b">
-        <AccordionTrigger className="text-base font-medium">
-          Opzioni
-        </AccordionTrigger>
-        <AccordionContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="language" className="text-sm font-medium">
-              Lingua
-            </Label>
-            <Select
-              value={language}
-              onValueChange={setLanguage}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-24">
-                <SelectValue placeholder="Lingua" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="it">Italiano</SelectItem>
-                <SelectItem value="en">Inglese</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex items-center justify-between space-x-2">
-            <Label htmlFor="show-boundaries" className="text-sm font-medium">
-              Mostra bordi pagina
-            </Label>
-            <Switch
-              id="show-boundaries"
-              checked={showPageBoundaries}
-              onCheckedChange={setShowPageBoundaries}
-              disabled={isLoading}
-            />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+      <Separator />
+      
+      {/* Print button */}
+      <Button 
+        onClick={handlePrint} 
+        className="w-full flex items-center justify-center"
+      >
+        <Printer className="mr-2 h-4 w-4" />
+        Stampa Menu
+      </Button>
+    </div>
   );
 };
 

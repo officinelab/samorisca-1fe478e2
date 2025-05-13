@@ -18,6 +18,10 @@ interface PaginatedContentProps {
   language: string;
   customLayout?: PrintLayout | null;
   startPageIndex?: number;
+  safetyMargin?: {
+    vertical: number;
+    horizontal: number;
+  };
 }
 
 const PaginatedContent: React.FC<PaginatedContentProps> = ({
@@ -29,7 +33,8 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   selectedCategories,
   language,
   customLayout,
-  startPageIndex = 1 // Inizia da pagina 1 per default (dopo la copertina)
+  startPageIndex = 1, // Inizia da pagina 1 per default (dopo la copertina)
+  safetyMargin = { vertical: 8, horizontal: 3 }
 }) => {
   // Utilizziamo l'hook di paginazione per generare le pagine
   const { pages } = usePagination({
@@ -38,9 +43,15 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
     selectedCategories,
     language,
     A4_HEIGHT_MM,
-    A4_WIDTH_MM, // Ora passiamo anche la larghezza
-    customLayout
+    A4_WIDTH_MM,
+    customLayout,
+    safetyMargin
   });
+  
+  // Debug dei margini di sicurezza
+  React.useEffect(() => {
+    console.log("PaginatedContent - Safety Margin:", safetyMargin);
+  }, [safetyMargin]);
   
   // Renderizza le pagine con i loro contenuti
   return (
@@ -53,6 +64,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
           A4_HEIGHT_MM={A4_HEIGHT_MM}
           showPageBoundaries={showPageBoundaries}
           customLayout={customLayout}
+          safetyMargin={safetyMargin}
         >
           {pageContent.map((content: PageContent) => {
             if (content.type === 'category-title') {

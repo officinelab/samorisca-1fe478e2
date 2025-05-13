@@ -10,6 +10,10 @@ interface PrintPageProps {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   customLayout?: PrintLayout | null;
+  safetyMargin?: {
+    vertical: number;
+    horizontal: number;
+  };
 }
 
 const PrintPage: React.FC<PrintPageProps> = ({
@@ -18,7 +22,8 @@ const PrintPage: React.FC<PrintPageProps> = ({
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
-  customLayout
+  customLayout,
+  safetyMargin = { vertical: 8, horizontal: 3 }
 }) => {
   // Calcola i margini in base al layout e all'indice della pagina
   const margins = React.useMemo(() => {
@@ -54,12 +59,6 @@ const PrintPage: React.FC<PrintPageProps> = ({
       };
     }
   }, [customLayout, pageIndex]);
-  
-  // Definisci il margine di sicurezza esplicito (in mm)
-  const safetyMargin = {
-    vertical: 8, // 8mm in verticale
-    horizontal: 3 // 3mm in orizzontale
-  };
   
   // Aggiunge un numero di pagina e indicatori di margine (visibili solo in modalità anteprima)
   const renderPageDebugInfo = () => {
@@ -238,10 +237,10 @@ const PrintPage: React.FC<PrintPageProps> = ({
           height: 'auto',
           position: 'relative',
           // Aggiungi margini di sicurezza per il contenuto
-          paddingTop: showPageBoundaries ? `${safetyMargin.vertical}mm` : 0,
-          paddingBottom: showPageBoundaries ? `${safetyMargin.vertical}mm` : 0,
-          paddingLeft: showPageBoundaries ? `${safetyMargin.horizontal}mm` : 0,
-          paddingRight: showPageBoundaries ? `${safetyMargin.horizontal}mm` : 0,
+          paddingTop: `${safetyMargin.vertical}mm`,
+          paddingBottom: `${safetyMargin.vertical}mm`,
+          paddingLeft: `${safetyMargin.horizontal}mm`,
+          paddingRight: `${safetyMargin.horizontal}mm`,
         }}
       >
         {children}
