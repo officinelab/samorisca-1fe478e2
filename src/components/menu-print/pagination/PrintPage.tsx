@@ -163,16 +163,14 @@ const PrintPage: React.FC<PrintPageProps> = ({
         breakAfter: 'page',
         border: showPageBoundaries ? '2px solid #e2e8f0' : 'none',
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
-        overflow: 'hidden' // Assicura che il contenuto non si estenda oltre i margini
       }}
     >
       <div 
         className="menu-container" 
         style={{ 
-          position: 'relative',
+          overflow: 'visible',
           height: 'auto',
-          maxHeight: `${A4_HEIGHT_MM - margins.top - margins.bottom}mm`,
-          overflow: 'hidden', // Impedisce che il contenuto fuoriesca
+          position: 'relative'
         }}
       >
         {children}
