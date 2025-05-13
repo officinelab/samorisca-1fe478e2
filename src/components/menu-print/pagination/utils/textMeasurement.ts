@@ -1,7 +1,11 @@
 
 /**
  * Utility per misurare l'altezza effettiva del testo usando Canvas API
+ * e tecniche avanzate di calcolo del layout
  */
+
+import { PrintLayout } from "@/types/printLayout";
+import { calculateProductHeight, calculateTextHeight, getAvailableWidth } from "@/hooks/menu-layouts/utils/heightCalculator";
 
 // Singleton canvas per le misurazioni del testo
 let measureCanvas: HTMLCanvasElement | null = null;
@@ -94,130 +98,37 @@ export const measureProductElementHeight = (
   fontFamily: string = 'Arial',
   fontWeight: string = 'normal',
   fontStyle: string = 'normal',
-  isVisible: boolean = true
+  isVisible: boolean = true,
+  maxWidth: number = 800
 ): number => {
   if (!text || !isVisible) return 0;
   
-  return measureTextHeight(text, fontSize, fontFamily, fontWeight, fontStyle);
+  return measureTextHeight(text, fontSize, fontFamily, fontWeight, fontStyle, maxWidth);
 };
 
 /**
  * Calcola l'altezza totale di un prodotto considerando tutti i suoi elementi
+ * Utilizza l'utility avanzata di calcolo altezza
  */
 export const calculateProductTotalHeight = (
   product: any,
   language: string,
-  customLayout?: any
+  customLayout?: PrintLayout | null
 ): number => {
-  // Se non siamo in un ambiente browser, usa un'approssimazione
-  if (typeof document === 'undefined') {
-    return estimateProductHeight(product, language, customLayout);
-  }
-  
-  // Altezza base per l'intestazione del prodotto (titolo + prezzo)
-  const titleFontSize = customLayout?.elements?.title?.fontSize || 12;
-  const titleFontFamily = customLayout?.elements?.title?.fontFamily || 'Arial';
-  const titleFontWeight = customLayout?.elements?.title?.fontStyle === 'bold' ? 'bold' : 'normal';
-  
-  const titleVisible = customLayout?.elements?.title?.visible !== false;
-  const title = product[`title_${language}`] || product.title || '';
-  
-  let totalHeight = 0;
-  
-  // Altezza del titolo
-  if (titleVisible) {
-    totalHeight += measureProductElementHeight(
-      title, 
-      titleFontSize, 
-      titleFontFamily, 
-      titleFontWeight, 
-      'normal', 
-      true
-    );
-  }
-  
-  // Altezza della descrizione
-  const descriptionFontSize = customLayout?.elements?.description?.fontSize || 10;
-  const descriptionFontFamily = customLayout?.elements?.description?.fontFamily || 'Arial';
-  const descriptionFontStyle = customLayout?.elements?.description?.fontStyle === 'italic' ? 'italic' : 'normal';
-  const descriptionVisible = customLayout?.elements?.description?.visible !== false;
-  const description = product[`description_${language}`] || product.description || '';
-  
-  if (description && descriptionVisible) {
-    totalHeight += measureProductElementHeight(
-      description, 
-      descriptionFontSize, 
-      descriptionFontFamily, 
-      'normal', 
-      descriptionFontStyle, 
-      true
-    );
-    
-    // Aggiungi spazio tra il titolo e la descrizione
-    totalHeight += 8; // 2mm circa
-  }
-  
-  // Aggiungi altezza per varianti di prezzo
-  if (product.has_multiple_prices && customLayout?.elements?.priceVariants?.visible !== false) {
-    totalHeight += 20; // Altezza approssimativa per le varianti di prezzo
-  }
-  
-  // Aggiungi altezza per allergeni
-  const allergensVisible = customLayout?.elements?.allergensList?.visible !== false;
-  if (product.allergens && product.allergens.length > 0 && allergensVisible) {
-    totalHeight += 15; // Altezza approssimativa per gli allergeni
-  }
-  
-  // Aggiungi spazio tra i prodotti
-  const betweenProductsSpacing = customLayout?.spacing?.betweenProducts || 5;
-  totalHeight += betweenProductsSpacing * 3.85; // Conversione da mm a px
-  
-  return totalHeight;
+  // Utilizziamo la nuova utility per un calcolo più preciso
+  return calculateProductHeight(product, language, customLayout);
 };
 
 /**
  * Stima l'altezza di un prodotto (usata come fallback)
+ * NOTA: Questa funzione viene mantenuta per compatibilità, ma ora
+ * utilizza la nuova utility più precisa
  */
 export const estimateProductHeight = (
   product: any,
   language: string,
-  customLayout?: any
+  customLayout?: PrintLayout | null
 ): number => {
-  // Altezza base aumentata per tutti i prodotti
-  let height = 35;
-  
-  // Incrementa altezza se c'è una descrizione
-  const hasDescription = !!product.description || !!product[`description_${language}`];
-  if (hasDescription && (!customLayout || customLayout?.elements?.description?.visible !== false)) {
-    const descriptionText = (product[`description_${language}`] as string) || product.description || "";
-    const descriptionLength = descriptionText.length;
-    
-    // Stima più precisa dell'altezza della descrizione basata sulla lunghezza del testo
-    if (descriptionLength > 200) {
-      height += 80; // Per descrizioni molto lunghe
-    } else if (descriptionLength > 100) {
-      height += 50; // Per descrizioni lunghe
-    } else if (descriptionLength > 50) {
-      height += 35; // Per descrizioni medie
-    } else {
-      height += 25; // Per descrizioni brevi
-    }
-  }
-  
-  // Aumenta altezza per varianti di prezzo multiple
-  if (product.has_multiple_prices && (!customLayout || customLayout?.elements?.priceVariants?.visible !== false)) {
-    height += 25;
-  }
-  
-  // Aumenta altezza se il prodotto ha allergeni
-  if (product.allergens && product.allergens.length > 0 && 
-      (!customLayout || customLayout?.elements?.allergensList?.visible !== false)) {
-    height += 15;
-  }
-  
-  // Aggiungi spazio tra i prodotti
-  const betweenProductsSpacing = customLayout?.spacing?.betweenProducts || 5;
-  height += betweenProductsSpacing * 3.85; // Conversione da mm a px
-  
-  return height;
+  // Ricadiamo sulla funzione di calcolo avanzata
+  return calculateProductHeight(product, language, customLayout);
 };
