@@ -1,5 +1,6 @@
 
 import { Category, Product } from '@/types/database';
+import { calculateCategoryHeight } from './utils/heightCalculator';
 
 interface PageOrganizerProps {
   categories: Category[];
@@ -18,9 +19,14 @@ export const usePageOrganizer = ({
     // Se è la prima categoria, non serve una nuova pagina
     if (prevCategoryIndex < 0) return false;
     
-    // Nel layout moderno vogliamo meno elementi per pagina
-    const prevCategoryItems = products[categories[prevCategoryIndex].id]?.length || 0;
-    return prevCategoryItems > 6;
+    // Ottiene l'altezza stimata della categoria precedente
+    const prevCategory = categories[prevCategoryIndex];
+    const prevCategoryProducts = products[prevCategory.id] || [];
+    const prevCategoryHeight = calculateCategoryHeight(prevCategory, prevCategoryProducts);
+    
+    // Una categoria dovrebbe iniziare in una nuova pagina se l'altezza stimata supera una soglia
+    // Nel layout moderno vogliamo meno elementi per pagina per migliorare la leggibilità
+    return prevCategoryHeight > 600; // Soglia regolata in base ai test
   };
 
   // Array per tracciare le categorie raggruppate per pagina
