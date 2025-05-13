@@ -33,8 +33,8 @@ export const calculateAvailableHeight = (
     }
   }
   
-  // Sottrai un margine di sicurezza più grande per evitare che elementi si estendano oltre il bordo
-  const safetyMargin = 10;
+  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
+  const safetyMargin = 5;
   return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
@@ -44,23 +44,22 @@ export const calculateAvailableHeight = (
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
   if (!customLayout) return 30;
   
-  // Aumenta significativamente il valore per assicurarsi che ci sia spazio sufficiente
-  const baseFontSize = customLayout.elements.category.fontSize * 1.8;
+  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
+  const baseFontSize = customLayout.elements.category.fontSize * 1.5;
   const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
   
-  return (baseFontSize + marginBottom) * 1.5;
+  return (baseFontSize + marginBottom) * 1.2;
 };
 
 /**
  * Stima l'altezza di un prodotto in base alle sue caratteristiche
- * Con un margine di sicurezza aumentato
  */
 export const estimateProductHeight = (
   product: Product,
   language: string,
 ): number => {
-  // Base height for all products - aumentata
-  let height = 35;
+  // Base height for all products
+  let height = 30;
   
   // Increase height if there's a description
   const hasDescription = !!product.description || !!product[`description_${language}`];
@@ -68,26 +67,26 @@ export const estimateProductHeight = (
     const descriptionText = (product[`description_${language}`] as string) || product.description || "";
     const descriptionLength = descriptionText.length;
     
-    // Stime aumentate per evitare che il testo si estenda oltre il margine
+    // Stima l'altezza della descrizione in base alla lunghezza del testo
     if (descriptionLength > 200) {
-      height += 70; // Descrizioni molto lunghe
+      height += 60; // Descrizioni molto lunghe
     } else if (descriptionLength > 100) {
-      height += 50; // Descrizioni lunghe
+      height += 40; // Descrizioni lunghe
     } else if (descriptionLength > 50) {
-      height += 30; // Descrizioni medie
+      height += 25; // Descrizioni medie
     } else {
-      height += 20; // Descrizioni brevi
+      height += 15; // Descrizioni brevi
     }
   }
   
   // Increase height for multiple price variants
   if (product.has_multiple_prices) {
-    height += 25;
+    height += 20;
   }
   
   // Increase height if product has allergens
   if (product.allergens && product.allergens.length > 0) {
-    height += 15;
+    height += 10;
   }
   
   return height;
