@@ -117,12 +117,9 @@ export const usePagination = ({
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima dell'altezza del prodotto con misurazione migliorata
-          const productHeight = estimateProductHeight(product, language, customLayout);
+          // Stima dell'altezza del prodotto
+          const productHeight = estimateProductHeight(product, language);
           
-          // Log di debug per l'altezza stimata del prodotto
-          console.log(`Prodotto ${product.title}: altezza stimata = ${productHeight}px`);
-
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
           if (currentHeight + productHeight > availableHeight) {
             // Aggiungi i prodotti correnti al contenuto della pagina

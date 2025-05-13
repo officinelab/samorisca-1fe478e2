@@ -31,7 +31,7 @@ const MenuLayoutSelector: React.FC<MenuLayoutSelectorProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
-  const { layouts, activeLayout, isLoading, changeActiveLayout } = useMenuLayouts();
+  const { layouts, activeLayout, changeActiveLayout, isLoading } = useMenuLayouts();
   
   // Debug logs
   useEffect(() => {

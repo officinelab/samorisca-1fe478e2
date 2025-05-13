@@ -42,8 +42,6 @@ const PrintStylesheet: React.FC = () => {
             overflow: visible !important;
             display: block;
             height: auto !important;
-            margin: 0 !important;
-            box-shadow: none !important;
           }
           .page:last-of-type {
             page-break-after: avoid;
