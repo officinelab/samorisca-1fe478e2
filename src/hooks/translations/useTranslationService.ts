@@ -92,7 +92,8 @@ export const useTranslationService = () => {
     try {
       setIsLoading(true);
       
-      const response = await fetch(`${supabase.functions.url}/translate`, {
+      // Correggiamo questo accesso all'URL delle funzioni
+      const response = await fetch(`${process.env.VITE_SUPABASE_URL}/functions/v1/translate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,9 +171,10 @@ export const useTranslationService = () => {
           throw new Error('Tipo di entità non supportato');
       }
       
+      // Tipizziamo correttamente le tabelle
       // Aggiorna la tabella principale
       const { error: updateError } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .update({ [columnName]: translatedText })
         .eq('id', entityId);
       
@@ -283,7 +285,7 @@ export const useTranslationService = () => {
       
       // Ottieni il conteggio totale
       const { count, error: countError } = await supabase
-        .from(tableName)
+        .from(tableName as any)
         .select('*', { count: 'exact', head: true });
       
       if (countError) throw countError;
@@ -294,7 +296,7 @@ export const useTranslationService = () => {
       for (const lang of Object.keys(SUPPORTED_LANGUAGES) as SupportedLanguage[]) {
         // Titoli tradotti
         const { count: titleCount, error: titleError } = await supabase
-          .from(tableName)
+          .from(tableName as any)
           .select('*', { count: 'exact', head: true })
           .not(`title_${lang}`, 'is', null);
           

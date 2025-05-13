@@ -1,7 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { MdDashboard, MdRestaurantMenu, MdPrint, MdPreview, MdWarning, MdSettings, MdOutlineTranslate } from "react-icons/md";
+import { 
+  LayoutDashboard, 
+  Utensils, 
+  Printer, 
+  Eye, 
+  AlertTriangle, 
+  Languages, 
+  Settings 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,13 +22,13 @@ const AdminLayout = () => {
 
   // ROUTES
   const sidebarLinks = [
-    { to: "/admin", text: "Dashboard", icon: <MdDashboard className="mr-2 text-xl" /> },
-    { to: "/admin/menu-settings", text: "Impostazioni Menu", icon: <MdRestaurantMenu className="mr-2 text-xl" /> },
-    { to: "/admin/menu-print", text: "Stampa Menu", icon: <MdPrint className="mr-2 text-xl" /> },
-    { to: "/admin/menu-preview", text: "Anteprima Menu", icon: <MdPreview className="mr-2 text-xl" /> },
-    { to: "/admin/allergens", text: "Allergeni", icon: <MdWarning className="mr-2 text-xl" /> },
-    { to: "/admin/translations", text: "Multilingua", icon: <MdOutlineTranslate className="mr-2 text-xl" /> },
-    { to: "/admin/site-settings", text: "Impostazioni Sito", icon: <MdSettings className="mr-2 text-xl" /> },
+    { to: "/admin", text: "Dashboard", icon: <LayoutDashboard className="mr-2 h-5 w-5" /> },
+    { to: "/admin/menu-settings", text: "Impostazioni Menu", icon: <Utensils className="mr-2 h-5 w-5" /> },
+    { to: "/admin/menu-print", text: "Stampa Menu", icon: <Printer className="mr-2 h-5 w-5" /> },
+    { to: "/admin/menu-preview", text: "Anteprima Menu", icon: <Eye className="mr-2 h-5 w-5" /> },
+    { to: "/admin/allergens", text: "Allergeni", icon: <AlertTriangle className="mr-2 h-5 w-5" /> },
+    { to: "/admin/translations", text: "Multilingua", icon: <Languages className="mr-2 h-5 w-5" /> },
+    { to: "/admin/site-settings", text: "Impostazioni Sito", icon: <Settings className="mr-2 h-5 w-5" /> },
   ];
 
   // SHOW/HIDE SIDEBAR ON MOBILE VIEW

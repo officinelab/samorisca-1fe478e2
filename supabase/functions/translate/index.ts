@@ -84,7 +84,7 @@ serve(async (req) => {
       // Ottieni il nome completo della lingua target
       const targetLangName = targetLanguage in languageCodes 
         ? targetLanguage 
-        : languageNames[targetLanguage] || targetLanguage;
+        : languageNames[targetLanguage as keyof typeof languageNames] || targetLanguage;
 
       // Crea il prompt per la traduzione
       const prompt = `Translate the following text from ${sourceLanguage} to ${targetLangName}. Only return the translated text without any additional notes or explanations. Here is the text to translate: "${text}"`;
