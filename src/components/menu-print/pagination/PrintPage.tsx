@@ -165,6 +165,22 @@ const PrintPage: React.FC<PrintPageProps> = ({
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}
     >
+      {/* Linea che indica il limite del contenuto sicuro (escluso il margine di sicurezza) */}
+      {showPageBoundaries && (
+        <div 
+          className="absolute left-0 right-0 pointer-events-none" 
+          style={{
+            bottom: `${5}mm`, // Margine di sicurezza di 5mm
+            borderTop: '1px dashed rgba(239, 68, 68, 0.5)',
+            zIndex: 40,
+          }}
+        >
+          <div className="absolute left-2 top-0 transform -translate-y-full bg-white/80 px-1 py-0.5 text-[10px] text-red-600 rounded">
+            Limite contenuto sicuro (5mm)
+          </div>
+        </div>
+      )}
+      
       <div 
         className="menu-container" 
         style={{ 

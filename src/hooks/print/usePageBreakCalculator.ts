@@ -22,7 +22,13 @@ export const usePageBreakCalculator = ({
   customLayout
 }: PageBreakOptions) => {
   const [pageBreaks, setPageBreaks] = useState<number[]>([]);
-  const MM_TO_PX = 3.78; // Fattore di conversione da mm a px (approssimativo)
+  
+  // Fattore di conversione più preciso da mm a px (può variare leggermente tra browser)
+  // Aggiungiamo un fattore di correzione per garantire una migliore precisione
+  const MM_TO_PX = 3.85; // Aumentato leggermente per garantire una migliore precisione
+  
+  // Aggiungiamo un margine di sicurezza per evitare che gli elementi superino i limiti
+  const SAFETY_MARGIN_MM = 5;
   
   // Calcola l'altezza effettiva disponibile per il contenuto in una pagina
   const getPageContentHeight = (pageIndex: number): number => {
@@ -32,18 +38,18 @@ export const usePageBreakCalculator = ({
       if (pageIndex % 2 === 0) {
         const topMargin = customLayout.page.oddPages?.marginTop || customLayout.page.marginTop;
         const bottomMargin = customLayout.page.oddPages?.marginBottom || customLayout.page.marginBottom;
-        return (A4_HEIGHT_MM - topMargin - bottomMargin) * MM_TO_PX;
+        return (A4_HEIGHT_MM - topMargin - bottomMargin - SAFETY_MARGIN_MM) * MM_TO_PX;
       } 
       // Margini per pagina pari (pageIndex 1, 3, 5... corrispondono alle pagine 2, 4, 6...)
       else {
         const topMargin = customLayout.page.evenPages?.marginTop || customLayout.page.marginTop;
         const bottomMargin = customLayout.page.evenPages?.marginBottom || customLayout.page.marginBottom;
-        return (A4_HEIGHT_MM - topMargin - bottomMargin) * MM_TO_PX;
+        return (A4_HEIGHT_MM - topMargin - bottomMargin - SAFETY_MARGIN_MM) * MM_TO_PX;
       }
     }
     
-    // Se non sono specificati margini diversi, usa i margini standard
-    return (A4_HEIGHT_MM - pageMarginTop - pageMarginBottom) * MM_TO_PX;
+    // Se non sono specificati margini diversi, usa i margini standard con il margine di sicurezza
+    return (A4_HEIGHT_MM - pageMarginTop - pageMarginBottom - SAFETY_MARGIN_MM) * MM_TO_PX;
   };
 
   // Funzione per calcolare i punti di interruzione di pagina

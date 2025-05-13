@@ -3,7 +3,11 @@ import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 
 // Fattore di conversione più preciso da millimetri a pixel
-const MM_TO_PX = 3.78;
+// Incrementato leggermente rispetto al precedente per migliorare la precisione
+const MM_TO_PX = 3.85;
+
+// Margine di sicurezza aggiuntivo (in mm) per prevenire sovrapposizioni
+const SAFETY_MARGIN_MM = 5;
 
 /**
  * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
@@ -33,22 +37,21 @@ export const calculateAvailableHeight = (
     }
   }
   
-  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
-  const safetyMargin = 5;
-  return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
+  // Sottraiamo un margine di sicurezza per evitare di riempire troppo la pagina
+  return (A4_HEIGHT_MM - marginTop - marginBottom - SAFETY_MARGIN_MM) * MM_TO_PX;
 };
 
 /**
  * Stima l'altezza di un titolo categoria in base al layout
  */
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
-  if (!customLayout) return 30;
+  if (!customLayout) return 35; // Valore aumentato per sicurezza
   
-  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
-  const baseFontSize = customLayout.elements.category.fontSize * 1.5;
+  // Aumentiamo il fattore di scala per garantire spazio sufficiente
+  const baseFontSize = customLayout.elements.category.fontSize * 1.6; 
   const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
   
-  return (baseFontSize + marginBottom) * 1.2;
+  return (baseFontSize + marginBottom) * 1.3; // Aumentato il fattore moltiplicativo
 };
 
 /**
@@ -58,35 +61,35 @@ export const estimateProductHeight = (
   product: Product,
   language: string,
 ): number => {
-  // Base height for all products
-  let height = 30;
+  // Altezza base aumentata per tutti i prodotti
+  let height = 35;
   
-  // Increase height if there's a description
+  // Incrementa altezza se c'è una descrizione
   const hasDescription = !!product.description || !!product[`description_${language}`];
   if (hasDescription) {
     const descriptionText = (product[`description_${language}`] as string) || product.description || "";
     const descriptionLength = descriptionText.length;
     
-    // Stima l'altezza della descrizione in base alla lunghezza del testo
+    // Stima più precisa dell'altezza della descrizione in base alla lunghezza del testo
     if (descriptionLength > 200) {
-      height += 60; // Descrizioni molto lunghe
+      height += 70; // Aumentato per descrizioni molto lunghe
     } else if (descriptionLength > 100) {
-      height += 40; // Descrizioni lunghe
+      height += 45; // Aumentato per descrizioni lunghe
     } else if (descriptionLength > 50) {
-      height += 25; // Descrizioni medie
+      height += 30; // Aumentato per descrizioni medie
     } else {
-      height += 15; // Descrizioni brevi
+      height += 20; // Aumentato per descrizioni brevi
     }
   }
   
-  // Increase height for multiple price variants
+  // Aumenta altezza per varianti di prezzo multiple
   if (product.has_multiple_prices) {
-    height += 20;
+    height += 25; // Aumentato da 20 a 25
   }
   
-  // Increase height if product has allergens
+  // Aumenta altezza se il prodotto ha allergeni
   if (product.allergens && product.allergens.length > 0) {
-    height += 10;
+    height += 15; // Aumentato da 10 a 15
   }
   
   return height;
