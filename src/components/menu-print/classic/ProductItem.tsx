@@ -19,6 +19,8 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           '5mm',
         breakInside: 'avoid',
         pageBreakInside: 'avoid',
+        maxWidth: '100%',
+        overflow: 'hidden'
       }} 
       className="menu-item"
     >
@@ -26,29 +28,38 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'baseline',
-        width: '100%'
+        width: '100%',
+        flexWrap: 'wrap'
       }} className="item-header">
         {(!customLayout || customLayout.elements.title.visible) && (
-          <div style={getElementStyle(customLayout?.elements.title, {
-            fontWeight: 'bold',
-            fontSize: '12pt',
-            width: 'auto',
-            whiteSpace: 'normal',
-            marginRight: '10px',
-            maxWidth: '60%'
-          })} className="item-title">
+          <div style={{
+            ...getElementStyle(customLayout?.elements.title, {
+              fontWeight: 'bold',
+              fontSize: '12pt',
+              width: 'auto',
+              marginRight: '10px',
+              maxWidth: '60%'
+            }),
+            overflowWrap: 'break-word',
+            wordWrap: 'break-word',
+            wordBreak: 'normal',
+            hyphens: 'auto'
+          }} className="item-title">
             {product[`title_${language}`] || product.title}
           </div>
         )}
         
         {(!customLayout || customLayout.elements.allergensList.visible) && 
           product.allergens && product.allergens.length > 0 && (
-          <div style={getElementStyle(customLayout?.elements.allergensList, {
-            width: 'auto',
-            fontSize: '10pt',
-            whiteSpace: 'nowrap',
-            marginRight: '10px'
-          })} className="item-allergens">
+          <div style={{
+            ...getElementStyle(customLayout?.elements.allergensList, {
+              width: 'auto',
+              fontSize: '10pt',
+              whiteSpace: 'nowrap',
+              marginRight: '10px'
+            }),
+            overflowWrap: 'break-word'
+          }} className="item-allergens">
             {product.allergens.map(allergen => allergen.number).join(", ")}
           </div>
         )}
@@ -61,13 +72,15 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         }} className="item-dots"></div>
         
         {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            textAlign: 'right',
-            fontWeight: 'bold',
-            width: 'auto',
-            whiteSpace: 'nowrap',
-            marginLeft: '10px'
-          })} className="item-price">
+          <div style={{
+            ...getElementStyle(customLayout?.elements.price, {
+              textAlign: 'right',
+              fontWeight: 'bold',
+              width: 'auto',
+              whiteSpace: 'nowrap',
+              marginLeft: '10px'
+            })
+          }} className="item-price">
             € {product.price_standard}
           </div>
         )}
@@ -75,30 +88,35 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
       
       {(!customLayout || customLayout.elements.description.visible) && 
         (product[`description_${language}`] || product.description) && (
-        <div style={getElementStyle(customLayout?.elements.description, {
-          fontSize: '10pt',
-          fontStyle: 'italic',
-          marginTop: '2mm',
-          width: '100%',
-          maxWidth: '95%',
+        <div style={{
+          ...getElementStyle(customLayout?.elements.description, {
+            fontSize: '10pt',
+            fontStyle: 'italic',
+            marginTop: '2mm',
+            width: '100%',
+            maxWidth: '95%'
+          }),
           overflowWrap: 'break-word',
           wordWrap: 'break-word',
           wordBreak: 'normal',
           hyphens: 'auto'
-        })} className="item-description">
+        }} className="item-description">
           {product[`description_${language}`] || product.description}
         </div>
       )}
       
       {(!customLayout || customLayout.elements.priceVariants.visible) && 
         product.has_multiple_prices && (
-        <div style={getElementStyle(customLayout?.elements.priceVariants, {
-          marginTop: '1mm',
-          fontSize: '10pt',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '1rem'
-        })}>
+        <div style={{
+          ...getElementStyle(customLayout?.elements.priceVariants, {
+            marginTop: '1mm',
+            fontSize: '10pt',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '1rem',
+            flexWrap: 'wrap'
+          })
+        }}>
           {product.price_variant_1_name && (
             <div>{product.price_variant_1_name}: € {product.price_variant_1_value}</div>
           )}

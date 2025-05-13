@@ -30,7 +30,7 @@ export const getBaseStyles = (): string => {
       page-break-after: always;
       break-after: page;
       position: relative;
-      overflow: hidden; /* Modificato da "visible" a "hidden" per contenere correttamente il contenuto */
+      overflow: hidden; /* Contenere il contenuto all'interno della pagina */
     }
     
     .page:last-of-type {
@@ -41,7 +41,7 @@ export const getBaseStyles = (): string => {
     .menu-container {
       margin: 0 auto;
       max-width: 100%;
-      overflow: hidden; /* Modificato da "visible" a "hidden" */
+      overflow: hidden;
       height: 100%;
     }
 
@@ -61,12 +61,22 @@ export const getBaseStyles = (): string => {
       
       .page-break {
         page-break-before: always;
+        break-before: page;
       }
       
-      /* Assicura che gli elementi non siano divisi tra pagine */
-      .menu-item {
-        break-inside: avoid;
-        page-break-inside: avoid;
+      /* Stringenti regole per prevenire che elementi siano divisi tra pagine */
+      .menu-item, .category-title, .category {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+      
+      /* Assicurati che gli elementi non si estendano oltre i margini */
+      .item-title, .item-description {
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
       }
     }
   `;
