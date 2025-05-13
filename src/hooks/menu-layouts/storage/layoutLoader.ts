@@ -6,8 +6,8 @@ import { fetchLayoutsFromSupabase } from "../services/supabaseLayoutService";
 /**
  * Loads layouts from Supabase or defaults
  */
-export const loadLayouts = async (): Promise<{
-  layouts: PrintLayout[];
+export const loadLayouts = async (): Promise<{ 
+  layouts: PrintLayout[]; 
   defaultLayout: PrintLayout | null;
   error: string | null;
 }> => {

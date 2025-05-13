@@ -17,7 +17,6 @@ interface UsePaginationProps {
   language: string;
   A4_HEIGHT_MM: number;
   customLayout?: PrintLayout | null;
-  safetyMargin?: { vertical: number; horizontal: number };
 }
 
 export const usePagination = ({
@@ -26,8 +25,7 @@ export const usePagination = ({
   selectedCategories,
   language,
   A4_HEIGHT_MM,
-  customLayout,
-  safetyMargin = { vertical: 8, horizontal: 3 }
+  customLayout
 }: UsePaginationProps) => {
   const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
@@ -43,17 +41,17 @@ export const usePagination = ({
       let currentPageContent: PageContent[] = [];
       let currentPageIndex = 0;
       let currentHeight = 0;
-      let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout, safetyMargin);
+      let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
       let lastCategoryId: string | null = null;
       let currentCategoryProducts: ProductItem[] = [];
       
-      // Add a safety guard to prevent infinite loops
+      // Aggiungiamo una guardia di sicurezza per prevenire loop infiniti
       const MAX_PAGES = 100;
       
-      // Function to add a new page
+      // Funzione per aggiungere una nuova pagina
       const addNewPage = () => {
         if (allPages.length >= MAX_PAGES) {
-          console.error("Maximum page limit reached, possible infinite loop");
+          console.error("Limite massimo di pagine raggiunto, possibile loop infinito");
           return false;
         }
         
@@ -61,15 +59,15 @@ export const usePagination = ({
           allPages.push([...currentPageContent]);
         }
         
-        // Reset for next page
+        // Reset per la prossima pagina
         currentPageContent = [];
         currentPageIndex++;
         currentHeight = 0;
-        availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout, safetyMargin);
+        availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
         return true;
       };
 
-      // Function to add remaining products of current category to the page
+      // Funzione per aggiungere i prodotti rimanenti della categoria corrente alla pagina
       const addRemainingProducts = () => {
         if (currentCategoryProducts.length > 0) {
           currentPageContent.push({ 
@@ -81,28 +79,28 @@ export const usePagination = ({
         }
       };
       
-      // Starting a new category?
+      // Stiamo per iniziare una nuova categoria?
       let startingNewCategory = true;
       
-      // Generate contents for each page
+      // Generiamo i contenuti per ciascuna pagina
       filteredCategories.forEach((category, categoryIndex) => {
         const categoryProducts = products[category.id] || [];
         
-        // Skip empty categories
+        // Se la categoria è vuota, saltiamo
         if (categoryProducts.length === 0) return;
         
-        // Approximate height of category title
+        // Altezza approssimativa del titolo della categoria
         const categoryTitleHeight = estimateCategoryTitleHeight(customLayout);
         
-        // If category title doesn't fit on current page and we already have content,
-        // create a new page, but only if we're not at the beginning of a page
+        // Se il titolo della categoria non entra nella pagina corrente e abbiamo già contenuto,
+        // crea una nuova pagina, ma solo se non siamo all'inizio di una pagina
         if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
-          addRemainingProducts(); // Add any remaining products
+          addRemainingProducts(); // Aggiungi eventuali prodotti rimanenti
           if (!addNewPage()) return;
           startingNewCategory = true;
         }
         
-        // Category title (original or repeated)
+        // Titolo categoria (originale o ripetuto)
         const categoryTitleContent: CategoryTitleContent = {
           type: 'category-title',
           key: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
@@ -113,29 +111,24 @@ export const usePagination = ({
         currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
         
-        // Add extra space after category title
+        // Aggiungi spazio extra dopo il titolo della categoria
         const categoryBottomMargin = customLayout?.spacing.categoryTitleBottomMargin || 5;
-        currentHeight += categoryBottomMargin * 3.78; // Convert mm to px
+        currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
         
-        // Iterate through all products in the category
+        // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Use the precise height measurement function
-          const productHeight = estimateProductHeight(product, language, customLayout, safetyMargin);
+          // Usa la nuova funzione di misurazione precisa dell'altezza
+          const productHeight = estimateProductHeight(product, language, customLayout);
           
-          // Check if adding this product would exceed the page height
-          // Use a more relaxed threshold to better utilize space (95% of available height)
-          const heightWithProduct = currentHeight + productHeight;
-          const utilizationThreshold = availableHeight * 0.97; // Use 97% of available height
-          
-          // If the product won't fit on the current page, create a new page
-          if (heightWithProduct > utilizationThreshold) {
-            // Add current products to page content
+          // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
+          if (currentHeight + productHeight > availableHeight) {
+            // Aggiungi i prodotti correnti al contenuto della pagina
             addRemainingProducts();
             
-            // Close this page and start a new one
+            // Chiudi questa pagina e inizia una nuova
             if (!addNewPage()) return;
             
-            // In new page, repeat category title
+            // Nella nuova pagina, ripeti il titolo della categoria
             const repeatedCategoryTitle: CategoryTitleContent = {
               type: 'category-title',
               key: `cat-title-${category.id}-${currentPageIndex}-repeat`,
@@ -146,11 +139,11 @@ export const usePagination = ({
             currentPageContent.push(repeatedCategoryTitle);
             currentHeight += categoryTitleHeight;
             
-            // Add extra space after repeated title
-            currentHeight += categoryBottomMargin * 3.78; // Convert mm to px
+            // Aggiungi spazio extra dopo il titolo ripetuto
+            currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
           }
           
-          // Add the product to current products
+          // Aggiungi il prodotto ai prodotti correnti
           currentCategoryProducts.push({
             type: 'product',
             key: `product-${product.id}-${currentPageIndex}-${productIndex}`,
@@ -159,39 +152,39 @@ export const usePagination = ({
           
           currentHeight += productHeight;
           
-          // Add space between products
-          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Convert mm to px
+          // Aggiungi lo spazio tra prodotti
+          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
           currentHeight += spacingBetweenProducts;
         });
         
-        // Add remaining products of the category to current page
+        // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
         addRemainingProducts();
         
-        // Add space between categories, but only if it's not the last category
+        // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
         if (categoryIndex < filteredCategories.length - 1) {
-          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Convert mm to px
+          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
           currentHeight += spacingBetweenCategories;
         }
         
-        // Next category will be new (not a continuation)
+        // La prossima categoria sarà nuova (non una continuazione)
         startingNewCategory = true;
         lastCategoryId = category.id;
       });
       
-      // Add the last page if there's remaining content
+      // Aggiungi l'ultima pagina se ci sono contenuti rimanenti
       if (currentPageContent.length > 0) {
         allPages.push([...currentPageContent]);
       }
       
-      console.log(`Generated total ${allPages.length} pages`);
+      console.log(`Generato totale ${allPages.length} pagine`);
       setPages(allPages);
     };
     
-    // Use a timeout to ensure component is mounted
+    // Usa un timeout per garantire che il componente sia montato
     const timer = setTimeout(generatePages, 100);
     return () => clearTimeout(timer);
     
-  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, safetyMargin]);
+  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM]);
   
   return { pages };
 };
