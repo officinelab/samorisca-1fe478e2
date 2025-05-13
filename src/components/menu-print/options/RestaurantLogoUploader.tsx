@@ -1,6 +1,6 @@
 
 import React from "react";
-import { RestaurantLogoUploader as BaseRestaurantLogoUploader } from "@/components/menu-print/RestaurantLogoUploader";
+import { ImageUploader } from "@/components/ImageUploader";
 
 interface RestaurantLogoUploaderProps {
   restaurantLogo: string | null;
@@ -12,15 +12,11 @@ const RestaurantLogoUploader: React.FC<RestaurantLogoUploaderProps> = ({
   updateRestaurantLogo 
 }) => {
   return (
-    <BaseRestaurantLogoUploader
-      currentLogo={restaurantLogo}
-      onLogoUploaded={updateRestaurantLogo}
-      title="Logo del Ristorante"
-      description={
-        <p className="text-muted-foreground text-sm mb-2">
-          Carica il logo del tuo ristorante che apparirà nella stampa del menu
-        </p>
-      }
+    <ImageUploader
+      currentImage={restaurantLogo}
+      onImageUploaded={updateRestaurantLogo}
+      label="Logo del Ristorante"
+      description="Carica il logo del tuo ristorante che apparirà nella stampa del menu"
     />
   );
 };

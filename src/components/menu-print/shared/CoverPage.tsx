@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
-import PageContainer from '../PageContainer';
 import CoverLogo from './cover/CoverLogo';
 import CoverTitle from './cover/CoverTitle';
 import CoverSubtitle from './cover/CoverSubtitle';
 import PageNumber from './cover/PageNumber';
+import PageContainer from '../layouts/classic/ContentPage';
 
 export interface CoverPageProps {
   A4_WIDTH_MM: number;
@@ -39,37 +39,29 @@ const CoverPage: React.FC<CoverPageProps> = ({
       A4_WIDTH_MM={A4_WIDTH_MM} 
       A4_HEIGHT_MM={A4_HEIGHT_MM} 
       showPageBoundaries={showPageBoundaries}
-      layoutType={layoutType}
-      pageIndex={pageIndex}
       safetyMargin={safetyMargin}
     >
       <div className="flex flex-col items-center justify-center h-full relative">
         {/* Logo */}
         <CoverLogo 
-          restaurantLogo={restaurantLogo} 
-          layoutType={layoutType} 
+          logo={restaurantLogo} 
           customLayout={customLayout}
         />
         
         {/* Title */}
         <CoverTitle 
-          layoutType={layoutType} 
           customLayout={customLayout}
         />
         
         {/* Subtitle */}
         <CoverSubtitle 
-          layoutType={layoutType} 
           customLayout={customLayout}
         />
         
         {/* Page number */}
-        <PageNumber 
-          pageNumber={pageNumber} 
-          layoutType={layoutType} 
-          isFirstPage={pageIndex === 0} 
-          customLayout={customLayout}
-        />
+        <div className="absolute bottom-4 right-4 text-sm text-gray-500">
+          {pageNumber}
+        </div>
       </div>
     </PageContainer>
   );

@@ -13,7 +13,7 @@ export const useLayoutStorage = () => {
   const loadStoredLayouts = async (): Promise<PrintLayout[]> => {
     try {
       const layouts = await loadLayouts();
-      return layouts;
+      return layouts || [];
     } catch (error) {
       console.error('Error loading layouts from storage:', error);
       toast.error('Errore durante il caricamento dei layout');

@@ -12,7 +12,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-interface LayoutSelectorProps {
+export interface LayoutSelectorProps {
   selectedLayoutId: string;
   setSelectedLayoutId: (layoutId: string) => void;
   isLoading: boolean;

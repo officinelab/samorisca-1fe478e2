@@ -4,13 +4,13 @@ import LayoutSelector from './LayoutSelector';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import RestaurantLogoUploader from '../RestaurantLogoUploader';
+import RestaurantLogoUploader from './RestaurantLogoUploader';
 
 interface BasicOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  layoutId: string; // Cambiato da layoutType a layoutId
-  setLayoutId: (layoutId: string) => void; // Cambiato da setLayoutType a setLayoutId
+  layoutId: string;
+  setLayoutId: (layoutId: string) => void;
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
@@ -23,8 +23,8 @@ interface BasicOptionsProps {
 const BasicOptions: React.FC<BasicOptionsProps> = ({
   language,
   setLanguage,
-  layoutId, // Cambiato da layoutType a layoutId
-  setLayoutId, // Cambiato da setLayoutType a setLayoutId
+  layoutId,
+  setLayoutId,
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
@@ -36,8 +36,12 @@ const BasicOptions: React.FC<BasicOptionsProps> = ({
   return (
     <div className="space-y-6">
       <LayoutSelector
-        selectedLayoutId={layoutId} // Cambiato da selectedLayout a selectedLayoutId
-        setSelectedLayoutId={setLayoutId} // Cambiato da setSelectedLayout a setSelectedLayoutId
+        selectedLayoutId={layoutId}
+        setSelectedLayoutId={setLayoutId}
+        isLoading={isLoading}
+        forceLayoutRefresh={() => {}}
+        showPageBoundaries={showPageBoundaries}
+        setShowPageBoundaries={setShowPageBoundaries}
       />
 
       <div className="space-y-4">
@@ -46,8 +50,8 @@ const BasicOptions: React.FC<BasicOptionsProps> = ({
             Logo Ristorante
           </Label>
           <RestaurantLogoUploader
-            currentLogo={restaurantLogo}
-            onLogoUploaded={updateRestaurantLogo}
+            restaurantLogo={restaurantLogo}
+            updateRestaurantLogo={updateRestaurantLogo}
           />
         </div>
 

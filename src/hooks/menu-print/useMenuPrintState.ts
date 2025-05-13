@@ -1,7 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { useLanguageStore } from "@/hooks/useLanguageStore";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { useAllergens } from "@/hooks/useAllergens";
@@ -12,9 +11,8 @@ const A4_WIDTH_MM = 210;
 const A4_HEIGHT_MM = 297;
 
 export const useMenuPrintState = () => {
-  const { siteSettings, saveSetting } = useSiteSettings();
+  const { siteSettings, updateSetting } = useSiteSettings();
   const { layouts, activeLayout, forceRefresh, isLoading: isLayoutsLoading } = useMenuLayouts();
-  const { language, setLanguage } = useLanguageStore();
   
   // Stato del contenuto del menu
   const { categories, isLoading: isLoadingCategories } = useCategories();
@@ -23,6 +21,7 @@ export const useMenuPrintState = () => {
   
   // Layout e opzioni di visualizzazione
   const [layoutId, setLayoutId] = useState<string>("");
+  const [language, setLanguage] = useState<string>("it");
   const [printAllergens, setPrintAllergens] = useState(true);
   const [showPageBoundaries, setShowPageBoundaries] = useState(true);
   
@@ -68,7 +67,7 @@ export const useMenuPrintState = () => {
   // Funzione per aggiornare il logo del ristorante
   const updateRestaurantLogo = async (logoUrl: string) => {
     setRestaurantLogo(logoUrl);
-    await saveSetting('restaurant_logo', logoUrl);
+    await updateSetting('restaurant_logo', logoUrl);
   };
   
   // Funzione per forzare l'aggiornamento del layout

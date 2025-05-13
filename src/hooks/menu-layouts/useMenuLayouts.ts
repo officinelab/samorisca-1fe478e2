@@ -101,37 +101,43 @@ export const useMenuLayouts = () => {
     return false;
   }, [layouts]);
 
-  // Function to create a new layout
-  const createNewLayout = (type: 'classic' | 'modern' | 'allergens' | 'custom', name: string) => {
+  // Function to create a new layout based on a template
+  const createNewLayout = async (name: string) => {
     try {
-      // Determine template based on type
-      let templateLayout: Omit<PrintLayout, 'id'>;
-      switch (type) {
-        case 'classic':
-          templateLayout = classicLayout;
-          break;
-        case 'modern':
-          templateLayout = modernLayout;
-          break;
-        case 'allergens':
-          templateLayout = allergensLayout;
-          break;
-        default:
-          templateLayout = classicLayout;
-      }
-      
-      // Create new layout with custom name
+      // Create new layout with classic template
       const newLayout = {
-        ...templateLayout,
+        ...classicLayout,
         name,
-        type,
         isDefault: false
       };
       
-      return addLayout(newLayout);
+      return await addLayout(newLayout);
     } catch (error) {
       console.error("Error creating new layout:", error);
       toast.error("Errore durante la creazione del nuovo layout");
+      throw error;
+    }
+  };
+
+  // Function to clone an existing layout
+  const cloneLayout = async (layoutId: string) => {
+    try {
+      const layoutToClone = layouts.find(l => l.id === layoutId);
+      
+      if (!layoutToClone) {
+        throw new Error("Layout da clonare non trovato");
+      }
+      
+      const clonedLayout = {
+        ...layoutToClone,
+        name: `${layoutToClone.name} (copia)`,
+        isDefault: false,
+      };
+      
+      return await addLayout(clonedLayout);
+    } catch (error) {
+      console.error("Error cloning layout:", error);
+      toast.error("Errore durante la clonazione del layout");
       throw error;
     }
   };
@@ -152,6 +158,7 @@ export const useMenuLayouts = () => {
     setDefaultLayout,
     setActiveLayout,
     createNewLayout,
+    cloneLayout,
     forceRefresh
   };
 };

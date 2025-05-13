@@ -2,9 +2,9 @@
 import React from 'react';
 import { Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import PageContainer from '../allergens/PageContainer';
 import AllergenHeader from '../allergens/AllergenHeader';
 import AllergensList from '../allergens/AllergensList';
+import PageContainer from '../layouts/classic/ContentPage';
 
 export interface AllergensPageProps {
   A4_WIDTH_MM: number;
@@ -35,16 +35,13 @@ const AllergensPage: React.FC<AllergensPageProps> = ({
       A4_WIDTH_MM={A4_WIDTH_MM}
       A4_HEIGHT_MM={A4_HEIGHT_MM}
       showPageBoundaries={showPageBoundaries}
-      layoutType={layoutType}
       safetyMargin={safetyMargin}
     >
       <AllergenHeader 
-        layoutType={layoutType} 
         restaurantLogo={restaurantLogo} 
       />
       <AllergensList 
         allergens={allergens} 
-        layoutType={layoutType} 
       />
     </PageContainer>
   );

@@ -66,8 +66,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
         />
         
         <LayoutSelector 
-          layoutId={layoutId}
-          setLayoutId={setLayoutId}
+          selectedLayoutId={layoutId}
+          setSelectedLayoutId={setLayoutId}
           isLoading={isLoading}
           forceLayoutRefresh={forceLayoutRefresh}
           showPageBoundaries={showPageBoundaries}

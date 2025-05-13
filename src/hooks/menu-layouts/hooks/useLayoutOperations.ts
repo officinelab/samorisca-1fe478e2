@@ -2,8 +2,7 @@
 import { PrintLayout } from '@/types/printLayout';
 import { toast } from '@/components/ui/sonner';
 import { updateLayoutInList } from '../utils/operations/updateLayoutInList';
-import { createNewLayout } from '../utils/operations/createNewLayout';
-import { cloneLayout } from '../utils/operations/cloneLayout';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Custom hook for managing layout operations
@@ -16,16 +15,32 @@ export const useLayoutOperations = (
   /**
    * Creates a new layout
    */
-  const createLayout = async (layoutData: Omit<PrintLayout, 'id'>, setAsDefault = false) => {
+  const createLayout = async (layoutData: Partial<PrintLayout>) => {
     try {
-      const newLayouts = await createNewLayout(layouts, layoutData, setAsDefault);
-      setLayouts(newLayouts);
-      await saveLayoutsToStorage(newLayouts);
+      // Create a new layout with ID
+      const newLayout: PrintLayout = {
+        ...(layoutData as any), // Casting to any to avoid type issues
+        id: uuidv4(),
+        isDefault: layoutData.isDefault || false
+      };
+
+      // Handle setting as default if needed
+      let updatedLayouts = [...layouts];
       
-      // Return the newly created layout
-      return newLayouts.find(layout => 
-        layout.name === layoutData.name && layout.type === layoutData.type
-      ) || null;
+      if (newLayout.isDefault) {
+        updatedLayouts = layouts.map(layout => ({
+          ...layout,
+          isDefault: false
+        }));
+      }
+      
+      // Add the new layout
+      updatedLayouts = [...updatedLayouts, newLayout];
+      
+      setLayouts(updatedLayouts);
+      await saveLayoutsToStorage(updatedLayouts);
+      
+      return newLayout;
     } catch (error) {
       console.error('Error creating layout:', error);
       toast.error('Errore durante la creazione del layout');
