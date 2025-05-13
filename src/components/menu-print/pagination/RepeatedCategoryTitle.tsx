@@ -2,74 +2,58 @@
 import React from 'react';
 import { Category } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import { getElementStyle } from '../utils/styleUtils';
 
 interface RepeatedCategoryTitleProps {
   category: Category;
   language: string;
   customLayout?: PrintLayout | null;
-  isRepeated: boolean;
+  isRepeated?: boolean;
 }
 
 const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({ 
   category, 
   language,
   customLayout,
-  isRepeated 
+  isRepeated = false 
 }) => {
-  // Stile base per il titolo della categoria
-  const baseCategoryStyle = customLayout && customLayout.elements.category.visible
-    ? getElementStyle(customLayout.elements.category, {
-        fontWeight: 'bold',
-        marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
-        textTransform: 'uppercase' as const,
-        borderBottom: '1px solid #000',
-        paddingBottom: '2mm',
-        pageBreakAfter: 'avoid',
-        pageBreakInside: 'avoid',
-        breakAfter: 'avoid',
-        breakInside: 'avoid',
-      })
-    : {
+  // Utilizza lo stile del layout personalizzato se disponibile
+  const getCategoryStyle = () => {
+    if (!customLayout || !customLayout.elements.category) {
+      return {
+        fontFamily: 'Arial',
         fontSize: '18pt',
-        fontWeight: 'bold',
-        marginBottom: '5mm',
-        textTransform: 'uppercase' as const,
-        borderBottom: '1px solid #000',
-        paddingBottom: '2mm',
-        pageBreakAfter: 'avoid',
-        pageBreakInside: 'avoid',
-        breakAfter: 'avoid',
-        breakInside: 'avoid',
+        color: '#000',
+        fontWeight: 'bold' as const,
+        fontStyle: 'normal' as const,
+        textAlign: 'left' as React.CSSProperties['textAlign'],
+        marginBottom: '10px',
       };
-
-  // Stile aggiuntivo per i titoli ripetuti (più compatti)
-  const repeatedStyle: React.CSSProperties = isRepeated
-    ? { 
-        fontSize: customLayout?.elements.category.fontSize 
-          ? `${Math.max(customLayout.elements.category.fontSize - 2, 10)}pt` 
-          : '16pt',
-        marginTop: '5mm',
-        color: customLayout?.elements.category.fontColor || 'inherit',
-        opacity: 0.9,
-      }
-    : {};
-
-  // Combinare gli stili
-  const categoryStyle = { ...baseCategoryStyle, ...repeatedStyle };
-
+    }
+    
+    const element = customLayout.elements.category;
+    return {
+      fontFamily: element.fontFamily || 'Arial',
+      fontSize: `${element.fontSize}pt`,
+      color: element.fontColor,
+      fontWeight: element.fontStyle === 'bold' ? 'bold' as const : 'normal' as const,
+      fontStyle: element.fontStyle === 'italic' ? 'italic' as const : 'normal' as const,
+      textAlign: element.alignment as React.CSSProperties['textAlign'],
+      marginTop: `${element.margin.top}mm`,
+      marginRight: `${element.margin.right}mm`,
+      marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
+      marginLeft: `${element.margin.left}mm`,
+    };
+  };
+  
   return (
-    <h2 
-      className="category-title" 
-      style={categoryStyle}
-    >
-      {isRepeated && (
-        <span style={{ fontSize: '0.8em', opacity: 0.7, marginRight: '5px' }}>
-          (continua) 
-        </span>
-      )}
-      {category[`title_${language}`] || category.title}
-    </h2>
+    <div className="category">
+      <h2 
+        className="category-title" 
+        style={getCategoryStyle()}
+      >
+        {category[`title_${language}`] || category.title}
+      </h2>
+    </div>
   );
 };
 

@@ -117,14 +117,12 @@ export const usePagination = ({
         
         // Itera su tutti i prodotti della categoria
         categoryProducts.forEach((product, productIndex) => {
-          // Stima migliorata dell'altezza del prodotto
-          const productHeight = estimateProductHeight(product, language, customLayout);
+          // Stima dell'altezza del prodotto
+          const productHeight = estimateProductHeight(product, language);
           
           // Se il prodotto non entra nella pagina corrente, crea una nuova pagina
-          // Ma prima verifichiamo se è il primo prodotto dopo un titolo
-          // Se è il primo prodotto e non entra, dobbiamo creare una nuova pagina con il titolo ripetuto
           if (currentHeight + productHeight > availableHeight) {
-            // Se ci sono già prodotti nella categoria corrente, aggiungiamoli alla pagina
+            // Aggiungi i prodotti correnti al contenuto della pagina
             addRemainingProducts();
             
             // Chiudi questa pagina e inizia una nuova
@@ -156,9 +154,7 @@ export const usePagination = ({
           
           // Aggiungi lo spazio tra prodotti
           const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
-          if (productIndex < categoryProducts.length - 1) {
-            currentHeight += spacingBetweenProducts;
-          }
+          currentHeight += spacingBetweenProducts;
         });
         
         // Aggiungi i prodotti rimanenti della categoria alla pagina corrente
