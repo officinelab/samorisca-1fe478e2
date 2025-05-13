@@ -55,20 +55,22 @@ const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, custom
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         width: '100%',
         marginBottom: '1mm',
       }}>
         <div style={{ maxWidth: '80%', flexGrow: 1 }}>
           {(!customLayout || customLayout.elements.allergensList.visible) && 
-            product.allergens && product.allergens.length > 0 && (
+            (product.allergens && product.allergens.length > 0 || product.features && product.features.length > 0) && (
             <div style={getElementStyle(customLayout?.elements.allergensList, {
               fontSize: '9pt',
               fontStyle: 'italic',
             })}>
-              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
+              {product.allergens && product.allergens.length > 0 && (
+                <span>Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}</span>
+              )}
               {product.features && product.features.length > 0 && (
-                <span className="ml-2">
+                <span className="ml-2" style={{ marginLeft: '4px', display: 'inline-flex', verticalAlign: 'middle' }}>
                   {product.features.map((feature, index) => (
                     <img 
                       key={index}
