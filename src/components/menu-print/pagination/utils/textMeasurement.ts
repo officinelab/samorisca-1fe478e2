@@ -5,31 +5,12 @@
  */
 
 import { PrintLayout } from "@/types/printLayout";
-import { calculateProductHeight, calculateTextHeight, getAvailableWidth } from "@/hooks/menu-layouts/utils/heightCalculator";
-
-// Singleton canvas per le misurazioni del testo
-let measureCanvas: HTMLCanvasElement | null = null;
-let measureContext: CanvasRenderingContext2D | null = null;
-
-/**
- * Inizializza il canvas per le misurazioni se non è già stato creato
- */
-const initMeasureCanvas = (): CanvasRenderingContext2D => {
-  if (!measureCanvas) {
-    // Crea un canvas off-screen per le misurazioni
-    measureCanvas = document.createElement('canvas');
-    measureCanvas.width = 1000; // Larghezza sufficiente per la maggior parte dei testi
-    measureCanvas.height = 100; // Altezza iniziale
-    
-    measureContext = measureCanvas.getContext('2d');
-    
-    if (!measureContext) {
-      throw new Error('Impossibile ottenere il contesto 2D del canvas');
-    }
-  }
-  
-  return measureContext;
-};
+import { 
+  calculateProductHeight, 
+  calculateTextHeight, 
+  getAvailableWidth,
+  clearTextHeightCache
+} from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
  * Misura l'altezza effettiva di un testo con determinati stili
@@ -49,44 +30,9 @@ export const measureTextHeight = (
   fontStyle: string = 'normal',
   maxWidth: number = 800
 ): number => {
-  try {
-    // Se non siamo in un ambiente browser, restituisci una stima
-    if (typeof document === 'undefined') {
-      // Stima basata sulla dimensione del font e lunghezza del testo
-      const baseHeight = fontSize * 1.5;
-      const lines = Math.ceil(text.length / 50) || 1; // Stima approssimativa delle linee
-      return baseHeight * lines;
-    }
-    
-    const ctx = initMeasureCanvas();
-    
-    // Imposta gli stili del font
-    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}pt ${fontFamily}`;
-    
-    // Calcolo del numero di righe necessarie per il testo
-    const words = text.split(' ');
-    let line = '';
-    let lineCount = 1;
-    const lineHeight = fontSize * 1.5; // Fattore di line-height comune
-    
-    for (let i = 0; i < words.length; i++) {
-      const testLine = line + words[i] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && i > 0) {
-        line = words[i] + ' ';
-        lineCount++;
-      } else {
-        line = testLine;
-      }
-    }
-    
-    // Aggiungi un po' di padding per sicurezza
-    return lineCount * lineHeight + (fontSize * 0.3);
-  } catch (error) {
-    console.error('Errore durante la misurazione del testo:', error);
-    // Fallback se qualcosa va storto
-    return fontSize * 1.5;
-  }
+  // Utilizziamo la nuova utility ottimizzata per il calcolo
+  const effectiveFontStyle = fontWeight === 'bold' ? 'bold' : (fontStyle === 'italic' ? 'italic' : 'normal');
+  return calculateTextHeight(text, fontSize, effectiveFontStyle, maxWidth, fontFamily);
 };
 
 /**
@@ -131,4 +77,12 @@ export const estimateProductHeight = (
 ): number => {
   // Ricadiamo sulla funzione di calcolo avanzata
   return calculateProductHeight(product, language, customLayout);
+};
+
+/**
+ * Funzione per liberare la cache delle misurazioni quando non più necessarie
+ * Da chiamare ad esempio dopo il completamento della stampa
+ */
+export const resetMeasurementCache = (): void => {
+  clearTextHeightCache();
 };
