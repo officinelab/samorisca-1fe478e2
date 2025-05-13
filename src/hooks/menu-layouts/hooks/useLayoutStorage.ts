@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { loadLayouts } from "../storage";
 import { toast } from "@/components/ui/sonner";
+import { createDefaultLayout } from "../utils/operations/createDefaultLayout";
+import { generateId } from "../utils/operations/idGenerator";
 
 /**
  * Hook to load layouts from Supabase or default layouts
@@ -15,11 +17,6 @@ export const useLayoutStorage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cacheKey, setCacheKey] = useState<string>(Date.now().toString());
-
-  // Aggiungiamo log per debug
-  useEffect(() => {
-    console.log("useLayoutStorage - Stato iniziale:", { layouts, activeLayout, isLoading });
-  }, []);
 
   // Funzione per forzare un ricaricamento dei layout
   const forceRefresh = useCallback(() => {
@@ -78,12 +75,6 @@ export const useLayoutStorage = () => {
     
     fetchLayouts();
   }, [cacheKey]); // Ora dipende anche da cacheKey per forzare il refresh
-
-  // Aggiungiamo un effetto per debug dei cambiamenti
-  useEffect(() => {
-    console.log("useLayoutStorage - Layouts aggiornati:", layouts);
-    console.log("useLayoutStorage - ActiveLayout aggiornato:", activeLayout);
-  }, [layouts, activeLayout]);
 
   return {
     // Garantiamo che layouts sia sempre un array

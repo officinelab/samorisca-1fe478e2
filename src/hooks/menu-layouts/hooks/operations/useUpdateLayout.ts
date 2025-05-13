@@ -1,9 +1,7 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { updateLayoutInList } from "../../utils/layoutOperations";
-import { toast } from "@/components/ui/sonner";
-import { saveLayoutToSupabase } from "../../services/supabaseLayoutService";
+import { saveLayouts } from "../../storage";
 
 export const useUpdateLayout = (
   layouts: PrintLayout[],
@@ -14,44 +12,45 @@ export const useUpdateLayout = (
 ) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const updateLayout = useCallback(
-    async (updatedLayout: PrintLayout) => {
+  const updateLayout = async (updatedLayout: PrintLayout): Promise<PrintLayout> => {
+    try {
       setIsUpdating(true);
-      try {
-        // Salva il layout aggiornato su Supabase
-        const { success, error, layout } = await saveLayoutToSupabase(updatedLayout);
-
-        if (!success) {
-          toast.error(error || "Errore durante l'aggiornamento del layout");
-          setError(error || "Errore durante l'aggiornamento del layout");
-          return false;
-        }
-
-        // Aggiorna lo stato locale
-        const finalLayout = layout || updatedLayout; // Usa il layout restituito da Supabase se disponibile
-        const newLayouts = updateLayoutInList(layouts, finalLayout);
-        setLayouts(newLayouts);
-
-        // Aggiorna il layout attivo se necessario
-        if (activeLayout && activeLayout.id === finalLayout.id) {
-          setActiveLayout(finalLayout);
-        }
-
-        return finalLayout;
-      } catch (err) {
-        console.error("Errore durante l'aggiornamento del layout:", err);
-        toast.error("Errore durante l'aggiornamento del layout");
-        setError("Errore durante l'aggiornamento del layout");
-        return false;
-      } finally {
-        setIsUpdating(false);
+      
+      // Trova l'indice del layout da aggiornare
+      const layoutIndex = layouts.findIndex(l => l.id === updatedLayout.id);
+      
+      if (layoutIndex === -1) {
+        throw new Error(`Layout con ID ${updatedLayout.id} non trovato`);
       }
-    },
-    [layouts, activeLayout, setLayouts, setActiveLayout, setError]
-  );
-
-  return {
-    updateLayout,
-    isUpdating
+      
+      // Crea una nuova lista con il layout aggiornato
+      const updatedLayouts = [...layouts];
+      updatedLayouts[layoutIndex] = updatedLayout;
+      
+      // Aggiorna lo stato locale
+      setLayouts(updatedLayouts);
+      
+      // Se il layout attivo è stato aggiornato, aggiorna anche activeLayout
+      if (activeLayout && activeLayout.id === updatedLayout.id) {
+        setActiveLayout(updatedLayout);
+      }
+      
+      // Salva i layout aggiornati
+      const { success, error } = await saveLayouts(updatedLayouts);
+      if (!success) {
+        setError(error || "Errore durante l'aggiornamento del layout");
+        throw new Error(error || "Errore durante l'aggiornamento del layout");
+      }
+      
+      return updatedLayout;
+    } catch (err) {
+      console.error("Errore durante l'aggiornamento del layout:", err);
+      setError(`Errore durante l'aggiornamento del layout: ${err}`);
+      throw err;
+    } finally {
+      setIsUpdating(false);
+    }
   };
+
+  return { updateLayout, isUpdating };
 };

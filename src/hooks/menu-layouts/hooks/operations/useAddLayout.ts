@@ -1,49 +1,50 @@
 
+import { useState } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { saveLayouts } from "../../storage/layoutStorage";
-import { toast } from "@/components/ui/sonner";
+import { generateId } from "../../utils/operations/idGenerator";
+import { saveLayouts } from "../../storage";
 
-/**
- * Hook functionality for adding a new layout
- */
 export const useAddLayout = (
   layouts: PrintLayout[],
   setLayouts: (layouts: PrintLayout[]) => void,
   setActiveLayout: (layout: PrintLayout | null) => void,
   setError: (error: string | null) => void
 ) => {
-  // Add a new layout
-  const addLayout = async (newLayout: Omit<PrintLayout, "id">): Promise<PrintLayout> => {
-    const id = Date.now().toString();
-    const layoutWithId = { ...newLayout, id } as PrintLayout;
-    
-    // If set as default, remove flag from others
-    let updatedLayouts = [...layouts];
-    if (newLayout.isDefault) {
-      updatedLayouts = updatedLayouts.map(layout => ({
-        ...layout,
-        isDefault: false
-      }));
-    }
-    
-    const newLayouts = [...updatedLayouts, layoutWithId];
-    const { success, error: saveError } = await saveLayouts(newLayouts);
-    
-    if (success) {
-      setLayouts(newLayouts);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const addLayout = async (newLayoutData: Omit<PrintLayout, "id">): Promise<PrintLayout> => {
+    try {
+      setIsAdding(true);
       
-      if (newLayout.isDefault) {
-        setActiveLayout(layoutWithId);
+      // Crea un nuovo layout con id generato
+      const newLayout: PrintLayout = {
+        ...newLayoutData,
+        id: generateId()
+      };
+      
+      // Aggiorna la lista dei layout
+      const updatedLayouts = [...layouts, newLayout];
+      setLayouts(updatedLayouts);
+      
+      // Imposta il nuovo layout come attivo
+      setActiveLayout(newLayout);
+      
+      // Salva i layout aggiornati
+      const { success, error } = await saveLayouts(updatedLayouts);
+      if (!success) {
+        setError(error || "Errore durante il salvataggio del layout");
+        throw new Error(error || "Errore durante il salvataggio del layout");
       }
       
-      toast.success("Layout aggiunto con successo");
-    } else {
-      setError(saveError);
-      toast.error(saveError || "Errore durante l'aggiunta del layout");
+      return newLayout;
+    } catch (err) {
+      console.error("Errore durante l'aggiunta del layout:", err);
+      setError(`Errore durante l'aggiunta del layout: ${err}`);
+      throw err;
+    } finally {
+      setIsAdding(false);
     }
-    
-    return layoutWithId;
   };
 
-  return { addLayout };
+  return { addLayout, isAdding };
 };

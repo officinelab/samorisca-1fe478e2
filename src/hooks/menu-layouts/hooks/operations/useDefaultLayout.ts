@@ -1,8 +1,7 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { toast } from "@/components/ui/sonner";
-import { setLayoutAsDefault } from "../../services/supabaseLayoutService";
+import { saveLayouts } from "../../storage";
 
 export const useDefaultLayout = (
   layouts: PrintLayout[],
@@ -10,50 +9,47 @@ export const useDefaultLayout = (
   setActiveLayout: (layout: PrintLayout | null) => void,
   setError: (error: string | null) => void
 ) => {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSettingDefault, setIsSettingDefault] = useState(false);
 
-  const setDefaultLayout = useCallback(
-    async (layoutId: string) => {
-      setIsProcessing(true);
-      try {
-        // Imposta il layout come predefinito su Supabase
-        const { success, error } = await setLayoutAsDefault(layoutId);
-
-        if (!success) {
-          toast.error(error || "Errore nell'impostazione del layout predefinito");
-          setError(error || "Errore nell'impostazione del layout predefinito");
-          return false;
-        }
-
-        // Aggiorna lo stato locale
-        const newLayouts = layouts.map((layout) => ({
-          ...layout,
-          isDefault: layout.id === layoutId
-        }));
-
-        setLayouts(newLayouts);
-        
-        // Imposta il layout predefinito come attivo
-        const defaultLayout = newLayouts.find((l) => l.id === layoutId) || null;
-        if (defaultLayout) {
-          setActiveLayout(defaultLayout);
-        }
-
-        return true;
-      } catch (err) {
-        console.error("Errore nell'impostazione del layout predefinito:", err);
-        toast.error("Errore nell'impostazione del layout predefinito");
-        setError("Errore nell'impostazione del layout predefinito");
+  const setDefaultLayout = async (layoutId: string): Promise<boolean> => {
+    try {
+      setIsSettingDefault(true);
+      
+      // Trova il layout da impostare come predefinito
+      const layoutToSetDefault = layouts.find(l => l.id === layoutId);
+      if (!layoutToSetDefault) {
+        setError(`Layout con ID ${layoutId} non trovato`);
         return false;
-      } finally {
-        setIsProcessing(false);
       }
-    },
-    [layouts, setLayouts, setActiveLayout, setError]
-  );
-
-  return {
-    setDefaultLayout,
-    isProcessing
+      
+      // Crea una nuova lista con il layout aggiornato come predefinito
+      const updatedLayouts = layouts.map(layout => ({
+        ...layout,
+        isDefault: layout.id === layoutId
+      }));
+      
+      // Aggiorna lo stato locale
+      setLayouts(updatedLayouts);
+      
+      // Imposta il layout come attivo
+      setActiveLayout(layoutToSetDefault);
+      
+      // Salva i layout aggiornati
+      const { success, error } = await saveLayouts(updatedLayouts);
+      if (!success) {
+        setError(error || "Errore durante l'impostazione del layout predefinito");
+        return false;
+      }
+      
+      return true;
+    } catch (err) {
+      console.error("Errore durante l'impostazione del layout predefinito:", err);
+      setError(`Errore durante l'impostazione del layout predefinito: ${err}`);
+      return false;
+    } finally {
+      setIsSettingDefault(false);
+    }
   };
+
+  return { setDefaultLayout, isSettingDefault };
 };

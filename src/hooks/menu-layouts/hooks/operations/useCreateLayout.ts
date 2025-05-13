@@ -1,10 +1,8 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { PrintLayout } from "@/types/printLayout";
-import { createNewLayoutFromTemplate } from "../../utils/layoutOperations";
-import { toast } from "@/components/ui/sonner";
-import { v4 as uuidv4 } from "uuid";
-import { saveLayoutToSupabase } from "../../services/supabaseLayoutService";
+import { createDefaultLayout } from "../../utils/operations/createDefaultLayout";
+import { saveLayouts } from "../../storage";
 
 export const useCreateLayout = (
   layouts: PrintLayout[],
@@ -13,52 +11,36 @@ export const useCreateLayout = (
 ) => {
   const [isCreating, setIsCreating] = useState(false);
 
-  const createNewLayout = useCallback(
-    async (name: string) => {
-      if (layouts.length >= 4) {
-        toast.error("Non è possibile creare più di 4 layout");
-        setError("Non è possibile creare più di 4 layout");
-        return null;
-      }
-
+  const createNewLayout = async (name: string): Promise<PrintLayout | null> => {
+    try {
       setIsCreating(true);
-      try {
-        // Crea il nuovo layout
-        const newLayout = createNewLayoutFromTemplate(name);
-        
-        // Assegna un ID univoco
-        const layoutWithId = {
-          ...newLayout,
-          id: uuidv4()
-        };
-        
-        // Salva il layout su Supabase
-        const { success, error, layout } = await saveLayoutToSupabase(layoutWithId);
-
-        if (!success || !layout) {
-          toast.error(error || "Errore durante la creazione del layout");
-          setError(error || "Errore durante la creazione del layout");
-          return null;
-        }
-
-        // Aggiorna lo stato locale
-        setLayouts([...layouts, layout]);
-
-        return layout;
-      } catch (err) {
-        console.error("Errore durante la creazione del layout:", err);
-        toast.error("Errore durante la creazione del layout");
-        setError("Errore durante la creazione del layout");
+      
+      // Crea un nuovo layout basato sul layout predefinito
+      const newLayout = createDefaultLayout();
+      
+      // Aggiorna il nome del layout
+      newLayout.name = name || `Nuovo Layout`;
+      
+      // Aggiorna la lista dei layout
+      const updatedLayouts = [...layouts, newLayout];
+      setLayouts(updatedLayouts);
+      
+      // Salva i layout aggiornati
+      const { success, error } = await saveLayouts(updatedLayouts);
+      if (!success) {
+        setError(error || "Errore durante la creazione del nuovo layout");
         return null;
-      } finally {
-        setIsCreating(false);
       }
-    },
-    [layouts, setLayouts, setError]
-  );
-
-  return {
-    createNewLayout,
-    isCreating
+      
+      return newLayout;
+    } catch (err) {
+      console.error("Errore durante la creazione del nuovo layout:", err);
+      setError(`Errore durante la creazione del nuovo layout: ${err}`);
+      return null;
+    } finally {
+      setIsCreating(false);
+    }
   };
+
+  return { createNewLayout, isCreating };
 };

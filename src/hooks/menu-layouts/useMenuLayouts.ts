@@ -1,9 +1,8 @@
 
-// Re-export from the legacy import
 import { useState, useEffect, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { LAYOUTS_STORAGE_KEY } from "./constants";
-import { defaultLayouts } from "./defaultLayouts";
+import { defaultLayouts } from "./utils/defaultLayouts";
 import { useLayoutStorage } from "./hooks/useLayoutStorage";
 import { useLayoutOperations } from "./hooks/useLayoutOperations";
 

@@ -112,7 +112,7 @@ export const usePagination = ({
         currentHeight += categoryTitleHeight;
         
         // Aggiungi spazio extra dopo il titolo della categoria
-        const categoryBottomMargin = customLayout?.spacing.categoryTitleBottomMargin || 5;
+        const categoryBottomMargin = customLayout?.spacing?.categoryTitleBottomMargin || 5;
         currentHeight += categoryBottomMargin * 3.78; // Converti mm in px
         
         // Itera su tutti i prodotti della categoria
@@ -153,7 +153,9 @@ export const usePagination = ({
           currentHeight += productHeight;
           
           // Aggiungi lo spazio tra prodotti
-          const spacingBetweenProducts = customLayout ? customLayout.spacing.betweenProducts * 3.78 : 10; // Converti mm in px
+          const spacingBetweenProducts = customLayout?.spacing?.betweenProducts 
+            ? customLayout.spacing.betweenProducts * 3.78 
+            : 10; // Converti mm in px
           currentHeight += spacingBetweenProducts;
         });
         
@@ -162,7 +164,9 @@ export const usePagination = ({
         
         // Aggiungi lo spazio tra categorie, ma solo se non è l'ultima categoria
         if (categoryIndex < filteredCategories.length - 1) {
-          const spacingBetweenCategories = customLayout ? customLayout.spacing.betweenCategories * 3.78 : 15; // Converti mm in px
+          const spacingBetweenCategories = customLayout?.spacing?.betweenCategories 
+            ? customLayout.spacing.betweenCategories * 3.78 
+            : 15; // Converti mm in px
           currentHeight += spacingBetweenCategories;
         }
         

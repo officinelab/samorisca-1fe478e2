@@ -4,9 +4,10 @@ import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import MenuLayoutSelector from "./MenuLayoutSelector";
 import { Allergen, Category } from "@/types/database";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/sonner";
 
 type MenuPrintPreviewProps = {
-  layoutId: string; // Cambiato da layoutType a layoutId
+  layoutId: string;
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
@@ -21,7 +22,7 @@ type MenuPrintPreviewProps = {
 };
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
-  layoutId, // Cambiato da layoutType a layoutId
+  layoutId,
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
   showPageBoundaries,
@@ -38,19 +39,35 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   
   // Cerca il layout attivo usando l'ID
   const selectedLayout = React.useMemo(() => {
-    if (!layouts || layouts.length === 0) return null;
-    return layouts.find(layout => layout.id === layoutId) || null;
+    if (!layouts || layouts.length === 0) {
+      console.warn("MenuPrintPreview - Nessun layout disponibile");
+      return null;
+    }
+    
+    const layout = layouts.find(layout => layout.id === layoutId);
+    if (!layout) {
+      console.warn(`MenuPrintPreview - Layout con ID ${layoutId} non trovato, utilizzo il primo layout disponibile`);
+      // Se il layout richiesto non è disponibile, utilizza il layout predefinito o il primo disponibile
+      return layouts.find(l => l.isDefault) || layouts[0];
+    }
+    
+    return layout;
   }, [layouts, layoutId]);
   
   // Debug logs
   React.useEffect(() => {
     console.log("MenuPrintPreview - Props:", { 
-      layoutId, // Cambiato da layoutType a layoutId
+      layoutId,
       selectedCategories, 
       pageCount 
     });
     console.log("MenuPrintPreview - Selected layout:", selectedLayout);
-  }, [layoutId, selectedCategories, pageCount, selectedLayout]); // Cambiato da layoutType a layoutId
+    
+    // Avvisa l'utente se non è stato trovato nessun layout
+    if (!selectedLayout && !isLayoutsLoading && layouts.length > 0) {
+      toast.warning("Layout non trovato. Utilizzando layout predefinito.");
+    }
+  }, [layoutId, selectedCategories, pageCount, selectedLayout, isLayoutsLoading, layouts]);
 
   if (isLayoutsLoading || !selectedLayout) {
     return (
@@ -63,7 +80,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 
   return (
     <MenuLayoutSelector
-      selectedLayout={layoutId} // Manteniamo layoutId per compatibilità
+      selectedLayout={layoutId}
       A4_WIDTH_MM={A4_WIDTH_MM}
       A4_HEIGHT_MM={A4_HEIGHT_MM}
       showPageBoundaries={showPageBoundaries}
