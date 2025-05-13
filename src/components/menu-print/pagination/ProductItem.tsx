@@ -13,13 +13,23 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
   return (
     <div className="menu-item" style={{
       marginBottom: customLayout ? `${customLayout.spacing.betweenProducts}mm` : '5mm',
+      breakInside: 'avoid',
+      pageBreakInside: 'avoid',
+      width: '100%',
+      overflow: 'hidden'
     }}>
       {React.createElement('div', {
         className: 'product-component',
+        style: {
+          width: '100%',
+          overflow: 'hidden',
+          breakInside: 'avoid',
+          pageBreakInside: 'avoid',
+        },
         dangerouslySetInnerHTML: {
           __html: `
             <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
-              <div style="font-weight: bold; font-size: ${customLayout?.elements.title.fontSize || 12}pt; width: auto; margin-right: 10px; max-width: 60%;">
+              <div style="font-weight: bold; font-size: ${customLayout?.elements.title.fontSize || 12}pt; width: auto; margin-right: 10px; max-width: 60%; overflow-wrap: break-word; word-wrap: break-word; hyphens: auto;">
                 ${product[`title_${language}`] || product.title}
               </div>
               ${product.allergens && product.allergens.length > 0 
@@ -33,7 +43,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
               </div>
             </div>
             ${(product[`description_${language}`] || product.description) 
-              ? `<div style="font-size: ${customLayout?.elements.description.fontSize || 10}pt; font-style: italic; margin-top: 2mm; width: 100%; max-width: 95%;">
+              ? `<div style="font-size: ${customLayout?.elements.description.fontSize || 10}pt; font-style: italic; margin-top: 2mm; width: 100%; max-width: 95%; overflow-wrap: break-word; word-wrap: break-word; hyphens: auto;">
                   ${product[`description_${language}`] || product.description}
                 </div>` 
               : ''}

@@ -33,8 +33,8 @@ export const calculateAvailableHeight = (
     }
   }
   
-  // Sottrai un piccolo margine di sicurezza per evitare di riempire troppo la pagina
-  const safetyMargin = 5;
+  // Aumentiamo il margine di sicurezza per evitare overflow
+  const safetyMargin = 10;
   return (A4_HEIGHT_MM - marginTop - marginBottom - safetyMargin) * MM_TO_PX;
 };
 
@@ -42,52 +42,66 @@ export const calculateAvailableHeight = (
  * Stima l'altezza di un titolo categoria in base al layout
  */
 export const estimateCategoryTitleHeight = (customLayout?: PrintLayout | null): number => {
-  if (!customLayout) return 30;
+  if (!customLayout) return 35; // Valore di base aumentato
   
-  // Aumenta leggermente il valore per assicurarsi che ci sia spazio sufficiente
-  const baseFontSize = customLayout.elements.category.fontSize * 1.5;
+  // Miglioramento della stima dell'altezza basata sulla dimensione del font 
+  const baseFontSize = customLayout.elements.category.fontSize * 1.8;
   const marginBottom = customLayout.spacing.categoryTitleBottomMargin;
   
-  return (baseFontSize + marginBottom) * 1.2;
+  // Considera lo stile del font (grassetto richiede più spazio)
+  const fontStyleFactor = customLayout.elements.category.fontStyle === 'bold' ? 1.2 : 1.0;
+  
+  return (baseFontSize + marginBottom) * fontStyleFactor;
 };
 
 /**
  * Stima l'altezza di un prodotto in base alle sue caratteristiche
+ * con calcoli più precisi
  */
 export const estimateProductHeight = (
   product: Product,
   language: string,
+  customLayout?: PrintLayout | null
 ): number => {
-  // Base height for all products
-  let height = 30;
+  // Dimensione del font base per il titolo
+  const titleFontSize = customLayout?.elements.title.fontSize || 12;
+  const descriptionFontSize = customLayout?.elements.description.fontSize || 10;
   
-  // Increase height if there's a description
+  // Altezza base per tutti i prodotti (titolo + prezzo)
+  let height = titleFontSize * 2;
+  
+  // Aumenta l'altezza se c'è una descrizione
   const hasDescription = !!product.description || !!product[`description_${language}`];
   if (hasDescription) {
     const descriptionText = (product[`description_${language}`] as string) || product.description || "";
     const descriptionLength = descriptionText.length;
+    const charsPerLine = 80; // Stima caratteri per linea
+    const lineHeight = descriptionFontSize * 1.5; // Altezza linea
     
-    // Stima l'altezza della descrizione in base alla lunghezza del testo
-    if (descriptionLength > 200) {
-      height += 60; // Descrizioni molto lunghe
-    } else if (descriptionLength > 100) {
-      height += 40; // Descrizioni lunghe
-    } else if (descriptionLength > 50) {
-      height += 25; // Descrizioni medie
-    } else {
-      height += 15; // Descrizioni brevi
-    }
-  }
-  
-  // Increase height for multiple price variants
-  if (product.has_multiple_prices) {
-    height += 20;
-  }
-  
-  // Increase height if product has allergens
-  if (product.allergens && product.allergens.length > 0) {
+    // Stima il numero di linee necessarie
+    const estimatedLines = Math.ceil(descriptionLength / charsPerLine);
+    height += estimatedLines * lineHeight;
+    
+    // Aggiungi spazio extra per margini della descrizione
     height += 10;
   }
+  
+  // Aumenta l'altezza per varianti di prezzo multiple
+  if (product.has_multiple_prices) {
+    height += 25;
+  }
+  
+  // Aumenta l'altezza se il prodotto ha allergeni
+  if (product.allergens && product.allergens.length > 0) {
+    height += 15;
+  }
+  
+  // Aggiungi spazio per i margini tra prodotti
+  const productSpacing = customLayout ? customLayout.spacing.betweenProducts * MM_TO_PX : 5 * MM_TO_PX;
+  height += productSpacing;
+  
+  // Fattore di sicurezza
+  height *= 1.15;
   
   return height;
 };
