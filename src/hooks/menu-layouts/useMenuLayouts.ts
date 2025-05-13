@@ -16,7 +16,10 @@ export const useMenuLayouts = () => {
     setLayouts,
     activeLayout, 
     setActiveLayout,
-    isLoading 
+    isLoading,
+    error,
+    setError,
+    forceRefresh
   } = useLayoutStorage();
 
   // Operazioni sui layout
@@ -25,8 +28,20 @@ export const useMenuLayouts = () => {
     updateLayout,
     deleteLayout,
     cloneLayout,
-    setDefaultLayout
-  } = useLayoutOperations(layouts, setLayouts, activeLayout, setActiveLayout);
+    setDefaultLayout,
+    createNewLayout
+  } = useLayoutOperations(layouts, setLayouts, activeLayout, setActiveLayout, setError);
+
+  // Funzione per cambiare il layout attivo
+  const changeActiveLayout = (layoutId: string) => {
+    const layout = layouts.find(l => l.id === layoutId);
+    if (layout) {
+      setActiveLayout(layout);
+    } else {
+      console.error(`Layout con ID ${layoutId} non trovato`);
+      toast.error(`Layout non trovato`);
+    }
+  };
 
   // Funzione per creare un nuovo layout personalizzato
   const createLayout = (name: string, baseType: string = 'classic'): PrintLayout => {
@@ -50,11 +65,15 @@ export const useMenuLayouts = () => {
     layouts,
     activeLayout,
     isLoading,
+    error,
     addLayout,
     updateLayout,
     deleteLayout,
     cloneLayout,
     createLayout,
-    setDefaultLayout
+    setDefaultLayout,
+    changeActiveLayout,
+    createNewLayout,
+    forceRefresh
   };
 };
