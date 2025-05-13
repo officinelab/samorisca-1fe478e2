@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { PrintLayout } from "@/types/printLayout";
+import { saveLayouts } from "../layoutStorage";
 import { toast } from "@/components/ui/use-toast";
-import { saveLayouts, loadLayouts } from "../layoutStorage";
 import { createDefaultLayout } from "../utils/operations/createDefaultLayout";
 import { generateUniqueId } from "../utils/operations/idGenerator";
 
@@ -11,6 +11,7 @@ export const useLayoutOperations = (
   setLayouts: React.Dispatch<React.SetStateAction<PrintLayout[]>>,
   activeLayout: PrintLayout | null,
   setActiveLayout: React.Dispatch<React.SetStateAction<PrintLayout | null>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
 ) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -221,27 +222,16 @@ export const useLayoutOperations = (
     }
   };
 
-  // Create a default layout if none exists
-  const ensureDefaultLayoutExists = async (): Promise<PrintLayout | null> => {
-    if (layouts.length > 0) {
-      return layouts.find(layout => layout.isDefault) || layouts[0];
-    }
-
-    // Create a default layout
-    try {
-      const defaultLayout = createDefaultLayout();
-      const layoutWithId = {
-        ...defaultLayout,
-        id: generateUniqueId(),
-      };
-      
-      await saveLayouts([layoutWithId]);
-      setLayouts([layoutWithId]);
-      return layoutWithId;
-    } catch (error) {
-      console.error("Errore nella creazione del layout predefinito:", error);
-      return null;
-    }
+  // Create a new layout
+  const createNewLayout = async (name: string): Promise<PrintLayout> => {
+    const defaultLayout = createDefaultLayout();
+    const newLayout = {
+      ...defaultLayout,
+      name,
+      isDefault: false
+    };
+    
+    return await addLayout(newLayout);
   };
 
   return {
@@ -251,7 +241,7 @@ export const useLayoutOperations = (
     deleteLayout,
     cloneLayout,
     setDefaultLayout,
-    ensureDefaultLayoutExists,
+    createNewLayout
   };
 };
 

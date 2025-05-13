@@ -1,5 +1,4 @@
 
-// Re-export from the legacy import
 import { useState, useEffect, useCallback } from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { LAYOUTS_STORAGE_KEY } from "./constants";

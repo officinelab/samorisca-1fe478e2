@@ -7,9 +7,9 @@ import { generateUniqueId } from "../utils/operations/idGenerator";
 
 export const useLayoutStorage = () => {
   const [layouts, setLayouts] = useState<PrintLayout[]>([]);
+  const [activeLayout, setActiveLayout] = useState<PrintLayout | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [defaultLayout, setDefaultLayout] = useState<PrintLayout | null>(null);
 
   useEffect(() => {
     const initLayouts = async () => {
@@ -17,10 +17,10 @@ export const useLayoutStorage = () => {
         setIsLoading(true);
         
         // Try to load existing layouts
-        const existingLayouts = await loadLayouts();
+        const { layouts: existingLayouts, error: loadError } = await loadLayouts();
         
         // If no layouts exist, create default layout
-        if (!existingLayouts || !existingLayouts.length) {
+        if (!existingLayouts || !Array.isArray(existingLayouts) || existingLayouts.length === 0) {
           const newDefaultLayout = createDefaultLayout();
           const layoutWithId = {
             ...newDefaultLayout,
@@ -29,14 +29,14 @@ export const useLayoutStorage = () => {
           
           await saveLayouts([layoutWithId]);
           setLayouts([layoutWithId]);
-          setDefaultLayout(layoutWithId);
+          setActiveLayout(layoutWithId);
         } else {
           setLayouts(existingLayouts);
           
           // Find the default layout or set the first one as default
           const foundDefault = existingLayouts.find(layout => layout.isDefault);
           if (foundDefault) {
-            setDefaultLayout(foundDefault);
+            setActiveLayout(foundDefault);
           } else if (existingLayouts.length > 0) {
             const firstLayout = existingLayouts[0];
             const updatedFirstLayout = { ...firstLayout, isDefault: true };
@@ -47,7 +47,7 @@ export const useLayoutStorage = () => {
             
             await saveLayouts(updatedLayouts);
             setLayouts(updatedLayouts);
-            setDefaultLayout(updatedFirstLayout);
+            setActiveLayout(updatedFirstLayout);
           }
         }
         
@@ -64,7 +64,7 @@ export const useLayoutStorage = () => {
         };
         
         setLayouts([layoutWithId]);
-        setDefaultLayout(layoutWithId);
+        setActiveLayout(layoutWithId);
       } finally {
         setIsLoading(false);
       }
@@ -72,8 +72,45 @@ export const useLayoutStorage = () => {
     
     initLayouts();
   }, []);
+
+  // Force a refresh of the layouts
+  const forceRefresh = async () => {
+    setIsLoading(true);
+    try {
+      const { layouts: refreshedLayouts } = await loadLayouts();
+      if (Array.isArray(refreshedLayouts) && refreshedLayouts.length > 0) {
+        setLayouts(refreshedLayouts);
+        
+        // Update active layout
+        const currentActiveId = activeLayout?.id;
+        if (currentActiveId) {
+          const updatedActive = refreshedLayouts.find(l => l.id === currentActiveId);
+          if (updatedActive) {
+            setActiveLayout(updatedActive);
+          } else {
+            setActiveLayout(refreshedLayouts[0]);
+          }
+        } else {
+          setActiveLayout(refreshedLayouts[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing layouts:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
-  return { layouts, defaultLayout, error, isLoading };
+  return { 
+    layouts, 
+    setLayouts, 
+    activeLayout, 
+    setActiveLayout, 
+    isLoading, 
+    error, 
+    setError,
+    forceRefresh 
+  };
 };
 
 export default useLayoutStorage;

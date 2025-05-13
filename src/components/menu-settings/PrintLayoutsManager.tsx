@@ -41,7 +41,7 @@ const PrintLayoutsManager = () => {
   };
 
   const handleUpdateLayout = (updatedLayout: PrintLayout) => {
-    updateLayout(updatedLayout);
+    updateLayout(updatedLayout.id, updatedLayout);
     toast.success("Layout aggiornato con successo");
     setSelectedLayout(updatedLayout);
   };
