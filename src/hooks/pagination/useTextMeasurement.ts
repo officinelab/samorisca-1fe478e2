@@ -123,17 +123,17 @@ export function estimateProductHeight(
   const hasAllergens = product.allergens && product.allergens.length > 0;
   
   // Imposta le proprietà dei font basate sul layout
-  const titleFamily = customLayout?.elements.product.title.fontFamily || 'Arial';
-  const titleSize = customLayout?.elements.product.title.fontSize || 16;
-  const titleStyle = customLayout?.elements.product.title.fontStyle || 'bold';
+  const titleFamily = customLayout?.elements.title.fontFamily || 'Arial';
+  const titleSize = customLayout?.elements.title.fontSize || 16;
+  const titleStyle = customLayout?.elements.title.fontStyle || 'bold';
   
-  const descFamily = customLayout?.elements.product.description.fontFamily || 'Arial';
-  const descSize = customLayout?.elements.product.description.fontSize || 14;
-  const descStyle = customLayout?.elements.product.description.fontStyle || 'normal';
+  const descFamily = customLayout?.elements.description.fontFamily || 'Arial';
+  const descSize = customLayout?.elements.description.fontSize || 14;
+  const descStyle = customLayout?.elements.description.fontStyle || 'normal';
   
-  const priceFamily = customLayout?.elements.product.price.fontFamily || 'Arial';
-  const priceSize = customLayout?.elements.product.price.fontSize || 14;
-  const priceStyle = customLayout?.elements.product.price.fontStyle || 'normal';
+  const priceFamily = customLayout?.elements.price.fontFamily || 'Arial';
+  const priceSize = customLayout?.elements.price.fontSize || 14;
+  const priceStyle = customLayout?.elements.price.fontStyle || 'normal';
   
   // Costruisci le stringhe dei font
   const titleFont = `${titleStyle === 'bold' ? 'bold' : 'normal'} ${titleStyle === 'italic' ? 'italic' : 'normal'} ${titleSize}pt ${titleFamily}`;
@@ -151,12 +151,12 @@ export function estimateProductHeight(
   const priceHeight = price ? measureTextHeight(price.toString(), priceFont, availableWidth) : 0;
   
   // Aggiungi margini e spaziatura
-  const titleMarginTop = customLayout?.elements.product.title.margin.top || 5;
-  const titleMarginBottom = customLayout?.elements.product.title.margin.bottom || 5;
-  const descMarginTop = customLayout?.elements.product.description.margin.top || 2;
-  const descMarginBottom = customLayout?.elements.product.description.margin.bottom || 2;
-  const priceMarginTop = customLayout?.elements.product.price.margin.top || 2;
-  const priceMarginBottom = customLayout?.elements.product.price.margin.bottom || 2;
+  const titleMarginTop = customLayout?.elements.title.margin.top || 5;
+  const titleMarginBottom = customLayout?.elements.title.margin.bottom || 5;
+  const descMarginTop = customLayout?.elements.description.margin.top || 2;
+  const descMarginBottom = customLayout?.elements.description.margin.bottom || 2;
+  const priceMarginTop = customLayout?.elements.price.margin.top || 2;
+  const priceMarginBottom = customLayout?.elements.price.margin.bottom || 2;
   
   // Spazio per allergeni se presenti
   const allergensSpace = hasAllergens ? 24 : 0;
