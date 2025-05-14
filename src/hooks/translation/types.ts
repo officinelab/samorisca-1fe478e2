@@ -1,5 +1,5 @@
 
-import { SupportedLanguage } from '@/types/translation';
+import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 
 export interface TranslationResult {
   success: boolean;
@@ -30,4 +30,6 @@ export interface TranslationService {
     language: SupportedLanguage
   ) => Promise<string | null>;
   isTranslating: boolean;
+  currentService: TranslationServiceType;
+  setTranslationService: (service: TranslationServiceType) => void;
 }

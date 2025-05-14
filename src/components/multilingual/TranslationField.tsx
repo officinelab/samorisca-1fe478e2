@@ -28,7 +28,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 }) => {
   const [translatedText, setTranslatedText] = useState<string>("");
   const [isEdited, setIsEdited] = useState(false);
-  const { translateText, getExistingTranslation, saveTranslation, isTranslating } = useTranslationService();
+  const { translateText, getExistingTranslation, saveTranslation, isTranslating, currentService } = useTranslationService();
 
   useEffect(() => {
     const fetchExistingTranslation = async () => {
@@ -110,6 +110,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
             size="sm" 
             onClick={handleTranslate}
             disabled={isTranslating || !originalText.trim()}
+            title={`Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`}
           >
             {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Traduci"}
           </Button>

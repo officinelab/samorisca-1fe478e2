@@ -3,3 +3,6 @@ project_id = "dqkrmewgeeuxhbxrwpjp"
 
 [functions.translate]
 verify_jwt = true
+
+[functions.translate-deepl]
+verify_jwt = true

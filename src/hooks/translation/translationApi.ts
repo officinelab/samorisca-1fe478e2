@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { SupportedLanguage } from '@/types/translation';
+import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult } from './types';
 
@@ -26,10 +26,14 @@ export const translateTextViaEdgeFunction = async (
   targetLanguage: SupportedLanguage,
   entityId: string,
   entityType: string,
-  fieldName: string
+  fieldName: string,
+  serviceType: TranslationServiceType = 'perplexity'
 ): Promise<TranslationResult> => {
   try {
-    const { data, error } = await supabase.functions.invoke('translate', {
+    // Choose the appropriate service endpoint
+    const functionName = serviceType === 'deepl' ? 'translate-deepl' : 'translate';
+    
+    const { data, error } = await supabase.functions.invoke(functionName, {
       body: {
         text,
         targetLanguage,
@@ -40,7 +44,7 @@ export const translateTextViaEdgeFunction = async (
     });
 
     if (error) {
-      console.error('Translation error:', error);
+      console.error(`Translation error (${serviceType}):`, error);
       toast.error(`Errore durante la traduzione: ${error.message}`);
       return {
         success: false,

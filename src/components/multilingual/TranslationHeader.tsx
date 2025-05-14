@@ -1,9 +1,17 @@
 
 import { LanguageSelector } from "./LanguageSelector";
 import { TokenStatus } from "./TokenStatus";
-import { SupportedLanguage } from "@/types/translation";
+import { SupportedLanguage, TranslationServiceType, translationServiceOptions } from "@/types/translation";
 import { Progress } from "@/components/ui/progress";
 import { useTranslationStats } from "@/hooks/useTranslationStats";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { useTranslationService } from "@/hooks/translation";
 
 interface TranslationHeaderProps {
   selectedLanguage: SupportedLanguage;
@@ -12,6 +20,11 @@ interface TranslationHeaderProps {
 
 export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: TranslationHeaderProps) => {
   const { stats, isLoading } = useTranslationStats(selectedLanguage);
+  const { currentService, setTranslationService } = useTranslationService();
+
+  const handleServiceChange = (value: string) => {
+    setTranslationService(value as TranslationServiceType);
+  };
 
   return (
     <div className="sticky top-0 z-10 bg-white border-b p-4 shadow-sm">
@@ -21,6 +34,25 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
             selectedLanguage={selectedLanguage} 
             onChange={onLanguageChange} 
           />
+          
+          <div className="w-48">
+            <Select
+              value={currentService}
+              onValueChange={handleServiceChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleziona servizio" />
+              </SelectTrigger>
+              <SelectContent>
+                {translationServiceOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <TokenStatus />
         </div>
         

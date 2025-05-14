@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { SupportedLanguage } from '@/types/translation';
+import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult, TranslationService } from './types';
 import { 
@@ -14,6 +14,7 @@ import {
 
 export const useTranslationService = (): TranslationService => {
   const [isTranslating, setIsTranslating] = useState(false);
+  const [currentService, setCurrentService] = useState<TranslationServiceType>('perplexity');
 
   const translateText = async (
     text: string,
@@ -53,13 +54,14 @@ export const useTranslationService = (): TranslationService => {
         };
       }
 
-      // Call the Supabase Edge Function for translation
+      // Call the appropriate Edge Function for translation based on current service
       const result = await translateTextViaEdgeFunction(
         text,
         targetLanguage,
         entityId,
         entityType,
-        fieldName
+        fieldName,
+        currentService
       );
 
       if (result.success) {
@@ -92,10 +94,17 @@ export const useTranslationService = (): TranslationService => {
     }
   };
 
+  const setTranslationService = (service: TranslationServiceType) => {
+    setCurrentService(service);
+    toast.success(`Servizio di traduzione impostato a: ${service === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
+  };
+
   return {
     translateText,
     saveTranslation: saveTranslationToDb,
     getExistingTranslation: getExistingTranslationFromDb,
-    isTranslating
+    isTranslating,
+    currentService,
+    setTranslationService
   };
 };
