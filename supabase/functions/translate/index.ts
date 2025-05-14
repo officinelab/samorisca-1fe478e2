@@ -50,7 +50,7 @@ serve(async (req) => {
       );
     }
 
-    const { text, targetLanguage } = await req.json() as TranslateRequest;
+    const { text, targetLanguage } = requestData as TranslateRequest;
     
     // Log per debug
     console.log(`[PERPLEXITY] ==> Traduzione di: "${text}" in ${targetLanguage}`);
@@ -107,10 +107,12 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
       );
     }
 
-    // 2. Scala SEMPRE 1 token per ogni traduzione (non importa la lunghezza del testo)
-    const { data: incResult, error: incrementError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+    // 2. Scala SEMPRE 1 token per ogni traduzione (decrementa!)
+    const { data: incResult, error: incrementError } = await supabase.rpc('increment_tokens', { token_count: -1 });
+    console.log('[PERPLEXITY] Risultato decremento token:', incResult, 'Errore:', incrementError);
+
     if (incrementError || incResult === false) {
-      console.error('[PERPLEXITY] Errore nell\'incremento del contatore token o limite superato:', incrementError);
+      console.error('[PERPLEXITY] Errore nel decremento del contatore token o limite superato:', incrementError);
       return new Response(
         JSON.stringify({ error: "Impossibile scalare il token oppure limite mensile raggiunto." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
