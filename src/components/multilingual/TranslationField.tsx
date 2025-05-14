@@ -54,16 +54,45 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     getServiceName
   } = useTranslationService();
 
+  // Utility per tipizzare entityType
+  const getTableName = (
+    entityType: string
+  ):
+    | "categories"
+    | "products"
+    | "allergens"
+    | "product_features"
+    | "product_labels"
+    | null => {
+    switch (entityType) {
+      case "categories":
+      case "products":
+      case "allergens":
+      case "product_features":
+      case "product_labels":
+        return entityType as
+          | "categories"
+          | "products"
+          | "allergens"
+          | "product_features"
+          | "product_labels";
+      default:
+        return null;
+    }
+  };
+
   // Fetch translation + original last_updated
   useEffect(() => {
     const fetchData = async () => {
       // Prende la traduzione (con last_updated)
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
+
+      // Gestione nullità di existing
       if (existing && typeof existing === "object" && "translatedText" in existing) {
         translationObj = {
           translatedText: existing.translatedText,
-          last_updated: existing.last_updated
+          last_updated: (existing as any).last_updated, // fallback types
         };
       } else if (typeof existing === "string") {
         translationObj = { translatedText: existing };
@@ -73,27 +102,28 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
       setTranslatedData(translationObj);
 
       // Prende il last_updated dell'originale (italiano)
-      // fallback: prende dalla rispettiva tabella entity_type, il record per id
       let lastUpdatedIt = "";
       try {
-        // Esegue query a Supabase
-        // Notare: solo prendiamo il campo last_updated o updated_at per il record
-        // Alcune tabelle hanno updated_at/last_updated, scegliamo quello esistente
-        // Facciamo query dinamica via Supabase
-        const { data } = await import("@/integrations/supabase/client").then(mod =>
-          mod.supabase
-            .from(entityType)
-            .select("updated_at, last_updated") // Consideriamo entrambi
-            .eq("id", id)
-            .maybeSingle()
-        );
-        lastUpdatedIt = data?.last_updated ?? data?.updated_at ?? "";
+        const tableName = getTableName(entityType);
+        if (tableName) {
+          // Solo le tabelle gestite supportano questa query
+          const { data } = await import("@/integrations/supabase/client").then((mod) =>
+            mod.supabase
+              .from(tableName)
+              .select("updated_at, last_updated")
+              .eq("id", id)
+              .maybeSingle()
+          );
+          // Gestione sicurezza degli accessi ai campi
+          if (data && typeof data === "object") {
+            // Fallback: utilizza last_updated se presente, altrimenti updated_at, altrimenti empty
+            lastUpdatedIt = (data as any).last_updated ?? (data as any).updated_at ?? "";
+          }
+        }
       } catch (err) {
-        // fallback: niente badge, nessun errore forzato
         lastUpdatedIt = "";
       }
       setOriginalLastUpdated(lastUpdatedIt);
-      // Reset error state when language or service changes
       setError(null);
     };
 
