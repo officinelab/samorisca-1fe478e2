@@ -7,13 +7,15 @@ interface ProductDetailPanelProps {
 }
 
 const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
-  // Prezzo standard e suffisso
-  const prezzoStandard = product.price_standard;
-  const suffisso = product.has_price_suffix && product.price_suffix
-    ? product.price_suffix
-    : "";
+  // DEBUG: stampa valori del prodotto per verificare cosa arriva effettivamente
+  console.log("[ProductDetailPanel] product prop:", product);
 
-  // Varianti di prezzo (solo se valore presente)
+  // Recupero prezzo principale e suffisso, solo se presenti
+  const prezzoStandard = product.price_standard;
+  const suffisso =
+    product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+
+  // Raccogli varianti di prezzo effettivamente valorizzate
   const varianti = [
     {
       value: product.price_variant_1_value,
@@ -23,7 +25,9 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
       value: product.price_variant_2_value,
       name: product.price_variant_2_name,
     },
-  ].filter((v) => v.value !== null && v.value !== undefined);
+  ].filter(
+    (v) => v.value !== null && v.value !== undefined && v.value !== ""
+  );
 
   return (
     <div className="p-4">
@@ -54,34 +58,31 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
       {/* Sezione Prezzi */}
       <section className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Prezzi</h3>
-        <div className="text-base">
-          {/* Solo il prezzo principale seguito dal suffisso (se presenti) */}
-          {prezzoStandard !== null && prezzoStandard !== undefined && (
-            <div className="mb-2 font-medium">
+        <div className="text-base flex flex-col gap-1">
+
+          {/* Solo il prezzo principale seguito dal suffisso (NO etichetta "Prezzo standard") */}
+          {(prezzoStandard !== null && prezzoStandard !== undefined && prezzoStandard !== "") && (
+            <div className="mb-1 font-medium">
               {prezzoStandard.toLocaleString("it-IT", {
                 style: "currency",
                 currency: "EUR",
                 minimumFractionDigits: 2,
-              })}{" "}
+              })}
               {suffisso}
             </div>
           )}
 
-          {/* Varianti di prezzo (una per riga), solo se almeno un prezzo variante è presente */}
+          {/* Tutte le varianti su righe separate (NO prefissi, solo valore + suffisso + nome variante) */}
           {varianti.length > 0 &&
             varianti.map((v, idx) => (
               <div key={idx} className="pl-2 text-sm text-gray-700 font-normal">
-                {v.value !== null && v.value !== undefined ? (
-                  <>
-                    {v.value.toLocaleString("it-IT", {
+                {v.value !== null && v.value !== undefined
+                  ? `${Number(v.value).toLocaleString("it-IT", {
                       style: "currency",
                       currency: "EUR",
                       minimumFractionDigits: 2,
-                    })}{" "}
-                    {suffisso}
-                    {v.name ? ` ${v.name}` : null}
-                  </>
-                ) : null}
+                    })}${suffisso}${v.name ? " " + v.name : ""}`
+                  : null}
               </div>
             ))}
         </div>
