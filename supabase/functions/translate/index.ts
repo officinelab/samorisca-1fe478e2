@@ -48,19 +48,34 @@ serve(async (req) => {
       'de': 'German'
     };
     
-    const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
+    if (!languageMap[targetLanguage]) {
+      // Non accettiamo fallback silenziosi: errore esplicito
+      return new Response(
+        JSON.stringify({ 
+          error: `Lingua target non supportata: ${targetLanguage}` 
+        }),
+        { 
+          status: 400, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
     
-    // Istruzione aggiornata per Perplexity, allineata con quella di OpenAI
-    const systemPrompt = `You are a professional translator specializing in restaurant menus and culinary terminology. 
+    const targetLanguageName = languageMap[targetLanguage];
+
+    // Prompt allineato a quello OpenAI
+    const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
 Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
 
-- Always translate generic or descriptive dishes composed of ingredients (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo").
-- Category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") must always be translated.
-- Product names (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo", "COZZE DI SARDEGNA ALL’OLBIESE") must always be translated.
-- Do not preserve a name simply because it is capitalized or written in all uppercase — uppercase text should still be translated unless it is a universally known Italian dish.
-- Maintain the same capitalization and formatting (e.g., punctuation, line breaks, spacing) as in the original text.
-- Return only the translated text, without any explanation or extra comments.`;
-    
+- Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
+- General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
+- Maintain the same capitalization pattern as the original text.
+- Preserve formatting (punctuation, line breaks, spacing).
+- Do not include any explanation, comments, or extra text — return only the translated text.`;
+
     // Chiamata all'API Perplexity
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -155,3 +170,4 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
     );
   }
 });
+
