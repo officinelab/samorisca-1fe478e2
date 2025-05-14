@@ -104,12 +104,25 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   // Ottieni il testo per il tooltip
   const getTooltipText = useCallback(() => `Traduci con ${getServiceName()}`, [getServiceName]);
 
+  // Mostra l'abbreviazione corretta in base al servizio selezionato
+  const getServiceAbbreviation = useCallback(() => {
+    switch(currentService) {
+      case 'perplexity':
+        return 'AI';
+      case 'deepl':
+        return 'DeepL';
+      case 'openai':
+        return 'GPT';
+      default:
+        return 'API';
+    }
+  }, [currentService]);
+
   // Mostra il nome del servizio corretto in base alla selezione
   const getButtonLabel = useCallback(() => {
     if (isTranslating) return <Loader2 className="h-4 w-4 animate-spin" />;
-    // Usa solo l'abbreviazione del servizio (AI o DeepL)
-    return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
-  }, [isTranslating, currentService]);
+    return `Traduci (${getServiceAbbreviation()})`;
+  }, [isTranslating, getServiceAbbreviation]);
 
   const InputComponent = multiline ? (
     <Textarea 

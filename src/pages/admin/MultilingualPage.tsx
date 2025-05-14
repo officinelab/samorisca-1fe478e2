@@ -7,10 +7,35 @@ import { ProductTranslationsTab } from "@/components/multilingual/ProductTransla
 import { SupportedLanguage } from "@/types/translation";
 import { useTranslationService } from "@/hooks/translation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client"; 
+import { toast } from "@/components/ui/sonner";
 
 const MultilingualPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>("en");
   const { currentService, isLoading } = useTranslationService();
+  
+  // Verifica la disponibilità dell'API key di OpenAI
+  useEffect(() => {
+    const checkOpenAIKey = async () => {
+      try {
+        // Invoca una funzione edge personalizzata per verificare la disponibilità dell'API key
+        const { error } = await supabase.functions.invoke('translate-openai', {
+          body: { checkApiKeyOnly: true }
+        });
+        
+        if (error) {
+          console.warn('OpenAI API non configurata correttamente:', error);
+        }
+      } catch (error) {
+        console.error('Errore nella verifica dell\'API OpenAI:', error);
+      }
+    };
+    
+    // Verifica solo se il servizio attuale è OpenAI
+    if (currentService === 'openai' && !isLoading) {
+      checkOpenAIKey();
+    }
+  }, [currentService, isLoading]);
   
   // Debug per verificare il servizio attualmente selezionato
   useEffect(() => {

@@ -31,7 +31,13 @@ export const translateTextViaEdgeFunction = async (
 ): Promise<TranslationResult> => {
   try {
     // Scegliamo esplicitamente il nome della funzione edge in base al servizio selezionato
-    const functionName = serviceType === 'deepl' ? 'translate-deepl' : 'translate';
+    let functionName = 'translate'; // Default a perplexity
+    
+    if (serviceType === 'deepl') {
+      functionName = 'translate-deepl';
+    } else if (serviceType === 'openai') {
+      functionName = 'translate-openai';
+    }
     
     // Debug log più dettagliato
     console.log(`Chiamando edge function "${functionName}" per traduzione con servizio: ${serviceType}`);

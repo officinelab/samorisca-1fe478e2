@@ -1,7 +1,7 @@
 
 export type SupportedLanguage = 'en' | 'fr' | 'de' | 'es';
 
-export type TranslationServiceType = 'perplexity' | 'deepl';
+export type TranslationServiceType = 'perplexity' | 'deepl' | 'openai';
 
 export interface LanguageOption {
   value: SupportedLanguage;
@@ -52,5 +52,6 @@ export interface TranslationServiceOption {
 
 export const translationServiceOptions: TranslationServiceOption[] = [
   { value: 'perplexity', label: 'Perplexity AI' },
-  { value: 'deepl', label: 'DeepL API' }
+  { value: 'deepl', label: 'DeepL API' },
+  { value: 'openai', label: 'OpenAI API' }
 ];

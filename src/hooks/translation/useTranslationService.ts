@@ -35,7 +35,7 @@ export const useTranslationService = (): TranslationService => {
         if (error || !data) {
           // Fallback: carica da localStorage
           const savedService = localStorage.getItem(TRANSLATION_SERVICE_KEY);
-          if (savedService && (savedService === 'deepl' || savedService === 'perplexity')) {
+          if (savedService && (savedService === 'deepl' || savedService === 'perplexity' || savedService === 'openai')) {
             setCurrentService(savedService as TranslationServiceType);
             // Migra il valore da localStorage a Supabase
             await saveServicePreference(savedService as TranslationServiceType);
@@ -44,8 +44,6 @@ export const useTranslationService = (): TranslationService => {
           // Usa il valore da Supabase
           const serviceType = data.value as TranslationServiceType;
           setCurrentService(serviceType);
-          // Aggiorna anche localStorage per compatibilità
-          localStorage.setItem(TRANSLATION_SERVICE_KEY, serviceType);
         }
       } catch (error) {
         console.error('Errore nel caricamento delle preferenze del servizio di traduzione:', error);
@@ -84,8 +82,6 @@ export const useTranslationService = (): TranslationService => {
           .insert([{ key: 'translation_service', value: service }]);
       }
 
-      // Aggiorna localStorage per compatibilità
-      localStorage.setItem(TRANSLATION_SERVICE_KEY, service);
       return true;
     } catch (error) {
       console.error('Errore nel salvataggio della preferenza del servizio:', error);
@@ -95,7 +91,16 @@ export const useTranslationService = (): TranslationService => {
 
   // Funzione per ottenere il nome del servizio di traduzione
   const getServiceName = useCallback(() => {
-    return currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+    switch(currentService) {
+      case 'perplexity':
+        return 'Perplexity AI';
+      case 'deepl':
+        return 'DeepL API';
+      case 'openai':
+        return 'OpenAI API';
+      default:
+        return 'Servizio sconosciuto';
+    }
   }, [currentService]);
 
   const translateText = async (
@@ -185,7 +190,7 @@ export const useTranslationService = (): TranslationService => {
     
     if (success) {
       setCurrentService(service);
-      const serviceName = service === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+      const serviceName = getServiceName();
       toast.success(`Servizio di traduzione impostato a: ${serviceName}`);
       
       // Forza il ricaricamento della pagina per aggiornare tutti i componenti
