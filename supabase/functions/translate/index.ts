@@ -72,33 +72,10 @@ serve(async (req) => {
       throw new Error('Monthly token quota exhausted');
     }
 
-    // Prepare context-specific system prompt - con istruzioni più precise
-    let systemPrompt = `You are a professional culinary translator specialized in Italian restaurant menu translation. You are translating from Italian to ${languageNames[targetLanguage]}.
+    // Prepare prompt for Perplexity
+    const prompt = `Translate the following Italian text into ${languageNames[targetLanguage]}. Maintain any special formatting or terms. Only respond with the translation, nothing else. No explanations, no original text.
 
-Your task is to translate ALL menu text, including section headers like "Antipasti", "Primi Piatti", "Secondi Piatti", "Contorni", and "Dolci" into ${languageNames[targetLanguage]}.
-
-Translation rules:
-- Translate EVERY word, including menu category names
-- For "Primi Piatti" in English, use "First Courses"
-- For "Secondi Piatti" in English, use "Main Courses" or "Second Courses"
-- For "Antipasti" in English, use "Appetizers" or "Starters"
-- For "Contorni" in English, use "Side Dishes"
-- For "Dolci" in English, use "Desserts"
-- Do not add asterisks, quotes, or any other formatting
-- Do not add explanations, notes, or commentary
-- Keep the same capitalization pattern as the original text`;
-
-    // Prepare context-specific user prompt - con istruzioni più precise
-    const prompt = `Translate the following Italian text into ${languageNames[targetLanguage]}:
-
-"${text}"
-
-Important rules:
-1. Return ONLY the direct translation without any additional text, formatting, or explanation
-2. Do NOT keep any Italian words in your response except for proper dish names
-3. Do NOT add quotes, asterisks or any other formatting to your response
-4. Translate ALL menu categories (like "Antipasti", "Primi Piatti", "Secondi Piatti") to their ${languageNames[targetLanguage]} equivalents
-5. Maintain the exact same capitalization pattern as the original text`;
+Text to translate: "${text}"`;
 
     console.log(`Translating text to ${targetLanguage}. Text length: ${text.length}`);
 
@@ -114,14 +91,14 @@ Important rules:
         messages: [
           {
             role: 'system',
-            content: systemPrompt
+            content: `You are a professional translator specializing in translating Italian to ${languageNames[targetLanguage]}. Provide only the translation without any additional text or explanations.`
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.1,
+        temperature: 0.2,
         max_tokens: 500,
       }),
     });
@@ -134,11 +111,6 @@ Important rules:
     
     const data = await response.json();
     const translatedText = data.choices[0].message.content.trim();
-
-    // Rimuoviamo eventuali virgolette o formattazioni dalla risposta
-    const cleanTranslation = translatedText
-      .replace(/^["']|["']$/g, '') // rimuove virgolette iniziali e finali
-      .replace(/\*\*/g, ''); // rimuove asterischi doppi
 
     console.log('Translation completed successfully');
 
@@ -155,7 +127,7 @@ Important rules:
     // Return the translation
     return new Response(
       JSON.stringify({
-        translatedText: cleanTranslation,
+        translatedText,
         success: true,
       }),
       {
