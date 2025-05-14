@@ -3,6 +3,7 @@ import { TranslationField } from "@/components/multilingual/TranslationField";
 import { SupportedLanguage } from "@/types/translation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CopyButton } from "../CopyButton";
+import { BadgeTranslationStatus } from "@/components/multilingual/BadgeTranslationStatus";
 
 interface ProductTranslationDetailProps {
   product: Product | null;
@@ -17,6 +18,9 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
       </div>
     );
   }
+
+  // Estraggo last_updated da product
+  const lastUpdated = product.updated_at || product.last_updated || null;
 
   return (
     <div className="space-y-6">
@@ -59,6 +63,7 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                 fieldName="title"
                 originalText={product.title}
                 language={language}
+                lastUpdatedOriginal={lastUpdated}
               />
             </TableCell>
           </TableRow>
@@ -83,6 +88,7 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   originalText={product.description}
                   language={language}
                   multiline
+                  lastUpdatedOriginal={lastUpdated}
                 />
               </TableCell>
             </TableRow>
@@ -102,6 +108,7 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_suffix"
                   originalText={product.price_suffix}
                   language={language}
+                  lastUpdatedOriginal={lastUpdated}
                 />
               </TableCell>
             </TableRow>
@@ -121,6 +128,7 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_variant_1_name"
                   originalText={product.price_variant_1_name}
                   language={language}
+                  lastUpdatedOriginal={lastUpdated}
                 />
               </TableCell>
             </TableRow>
@@ -139,6 +147,7 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_variant_2_name"
                   originalText={product.price_variant_2_name}
                   language={language}
+                  lastUpdatedOriginal={lastUpdated}
                 />
               </TableCell>
             </TableRow>

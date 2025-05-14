@@ -12,6 +12,7 @@ import {
   TooltipProvider
 } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/sonner";
+import { BadgeTranslationStatus } from "./BadgeTranslationStatus";
 
 interface TranslationFieldProps {
   id: string;
@@ -21,6 +22,8 @@ interface TranslationFieldProps {
   language: SupportedLanguage;
   multiline?: boolean;
   onTranslationSaved?: (translated: string) => void;
+  lastUpdatedOriginal?: string | null;
+  lastUpdatedTranslation?: string | null;
 }
 
 export const TranslationField: React.FC<TranslationFieldProps> = ({
@@ -30,7 +33,9 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   originalText,
   language,
   multiline = false,
-  onTranslationSaved
+  onTranslationSaved,
+  lastUpdatedOriginal,
+  lastUpdatedTranslation
 }) => {
   const [translatedText, setTranslatedText] = useState<string>("");
   const [isEdited, setIsEdited] = useState(false);
@@ -181,9 +186,20 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     />
   );
 
+  // Funzione che determina lo stato della traduzione
+  const getTranslationStatus = (): "missing" | "outdated" | "upToDate" => {
+    if (!translatedText || !lastUpdatedTranslation) return "missing";
+    if (!lastUpdatedOriginal || !lastUpdatedTranslation) return "upToDate";
+    // Se la traduzione è più vecchia rispetto all'originale
+    if (new Date(lastUpdatedTranslation) < new Date(lastUpdatedOriginal)) {
+      return "outdated";
+    }
+    return "upToDate";
+  };
+
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-start">
         {InputComponent}
         <div className="flex flex-col gap-2">
           <TooltipProvider>
@@ -222,6 +238,12 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
             </Button>
           )}
         </div>
+        {/* Badge stato traduzione */}
+        {(lastUpdatedOriginal || lastUpdatedTranslation) && (
+          <div className="mt-0.5">
+            <BadgeTranslationStatus status={getTranslationStatus()} />
+          </div>
+        )}
       </div>
       {error && (
         <p className="text-xs text-red-500">
