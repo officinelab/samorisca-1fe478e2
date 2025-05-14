@@ -77,19 +77,16 @@ const Dashboard = () => {
   const [showMobileProducts, setShowMobileProducts] = useState(false);
   const [showMobileDetail, setShowMobileDetail] = useState(false);
   
-  // Stati per i pannelli laterali
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   
   const isMobile = useIsMobile();
 
-  // Carica le categorie, i prodotti e gli allergeni
   useEffect(() => {
     loadCategories();
     loadAllergens();
   }, []);
 
-  // Carica le categorie
   const loadCategories = async () => {
     setIsLoadingCategories(true);
     try {
@@ -102,7 +99,6 @@ const Dashboard = () => {
       
       setCategories(data || []);
       
-      // Seleziona automaticamente la prima categoria se non è già selezionata
       if (data && data.length > 0 && !selectedCategory) {
         setSelectedCategory(data[0].id);
         loadProducts(data[0].id);
@@ -117,7 +113,6 @@ const Dashboard = () => {
     }
   };
 
-  // Carica gli allergeni
   const loadAllergens = async () => {
     try {
       const { data, error } = await supabase
@@ -133,11 +128,9 @@ const Dashboard = () => {
     }
   };
 
-  // Carica i prodotti per categoria
   const loadProducts = async (categoryId: string) => {
     setIsLoadingProducts(true);
     try {
-      // Carica i prodotti
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('*, label:label_id(*)')
@@ -146,10 +139,8 @@ const Dashboard = () => {
 
       if (productsError) throw productsError;
       
-      // Per ogni prodotto, carica gli allergeni associati e le features
       const productsWithDetails = await Promise.all(
         (productsData || []).map(async (product) => {
-          // Load allergens
           const { data: productAllergens, error: allergensError } = await supabase
             .from('product_allergens')
             .select('allergen_id')
@@ -157,7 +148,6 @@ const Dashboard = () => {
           
           if (allergensError) throw allergensError;
           
-          // Se ci sono allergeni, recupera i dettagli
           let productAllergensDetails: Allergen[] = [];
           if (productAllergens && productAllergens.length > 0) {
             const allergenIds = productAllergens.map(pa => pa.allergen_id);
@@ -170,7 +160,6 @@ const Dashboard = () => {
             productAllergensDetails = allergensDetails || [];
           }
           
-          // Load features
           const { data: productFeatures, error: featuresError } = await supabase
             .from('product_to_features')
             .select('feature_id')
@@ -200,7 +189,6 @@ const Dashboard = () => {
       );
       
       setProducts(productsWithDetails);
-      // Reimposta il prodotto selezionato quando cambia la categoria
       setSelectedProduct(null);
       setIsEditing(false);
     } catch (error) {
@@ -211,7 +199,6 @@ const Dashboard = () => {
     }
   };
 
-  // Gestisce la selezione di una categoria
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
     loadProducts(categoryId);
@@ -223,7 +210,6 @@ const Dashboard = () => {
     }
   };
 
-  // Gestisce la selezione di un prodotto
   const handleProductSelect = (productId: string) => {
     setSelectedProduct(productId);
     setIsEditing(false);
@@ -234,39 +220,29 @@ const Dashboard = () => {
     }
   };
 
-  // Cambia l'ordine di visualizzazione di una categoria
   const handleCategoryReorder = async (categoryId: string, direction: 'up' | 'down') => {
-    // Trova l'indice della categoria corrente
     const currentIndex = categories.findIndex(c => c.id === categoryId);
     if (currentIndex === -1) return;
 
-    // Calcola il nuovo indice
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     
-    // Verifica che il nuovo indice sia valido
     if (newIndex < 0 || newIndex >= categories.length) return;
     
-    // Crea una copia dell'array delle categorie
     const updatedCategories = [...categories];
     
-    // Recupera le categorie coinvolte
     const category1 = updatedCategories[currentIndex];
     const category2 = updatedCategories[newIndex];
     
-    // Scambia gli ordini di visualizzazione
     const tempOrder = category1.display_order;
     category1.display_order = category2.display_order;
     category2.display_order = tempOrder;
     
-    // Aggiorna localmente l'array
     [updatedCategories[currentIndex], updatedCategories[newIndex]] = 
       [updatedCategories[newIndex], updatedCategories[currentIndex]];
     
-    // Aggiorna lo stato
     setCategories(updatedCategories);
     
     try {
-      // Aggiorna il database - ora includiamo tutti i campi richiesti
       const updates = [
         { 
           id: category1.id, 
@@ -295,44 +271,33 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Errore nel riordinamento delle categorie:', error);
       toast.error("Errore nel riordinamento delle categorie. Riprova più tardi.");
-      // Ricarica le categorie in caso di errore
       loadCategories();
     }
   };
 
-  // Cambia l'ordine di visualizzazione di un prodotto
   const handleProductReorder = async (productId: string, direction: 'up' | 'down') => {
-    // Trova l'indice del prodotto corrente
     const currentIndex = products.findIndex(p => p.id === productId);
     if (currentIndex === -1) return;
 
-    // Calcola il nuovo indice
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     
-    // Verifica che il nuovo indice sia valido
     if (newIndex < 0 || newIndex >= products.length) return;
     
-    // Crea una copia dell'array dei prodotti
     const updatedProducts = [...products];
     
-    // Recupera i prodotti coinvolti
     const product1 = updatedProducts[currentIndex];
     const product2 = updatedProducts[newIndex];
     
-    // Scambia gli ordini di visualizzazione
     const tempOrder = product1.display_order;
     product1.display_order = product2.display_order;
     product2.display_order = tempOrder;
     
-    // Aggiorna localmente l'array
     [updatedProducts[currentIndex], updatedProducts[newIndex]] = 
       [updatedProducts[newIndex], updatedProducts[currentIndex]];
     
-    // Aggiorna lo stato
     setProducts(updatedProducts);
     
     try {
-      // Aggiorna il database - ora includiamo tutti i campi richiesti
       const updates = [
         { 
           id: product1.id, 
@@ -379,21 +344,17 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Errore nel riordinamento dei prodotti:', error);
       toast.error("Errore nel riordinamento dei prodotti. Riprova più tardi.");
-      // Ricarica i prodotti in caso di errore
       if (selectedCategory) {
         loadProducts(selectedCategory);
       }
     }
   };
 
-  // Aggiunge una nuova categoria
   const handleAddCategory = async (categoryData: Partial<Category>) => {
     try {
-      // Determina il prossimo display_order
       const maxOrder = Math.max(...categories.map(c => c.display_order), 0);
       const nextOrder = maxOrder + 1;
       
-      // Ensure title is provided (required by the database)
       if (!categoryData.title) {
         toast.error("Il titolo è obbligatorio");
         return;
@@ -415,9 +376,7 @@ const Dashboard = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Aggiorna lo stato locale
         await loadCategories();
-        // Se non è selezionata alcuna categoria, seleziona quella appena creata
         if (!selectedCategory) {
           setSelectedCategory(data[0].id);
           loadProducts(data[0].id);
@@ -431,7 +390,6 @@ const Dashboard = () => {
     }
   };
 
-  // Aggiorna una categoria esistente
   const handleUpdateCategory = async (categoryId: string, categoryData: Partial<Category>) => {
     try {
       const { error } = await supabase
@@ -441,7 +399,6 @@ const Dashboard = () => {
       
       if (error) throw error;
       
-      // Aggiorna lo stato locale
       await loadCategories();
       
       toast.success("Categoria aggiornata con successo!");
@@ -453,7 +410,6 @@ const Dashboard = () => {
     }
   };
 
-  // Elimina una categoria
   const handleDeleteCategory = async (categoryId: string) => {
     if (!confirm("Sei sicuro di voler eliminare questa categoria? Verranno eliminati anche tutti i prodotti associati.")) {
       return;
@@ -467,7 +423,6 @@ const Dashboard = () => {
       
       if (error) throw error;
       
-      // Aggiorna lo stato locale
       await loadCategories();
       
       toast.success("Categoria eliminata con successo!");
@@ -477,7 +432,6 @@ const Dashboard = () => {
     }
   };
 
-  // Aggiunge un nuovo prodotto
   const handleAddProduct = async (productData: Partial<Product>) => {
     if (!selectedCategory) {
       toast.error("Seleziona prima una categoria");
@@ -485,7 +439,6 @@ const Dashboard = () => {
     }
 
     try {
-      // Determina il prossimo display_order
       const maxOrder = Math.max(...products.map(p => p.display_order), 0);
       const nextOrder = maxOrder + 1;
       
@@ -494,10 +447,8 @@ const Dashboard = () => {
         return;
       }
       
-      // Estrai features e allergens prima di inserire il prodotto
       const { features, allergens, ...productToInsert } = productData;
       
-      // Handle the "none" value for label_id
       if (productToInsert.label_id === "none") {
         productToInsert.label_id = null;
       }
@@ -528,7 +479,6 @@ const Dashboard = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        // Gestisci gli allergeni se presenti
         const productAllergens = allergens || [];
         if (productAllergens.length > 0) {
           const allergenInserts = productAllergens.map(allergen => ({
@@ -543,7 +493,6 @@ const Dashboard = () => {
           if (allergensError) throw allergensError;
         }
         
-        // Gestisci le caratteristiche se presenti
         const productFeatures = features || [];
         if (productFeatures.length > 0) {
           const featureInserts = productFeatures.map(feature => ({
@@ -558,7 +507,6 @@ const Dashboard = () => {
           if (featuresError) throw featuresError;
         }
 
-        // Aggiorna i prodotti
         await loadProducts(selectedCategory);
         setSelectedProduct(data[0].id);
         toast.success("Prodotto aggiunto con successo!");
@@ -574,18 +522,14 @@ const Dashboard = () => {
     }
   };
 
-  // Aggiorna un prodotto esistente
   const handleUpdateProduct = async (productId: string, productData: Partial<Product>) => {
     try {
-      // Creiamo una copia dei dati del prodotto senza i campi allergens e features
       const { allergens, features, ...productUpdateData } = productData;
       
-      // Handle the "none" value for label_id
       if (productUpdateData.label_id === "none") {
         productUpdateData.label_id = null;
       }
       
-      // Aggiorniamo i dati del prodotto nella tabella products
       const { error } = await supabase
         .from('products')
         .update(productUpdateData)
@@ -593,9 +537,7 @@ const Dashboard = () => {
       
       if (error) throw error;
       
-      // Gestisci gli allergeni separatamente se sono presenti
       if (allergens !== undefined) {
-        // Rimuovi tutte le associazioni esistenti
         const { error: deleteError } = await supabase
           .from('product_allergens')
           .delete()
@@ -603,7 +545,6 @@ const Dashboard = () => {
         
         if (deleteError) throw deleteError;
         
-        // Aggiungi le nuove associazioni se ce ne sono
         if (allergens.length > 0) {
           const allergenInserts = allergens.map(allergen => ({
             product_id: productId,
@@ -618,9 +559,7 @@ const Dashboard = () => {
         }
       }
       
-      // Gestisci le caratteristiche separatamente se sono presenti
       if (features !== undefined) {
-        // Rimuovi tutte le associazioni esistenti
         const { error: deleteError } = await supabase
           .from('product_to_features')
           .delete()
@@ -628,7 +567,6 @@ const Dashboard = () => {
         
         if (deleteError) throw deleteError;
         
-        // Aggiungi le nuove associazioni se ce ne sono
         if (features.length > 0) {
           const featureInserts = features.map(feature => ({
             product_id: productId,
@@ -643,12 +581,10 @@ const Dashboard = () => {
         }
       }
       
-      // Aggiorna i prodotti
       if (selectedCategory) {
         await loadProducts(selectedCategory);
       }
       
-      // Riseleziona il prodotto aggiornato
       setSelectedProduct(productId);
       setIsEditing(false);
       
@@ -659,7 +595,6 @@ const Dashboard = () => {
     }
   };
 
-  // Elimina un prodotto
   const handleDeleteProduct = async (productId: string) => {
     if (!confirm("Sei sicuro di voler eliminare questo prodotto?")) {
       return;
@@ -673,7 +608,6 @@ const Dashboard = () => {
       
       if (error) throw error;
       
-      // Aggiorna lo stato locale
       if (selectedCategory) {
         await loadProducts(selectedCategory);
       }
@@ -693,7 +627,6 @@ const Dashboard = () => {
     }
   };
 
-  // Componente per il caricamento delle immagini
   const ImageUploader = ({ 
     currentImage, 
     onImageUploaded, 
@@ -776,7 +709,6 @@ const Dashboard = () => {
     );
   };
 
-  // Schema di validazione per il form categoria
   const categoryFormSchema = z.object({
     title: z.string().min(1, "Il nome è obbligatorio"),
     description: z.string().optional(),
@@ -784,7 +716,6 @@ const Dashboard = () => {
     image_url: z.string().optional().nullable(),
   });
 
-  // Schema di validazione per il form prodotto
   const productFormSchema = z.object({
     title: z.string().min(1, "Il nome è obbligatorio"),
     description: z.string().optional(),
@@ -801,7 +732,6 @@ const Dashboard = () => {
     label_id: z.string().optional().nullable(),
   });
 
-  // Form categoria
   const CategoryFormPanel = () => {
     const isEditing = Boolean(editingCategory);
     
@@ -919,7 +849,6 @@ const Dashboard = () => {
     );
   };
 
-  // Form prodotto
   const ProductForm = ({ product, onSubmit }: { 
     product: Product | null, 
     onSubmit: (data: any) => void 
@@ -932,14 +861,12 @@ const Dashboard = () => {
       product?.features || []
     );
     
-    // Carica le etichette prodotto e le caratteristiche
     const [productLabels, setProductLabels] = useState<ProductLabel[]>([]);
     const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
     
     useEffect(() => {
       const loadLabelsAndFeatures = async () => {
         try {
-          // Carica le etichette
           const { data: labelsData, error: labelsError } = await supabase
             .from('product_labels')
             .select('*')
@@ -948,7 +875,6 @@ const Dashboard = () => {
           if (labelsError) throw labelsError;
           setProductLabels(labelsData || []);
           
-          // Carica le caratteristiche
           const { data: featuresData, error: featuresError } = await supabase
             .from('product_features')
             .select('*')
@@ -1004,7 +930,6 @@ const Dashboard = () => {
     };
     
     const handleFormSubmit = (values: z.infer<typeof productFormSchema>) => {
-      // Aggiungi gli allergeni e le caratteristiche ai valori del form
       const productData = {
         ...values,
         allergens: selectedAllergens,
@@ -1071,8 +996,7 @@ const Dashboard = () => {
               )}
             />
 
-             {/* Caratteristiche prodotto */}
-            <div className="space-y-2">
+             <div className="space-y-2">
               <Label className="block">Caratteristiche</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {productFeatures.map((feature) => (
@@ -1091,7 +1015,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-                {/* Inserimento immagine */}
             <FormField
               control={form.control}
               name="image_url"
@@ -1107,8 +1030,6 @@ const Dashboard = () => {
               )}
             />
             
-          
-              {/* Prezzo Standard */}
             <FormField
               control={form.control}
               name="price_standard"
@@ -1128,8 +1049,6 @@ const Dashboard = () => {
               )}
             />
             
-                       
-            {/* Suffisso del prezzo */}
             <FormField
               control={form.control}
               name="has_price_suffix"
@@ -1171,7 +1090,6 @@ const Dashboard = () => {
               />
             )}
 
-             {/* Etichetta prodotto */}
             <FormField
               control={form.control}
               name="label_id"
@@ -1188,7 +1106,6 @@ const Dashboard = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* Replace empty string with "none" as the value */}
                       <SelectItem value="none">Nessuna etichetta</SelectItem>
                       {productLabels.map((label) => (
                         <SelectItem key={label.id} value={label.id}>
@@ -1338,8 +1255,6 @@ const Dashboard = () => {
               </div>
             </div>
             
-           
-            
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
                 type="button" 
@@ -1360,7 +1275,6 @@ const Dashboard = () => {
     );
   };
 
-  // Componente lista categorie
   const CategoriesList = () => {
     return (
       <div className="h-full flex flex-col">
@@ -1425,9 +1339,7 @@ const Dashboard = () => {
                         )}
                       </div>
                       
-                      {/* Azioni allineate a destra in una riga separata */}
                       <div className="flex justify-end mt-2">
-                        {/* Bottoni per riordinare */}
                         <div className="flex mr-1">
                           <Button 
                             variant="ghost" 
@@ -1488,9 +1400,7 @@ const Dashboard = () => {
     );
   };
 
-  // Componente lista prodotti
   const ProductsList = () => {
-    // Funzione per filtrare i prodotti in base alla ricerca
     const filteredProducts = products.filter(
       product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -1574,9 +1484,7 @@ const Dashboard = () => {
                     } ${!product.is_active ? "opacity-60" : ""}`}
                     onClick={() => handleProductSelect(product.id)}
                   >
-                    {/* Prima riga: informazioni del prodotto */}
                     <div className="flex space-x-3">
-                      {/* Immagine del prodotto */}
                       {product.image_url ? (
                         <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                           <img
@@ -1591,7 +1499,6 @@ const Dashboard = () => {
                         </div>
                       )}
                       
-                      {/* Informazioni sul prodotto */}
                       <div className="flex-1">
                         <h3 className="font-medium">{product.title}</h3>
                         {product.description && (
@@ -1631,9 +1538,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     
-                    {/* Seconda riga: azioni allineate a destra */}
                     <div className="flex justify-end mt-2">
-                      {/* Bottoni per riordinare */}
                       <div className="flex mr-1">
                         <Button 
                           variant="ghost" 
@@ -1698,7 +1603,6 @@ const Dashboard = () => {
     );
   };
 
-  // Componente dettaglio prodotto
   const ProductDetail = () => {
     const product = products.find(p => p.id === selectedProduct);
     
@@ -1778,7 +1682,6 @@ const Dashboard = () => {
         
         <ScrollArea className="flex-grow">
           <div className="p-4 space-y-6">
-            {/* Intestazione prodotto */}
             <div className="flex space-x-4">
               {product.image_url ? (
                 <div className="w-32 h-32 rounded-md overflow-hidden">
@@ -1834,54 +1737,45 @@ const Dashboard = () => {
             
             <Separator />
             
-            {/* Prezzi */}
             <Card>
               <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-4">Prezzi</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Prezzo standard</span>
-                    <span className="font-semibold">
-                      {product.price_standard} €
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-lg font-semibold">
+                    <span>
+                      {product.price_standard} €{' '}
                       {product.has_price_suffix && product.price_suffix && (
-                        <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
+                        <span className="text-gray-500 text-base">{product.price_suffix}</span>
                       )}
                     </span>
                   </div>
-                  
                   {product.has_multiple_prices && (
-                    <>
-                      {product.price_variant_1_name && (
+                    <div className="flex flex-col gap-1">
+                      {product.price_variant_1_name && product.price_variant_1_value != null && (
                         <div className="flex justify-between items-center">
-                          <span>{product.price_variant_1_name}</span>
-                          <span className="font-semibold">
-                            {product.price_variant_1_value} €
-                            {product.has_price_suffix && product.price_suffix && (
-                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
-                            )}
+                          <span>
+                            {product.price_variant_1_value} €{' '}
+                            <span className="text-gray-700 text-sm">
+                              {product.price_variant_1_name}
+                            </span>
                           </span>
                         </div>
                       )}
-                      
-                      {product.price_variant_2_name && (
+                      {product.price_variant_2_name && product.price_variant_2_value != null && (
                         <div className="flex justify-between items-center">
-                          <span>{product.price_variant_2_name}</span>
-                          <span className="font-semibold">
-                            {product.price_variant_2_value} €
-                            {product.has_price_suffix && product.price_suffix && (
-                              <span className="ml-1 text-gray-500 text-sm">{product.price_suffix}</span>
-                            )}
+                          <span>
+                            {product.price_variant_2_value} €{' '}
+                            <span className="text-gray-700 text-sm">
+                              {product.price_variant_2_name}
+                            </span>
                           </span>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               </CardContent>
             </Card>
             
-            {/* Caratteristiche prodotto */}
             {product.features && product.features.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
@@ -1904,7 +1798,6 @@ const Dashboard = () => {
               </Card>
             )}
             
-            {/* Allergeni */}
             {product.allergens && product.allergens.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
@@ -1924,7 +1817,6 @@ const Dashboard = () => {
               </Card>
             )}
             
-            {/* Info tecniche */}
             <Card>
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-4">Informazioni tecniche</h3>
@@ -1961,7 +1853,6 @@ const Dashboard = () => {
     );
   };
 
-  // Layout mobile
   const MobileLayout = () => {
     if (showMobileCategories) {
       return <CategoriesList />;
@@ -1971,11 +1862,9 @@ const Dashboard = () => {
       return <ProductDetail />;
     }
     
-    // Default fallback
     return <CategoriesList />;
   };
 
-  // Layout desktop
   const DesktopLayout = () => (
     <div className="grid grid-cols-12 h-full divide-x">
       <div className="col-span-2 h-full border-r">
@@ -1996,7 +1885,6 @@ const Dashboard = () => {
     <div className="h-[calc(100vh-4rem)]">
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
       
-      {/* Form pannelli laterali */}
       <CategoryFormPanel />
     </div>
   );
