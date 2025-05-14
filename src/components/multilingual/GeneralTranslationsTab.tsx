@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TranslationField } from "./TranslationField";
 import { CopyButton } from "./CopyButton";
-import { BadgeTranslationStatus } from "./BadgeTranslationStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,7 +18,6 @@ interface TranslatableItem {
   title: string;
   description?: string | null;
   type: string;
-  last_updated?: string | null;
 }
 
 const entityOptions: EntityOption[] = [
@@ -45,7 +43,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
       try {
         const { data, error } = await supabase
           .from(selectedEntityType.type)
-          .select('id, title, description, last_updated')
+          .select('id, title, description')
           .order('display_order', { ascending: true });
           
         if (error) {
@@ -54,8 +52,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         
         setItems(data.map((item: any) => ({ 
           ...item, 
-          type: selectedEntityType.type,
-          last_updated: item.last_updated || null,
+          type: selectedEntityType.type 
         })));
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
@@ -120,14 +117,13 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                           <div className="font-medium">{item.title}</div>
                           <CopyButton text={item.title} label="Copia titolo originale" />
                         </TableCell>
-                        <TableCell className="pt-4 flex items-center gap-2">
+                        <TableCell className="pt-4">
                           <TranslationField
                             id={item.id}
                             entityType={item.type}
                             fieldName="title"
                             originalText={item.title}
                             language={language}
-                            lastUpdatedOriginal={item.last_updated}
                           />
                         </TableCell>
                       </TableRow>
@@ -141,7 +137,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                             </div>
                             <CopyButton text={item.description} label="Copia descrizione originale" />
                           </TableCell>
-                          <TableCell className="border-t-0 flex items-center gap-2">
+                          <TableCell className="border-t-0">
                             <TranslationField
                               id={item.id}
                               entityType={item.type}
@@ -149,7 +145,6 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                               originalText={item.description}
                               language={language}
                               multiline
-                              lastUpdatedOriginal={item.last_updated}
                             />
                           </TableCell>
                         </TableRow>
