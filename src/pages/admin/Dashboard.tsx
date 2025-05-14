@@ -819,7 +819,7 @@ const Dashboard = () => {
             <div className="p-4">
               <ProductForm 
                 product={product} 
-                onSubmit={(data) => {
+                onSave={(data) => {
                   if (product) {
                     handleUpdateProduct(product.id, data);
                   } else {
