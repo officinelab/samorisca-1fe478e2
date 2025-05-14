@@ -73,7 +73,7 @@ serve(async (req) => {
       throw new Error('Monthly token quota exhausted');
     }
 
-    console.log(`Translating text to ${targetLanguage} with DeepL. Text length: ${text.length}`);
+    console.log(`=== DEEPL TRANSLATION === Translating "${text}" to ${targetLanguage} with DeepL API`);
 
     // Call DeepL API
     const formData = new FormData();
@@ -98,6 +98,7 @@ serve(async (req) => {
     const data = await response.json();
     const translatedText = data.translations[0].text.trim();
 
+    console.log('=== DEEPL TRANSLATION RESULT === ', translatedText);
     console.log('Translation completed successfully with DeepL');
 
     // Record token usage with explicit column references
@@ -115,6 +116,7 @@ serve(async (req) => {
       JSON.stringify({
         translatedText,
         success: true,
+        service: 'deepl' // Identify which service was used
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

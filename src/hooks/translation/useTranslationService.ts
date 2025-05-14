@@ -32,6 +32,7 @@ export const useTranslationService = (): TranslationService => {
     }
 
     setIsTranslating(true);
+    console.log(`Using translation service: ${currentService}`); // Debug log for service selection
 
     try {
       // Check remaining tokens before translation
@@ -75,7 +76,7 @@ export const useTranslationService = (): TranslationService => {
           targetLanguage
         );
 
-        toast.success('Traduzione completata con successo');
+        toast.success(`Traduzione completata con successo usando ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
       }
       
       return result;
@@ -97,6 +98,7 @@ export const useTranslationService = (): TranslationService => {
   const setTranslationService = (service: TranslationServiceType) => {
     setCurrentService(service);
     toast.success(`Servizio di traduzione impostato a: ${service === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
+    console.log(`Translation service changed to: ${service}`); // Debug log for service change
   };
 
   return {

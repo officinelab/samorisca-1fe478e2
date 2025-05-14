@@ -33,6 +33,8 @@ export const translateTextViaEdgeFunction = async (
     // Choose the appropriate service endpoint
     const functionName = serviceType === 'deepl' ? 'translate-deepl' : 'translate';
     
+    console.log(`Calling ${functionName} edge function for text: "${text}"`); // Debug log
+    
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: {
         text,
@@ -62,6 +64,8 @@ export const translateTextViaEdgeFunction = async (
       };
     }
 
+    console.log(`Translation result from ${serviceType}: "${data.translatedText}"`); // Debug log
+    
     return {
       success: true,
       translatedText: data.translatedText

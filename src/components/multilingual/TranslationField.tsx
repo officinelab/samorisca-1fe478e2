@@ -46,6 +46,8 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   const handleTranslate = async () => {
     if (!originalText.trim()) return;
 
+    console.log(`TranslationField: Translating with ${currentService}`);
+
     const result = await translateText(
       originalText,
       language,
@@ -55,6 +57,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     );
 
     if (result.success && result.translatedText) {
+      console.log(`Translation result: "${result.translatedText}"`);
       setTranslatedText(result.translatedText);
       if (onTranslationSaved) {
         onTranslationSaved(result.translatedText);
@@ -111,8 +114,9 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
             onClick={handleTranslate}
             disabled={isTranslating || !originalText.trim()}
             title={`Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`}
+            className="whitespace-nowrap"
           >
-            {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Traduci"}
+            {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`}
           </Button>
           {isEdited && (
             <Button 

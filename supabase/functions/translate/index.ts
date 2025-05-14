@@ -77,7 +77,7 @@ serve(async (req) => {
 
 Text to translate: "${text}"`;
 
-    console.log(`Translating text to ${targetLanguage}. Text length: ${text.length}`);
+    console.log(`=== PERPLEXITY TRANSLATION === Translating "${text}" to ${targetLanguage} with Perplexity API`);
 
     // Call Perplexity API
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -112,7 +112,8 @@ Text to translate: "${text}"`;
     const data = await response.json();
     const translatedText = data.choices[0].message.content.trim();
 
-    console.log('Translation completed successfully');
+    console.log('=== PERPLEXITY TRANSLATION RESULT === ', translatedText);
+    console.log('Translation completed successfully with Perplexity');
 
     // Record token usage with explicit column references
     const { error: incrementError } = await supabase.rpc('increment_tokens', {
@@ -129,6 +130,7 @@ Text to translate: "${text}"`;
       JSON.stringify({
         translatedText,
         success: true,
+        service: 'perplexity' // Identify which service was used
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
