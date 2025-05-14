@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
@@ -13,16 +12,14 @@ interface ProductCardDesktopProps {
   product: Product;
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
-  deviceView?: 'mobile' | 'desktop';
 }
 
 export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   product,
   onProductSelect,
-  addToCart,
-  deviceView
+  addToCart
 }) => {
-  const isMobileView = useIsMobile() || deviceView === 'mobile';
+  const isMobileView = useIsMobile();
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";

@@ -1,4 +1,4 @@
 
-// NUOVI COMPONENTI RIFATTORIZZATI
+// File wrapper che esporta il ProductCardWrapper
 
-export { ProductCardMobile, ProductCardDesktop } from "./product-card";
+export { ProductCardWrapper as ProductCard } from "./product-card/ProductCardWrapper";

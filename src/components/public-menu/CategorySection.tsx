@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
-import { ProductCardMobile, ProductCardDesktop } from "./ProductCards";
+import { ProductCard } from "./ProductCards";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -47,25 +46,15 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {products?.length > 0 ? products.map(product => {
-            // Add default image if needed
             const productWithDefaultImage = {
               ...product,
               image_url: product.image_url || siteSettings.defaultProductImage
             };
-            
-            return deviceView === 'mobile' || isMobile ? (
-              <ProductCardMobile 
-                key={product.id} 
-                product={productWithDefaultImage} 
-                onProductSelect={onSelectProduct}
-                addToCart={addToCart}
-                deviceView={deviceView}
-                truncateText={truncateText}
-              />
-            ) : (
-              <ProductCardDesktop 
-                key={product.id} 
-                product={productWithDefaultImage} 
+
+            return (
+              <ProductCard
+                key={product.id}
+                product={productWithDefaultImage}
                 onProductSelect={onSelectProduct}
                 addToCart={addToCart}
                 deviceView={deviceView}
