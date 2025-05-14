@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 
 interface ProductCardsProps {
   product: Product;
@@ -13,6 +14,27 @@ interface ProductCardsProps {
   deviceView?: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
 }
+
+// Funzione di utilità per mostrare le icone delle feature
+const ProductFeaturesIcons = ({ features }: { features?: any[] }) => {
+  if (!features || features.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2 mt-1">
+      {features.map((feature: any) =>
+        feature.icon_url ? (
+          <img
+            key={feature.id}
+            src={feature.icon_url}
+            alt={feature.title}
+            title={feature.title}
+            className="w-6 h-6 object-contain inline-block"
+            style={{ display: "inline-block" }}
+          />
+        ) : null
+      )}
+    </div>
+  );
+};
 
 export const ProductCardMobile: React.FC<ProductCardsProps> = ({
   product,
@@ -30,6 +52,15 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
         <div className="flex">
           <div className="flex-1 pr-4">
             <h3 className="font-bold text-lg mb-1">{title}</h3>
+            {/* Mostra etichetta se presente */}
+            {product.label && (
+              <LabelBadge
+                title={product.label.title}
+                color={product.label.color}
+                textColor={product.label.text_color}
+                className="mb-1"
+              />
+            )}
             <p className="text-gray-600 text-sm mb-2">
               {truncateText(description, 110)}
             </p>
@@ -42,6 +73,8 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
                 ))}
               </div>
             )}
+            {/* Mostra le icone delle features sotto gli allergeni */}
+            <ProductFeaturesIcons features={product.features} />
           </div>
           <div className="relative">
             <CardImage src={product.image_url} alt={title} mobileView />
@@ -54,9 +87,8 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
               {/* Prezzo Standard */}
               <div className="flex items-center justify-between w-full">
                 <span className="font-medium">
-                  {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""}
                   {product.price_standard !== null && product.price_standard !== undefined
-                    ? `: ${product.price_standard.toFixed(2)} €${priceSuffix}`
+                    ? `${product.price_standard.toFixed(2)} €${priceSuffix}`
                     : ""}
                 </span>
                 <Button
@@ -75,7 +107,7 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
               {product.price_variant_1_name && product.price_variant_1_value !== null && (
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium">
-                    {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
+                    {product.price_variant_1_value?.toFixed(2)} € {product.price_variant_1_name}
                   </span>
                   <Button
                     variant="default"
@@ -94,7 +126,7 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
               {product.price_variant_2_name && product.price_variant_2_value !== null && (
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium">
-                    {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                    {product.price_variant_2_value?.toFixed(2)} € {product.price_variant_2_name}
                   </span>
                   <Button
                     variant="default"
@@ -163,9 +195,18 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
       )}
       <CardContent className="flex-1 p-4">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="font-medium text-lg">
-            {title}
-          </h3>
+          <div>
+            <h3 className="font-medium text-lg">{title}</h3>
+            {/* Mostra etichetta se presente */}
+            {product.label && (
+              <LabelBadge
+                title={product.label.title}
+                color={product.label.color}
+                textColor={product.label.text_color}
+                className="mb-1"
+              />
+            )}
+          </div>
           {/* Visualizzazione prezzo standard o varianti */}
           {!product.has_multiple_prices ? (
             <span className="font-medium flex items-center">
@@ -186,6 +227,8 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
             ))}
           </div>
         )}
+        {/* Mostra le icone delle features sotto gli allergeni */}
+        <ProductFeaturesIcons features={product.features} />
         {/* Gestione varianti di prezzo */}
         {product.has_multiple_prices ? (
           <div className="space-y-2 mt-3">
@@ -200,10 +243,7 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
               }}
             >
               <span>
-                {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""}
-                {': '}
                 {product.price_standard?.toFixed(2)} €
-                {/* Suffix SOLO su prezzo standard */}
                 {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
               </span>
               <Plus size={16} />
@@ -220,7 +260,7 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
                 }}
               >
                 <span>
-                  {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
+                  {product.price_variant_1_value?.toFixed(2)} € {product.price_variant_1_name}
                 </span>
                 <Plus size={16} />
               </Button>
@@ -237,7 +277,7 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
                 }}
               >
                 <span>
-                  {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                  {product.price_variant_2_value?.toFixed(2)} € {product.price_variant_2_name}
                 </span>
                 <Plus size={16} />
               </Button>
