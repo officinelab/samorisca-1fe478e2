@@ -72,39 +72,33 @@ serve(async (req) => {
       throw new Error('Monthly token quota exhausted');
     }
 
-    // Prepare context-specific system prompt
-    let systemPrompt = `You are a professional culinary translator specialized in Italian restaurant menus. You are translating from Italian to ${languageNames[targetLanguage]}.
+    // Prepare context-specific system prompt - con istruzioni più precise
+    let systemPrompt = `You are a professional culinary translator specialized in Italian restaurant menu translation. You are translating from Italian to ${languageNames[targetLanguage]}.
 
-Your task involves translating different parts of a menu:
-1. Menu section headers (like "Antipasti", "Primi Piatti", "Secondi Piatti", "Contorni", "Dolci") 
-2. Dish titles (the name of each dish)
-3. Dish descriptions (ingredients and preparation methods)
+Your task is to translate ALL menu text, including section headers like "Antipasti", "Primi Piatti", "Secondi Piatti", "Contorni", and "Dolci" into ${languageNames[targetLanguage]}.
 
-For each translation:
-- Maintain the EXACT same capitalization pattern as in the original text
-- Keep traditional Italian dish names untranslated (e.g., "Parmigiana", "Carbonara", "Tiramisù")
-- For ingredients and cooking methods, use the proper culinary terminology specific to ${languageNames[targetLanguage]}
-- Preserve all formatting (bullet points, numbering, spacing)
-- If a dish contains a regional designation (e.g., "alla romana", "alla siciliana"), either keep it in Italian or use an accepted translation if one exists
-- Be consistent with culinary conventions in ${languageNames[targetLanguage]}-speaking countries`;
+Translation rules:
+- Translate EVERY word, including menu category names
+- For "Primi Piatti" in English, use "First Courses"
+- For "Secondi Piatti" in English, use "Main Courses" or "Second Courses"
+- For "Antipasti" in English, use "Appetizers" or "Starters"
+- For "Contorni" in English, use "Side Dishes"
+- For "Dolci" in English, use "Desserts"
+- Do not add asterisks, quotes, or any other formatting
+- Do not add explanations, notes, or commentary
+- Keep the same capitalization pattern as the original text`;
 
-    // Prepare context-specific user prompt
-    const prompt = `Translate the following Italian restaurant menu text into ${languageNames[targetLanguage]}.
+    // Prepare context-specific user prompt - con istruzioni più precise
+    const prompt = `Translate the following Italian text into ${languageNames[targetLanguage]}:
 
-This text may be one of:
-- A menu category (like "Antipasti", "Primi Piatti", etc.)
-- A dish name
-- A dish description with ingredients and preparation method
+"${text}"
 
-Follow these strict rules:
-1. Preserve the EXACT capitalization pattern of the original
-2. Keep traditional Italian dish names in Italian
-3. Use professional culinary terminology appropriate for ${languageNames[targetLanguage]}
-4. Maintain all formatting elements (spaces, line breaks, punctuation)
-5. Return ONLY the translated text with no explanations, notes or additional content
-
-Text to translate:
-${text}`;
+Important rules:
+1. Return ONLY the direct translation without any additional text, formatting, or explanation
+2. Do NOT keep any Italian words in your response except for proper dish names
+3. Do NOT add quotes, asterisks or any other formatting to your response
+4. Translate ALL menu categories (like "Antipasti", "Primi Piatti", "Secondi Piatti") to their ${languageNames[targetLanguage]} equivalents
+5. Maintain the exact same capitalization pattern as the original text`;
 
     console.log(`Translating text to ${targetLanguage}. Text length: ${text.length}`);
 
@@ -141,6 +135,11 @@ ${text}`;
     const data = await response.json();
     const translatedText = data.choices[0].message.content.trim();
 
+    // Rimuoviamo eventuali virgolette o formattazioni dalla risposta
+    const cleanTranslation = translatedText
+      .replace(/^["']|["']$/g, '') // rimuove virgolette iniziali e finali
+      .replace(/\*\*/g, ''); // rimuove asterischi doppi
+
     console.log('Translation completed successfully');
 
     // Record token usage
@@ -156,7 +155,7 @@ ${text}`;
     // Return the translation
     return new Response(
       JSON.stringify({
-        translatedText,
+        translatedText: cleanTranslation,
         success: true,
       }),
       {
