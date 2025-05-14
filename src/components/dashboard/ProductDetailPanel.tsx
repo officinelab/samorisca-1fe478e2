@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Product } from "@/types/database";
 
@@ -6,13 +7,13 @@ interface ProductDetailPanelProps {
 }
 
 const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
-  // Recupera il prezzo standard e il suffisso, con fallback
+  // Recupero il prezzo e il suffisso
   const prezzoStandard = product.price_standard;
   const suffisso = product.has_price_suffix && product.price_suffix
     ? product.price_suffix
     : "";
 
-  // Recupera eventuali varianti (se presenti)
+  // Varianti di prezzo (solo se valore presente)
   const varianti = [
     {
       value: product.price_variant_1_value,
@@ -22,7 +23,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
       value: product.price_variant_2_value,
       name: product.price_variant_2_name,
     },
-  ].filter((v) => !!v.value);
+  ].filter((v) => v.value !== null && v.value !== undefined);
 
   return (
     <div className="p-4">
@@ -54,7 +55,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
       <section className="mb-6">
         <h3 className="text-lg font-semibold mb-2">Prezzi</h3>
         <div className="text-base">
-          {/* Prezzo standard con suffisso */}
+          {/* Solo il prezzo principale seguito dal suffisso (se presenti) */}
           {prezzoStandard !== null && prezzoStandard !== undefined && (
             <div className="mb-2">
               {prezzoStandard.toLocaleString("it-IT", {
@@ -66,17 +67,18 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
             </div>
           )}
 
-          {/* Varianti prezzo */}
-          {varianti.map((v, idx) => (
-            <div key={idx} className="pl-2 text-sm text-gray-700">
-              {v.value?.toLocaleString("it-IT", {
-                style: "currency",
-                currency: "EUR",
-                minimumFractionDigits: 2,
-              })}{" "}
-              {v.name ? v.name : ""}
-            </div>
-          ))}
+          {/* Varianti di prezzo (una per riga), solo se almeno un prezzo variante è presente */}
+          {varianti.length > 0 &&
+            varianti.map((v, idx) => (
+              <div key={idx} className="pl-2 text-sm text-gray-700">
+                {v.value?.toLocaleString("it-IT", {
+                  style: "currency",
+                  currency: "EUR",
+                  minimumFractionDigits: 2,
+                })}{" "}
+                {v.name ? v.name : ""}
+              </div>
+            ))}
         </div>
       </section>
 
@@ -116,3 +118,4 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
 };
 
 export default ProductDetailPanel;
+
