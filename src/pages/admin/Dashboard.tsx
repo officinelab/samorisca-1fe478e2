@@ -62,6 +62,9 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CategoriesList from "./components/CategoriesList";
+import ProductsList from "./components/ProductsList";
+import ProductDetailPanel from "./components/ProductDetailPanel";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -1854,29 +1857,182 @@ const Dashboard = () => {
   };
 
   const MobileLayout = () => {
-    if (showMobileCategories) {
-      return <CategoriesList />;
-    } else if (showMobileProducts) {
-      return <ProductsList />;
-    } else if (showMobileDetail) {
-      return <ProductDetail />;
-    }
-    
-    return <CategoriesList />;
+    return (
+      <>
+        {showMobileCategories && (
+          <CategoriesList
+            categories={categories}
+            selectedCategory={selectedCategory}
+            isLoadingCategories={isLoadingCategories}
+            onSelectCategory={handleCategorySelect}
+            onCategoryReorder={handleCategoryReorder}
+            onEdit={(category) => {
+              setEditingCategory(category);
+              setShowCategoryForm(true);
+            }}
+            onDelete={handleDeleteCategory}
+            onAddCategory={() => {
+              setEditingCategory(null);
+              setShowCategoryForm(true);
+            }}
+          />
+        )}
+        {showMobileProducts && (
+          <ProductsList
+            products={products}
+            selectedProduct={selectedProduct}
+            searchQuery={searchQuery}
+            onSelectProduct={handleProductSelect}
+            isLoadingProducts={isLoadingProducts}
+            onProductReorder={handleProductReorder}
+            onEdit={(product) => {
+              setSelectedProduct(product.id);
+              setIsEditing(true);
+              setShowMobileProducts(false);
+              setShowMobileDetail(true);
+            }}
+            onDelete={handleDeleteProduct}
+            onAddProduct={() => {
+              setSelectedProduct(null);
+              setIsEditing(true);
+              setShowMobileProducts(false);
+              setShowMobileDetail(true);
+            }}
+            onBackToCategories={() => {
+              setShowMobileCategories(true);
+              setShowMobileProducts(false);
+            }}
+            showBackButton={true}
+            setSearchQuery={setSearchQuery}
+            isMobile={isMobile}
+            selectedCategory={selectedCategory}
+            allergens={allergens}
+          />
+        )}
+        {showMobileDetail && (
+          isEditing ? (
+            <div className="h-full flex flex-col">
+              <div className="flex justify-between items-center p-4 border-b">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="mr-2"
+                  onClick={() => {
+                    setShowMobileProducts(true);
+                    setShowMobileDetail(false);
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h2 className="text-lg font-semibold">
+                  {selectedProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}
+                </h2>
+              </div>
+              <ScrollArea className="flex-grow">
+                <div className="p-4">
+                  <ProductForm 
+                    product={products.find(p => p.id === selectedProduct) || null}
+                    onSubmit={(data) => {
+                      if (selectedProduct) {
+                        handleUpdateProduct(selectedProduct, data);
+                      } else {
+                        handleAddProduct(data);
+                      }
+                    }}
+                  />
+                </div>
+              </ScrollArea>
+            </div>
+          ) : (
+            <ProductDetailPanel
+              product={products.find(p => p.id === selectedProduct) || null}
+              categories={categories}
+              onEdit={() => setIsEditing(true)}
+              onBack={() => {
+                setShowMobileProducts(true);
+                setShowMobileDetail(false);
+              }}
+              isMobile={isMobile}
+            />
+          )
+        )}
+      </>
+    );
   };
 
   const DesktopLayout = () => (
     <div className="grid grid-cols-12 h-full divide-x">
       <div className="col-span-2 h-full border-r">
-        <CategoriesList />
+        <CategoriesList
+          categories={categories}
+          selectedCategory={selectedCategory}
+          isLoadingCategories={isLoadingCategories}
+          onSelectCategory={handleCategorySelect}
+          onCategoryReorder={handleCategoryReorder}
+          onEdit={(category) => {
+            setEditingCategory(category);
+            setShowCategoryForm(true);
+          }}
+          onDelete={handleDeleteCategory}
+          onAddCategory={() => {
+            setEditingCategory(null);
+            setShowCategoryForm(true);
+          }}
+        />
       </div>
-      
       <div className="col-span-5 h-full border-r">
-        <ProductsList />
+        <ProductsList
+          products={products}
+          selectedProduct={selectedProduct}
+          searchQuery={searchQuery}
+          onSelectProduct={handleProductSelect}
+          isLoadingProducts={isLoadingProducts}
+          onProductReorder={handleProductReorder}
+          onEdit={(product) => {
+            setSelectedProduct(product.id);
+            setIsEditing(true);
+          }}
+          onDelete={handleDeleteProduct}
+          onAddProduct={() => {
+            setSelectedProduct(null);
+            setIsEditing(true);
+          }}
+          setSearchQuery={setSearchQuery}
+          isMobile={false}
+          selectedCategory={selectedCategory}
+          allergens={allergens}
+        />
       </div>
-      
       <div className="col-span-5 h-full">
-        <ProductDetail />
+        {isEditing ? (
+          <div className="h-full flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-lg font-semibold">
+                {selectedProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}
+              </h2>
+            </div>
+            <ScrollArea className="flex-grow">
+              <div className="p-4">
+                <ProductForm 
+                  product={products.find(p => p.id === selectedProduct) || null}
+                  onSubmit={(data) => {
+                    if (selectedProduct) {
+                      handleUpdateProduct(selectedProduct, data);
+                    } else {
+                      handleAddProduct(data);
+                    }
+                  }}
+                />
+              </div>
+            </ScrollArea>
+          </div>
+        ) : (
+          <ProductDetailPanel
+            product={products.find(p => p.id === selectedProduct) || null}
+            categories={categories}
+            onEdit={() => setIsEditing(true)}
+          />
+        )}
       </div>
     </div>
   );
@@ -1884,7 +2040,6 @@ const Dashboard = () => {
   return (
     <div className="h-[calc(100vh-4rem)]">
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
-      
       <CategoryFormPanel />
     </div>
   );
