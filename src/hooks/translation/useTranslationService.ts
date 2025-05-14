@@ -62,7 +62,7 @@ export const useTranslationService = (): TranslationService => {
         entityId,
         entityType,
         fieldName,
-        currentService
+        currentService // Assicuriamoci di passare il servizio corrente
       );
 
       if (result.success) {
@@ -76,7 +76,8 @@ export const useTranslationService = (): TranslationService => {
           targetLanguage
         );
 
-        toast.success(`Traduzione completata con successo usando ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
+        const serviceName = currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+        toast.success(`Traduzione completata con successo usando ${serviceName}`);
       }
       
       return result;

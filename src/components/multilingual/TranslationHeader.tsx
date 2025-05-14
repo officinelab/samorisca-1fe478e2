@@ -12,6 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { useTranslationService } from "@/hooks/translation";
+import { useEffect } from "react";
 
 interface TranslationHeaderProps {
   selectedLanguage: SupportedLanguage;
@@ -23,8 +24,15 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
   const { currentService, setTranslationService } = useTranslationService();
 
   const handleServiceChange = (value: string) => {
-    setTranslationService(value as TranslationServiceType);
+    const serviceType = value as TranslationServiceType;
+    console.log(`Changing translation service to: ${serviceType}`);
+    setTranslationService(serviceType);
   };
+
+  // Debug dell'attuale servizio selezionato
+  useEffect(() => {
+    console.log(`Current translation service in header: ${currentService}`);
+  }, [currentService]);
 
   return (
     <div className="sticky top-0 z-10 bg-white border-b p-4 shadow-sm">

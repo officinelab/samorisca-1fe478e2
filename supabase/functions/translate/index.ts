@@ -115,7 +115,7 @@ Text to translate: "${text}"`;
     console.log('=== PERPLEXITY TRANSLATION RESULT === ', translatedText);
     console.log('Translation completed successfully with Perplexity');
 
-    // Record token usage with explicit column references
+    // Record token usage with explicit parameter name
     const { error: incrementError } = await supabase.rpc('increment_tokens', {
       token_count: 1
     });

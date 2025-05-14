@@ -86,6 +86,11 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     }
   };
 
+  const getButtonLabel = () => {
+    if (isTranslating) return <Loader2 className="h-4 w-4 animate-spin" />;
+    return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
+  };
+
   const InputComponent = multiline ? (
     <Textarea 
       value={translatedText} 
@@ -116,7 +121,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
             title={`Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`}
             className="whitespace-nowrap"
           >
-            {isTranslating ? <Loader2 className="h-4 w-4 animate-spin" /> : `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`}
+            {getButtonLabel()}
           </Button>
           {isEdited && (
             <Button 

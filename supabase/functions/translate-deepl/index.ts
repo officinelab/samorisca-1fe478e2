@@ -101,7 +101,7 @@ serve(async (req) => {
     console.log('=== DEEPL TRANSLATION RESULT === ', translatedText);
     console.log('Translation completed successfully with DeepL');
 
-    // Record token usage with explicit column references
+    // Record token usage with explicit parameter name
     const { error: incrementError } = await supabase.rpc('increment_tokens', {
       token_count: 1
     });
