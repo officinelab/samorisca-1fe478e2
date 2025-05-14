@@ -784,12 +784,12 @@ const Dashboard = () => {
 
   const ProductDetail = () => {
     const product = products.find(p => p.id === selectedProduct);
-    
+
     const handleBackToProducts = () => {
       setShowMobileProducts(true);
       setShowMobileDetail(false);
     };
-    
+
     if (!selectedProduct && !isEditing) {
       return (
         <div className="h-full flex items-center justify-center text-gray-500">
@@ -797,7 +797,7 @@ const Dashboard = () => {
         </div>
       );
     }
-    
+
     if (isEditing) {
       return (
         <div className="h-full flex flex-col">
@@ -814,15 +814,18 @@ const Dashboard = () => {
             )}
             <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
           </div>
-          
+
           <ScrollArea className="flex-grow">
             <div className="p-4">
               <ProductForm 
                 product={product} 
                 onSave={(data) => {
+                  console.log("ProductForm onSave triggered", { data, product });
                   if (product) {
+                    console.log("Calling handleUpdateProduct", product.id, data);
                     handleUpdateProduct(product.id, data);
                   } else {
+                    console.log("Calling handleAddProduct", data);
                     handleAddProduct(data);
                   }
                 }} 

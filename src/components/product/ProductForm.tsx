@@ -16,7 +16,7 @@ import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
-  onSave?: (data: any) => void; // changed to accept data
+  onSave?: (data: any) => void; // accetta i valori del form
   onCancel?: () => void;
 }
 
@@ -34,11 +34,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     handleSubmit
   } = useProductForm(product, onSave);
 
-  // Wrap handleSubmit to call onSave if provided
+  // Internal handler che chiama onSave con i valori
   const internalOnSubmit = async (values: any) => {
     const result = await handleSubmit(values);
     if (onSave) {
-      onSave(values); // Pass the values to the parent
+      onSave(values);
     }
     return result;
   };
@@ -82,4 +82,3 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
 };
 
 export default ProductForm;
-
