@@ -55,8 +55,8 @@ serve(async (req) => {
 Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
 
 - Always translate generic or descriptive dishes composed of ingredients (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo").
-- Only preserve in Italian those traditional dish names that are internationally recognized and commonly used untranslated in the target language (e.g., "Tiramisù", "Bruschetta", "Spaghetti alla Carbonara", "Risotto").
 - Category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") must always be translated.
+- Product names (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo", "COZZE DI SARDEGNA ALL’OLBIESE") must always be translated.
 - Do not preserve a name simply because it is capitalized or written in all uppercase — uppercase text should still be translated unless it is a universally known Italian dish.
 - Maintain the same capitalization and formatting (e.g., punctuation, line breaks, spacing) as in the original text.
 - Return only the translated text, without any explanation or extra comments.`;
