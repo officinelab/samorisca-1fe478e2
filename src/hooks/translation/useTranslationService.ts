@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult, TranslationService } from './types';
@@ -34,6 +34,11 @@ export const useTranslationService = (): TranslationService => {
       localStorage.setItem(TRANSLATION_SERVICE_KEY, currentService);
       console.log(`Servizio di traduzione salvato in localStorage: ${currentService}`);
     }
+  }, [currentService]);
+  
+  // Funzione per ottenere il nome del servizio di traduzione
+  const getServiceName = useCallback(() => {
+    return currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
   }, [currentService]);
 
   const translateText = async (
@@ -96,8 +101,7 @@ export const useTranslationService = (): TranslationService => {
           targetLanguage
         );
 
-        const serviceName = currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
-        toast.success(`Traduzione completata con successo usando ${serviceName}`);
+        toast.success(`Traduzione completata con successo usando ${getServiceName()}`);
       }
       
       return result;
@@ -129,6 +133,7 @@ export const useTranslationService = (): TranslationService => {
     getExistingTranslation: getExistingTranslationFromDb,
     isTranslating,
     currentService,
-    setTranslationService
+    setTranslationService,
+    getServiceName
   };
 };

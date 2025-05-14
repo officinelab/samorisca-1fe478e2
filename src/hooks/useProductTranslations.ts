@@ -12,7 +12,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [translatingAll, setTranslatingAll] = useState(false);
-  const { translateText, getExistingTranslation, currentService } = useTranslationService();
+  const { translateText, getExistingTranslation, currentService, getServiceName } = useTranslationService();
 
   useEffect(() => {
     if (!selectedCategoryId) return;
@@ -92,7 +92,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     let skippedTranslations = 0;
     let successfulTranslations = 0;
     
-    const serviceName = currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+    const serviceName = getServiceName();
     
     toast({
       title: "Traduzione in corso",

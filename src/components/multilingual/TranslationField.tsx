@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,14 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 }) => {
   const [translatedText, setTranslatedText] = useState<string>("");
   const [isEdited, setIsEdited] = useState(false);
-  const { translateText, getExistingTranslation, saveTranslation, isTranslating, currentService } = useTranslationService();
+  const { 
+    translateText, 
+    getExistingTranslation, 
+    saveTranslation, 
+    isTranslating, 
+    currentService,
+    getServiceName 
+  } = useTranslationService();
 
   // Debug del servizio corrente quando cambia
   useEffect(() => {
@@ -97,15 +104,15 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     }
   };
 
-  // Ottieni il nome del servizio e il testo per il tooltip
-  const getServiceName = () => currentService === 'perplexity' ? 'AI' : 'DeepL';
-  const getTooltipText = () => `Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`;
+  // Ottieni il testo per il tooltip
+  const getTooltipText = useCallback(() => `Traduci con ${getServiceName()}`, [getServiceName]);
 
   // Mostra il nome del servizio corretto in base alla selezione
-  const getButtonLabel = () => {
+  const getButtonLabel = useCallback(() => {
     if (isTranslating) return <Loader2 className="h-4 w-4 animate-spin" />;
-    return `Traduci (${getServiceName()})`;
-  };
+    // Usa solo l'abbreviazione del servizio (AI o DeepL)
+    return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
+  }, [isTranslating, currentService]);
 
   const InputComponent = multiline ? (
     <Textarea 

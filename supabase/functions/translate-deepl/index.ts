@@ -1,140 +1,109 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.16.0'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const deeplApiKey = Deno.env.get('DEEPL_API_KEY') || '';
-
-// Initialize Supabase client
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// CORS headers
+// Costanti per CORS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface TranslationRequest {
-  text: string;
-  targetLanguage: 'en' | 'fr' | 'de' | 'es';
-  entityId: string;
-  entityType: string;
-  fieldName: string;
 }
 
-// Map delle lingue supportate per DeepL
-const languageMap = {
-  en: 'EN',
-  fr: 'FR',
-  de: 'DE',
-  es: 'ES'
-};
+// Ottieni chiave API DeepL
+const DEEPL_API_KEY = Deno.env.get('DEEPL_API_KEY')
+if (!DEEPL_API_KEY) {
+  console.error('DeepL API KEY non configurata')
+}
 
 serve(async (req) => {
-  // Handle CORS preflight request
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Check if environment variables are set
-    if (!supabaseUrl || !supabaseServiceKey || !deeplApiKey) {
-      console.error('Missing environment variables:', {
-        hasSupabaseUrl: !!supabaseUrl,
-        hasServiceKey: !!supabaseServiceKey,
-        hasDeeplKey: !!deeplApiKey
-      });
-      throw new Error('Configuration error: Missing required environment variables');
-    }
-
-    // Parse request body
-    const { text, targetLanguage, entityId, entityType, fieldName } = await req.json() as TranslationRequest;
+    const { text, targetLanguage, entityId, entityType, fieldName } = await req.json()
     
-    // Validation
-    if (!text || !targetLanguage || !entityId || !entityType || !fieldName) {
-      throw new Error('Missing required parameters');
+    if (!text) {
+      return new Response(
+        JSON.stringify({ error: 'Testo mancante' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    if (!['en', 'fr', 'de', 'es'].includes(targetLanguage)) {
-      throw new Error('Invalid target language');
-    }
-
-    // Check token usage - using rpc with named parameters to avoid ambiguous column reference
-    const { data: remainingTokens, error: tokenError } = await supabase.rpc('get_remaining_tokens');
+    // Mapping delle lingue supportate per DeepL
+    const languageMap = {
+      en: 'EN',  // Inglese
+      fr: 'FR',  // Francese
+      de: 'DE',  // Tedesco
+      es: 'ES',  // Spagnolo
+    };
     
-    if (tokenError) {
-      console.error('Error checking remaining tokens:', tokenError);
-      throw new Error('Failed to check token usage: ' + tokenError.message);
+    const deepLLanguage = languageMap[targetLanguage];
+    if (!deepLLanguage) {
+      return new Response(
+        JSON.stringify({ error: `Lingua non supportata: ${targetLanguage}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    if (remainingTokens <= 0) {
-      throw new Error('Monthly token quota exhausted');
-    }
+    console.log(`[DEEPL] ==> Traduzione di: "${text}" in ${targetLanguage}`)
 
-    console.log(`[DEEPL] ==> Traduzione di: "${text}" in ${targetLanguage}`);
-
-    // Call DeepL API
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('target_lang', languageMap[targetLanguage]);
-    formData.append('source_lang', 'IT'); // Italiano come lingua di origine
-
+    // Chiamata a DeepL API
     const response = await fetch('https://api-free.deepl.com/v2/translate', {
       method: 'POST',
       headers: {
-        'Authorization': `DeepL-Auth-Key ${deeplApiKey}`
+        'Authorization': `DeepL-Auth-Key ${DEEPL_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        text: [text],
+        target_lang: deepLLanguage,
+        formality: 'default',
+      }),
     });
-    
+
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('[DEEPL] Errore API:', errorData);
-      throw new Error(`DeepL API error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json();
+      console.error('DeepL API error:', errorData);
+      throw new Error(`DeepL API error: ${errorData.message || 'Unknown error'}`);
     }
-    
+
     const data = await response.json();
-    const translatedText = data.translations[0].text.trim();
+    const translatedText = data.translations?.[0]?.text;
 
-    console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
-    console.log('[DEEPL] Traduzione completata con successo');
-
-    // Record token usage with explicit parameter name
-    const { error: incrementError } = await supabase.rpc('increment_tokens', {
-      token_count: 1
-    });
-    
-    if (incrementError) {
-      console.error('Error incrementing token count:', incrementError);
-      // Continue execution even if token counting fails
+    if (!translatedText) {
+      throw new Error('Nessun testo tradotto ricevuto da DeepL');
     }
 
-    // Return the translation
-    return new Response(
-      JSON.stringify({
-        translatedText,
-        success: true,
-        service: 'deepl' // Identify which service was used
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.log(`[DEEPL] <== Risultato: "${translatedText}"`)
+    console.log("[DEEPL] Traduzione completata con successo")
+
+    // Incrementa il conteggio dei token (semplice stima: numero di caratteri / 4)
+    const tokenCount = Math.ceil(text.length / 4);
     
+    // Crea un client Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
+    // Incrementa il contatore dei token
+    try {
+      await supabase.rpc('increment_tokens', { token_count: tokenCount });
+    } catch (error) {
+      console.error('Error incrementing token count:', error);
+    }
+
+    // Restituisci la traduzione
+    return new Response(
+      JSON.stringify({ translatedText }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
   } catch (error) {
-    console.error('Error in translate-deepl function:', error);
-    
+    console.error('Error:', error.message);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false,
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
