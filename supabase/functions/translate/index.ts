@@ -54,11 +54,12 @@ serve(async (req) => {
     const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
 Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
 
-- Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
-- General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
-- Translate everything unless it's a widely recognized Italian name. Even uppercase text should be translated unless it is a known international dish.
-- Preserve formatting (punctuation, line breaks, spacing).
-- Do not include any explanation, comments, or extra text — return only the translated text.`;
+- Always translate generic or descriptive dishes composed of ingredients (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo").
+- Only preserve in Italian those traditional dish names that are internationally recognized and commonly used untranslated in the target language (e.g., "Tiramisù", "Bruschetta", "Spaghetti alla Carbonara", "Risotto").
+- Category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") must always be translated.
+- Do not preserve a name simply because it is capitalized or written in all uppercase — uppercase text should still be translated unless it is a universally known Italian dish.
+- Maintain the same capitalization and formatting (e.g., punctuation, line breaks, spacing) as in the original text.
+- Return only the translated text, without any explanation or extra comments.`;
     
     // Chiamata all'API Perplexity
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
