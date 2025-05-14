@@ -62,7 +62,7 @@ export function useTranslationFieldState({
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      // Recupera oggetto traduzione con controllo null
+      // Recupera oggetto traduzione con controllo null in modo sicuro
       if (
         existing !== null &&
         typeof existing === "object" &&
