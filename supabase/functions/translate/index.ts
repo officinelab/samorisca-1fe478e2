@@ -1,3 +1,4 @@
+
 // Supabase Edge Function per la traduzione con Perplexity
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -52,14 +53,17 @@ serve(async (req) => {
     };
     const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
 
-    const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
-Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
+    // Prompt aggiornato: NO spiegazioni, NO metatesto, solo la traduzione.
+    const systemPrompt = `You are a professional translator for restaurant menus and Italian culinary terms.
+Your job is to translate ONLY the original text into ${targetLanguageName}. 
+Return ONLY the translation, without explanations, comments, reformulations, or meta-information of any kind.
+NEVER add clarification, reformulate, explain, or introduce the translation with words like "translates to", "which means", "this is", "typically includes", etc.
+NEVER return anything except the translated text itself.
+Keep structure, formatting, capitalization and line breaks of the original.
+If the phrase is a traditional and internationally recognized Italian food name, keep it in Italian. Category names must always be translated.
+Do NOT add bullet points, asterisks, or extra formatting to the output.
+Return only the translated result as if it would go inside a printed menu, with NO additional text.`;
 
-- Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
-- General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
-- Maintain the same capitalization pattern as the original text.
-- Preserve formatting (punctuation, line breaks, spacing).
-- Do not include any explanation, comments, or extra text — return only the translated text.`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -79,7 +83,7 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
             content: text
           }
         ],
-        temperature: 0.2,
+        temperature: 0.09,
         max_tokens: 1000,
         frequency_penalty: 0
       })
@@ -104,37 +108,8 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
     }
     
     const data = await response.json();
-    
-    if (data.choices && data.choices.length > 0) {
-      const translatedText = data.choices[0].message.content.trim();
-      console.log(`[PERPLEXITY] <== Risultato: "${translatedText}"`);
-      console.log("[PERPLEXITY] Traduzione completata con successo");
-
-      // SCALA 1 TOKEN SOLO SE LA TRADUZIONE È ANDATA A BUON FINE
-      try {
-        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-        if (incError) {
-          console.warn('[PERPLEXITY] Warning: impossibile aggiornare i token:', incError);
-        } else {
-          console.log('[PERPLEXITY] 1 token scalato con successo.');
-        }
-      } catch (tokErr) {
-        console.warn('[PERPLEXITY] Warning: errore inatteso aggiornamento token:', tokErr);
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          translatedText, 
-          service: 'perplexity' 
-        }),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          } 
-        }
-      );
-    } else {
+    // Se non risponde come ci aspettiamo fallisce
+    if (!data.choices || !data.choices[0]?.message?.content) {
       console.error("[PERPLEXITY] Nessuna risposta valida dall'API");
       return new Response(
         JSON.stringify({ 
@@ -149,6 +124,36 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
         }
       );
     }
+    const translatedText = data.choices[0].message.content.trim();
+
+    // Log traduzione lato server
+    console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
+    console.log("[PERPLEXITY] Traduzione completata con successo");
+
+    // SCALA i token SOLO SE LA TRADUZIONE È ANDATA A BUON FINE
+    try {
+      const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+      if (incError) {
+        console.warn('[PERPLEXITY] Attenzione: impossibile aggiornare i token:', incError);
+      } else {
+        console.log('[PERPLEXITY] 1 token scalato con successo.');
+      }
+    } catch (tokErr) {
+      console.warn('[PERPLEXITY] Errore inatteso aggiornamento token:', tokErr);
+    }
+    
+    return new Response(
+      JSON.stringify({ 
+        translatedText, 
+        service: 'perplexity' 
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
     
   } catch (error) {
     console.error(`[PERPLEXITY] Errore: ${error.message}`);
