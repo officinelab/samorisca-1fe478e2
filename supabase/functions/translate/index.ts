@@ -53,7 +53,6 @@ serve(async (req) => {
     };
     const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
 
-    // Prompt aggiornato: NO spiegazioni, NO metatesto, solo la traduzione.
     const systemPrompt = `You are a professional translator for restaurant menus and Italian culinary terms.
 Your job is to translate ONLY the original text into ${targetLanguageName}. 
 Return ONLY the translation, without explanations, comments, reformulations, or meta-information of any kind.
@@ -63,7 +62,6 @@ Keep structure, formatting, capitalization and line breaks of the original.
 If the phrase is a traditional and internationally recognized Italian food name, keep it in Italian. Category names must always be translated.
 Do NOT add bullet points, asterisks, or extra formatting to the output.
 Return only the translated result as if it would go inside a printed menu, with NO additional text.`;
-
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -108,7 +106,6 @@ Return only the translated result as if it would go inside a printed menu, with 
     }
     
     const data = await response.json();
-    // Se non risponde come ci aspettiamo fallisce
     if (!data.choices || !data.choices[0]?.message?.content) {
       console.error("[PERPLEXITY] Nessuna risposta valida dall'API");
       return new Response(
@@ -130,17 +127,40 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // SCALA i token SOLO SE LA TRADUZIONE È ANDATA A BUON FINE
+    // === AGGIORNAMENTO TOKEN CON LOG ===
     try {
-      const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-      if (incError) {
-        console.warn('[PERPLEXITY] Attenzione: impossibile aggiornare i token:', incError);
+      const month = (new Date()).toISOString().slice(0, 7);
+      const { data: beforeRow, error: beforeError } = await supabase
+        .from('translation_tokens')
+        .select('month,tokens_used')
+        .eq('month', month)
+        .maybeSingle();
+      console.log('[PERPLEXITY][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
+
+      // Incr. tokens_used di 1
+      const { error: upError } = await supabase
+        .from('translation_tokens')
+        .update({
+          tokens_used: (beforeRow?.tokens_used || 0) + 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', month);
+      if (upError) {
+        console.error('[PERPLEXITY][TOKEN] Errore update token:', upError);
       } else {
-        console.log('[PERPLEXITY] 1 token scalato con successo.');
+        console.log('[PERPLEXITY][TOKEN] Token incrementato di 1 via update diretto');
       }
+
+      const { data: afterRow, error: afterError } = await supabase
+        .from('translation_tokens')
+        .select('month,tokens_used')
+        .eq('month', month)
+        .maybeSingle();
+      console.log('[PERPLEXITY][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.warn('[PERPLEXITY] Errore inatteso aggiornamento token:', tokErr);
+      console.error('[PERPLEXITY][TOKEN] Errore inatteso update token:', tokErr);
     }
+    // === /AGGIORNAMENTO TOKEN ===
     
     return new Response(
       JSON.stringify({ 

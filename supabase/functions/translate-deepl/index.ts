@@ -1,3 +1,4 @@
+
 // Supabase Edge Function per la traduzione con DeepL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -88,18 +89,41 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
-      // SCALA 1 TOKEN SOLO DOPO UNA TRADUZIONE EFFETTUATA
+      // === AGGIORNAMENTO TOKEN CON LOG ===
       try {
-        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-        if (incError) {
-          console.warn('[DEEPL] Warning: impossibile aggiornare i token:', incError);
+        const month = (new Date()).toISOString().slice(0, 7);
+        const { data: beforeRow, error: beforeError } = await supabase
+          .from('translation_tokens')
+          .select('month,tokens_used')
+          .eq('month', month)
+          .maybeSingle();
+        console.log('[DEEPL][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
+
+        // Incr. tokens_used di 1
+        const { error: upError } = await supabase
+          .from('translation_tokens')
+          .update({
+            tokens_used: (beforeRow?.tokens_used || 0) + 1,
+            last_updated: new Date().toISOString()
+          })
+          .eq('month', month);
+        if (upError) {
+          console.error('[DEEPL][TOKEN] Errore update token:', upError);
         } else {
-          console.log('[DEEPL] 1 token scalato con successo.');
+          console.log('[DEEPL][TOKEN] Token incrementato di 1 via update diretto');
         }
+
+        const { data: afterRow, error: afterError } = await supabase
+          .from('translation_tokens')
+          .select('month,tokens_used')
+          .eq('month', month)
+          .maybeSingle();
+        console.log('[DEEPL][DEBUG][TOKEN][DOPO]', afterRow, afterError);
       } catch (tokErr) {
-        console.warn('[DEEPL] Warning: errore inatteso aggiornamento token:', tokErr);
+        console.error('[DEEPL][TOKEN] Errore inatteso update token:', tokErr);
       }
-      
+      // === /AGGIORNAMENTO TOKEN ===
+
       return new Response(
         JSON.stringify({ 
           translatedText, 
