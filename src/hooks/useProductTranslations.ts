@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 import { SupportedLanguage } from "@/types/translation";
-import { useTranslationService } from "@/hooks/useTranslationService";
+import { useTranslationService } from "@/hooks/translation";
 import { toast } from "@/components/ui/use-toast";
 
 export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
@@ -12,7 +12,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [translatingAll, setTranslatingAll] = useState(false);
-  const { translateText, getExistingTranslation } = useTranslationService();
+  const { translateText, getExistingTranslation, currentService } = useTranslationService();
 
   useEffect(() => {
     if (!selectedCategoryId) return;
@@ -92,9 +92,11 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     let skippedTranslations = 0;
     let successfulTranslations = 0;
     
+    const serviceName = currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+    
     toast({
       title: "Traduzione in corso",
-      description: `Inizio traduzione di ${totalProducts} prodotti...`,
+      description: `Inizio traduzione di ${totalProducts} prodotti con ${serviceName}...`,
     });
     
     try {
@@ -160,14 +162,14 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         if (completedProducts % 3 === 0 || completedProducts === totalProducts) {
           toast({
             title: "Traduzione in corso",
-            description: `Completati ${completedProducts} di ${totalProducts} prodotti...`,
+            description: `Completati ${completedProducts} di ${totalProducts} prodotti con ${serviceName}...`,
           });
         }
       }
       
       toast({
         title: "Traduzione completata",
-        description: `Tradotti ${successfulTranslations} campi, ${skippedTranslations} campi già tradotti sono stati saltati.`,
+        description: `Tradotti ${successfulTranslations} campi con ${serviceName}, ${skippedTranslations} campi già tradotti sono stati saltati.`,
       });
       
     } catch (error) {

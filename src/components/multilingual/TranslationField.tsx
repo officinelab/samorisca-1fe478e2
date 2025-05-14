@@ -92,11 +92,13 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     }
   };
 
+  // Mostra il nome del servizio corretto in base alla selezione
   const getButtonLabel = () => {
     if (isTranslating) return <Loader2 className="h-4 w-4 animate-spin" />;
     return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
   };
 
+  // Ottieni il testo corretto per il tooltip in base al servizio selezionato
   const getTooltipText = () => {
     return `Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`;
   };

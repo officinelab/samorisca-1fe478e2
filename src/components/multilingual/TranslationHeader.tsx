@@ -25,7 +25,7 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
 
   const handleServiceChange = (value: string) => {
     const serviceType = value as TranslationServiceType;
-    console.log(`Changing translation service to: ${serviceType}`);
+    console.log(`Cambiando il servizio di traduzione a: ${serviceType}`);
     setTranslationService(serviceType);
   };
 
