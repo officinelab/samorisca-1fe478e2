@@ -7,7 +7,7 @@ interface ProductDetailPanelProps {
 }
 
 const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
-  // Recupero il prezzo e il suffisso
+  // Prezzo standard e suffisso
   const prezzoStandard = product.price_standard;
   const suffisso = product.has_price_suffix && product.price_suffix
     ? product.price_suffix
@@ -57,7 +57,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
         <div className="text-base">
           {/* Solo il prezzo principale seguito dal suffisso (se presenti) */}
           {prezzoStandard !== null && prezzoStandard !== undefined && (
-            <div className="mb-2">
+            <div className="mb-2 font-medium">
               {prezzoStandard.toLocaleString("it-IT", {
                 style: "currency",
                 currency: "EUR",
@@ -70,13 +70,18 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
           {/* Varianti di prezzo (una per riga), solo se almeno un prezzo variante è presente */}
           {varianti.length > 0 &&
             varianti.map((v, idx) => (
-              <div key={idx} className="pl-2 text-sm text-gray-700">
-                {v.value?.toLocaleString("it-IT", {
-                  style: "currency",
-                  currency: "EUR",
-                  minimumFractionDigits: 2,
-                })}{" "}
-                {v.name ? v.name : ""}
+              <div key={idx} className="pl-2 text-sm text-gray-700 font-normal">
+                {v.value !== null && v.value !== undefined ? (
+                  <>
+                    {v.value.toLocaleString("it-IT", {
+                      style: "currency",
+                      currency: "EUR",
+                      minimumFractionDigits: 2,
+                    })}{" "}
+                    {suffisso}
+                    {v.name ? ` ${v.name}` : null}
+                  </>
+                ) : null}
               </div>
             ))}
         </div>
