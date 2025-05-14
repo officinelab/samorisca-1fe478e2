@@ -63,6 +63,12 @@ import * as z from "zod";
 import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+// Import nuovi componenti presentazionali:
+import CategoryCard from "@/components/dashboard/CategoryCard";
+import ProductCard from "@/components/dashboard/ProductCard";
+import EmptyState from "@/components/dashboard/EmptyState";
+import LoaderSkeleton from "@/components/dashboard/LoaderSkeleton";
+
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -627,654 +633,6 @@ const Dashboard = () => {
     }
   };
 
-  const ImageUploader = ({ 
-    currentImage, 
-    onImageUploaded, 
-    label = "Immagine"
-  }: { 
-    currentImage?: string | null, 
-    onImageUploaded: (url: string) => void,
-    label?: string 
-  }) => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(currentImage || null);
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      
-      if (!file.type.startsWith('image/')) {
-        toast.error("Per favore seleziona un'immagine valida");
-        return;
-      }
-      
-      setIsUploading(true);
-      
-      try {
-        const objectUrl = URL.createObjectURL(file);
-        setPreviewUrl(objectUrl);
-        
-        const filePath = `menu/${Date.now()}-${file.name}`;
-        const { data, error } = await supabase.storage
-          .from('menu-images')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-        
-        if (error) throw error;
-        
-        const { data: publicUrlData } = supabase.storage
-          .from('menu-images')
-          .getPublicUrl(data.path);
-        
-        onImageUploaded(publicUrlData.publicUrl);
-      } catch (error) {
-        console.error('Errore nel caricamento dell\'immagine:', error);
-        toast.error("Errore nel caricamento dell'immagine. Riprova più tardi.");
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
-    return (
-      <div className="space-y-2">
-        <Label>{label}</Label>
-        {previewUrl && (
-          <div className="relative w-full h-36 mb-2">
-            <img 
-              src={previewUrl} 
-              alt="Preview" 
-              className="w-full h-full object-cover rounded-md"
-            />
-          </div>
-        )}
-        <div className="flex items-center">
-          <Label 
-            htmlFor="image-upload" 
-            className="cursor-pointer border border-dashed border-gray-300 rounded-md px-4 py-2 w-full text-center hover:bg-gray-50"
-          >
-            {isUploading ? "Caricamento in corso..." : "Carica immagine"}
-          </Label>
-          <Input 
-            id="image-upload" 
-            type="file" 
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-            disabled={isUploading}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const categoryFormSchema = z.object({
-    title: z.string().min(1, "Il nome è obbligatorio"),
-    description: z.string().optional(),
-    is_active: z.boolean().default(true),
-    image_url: z.string().optional().nullable(),
-  });
-
-  const productFormSchema = z.object({
-    title: z.string().min(1, "Il nome è obbligatorio"),
-    description: z.string().optional(),
-    is_active: z.boolean().default(true),
-    image_url: z.string().optional().nullable(),
-    price_standard: z.coerce.number().min(0, "Il prezzo deve essere maggiore o uguale a 0"),
-    has_multiple_prices: z.boolean().default(false),
-    price_variant_1_name: z.string().optional().nullable(),
-    price_variant_1_value: z.coerce.number().optional().nullable(),
-    price_variant_2_name: z.string().optional().nullable(),
-    price_variant_2_value: z.coerce.number().optional().nullable(),
-    has_price_suffix: z.boolean().default(false),
-    price_suffix: z.string().optional().nullable(),
-    label_id: z.string().optional().nullable(),
-  });
-
-  const CategoryFormPanel = () => {
-    const isEditing = Boolean(editingCategory);
-    
-    const form = useForm<z.infer<typeof categoryFormSchema>>({
-      resolver: zodResolver(categoryFormSchema),
-      defaultValues: {
-        title: editingCategory?.title || "",
-        description: editingCategory?.description || "",
-        is_active: editingCategory?.is_active ?? true,
-        image_url: editingCategory?.image_url || null,
-      },
-    });
-    
-    const onSubmit = (values: z.infer<typeof categoryFormSchema>) => {
-      if (isEditing && editingCategory) {
-        handleUpdateCategory(editingCategory.id, values);
-      } else {
-        handleAddCategory(values);
-      }
-    };
-
-    return (
-      <Sheet open={showCategoryForm} onOpenChange={setShowCategoryForm}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>{isEditing ? "Modifica Categoria" : "Nuova Categoria"}</SheetTitle>
-          </SheetHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome Categoria</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Nome categoria" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Descrizione</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        placeholder="Descrizione della categoria"
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <ImageUploader
-                      currentImage={field.value || null}
-                      onImageUploaded={(url) => field.onChange(url)}
-                      label="Immagine Categoria"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel>Attiva</FormLabel>
-                      <FormDescription>
-                        Mostra questa categoria nel menu
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowCategoryForm(false);
-                    setEditingCategory(null);
-                  }}
-                >
-                  Annulla
-                </Button>
-                <Button type="submit">Salva</Button>
-              </div>
-            </form>
-          </Form>
-        </SheetContent>
-      </Sheet>
-    );
-  };
-
-  const ProductForm = ({ product, onSubmit }: { 
-    product: Product | null, 
-    onSubmit: (data: any) => void 
-  }) => {
-    const [selectedAllergens, setSelectedAllergens] = useState<Allergen[]>(
-      product?.allergens || []
-    );
-    
-    const [selectedFeatures, setSelectedFeatures] = useState<ProductFeature[]>(
-      product?.features || []
-    );
-    
-    const [productLabels, setProductLabels] = useState<ProductLabel[]>([]);
-    const [productFeatures, setProductFeatures] = useState<ProductFeature[]>([]);
-    
-    useEffect(() => {
-      const loadLabelsAndFeatures = async () => {
-        try {
-          const { data: labelsData, error: labelsError } = await supabase
-            .from('product_labels')
-            .select('*')
-            .order('display_order', { ascending: true });
-            
-          if (labelsError) throw labelsError;
-          setProductLabels(labelsData || []);
-          
-          const { data: featuresData, error: featuresError } = await supabase
-            .from('product_features')
-            .select('*')
-            .order('display_order', { ascending: true });
-            
-          if (featuresError) throw featuresError;
-          setProductFeatures(featuresData || []);
-        } catch (error) {
-          console.error('Errore nel caricamento delle etichette e caratteristiche:', error);
-          toast.error("Errore nel caricamento delle opzioni. Riprova più tardi.");
-        }
-      };
-      
-      loadLabelsAndFeatures();
-    }, []);
-    
-    const form = useForm<z.infer<typeof productFormSchema>>({
-      resolver: zodResolver(productFormSchema),
-      defaultValues: {
-        title: product?.title || "",
-        description: product?.description || "",
-        is_active: product?.is_active ?? true,
-        image_url: product?.image_url || null,
-        price_standard: product?.price_standard || 0,
-        has_multiple_prices: product?.has_multiple_prices || false,
-        price_variant_1_name: product?.price_variant_1_name || "",
-        price_variant_1_value: product?.price_variant_1_value || null,
-        price_variant_2_name: product?.price_variant_2_name || "",
-        price_variant_2_value: product?.price_variant_2_value || null,
-        has_price_suffix: product?.has_price_suffix || false,
-        price_suffix: product?.price_suffix || "",
-        label_id: product?.label_id || null,
-      },
-    });
-    
-    const hasMultiplePrices = form.watch("has_multiple_prices");
-    const hasPriceSuffix = form.watch("has_price_suffix");
-    
-    const toggleAllergen = (allergen: Allergen) => {
-      if (selectedAllergens.some(a => a.id === allergen.id)) {
-        setSelectedAllergens(selectedAllergens.filter(a => a.id !== allergen.id));
-      } else {
-        setSelectedAllergens([...selectedAllergens, allergen]);
-      }
-    };
-    
-    const toggleFeature = (feature: ProductFeature) => {
-      if (selectedFeatures.some(f => f.id === feature.id)) {
-        setSelectedFeatures(selectedFeatures.filter(f => f.id !== feature.id));
-      } else {
-        setSelectedFeatures([...selectedFeatures, feature]);
-      }
-    };
-    
-    const handleFormSubmit = (values: z.infer<typeof productFormSchema>) => {
-      const productData = {
-        ...values,
-        allergens: selectedAllergens,
-        features: selectedFeatures
-      };
-      
-      onSubmit(productData);
-    };
-
-    return (
-      <div className="space-y-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Prodotto</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Nome prodotto" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-              <FormField
-              control={form.control}
-              name="is_active"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Attivo</FormLabel>
-                    <FormDescription>
-                      Mostra questo prodotto nel menu
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrizione</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      placeholder="Descrizione del prodotto"
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-             <div className="space-y-2">
-              <Label className="block">Caratteristiche</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {productFeatures.map((feature) => (
-                  <div 
-                    key={feature.id} 
-                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
-                      selectedFeatures.some(f => f.id === feature.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white hover:bg-gray-50"
-                    }`}
-                    onClick={() => toggleFeature(feature)}
-                  >
-                    {feature.title}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="image_url"
-              render={({ field }) => (
-                <FormItem>
-                  <ImageUploader
-                    currentImage={field.value || null}
-                    onImageUploaded={(url) => field.onChange(url)}
-                    label="Immagine Prodotto"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="price_standard"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prezzo (€)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="has_price_suffix"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Suffisso prezzo</FormLabel>
-                    <FormDescription>
-                      Aggiungi un suffisso al prezzo (es. "al kg", "/persona", ecc.)
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            {hasPriceSuffix && (
-              <FormField
-                control={form.control}
-                name="price_suffix"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Testo suffisso</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Es. al kg, /persona"
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name="label_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Etichetta prodotto</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange}
-                    value={field.value || undefined}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleziona un'etichetta" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Nessuna etichetta</SelectItem>
-                      {productLabels.map((label) => (
-                        <SelectItem key={label.id} value={label.id}>
-                          <div className="flex items-center">
-                            {label.color && (
-                              <div 
-                                className="w-3 h-3 rounded-full mr-2" 
-                                style={{ backgroundColor: label.color }}
-                              />
-                            )}
-                            {label.title}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="has_multiple_prices"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel>Prezzi multipli</FormLabel>
-                    <FormDescription>
-                      Abilita diverse varianti di prezzo
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            {hasMultiplePrices && (
-              <div className="border rounded-md p-4 space-y-4 bg-gray-50">
-                <h4 className="font-medium">Varianti di prezzo</h4>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="price_variant_1_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome Variante 1</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Es. Bottiglia" value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="price_variant_1_value"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prezzo Variante 1 (€)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              {...field}
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                const value = e.target.value ? parseFloat(e.target.value) : null;
-                                field.onChange(value);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="price_variant_2_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome Variante 2</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Es. Calice" value={field.value || ""} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="price_variant_2_value"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prezzo Variante 2 (€)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              {...field}
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                const value = e.target.value ? parseFloat(e.target.value) : null;
-                                field.onChange(value);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label className="block">Allergeni</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {allergens.map((allergen) => (
-                  <div 
-                    key={allergen.id} 
-                    className={`px-3 py-1 rounded-full border text-sm cursor-pointer ${
-                      selectedAllergens.some(a => a.id === allergen.id)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white hover:bg-gray-50"
-                    }`}
-                    onClick={() => toggleAllergen(allergen)}
-                  >
-                    {allergen.number}: {allergen.title}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  if (product) {
-                    setIsEditing(false);
-                  }
-                }}
-              >
-                Annulla
-              </Button>
-              <Button type="submit">Salva</Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    );
-  };
-
   const CategoriesList = () => {
     return (
       <div className="h-full flex flex-col">
@@ -1287,109 +645,33 @@ const Dashboard = () => {
             <PlusCircle className="h-4 w-4 mr-2" /> Nuova
           </Button>
         </div>
-        
         <ScrollArea className="flex-grow">
           <div className="p-2">
             {isLoadingCategories ? (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
+              <LoaderSkeleton />
             ) : (
               <div className="space-y-1">
                 {categories.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Nessuna categoria trovata.<br />
-                    Crea una nuova categoria per iniziare.
-                  </div>
+                  <EmptyState message="Nessuna categoria trovata.">
+                    <br />Crea una nuova categoria per iniziare.
+                  </EmptyState>
                 ) : (
                   categories.map((category, index) => (
-                    <div
+                    <CategoryCard
                       key={category.id}
-                      className={`flex flex-col p-2 rounded-md cursor-pointer ${
-                        selectedCategory === category.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-gray-100"
-                      }`}
-                      onClick={() => handleCategorySelect(category.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          {category.image_url ? (
-                            <div className="w-8 h-8 rounded-md overflow-hidden">
-                              <img
-                                src={category.image_url}
-                                alt={category.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
-                              <Package className="h-4 w-4" />
-                            </div>
-                          )}
-                          <span className="truncate max-w-[120px]">{category.title}</span>
-                        </div>
-                        
-                        {!category.is_active && (
-                          <span className="text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
-                            Disattivata
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex justify-end mt-2">
-                        <div className="flex mr-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCategoryReorder(category.id, 'up');
-                            }}
-                            disabled={index === 0}
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCategoryReorder(category.id, 'down');
-                            }}
-                            disabled={index === categories.length - 1}
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingCategory(category);
-                            setShowCategoryForm(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCategory(category.id);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                      category={category}
+                      selected={selectedCategory === category.id}
+                      index={index}
+                      total={categories.length}
+                      onSelect={handleCategorySelect}
+                      onMoveUp={handleCategoryReorder.bind(null, category.id, 'up')}
+                      onMoveDown={handleCategoryReorder.bind(null, category.id, 'down')}
+                      onEdit={() => {
+                        setEditingCategory(category);
+                        setShowCategoryForm(true);
+                      }}
+                      onDelete={() => handleDeleteCategory(category.id)}
+                    />
                   ))
                 )}
               </div>
@@ -1404,12 +686,12 @@ const Dashboard = () => {
     const filteredProducts = products.filter(
       product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
+
     const handleBackToCategories = () => {
       setShowMobileCategories(true);
       setShowMobileProducts(false);
     };
-    
+
     return (
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
@@ -1457,143 +739,38 @@ const Dashboard = () => {
         <ScrollArea className="flex-grow">
           <div className="p-4">
             {!selectedCategory ? (
-              <div className="text-center py-8 text-gray-500">
-                Seleziona una categoria per visualizzare i prodotti.
-              </div>
+              <EmptyState message="Seleziona una categoria per visualizzare i prodotti." />
             ) : isLoadingProducts ? (
-              <div className="space-y-4">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-              </div>
+              <LoaderSkeleton lines={3} height="h-20" />
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchQuery ? 
-                  "Nessun prodotto trovato per questa ricerca." : 
-                  "Nessun prodotto in questa categoria."}
-              </div>
+              <EmptyState message={searchQuery
+                ? "Nessun prodotto trovato per questa ricerca."
+                : "Nessun prodotto in questa categoria."}
+              />
             ) : (
               <div className="space-y-2">
                 {filteredProducts.map((product, index) => (
-                  <div
+                  <ProductCard
                     key={product.id}
-                    className={`border rounded-md p-3 cursor-pointer transition-colors ${
-                      selectedProduct === product.id 
-                        ? "border-primary bg-primary/5" 
-                        : "hover:bg-gray-50"
-                    } ${!product.is_active ? "opacity-60" : ""}`}
-                    onClick={() => handleProductSelect(product.id)}
-                  >
-                    <div className="flex space-x-3">
-                      {product.image_url ? (
-                        <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                          <img
-                            src={product.image_url}
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md flex-shrink-0">
-                          <Package className="h-6 w-6 text-gray-400" />
-                        </div>
-                      )}
+                    product={product}
+                    selected={selectedProduct === product.id}
+                    index={index}
+                    total={filteredProducts.length}
+                    onSelect={handleProductSelect}
+                    onMoveUp={handleProductReorder.bind(null, product.id, 'up')}
+                    onMoveDown={handleProductReorder.bind(null, product.id, 'down')}
+                    onEdit={() => {
+                      setSelectedProduct(product.id);
+                      setIsEditing(true);
                       
-                      <div className="flex-1">
-                        <h3 className="font-medium">{product.title}</h3>
-                        {product.description && (
-                          <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
-                        )}
-                        
-                        <div className="flex items-center mt-1 space-x-2">
-                          <span className="text-sm font-semibold">{product.price_standard} €</span>
-                          {product.has_price_suffix && product.price_suffix && (
-                            <span className="text-xs text-gray-500">{product.price_suffix}</span>
-                          )}
-                          
-                          {!product.is_active && (
-                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
-                              Non disponibile
-                            </span>
-                          )}
-                          
-                          {product.allergens && product.allergens.length > 0 && (
-                            <div className="flex space-x-1">
-                              {product.allergens.slice(0, 3).map((allergen) => (
-                                <span 
-                                  key={allergen.id}
-                                  className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
-                                >
-                                  {allergen.number}
-                                </span>
-                              ))}
-                              {product.allergens.length > 3 && (
-                                <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
-                                  +{product.allergens.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end mt-2">
-                      <div className="flex mr-1">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductReorder(product.id, 'up');
-                          }}
-                          disabled={index === 0}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductReorder(product.id, 'down');
-                          }}
-                          disabled={index === filteredProducts.length - 1}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedProduct(product.id);
-                          setIsEditing(true);
-                          
-                          if (isMobile) {
-                            setShowMobileProducts(false);
-                            setShowMobileDetail(true);
-                          }
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteProduct(product.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                      if (isMobile) {
+                        setShowMobileProducts(false);
+                        setShowMobileDetail(true);
+                      }
+                    }}
+                    onDelete={() => handleDeleteProduct(product.id)}
+                    isMobile={isMobile}
+                  />
                 ))}
               </div>
             )}
