@@ -86,9 +86,9 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      // Fix: Make sure 'existing' is neither null nor undefined before property access
+      // Proper null check before accessing 'existing'
       if (
-        existing != null &&
+        existing !== null &&
         typeof existing === "object" &&
         "translatedText" in existing
       ) {
