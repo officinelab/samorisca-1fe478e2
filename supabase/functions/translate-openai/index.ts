@@ -70,19 +70,6 @@ serve(async (req) => {
       );
     }
 
-    // Stima token usati (semplice)
-    const estimatedTokens = Math.ceil(text.length / 4);
-    try {
-      const { error: incrementError } = await supabase.rpc('increment_tokens', {
-        token_count: estimatedTokens,
-      });
-      if (incrementError) {
-        logDetailedError('Errore nell\'incremento dei token', incrementError);
-      }
-    } catch (counterErr) {
-      logDetailedError('Impossibile incrementare il contatore token', counterErr);
-    }
-
     // Uso modularizzazione per nome lingua e prompt
     const targetLangName = mapLanguageCode(targetLanguage);
     const systemPrompt = getSystemPrompt(targetLangName);
@@ -147,17 +134,44 @@ serve(async (req) => {
         logDetailedError('Impossibile salvare la traduzione nel database', saveErr);
       }
 
-      // SCALA 1 TOKEN SOLO DOPO UNA TRADUZIONE EFFETTUATA
+      // ==== INCREMENTO TOKEN CON DEBUG ====
       try {
-        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+        // 1. Recupero il valore attuale tokens_used per debugging
+        const { data: tokensRow, error: selError } = await supabase
+          .from('translation_tokens')
+          .select('*')
+          .eq('month', (new Date()).toISOString().slice(0, 7)) // formato YYYY-MM
+          .single();
+
+        if (selError) {
+          console.warn('[OPENAI][DEBUG] Errore nel recupero tokens_used:', selError);
+        } else {
+          console.log(`[OPENAI][DEBUG] Valore attuale tokens_used PRIMA:`, tokensRow?.tokens_used);
+        }
+
+        const { data: incData, error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
         if (incError) {
-          console.warn('[OPENAI] Warning: impossibile aggiornare i token:', incError);
+          console.warn('[OPENAI] Errore aggiornamento token:', incError);
         } else {
           console.log('[OPENAI] 1 token scalato con successo.');
         }
+
+        // 2. Recupero il valore attuale tokens_used DOPO
+        const { data: tokensRowAfter, error: selAfterError } = await supabase
+          .from('translation_tokens')
+          .select('*')
+          .eq('month', (new Date()).toISOString().slice(0, 7))
+          .single();
+
+        if (selAfterError) {
+          console.warn('[OPENAI][DEBUG] Errore nel recupero tokens_used DOPO:', selAfterError);
+        } else {
+          console.log(`[OPENAI][DEBUG] Valore tokens_used DOPO:`, tokensRowAfter?.tokens_used);
+        }
       } catch (tokErr) {
-        console.warn('[OPENAI] Warning: errore inatteso aggiornamento token:', tokErr);
+        console.warn('[OPENAI][DEBUG] Errore inatteso aggiornamento token:', tokErr);
       }
+      // ==== /INCREMENTO TOKEN ====
 
       return new Response(
         JSON.stringify({ translatedText }),
