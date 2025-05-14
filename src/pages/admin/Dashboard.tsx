@@ -423,7 +423,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteCategory = async (categoryId: string) => {
+  const handleCategoryDelete = async (categoryId: string) => {
     if (!confirm("Sei sicuro di voler eliminare questa categoria? Verranno eliminati anche tutti i prodotti associati.")) {
       return;
     }
@@ -608,7 +608,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleProductDelete = async (productId: string) => {
     if (!confirm("Sei sicuro di voler eliminare questo prodotto?")) {
       return;
     }
