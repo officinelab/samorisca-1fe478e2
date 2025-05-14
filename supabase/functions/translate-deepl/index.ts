@@ -73,7 +73,7 @@ serve(async (req) => {
       throw new Error('Monthly token quota exhausted');
     }
 
-    console.log(`=== DEEPL TRANSLATION === Translating "${text}" to ${targetLanguage} with DeepL API`);
+    console.log(`[DEEPL] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
     // Call DeepL API
     const formData = new FormData();
@@ -91,15 +91,15 @@ serve(async (req) => {
     
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('DeepL API error:', errorData);
+      console.error('[DEEPL] Errore API:', errorData);
       throw new Error(`DeepL API error: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
     const translatedText = data.translations[0].text.trim();
 
-    console.log('=== DEEPL TRANSLATION RESULT === ', translatedText);
-    console.log('Translation completed successfully with DeepL');
+    console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
+    console.log('[DEEPL] Traduzione completata con successo');
 
     // Record token usage with explicit parameter name
     const { error: incrementError } = await supabase.rpc('increment_tokens', {

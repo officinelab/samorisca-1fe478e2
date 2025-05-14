@@ -25,13 +25,13 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
 
   const handleServiceChange = (value: string) => {
     const serviceType = value as TranslationServiceType;
-    console.log(`Cambiando il servizio di traduzione a: ${serviceType}`);
+    console.log(`TranslationHeader: Cambio servizio di traduzione a: ${serviceType}`);
     setTranslationService(serviceType);
   };
 
   // Debug dell'attuale servizio selezionato
   useEffect(() => {
-    console.log(`Current translation service in header: ${currentService}`);
+    console.log(`TranslationHeader: Servizio di traduzione attuale: ${currentService}`);
   }, [currentService]);
 
   return (

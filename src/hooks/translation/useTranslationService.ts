@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult, TranslationService } from './types';
@@ -12,9 +12,29 @@ import {
   getExistingTranslation as getExistingTranslationFromDb
 } from './translationStorage';
 
+// Costante per il localStorage
+const TRANSLATION_SERVICE_KEY = 'preferred_translation_service';
+
 export const useTranslationService = (): TranslationService => {
+  // Recuperiamo il servizio salvato nel localStorage o usiamo perplexity come default
+  const getSavedService = (): TranslationServiceType => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(TRANSLATION_SERVICE_KEY);
+      return (saved === 'deepl' ? 'deepl' : 'perplexity') as TranslationServiceType;
+    }
+    return 'perplexity';
+  };
+
   const [isTranslating, setIsTranslating] = useState(false);
-  const [currentService, setCurrentService] = useState<TranslationServiceType>('perplexity');
+  const [currentService, setCurrentService] = useState<TranslationServiceType>(getSavedService());
+
+  // Aggiorniamo il localStorage quando cambia il servizio
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(TRANSLATION_SERVICE_KEY, currentService);
+      console.log(`Servizio di traduzione salvato in localStorage: ${currentService}`);
+    }
+  }, [currentService]);
 
   const translateText = async (
     text: string,
@@ -32,10 +52,10 @@ export const useTranslationService = (): TranslationService => {
     }
 
     setIsTranslating(true);
-    console.log(`Usando il servizio di traduzione: ${currentService}`); // Debug log per il servizio selezionato
+    console.log(`useTranslationService: Avvio traduzione con servizio: ${currentService}`);
 
     try {
-      // Check remaining tokens before translation
+      // Verifica token rimanenti prima della traduzione
       const tokensData = await checkRemainingTokens();
       
       if (tokensData === null) {
@@ -55,14 +75,14 @@ export const useTranslationService = (): TranslationService => {
         };
       }
 
-      // Chiamiamo la edge function appropriata in base al servizio selezionato
+      // Passiamo esplicitamente il servizio corrente alla funzione di traduzione
       const result = await translateTextViaEdgeFunction(
         text,
         targetLanguage,
         entityId,
         entityType,
         fieldName,
-        currentService // Passiamo il servizio corrente alla funzione di traduzione
+        currentService // Passiamo esplicitamente il servizio attuale
       );
 
       if (result.success) {
@@ -97,9 +117,10 @@ export const useTranslationService = (): TranslationService => {
   };
 
   const setTranslationService = (service: TranslationServiceType) => {
+    console.log(`useTranslationService: Cambio servizio da ${currentService} a ${service}`);
     setCurrentService(service);
-    toast.success(`Servizio di traduzione impostato a: ${service === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
-    console.log(`Servizio di traduzione cambiato a: ${service}`); // Debug log per il cambio di servizio
+    const serviceName = service === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+    toast.success(`Servizio di traduzione impostato a: ${serviceName}`);
   };
 
   return {

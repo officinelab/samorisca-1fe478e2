@@ -30,11 +30,12 @@ export const translateTextViaEdgeFunction = async (
   serviceType: TranslationServiceType = 'perplexity'
 ): Promise<TranslationResult> => {
   try {
-    // Scegliamo il nome della funzione edge in base al servizio selezionato
+    // Scegliamo esplicitamente il nome della funzione edge in base al servizio selezionato
     const functionName = serviceType === 'deepl' ? 'translate-deepl' : 'translate';
     
-    console.log(`Chiamando ${functionName} edge function per il testo: "${text}"`); // Debug log
-    console.log(`Usando il servizio di traduzione: ${serviceType}`); // Debug log per il tipo di servizio
+    // Debug log più dettagliato
+    console.log(`Chiamando edge function "${functionName}" per traduzione con servizio: ${serviceType}`);
+    console.log(`Testo da tradurre: "${text}" in lingua: ${targetLanguage}`);
     
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: {
@@ -47,7 +48,7 @@ export const translateTextViaEdgeFunction = async (
     });
 
     if (error) {
-      console.error(`Errore di traduzione (${serviceType}):`, error);
+      console.error(`Errore di traduzione con ${serviceType}:`, error);
       toast.error(`Errore durante la traduzione: ${error.message}`);
       return {
         success: false,
@@ -65,11 +66,12 @@ export const translateTextViaEdgeFunction = async (
       };
     }
 
-    console.log(`Risultato della traduzione da ${serviceType}: "${data.translatedText}"`); // Debug log
+    console.log(`Risultato della traduzione da ${serviceType}: "${data.translatedText}"`);
     
     return {
       success: true,
-      translatedText: data.translatedText
+      translatedText: data.translatedText,
+      service: serviceType // Aggiungiamo l'informazione su quale servizio è stato usato
     };
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);

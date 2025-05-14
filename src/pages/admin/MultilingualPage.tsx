@@ -1,13 +1,20 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TranslationHeader } from "@/components/multilingual/TranslationHeader";
 import { GeneralTranslationsTab } from "@/components/multilingual/GeneralTranslationsTab";
 import { ProductTranslationsTab } from "@/components/multilingual/ProductTranslationsTab";
-import { SupportedLanguage } from "@/types/translation";
+import { SupportedLanguage, TranslationServiceType } from "@/types/translation";
+import { useTranslationService } from "@/hooks/translation";
 
 const MultilingualPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>("en");
+  const { currentService } = useTranslationService();
+  
+  // Debug per verificare il servizio attualmente selezionato
+  useEffect(() => {
+    console.log(`MultilingualPage: Servizio di traduzione attuale: ${currentService}`);
+  }, [currentService]);
 
   return (
     <div className="flex flex-col h-full space-y-4">

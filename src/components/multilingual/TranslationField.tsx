@@ -36,6 +36,11 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   const [isEdited, setIsEdited] = useState(false);
   const { translateText, getExistingTranslation, saveTranslation, isTranslating, currentService } = useTranslationService();
 
+  // Debug del servizio corrente quando cambia
+  useEffect(() => {
+    console.log(`TranslationField (${fieldName}): Servizio di traduzione attuale: ${currentService}`);
+  }, [currentService, fieldName]);
+
   useEffect(() => {
     const fetchExistingTranslation = async () => {
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
@@ -47,12 +52,12 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     };
 
     fetchExistingTranslation();
-  }, [id, entityType, fieldName, language]);
+  }, [id, entityType, fieldName, language, getExistingTranslation]);
 
   const handleTranslate = async () => {
     if (!originalText.trim()) return;
 
-    console.log(`TranslationField: Traduzione con ${currentService}`);
+    console.log(`TranslationField (${fieldName}): Avvio traduzione con servizio: ${currentService}`);
 
     const result = await translateText(
       originalText,
@@ -63,7 +68,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     );
 
     if (result.success && result.translatedText) {
-      console.log(`Risultato traduzione: "${result.translatedText}"`);
+      console.log(`Risultato traduzione per ${fieldName}: "${result.translatedText}"`);
       setTranslatedText(result.translatedText);
       if (onTranslationSaved) {
         onTranslationSaved(result.translatedText);
@@ -92,15 +97,14 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     }
   };
 
+  // Ottieni il nome del servizio e il testo per il tooltip
+  const getServiceName = () => currentService === 'perplexity' ? 'AI' : 'DeepL';
+  const getTooltipText = () => `Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`;
+
   // Mostra il nome del servizio corretto in base alla selezione
   const getButtonLabel = () => {
     if (isTranslating) return <Loader2 className="h-4 w-4 animate-spin" />;
-    return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
-  };
-
-  // Ottieni il testo corretto per il tooltip in base al servizio selezionato
-  const getTooltipText = () => {
-    return `Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`;
+    return `Traduci (${getServiceName()})`;
   };
 
   const InputComponent = multiline ? (

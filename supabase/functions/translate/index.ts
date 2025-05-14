@@ -77,7 +77,7 @@ serve(async (req) => {
 
 Text to translate: "${text}"`;
 
-    console.log(`=== PERPLEXITY TRANSLATION === Translating "${text}" to ${targetLanguage} with Perplexity API`);
+    console.log(`[PERPLEXITY] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
     // Call Perplexity API
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -105,15 +105,15 @@ Text to translate: "${text}"`;
     
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Perplexity API error:', errorData);
+      console.error('[PERPLEXITY] Errore API:', errorData);
       throw new Error(`Perplexity API error: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
     const translatedText = data.choices[0].message.content.trim();
 
-    console.log('=== PERPLEXITY TRANSLATION RESULT === ', translatedText);
-    console.log('Translation completed successfully with Perplexity');
+    console.log(`[PERPLEXITY] <== Risultato: "${translatedText}"`);
+    console.log('[PERPLEXITY] Traduzione completata con successo');
 
     // Record token usage with explicit parameter name
     const { error: incrementError } = await supabase.rpc('increment_tokens', {
