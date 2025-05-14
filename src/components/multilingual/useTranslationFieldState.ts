@@ -61,7 +61,7 @@ export function useTranslationFieldState({
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      // Ensure existing is not null before accessing its properties
+      // Recupera oggetto traduzione con controllo null
       if (
         existing !== null &&
         typeof existing === "object" &&
@@ -79,7 +79,7 @@ export function useTranslationFieldState({
       }
       setTranslatedData(translationObj);
 
-      // Get updated_at from the product table
+      // Recupera campo updated_at dal prodotto
       let updatedAtProd = "";
       try {
         const tableName = getTableName(entityType);
@@ -98,8 +98,15 @@ export function useTranslationFieldState({
       } catch (err) {
         updatedAtProd = "";
       }
-      setOriginalLastUpdated(updatedAtProd); // rename per chiarezza, ora usato solo updatedAtProd
+      setOriginalLastUpdated(updatedAtProd);
       setError(null);
+
+      // DEBUG: mostra i valori confrontati
+      if (updatedAtProd) {
+        console.log(
+          `[DEBUG] useTranslationFieldState: Prodotto updated_at = ${updatedAtProd}, Traduzione last_updated = ${translationObj?.last_updated}`
+        );
+      }
     };
 
     fetchData();
@@ -176,16 +183,23 @@ export function useTranslationFieldState({
   const prodottoUpdatedAt = originalLastUpdated;
   const traduzioneLastUpdated = translatedData?.last_updated;
 
+  // Logica aggiornata con debug!
   if (!translatedData || !translatedData.translatedText) {
     status = "missing";
   } else if (
     traduzioneLastUpdated &&
     prodottoUpdatedAt &&
-    new Date(traduzioneLastUpdated) < new Date(prodottoUpdatedAt)
+    new Date(traduzioneLastUpdated).getTime() < new Date(prodottoUpdatedAt).getTime()
   ) {
     status = "outdated";
+    console.log(
+      `[DEBUG] Stato TRADUZIONE OUTDATED: prodotto.updated_at = ${prodottoUpdatedAt} > traduzione.last_updated = ${traduzioneLastUpdated}`
+    );
   } else if (translatedData?.translatedText) {
     status = "updated";
+    console.log(
+      `[DEBUG] Stato TRADUZIONE UPDATED: traduzione.last_updated = ${traduzioneLastUpdated}, prodotto.updated_at = ${prodottoUpdatedAt}`
+    );
   }
 
   return {
