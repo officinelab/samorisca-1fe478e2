@@ -51,7 +51,7 @@ serve(async (req) => {
     const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
     
     // Istruzione aggiornata per Perplexity, allineata con quella di OpenAI
-    const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
+    const systemPrompt = `You are a professional translator specializing in restaurant menus and culinary terminology. 
 Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
 
 - Always translate generic or descriptive dishes composed of ingredients (e.g., "Gamberi crudi", "Carciofi fritti", "Tagliata di manzo").
