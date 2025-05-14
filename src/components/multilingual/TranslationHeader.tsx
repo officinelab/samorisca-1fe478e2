@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslationService } from "@/hooks/translation";
 import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TranslationHeaderProps {
   selectedLanguage: SupportedLanguage;
@@ -20,8 +21,8 @@ interface TranslationHeaderProps {
 }
 
 export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: TranslationHeaderProps) => {
-  const { stats, isLoading } = useTranslationStats(selectedLanguage);
-  const { currentService, setTranslationService } = useTranslationService();
+  const { stats, isLoading: statsLoading } = useTranslationStats(selectedLanguage);
+  const { currentService, setTranslationService, isLoading: serviceLoading } = useTranslationService();
 
   const handleServiceChange = (value: string) => {
     const serviceType = value as TranslationServiceType;
@@ -44,21 +45,25 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
           />
           
           <div className="w-48">
-            <Select
-              value={currentService}
-              onValueChange={handleServiceChange}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleziona servizio" />
-              </SelectTrigger>
-              <SelectContent>
-                {translationServiceOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {serviceLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select
+                value={currentService}
+                onValueChange={handleServiceChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleziona servizio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {translationServiceOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           
           <TokenStatus />
@@ -68,15 +73,15 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
           <div className="flex justify-between mb-1">
             <span className="text-sm font-medium">Progresso traduzione:</span>
             <span className="text-sm font-medium">
-              {isLoading ? '...' : `${stats.translated}/${stats.total}`}
+              {statsLoading ? '...' : `${stats.translated}/${stats.total}`}
             </span>
           </div>
           <Progress 
-            value={isLoading ? 0 : stats.percentage} 
+            value={statsLoading ? 0 : stats.percentage} 
             className="h-2" 
           />
           <p className="text-xs text-muted-foreground mt-1">
-            {isLoading ? 'Caricamento statistiche...' : `${stats.percentage}% completato`}
+            {statsLoading ? 'Caricamento statistiche...' : `${stats.percentage}% completato`}
           </p>
         </div>
       </div>

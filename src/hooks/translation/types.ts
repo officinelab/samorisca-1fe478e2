@@ -34,4 +34,5 @@ export interface TranslationService {
   currentService: TranslationServiceType;
   setTranslationService: (service: TranslationServiceType) => void;
   getServiceName: () => string;
+  isLoading: boolean;
 }

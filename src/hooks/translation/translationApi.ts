@@ -53,7 +53,8 @@ export const translateTextViaEdgeFunction = async (
       return {
         success: false,
         translatedText: '',
-        message: `Errore durante la traduzione: ${error.message}`
+        message: `Errore durante la traduzione: ${error.message}`,
+        service: serviceType
       };
     }
 
@@ -62,7 +63,8 @@ export const translateTextViaEdgeFunction = async (
       return {
         success: false,
         translatedText: '',
-        message: 'Nessun testo tradotto ricevuto'
+        message: 'Nessun testo tradotto ricevuto',
+        service: serviceType
       };
     }
 
@@ -81,7 +83,8 @@ export const translateTextViaEdgeFunction = async (
     return {
       success: false,
       translatedText: '',
-      message: `Errore del servizio di traduzione: ${errorMessage}`
+      message: `Errore del servizio di traduzione: ${errorMessage}`,
+      service: serviceType
     };
   }
 };

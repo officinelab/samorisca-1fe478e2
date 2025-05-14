@@ -4,17 +4,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TranslationHeader } from "@/components/multilingual/TranslationHeader";
 import { GeneralTranslationsTab } from "@/components/multilingual/GeneralTranslationsTab";
 import { ProductTranslationsTab } from "@/components/multilingual/ProductTranslationsTab";
-import { SupportedLanguage, TranslationServiceType } from "@/types/translation";
+import { SupportedLanguage } from "@/types/translation";
 import { useTranslationService } from "@/hooks/translation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MultilingualPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>("en");
-  const { currentService } = useTranslationService();
+  const { currentService, isLoading } = useTranslationService();
   
   // Debug per verificare il servizio attualmente selezionato
   useEffect(() => {
-    console.log(`MultilingualPage: Servizio di traduzione attuale: ${currentService}`);
-  }, [currentService]);
+    if (!isLoading) {
+      console.log(`MultilingualPage: Servizio di traduzione attuale: ${currentService}`);
+    }
+  }, [currentService, isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full space-y-4 p-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-[40vh] w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full space-y-4">

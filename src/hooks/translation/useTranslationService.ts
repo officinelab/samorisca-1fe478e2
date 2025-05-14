@@ -11,31 +11,88 @@ import {
   saveTranslation as saveTranslationToDb,
   getExistingTranslation as getExistingTranslationFromDb
 } from './translationStorage';
+import { supabase } from '@/integrations/supabase/client';
 
-// Costante per il localStorage
+// Chiave per il localStorage (usata solo come fallback temporaneo)
 const TRANSLATION_SERVICE_KEY = 'preferred_translation_service';
 
 export const useTranslationService = (): TranslationService => {
-  // Recuperiamo il servizio salvato nel localStorage o usiamo perplexity come default
-  const getSavedService = (): TranslationServiceType => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(TRANSLATION_SERVICE_KEY);
-      return (saved === 'deepl' ? 'deepl' : 'perplexity') as TranslationServiceType;
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [currentService, setCurrentService] = useState<TranslationServiceType>('perplexity');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Carica la preferenza del servizio da Supabase
+  useEffect(() => {
+    const loadTranslationServicePreference = async () => {
+      try {
+        // Prima prova a caricare da Supabase
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'translation_service')
+          .single();
+        
+        if (error || !data) {
+          // Fallback: carica da localStorage
+          const savedService = localStorage.getItem(TRANSLATION_SERVICE_KEY);
+          if (savedService && (savedService === 'deepl' || savedService === 'perplexity')) {
+            setCurrentService(savedService as TranslationServiceType);
+            // Migra il valore da localStorage a Supabase
+            await saveServicePreference(savedService as TranslationServiceType);
+          }
+        } else {
+          // Usa il valore da Supabase
+          const serviceType = data.value as TranslationServiceType;
+          setCurrentService(serviceType);
+          // Aggiorna anche localStorage per compatibilità
+          localStorage.setItem(TRANSLATION_SERVICE_KEY, serviceType);
+        }
+      } catch (error) {
+        console.error('Errore nel caricamento delle preferenze del servizio di traduzione:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTranslationServicePreference();
+  }, []);
+
+  // Funzione per salvare la preferenza del servizio su Supabase
+  const saveServicePreference = async (service: TranslationServiceType): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'translation_service')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Errore nella verifica delle impostazioni esistenti:', error);
+        return false;
+      }
+
+      if (data) {
+        // Aggiorna l'impostazione esistente
+        await supabase
+          .from('site_settings')
+          .update({ value: service })
+          .eq('key', 'translation_service');
+      } else {
+        // Crea una nuova impostazione
+        await supabase
+          .from('site_settings')
+          .insert([{ key: 'translation_service', value: service }]);
+      }
+
+      // Aggiorna localStorage per compatibilità
+      localStorage.setItem(TRANSLATION_SERVICE_KEY, service);
+      return true;
+    } catch (error) {
+      console.error('Errore nel salvataggio della preferenza del servizio:', error);
+      return false;
     }
-    return 'perplexity';
   };
 
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [currentService, setCurrentService] = useState<TranslationServiceType>(getSavedService());
-
-  // Aggiorniamo il localStorage quando cambia il servizio
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(TRANSLATION_SERVICE_KEY, currentService);
-      console.log(`Servizio di traduzione salvato in localStorage: ${currentService}`);
-    }
-  }, [currentService]);
-  
   // Funzione per ottenere il nome del servizio di traduzione
   const getServiceName = useCallback(() => {
     return currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
@@ -120,11 +177,22 @@ export const useTranslationService = (): TranslationService => {
     }
   };
 
-  const setTranslationService = (service: TranslationServiceType) => {
+  const setTranslationService = async (service: TranslationServiceType) => {
     console.log(`useTranslationService: Cambio servizio da ${currentService} a ${service}`);
-    setCurrentService(service);
-    const serviceName = service === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
-    toast.success(`Servizio di traduzione impostato a: ${serviceName}`);
+    
+    // Salva su Supabase e aggiorna lo state locale
+    const success = await saveServicePreference(service);
+    
+    if (success) {
+      setCurrentService(service);
+      const serviceName = service === 'perplexity' ? 'Perplexity AI' : 'DeepL API';
+      toast.success(`Servizio di traduzione impostato a: ${serviceName}`);
+      
+      // Forza il ricaricamento della pagina per aggiornare tutti i componenti
+      window.location.reload();
+    } else {
+      toast.error('Errore nel salvataggio della preferenza del servizio di traduzione');
+    }
   };
 
   return {
@@ -134,6 +202,7 @@ export const useTranslationService = (): TranslationService => {
     isTranslating,
     currentService,
     setTranslationService,
-    getServiceName
+    getServiceName,
+    isLoading
   };
 };

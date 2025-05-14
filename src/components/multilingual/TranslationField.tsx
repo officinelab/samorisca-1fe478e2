@@ -43,11 +43,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     getServiceName 
   } = useTranslationService();
 
-  // Debug del servizio corrente quando cambia
-  useEffect(() => {
-    console.log(`TranslationField (${fieldName}): Servizio di traduzione attuale: ${currentService}`);
-  }, [currentService, fieldName]);
-
+  // Effetto per ricaricare la traduzione esistente
   useEffect(() => {
     const fetchExistingTranslation = async () => {
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
@@ -59,8 +55,9 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     };
 
     fetchExistingTranslation();
-  }, [id, entityType, fieldName, language, getExistingTranslation]);
+  }, [id, entityType, fieldName, language, getExistingTranslation, currentService]);
 
+  // Gestione traduzione
   const handleTranslate = async () => {
     if (!originalText.trim()) return;
 
@@ -75,7 +72,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     );
 
     if (result.success && result.translatedText) {
-      console.log(`Risultato traduzione per ${fieldName}: "${result.translatedText}"`);
+      console.log(`Risultato traduzione per ${fieldName}: "${result.translatedText}" usando ${currentService}`);
       setTranslatedText(result.translatedText);
       if (onTranslationSaved) {
         onTranslationSaved(result.translatedText);
