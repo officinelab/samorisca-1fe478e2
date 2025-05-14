@@ -63,6 +63,8 @@ import * as z from "zod";
 import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ProductDetailPanel from "@/components/dashboard/ProductDetailPanel";
+import CategoriesList from "@/components/dashboard/CategoriesList";
+import ProductsList from "@/components/dashboard/ProductsList";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -1666,28 +1668,116 @@ const Dashboard = () => {
     );
   };
 
+  // Nuovi wrapper per Mobile/Desktop Layout usando i componenti refattorizzati
   const MobileLayout = () => {
     if (showMobileCategories) {
-      return <CategoriesList />;
+      return (
+        <CategoriesList
+          categories={categories}
+          selectedCategory={selectedCategory}
+          isLoadingCategories={isLoadingCategories}
+          onSelectCategory={handleCategorySelect}
+          onCategoryReorder={handleCategoryReorder}
+          onEdit={(category) => {
+            setEditingCategory(category);
+            setShowCategoryForm(true);
+          }}
+          onDelete={handleDeleteCategory}
+          onAddCategory={() => {
+            setEditingCategory(null);
+            setShowCategoryForm(true);
+          }}
+        />
+      );
     } else if (showMobileProducts) {
-      return <ProductsList />;
+      return (
+        <ProductsList
+          products={products}
+          selectedProduct={selectedProduct}
+          searchQuery={searchQuery}
+          onSelectProduct={handleProductSelect}
+          isLoadingProducts={isLoadingProducts}
+          onProductReorder={handleProductReorder}
+          onEdit={(id) => {
+            setSelectedProduct(id);
+            setIsEditing(true);
+            setShowMobileProducts(false);
+            setShowMobileDetail(true);
+          }}
+          onDelete={handleDeleteProduct}
+          onAddProduct={() => {
+            setSelectedProduct(null);
+            setIsEditing(true);
+            setShowMobileProducts(false);
+            setShowMobileDetail(true);
+          }}
+          isMobile={isMobile}
+          setSearchQuery={setSearchQuery}
+          onBackToCategories={handleBackToCategories}
+        />
+      );
     } else if (showMobileDetail) {
       return <ProductDetail />;
     }
-    
-    return <CategoriesList />;
+    return <CategoriesList
+      categories={categories}
+      selectedCategory={selectedCategory}
+      isLoadingCategories={isLoadingCategories}
+      onSelectCategory={handleCategorySelect}
+      onCategoryReorder={handleCategoryReorder}
+      onEdit={(category) => {
+        setEditingCategory(category);
+        setShowCategoryForm(true);
+      }}
+      onDelete={handleDeleteCategory}
+      onAddCategory={() => {
+        setEditingCategory(null);
+        setShowCategoryForm(true);
+      }}
+    />;
   };
 
   const DesktopLayout = () => (
     <div className="grid grid-cols-12 h-full divide-x">
       <div className="col-span-2 h-full border-r">
-        <CategoriesList />
+        <CategoriesList
+          categories={categories}
+          selectedCategory={selectedCategory}
+          isLoadingCategories={isLoadingCategories}
+          onSelectCategory={handleCategorySelect}
+          onCategoryReorder={handleCategoryReorder}
+          onEdit={(category) => {
+            setEditingCategory(category);
+            setShowCategoryForm(true);
+          }}
+          onDelete={handleDeleteCategory}
+          onAddCategory={() => {
+            setEditingCategory(null);
+            setShowCategoryForm(true);
+          }}
+        />
       </div>
-      
       <div className="col-span-5 h-full border-r">
-        <ProductsList />
+        <ProductsList
+          products={products}
+          selectedProduct={selectedProduct}
+          searchQuery={searchQuery}
+          onSelectProduct={handleProductSelect}
+          isLoadingProducts={isLoadingProducts}
+          onProductReorder={handleProductReorder}
+          onEdit={(id) => {
+            setSelectedProduct(id);
+            setIsEditing(true);
+          }}
+          onDelete={handleDeleteProduct}
+          onAddProduct={() => {
+            setSelectedProduct(null);
+            setIsEditing(true);
+          }}
+          isMobile={isMobile}
+          setSearchQuery={setSearchQuery}
+        />
       </div>
-      
       <div className="col-span-5 h-full">
         <ProductDetail />
       </div>
@@ -1697,7 +1787,6 @@ const Dashboard = () => {
   return (
     <div className="h-[calc(100vh-4rem)]">
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
-      
       <CategoryFormPanel />
     </div>
   );

@@ -101,10 +101,11 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-3">
-                {/* Solo prezzo base con suffisso */}
+                {/* Mostra solo il prezzo con il suffisso, senza testo "Prezzo standard" */}
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>
-                    {product.price_standard} €{" "}
+                    {product.price_standard} €
+                    {" "}
                     {product.has_price_suffix && product.price_suffix && (
                       <span className="text-gray-500 text-base">
                         {product.price_suffix}
@@ -112,7 +113,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({
                     )}
                   </span>
                 </div>
-                {/* Varianti prezzo */}
+                {/* Varianti prezzo: solo valore e nome variante */}
                 {product.has_multiple_prices && (
                   <div className="flex flex-col gap-1">
                     {product.price_variant_1_name &&
