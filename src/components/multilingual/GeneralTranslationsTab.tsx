@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TranslationField } from "./TranslationField";
+import { CopyButton } from "./CopyButton";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -113,8 +113,9 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                   {items.map((item) => (
                     <React.Fragment key={item.id}>
                       <TableRow>
-                        <TableCell className="align-top pt-4">
+                        <TableCell className="align-top pt-4 flex items-center gap-2">
                           <div className="font-medium">{item.title}</div>
+                          <CopyButton text={item.title} label="Copia titolo originale" />
                         </TableCell>
                         <TableCell className="pt-4">
                           <TranslationField
@@ -130,10 +131,11 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                       {/* If item has description (like allergens), add another row for it */}
                       {item.description && (
                         <TableRow>
-                          <TableCell className="align-top border-t-0">
+                          <TableCell className="align-top border-t-0 flex items-center gap-2">
                             <div className="text-sm text-muted-foreground">
                               Descrizione: {item.description}
                             </div>
+                            <CopyButton text={item.description} label="Copia descrizione originale" />
                           </TableCell>
                           <TableCell className="border-t-0">
                             <TranslationField
