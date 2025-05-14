@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Category, Product } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
 import { AllergensSection } from "@/components/public-menu/AllergensSection";
@@ -35,33 +34,36 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   language
 }) => {
   return (
-    <div className={deviceView === 'desktop' ? 'col-span-3' : ''}>
-      <ScrollArea ref={menuRef} className="h-[calc(100vh-140px)]">
-        <div className="space-y-10 pb-16">
-          {categories.map(category => (
-            <CategorySection 
-              key={category.id}
-              category={category}
-              products={products[category.id] || []}
-              isLoading={isLoading}
-              onSelectProduct={setSelectedProduct}
-              addToCart={addToCart}
-              deviceView={deviceView}
-              truncateText={truncateText}
-              language={language}
-            />
-          ))}
-
-          {isLoading && <CategorySectionSkeleton />}
-
-          {/* Allergens section */}
-          <AllergensSection 
-            allergens={allergens}
-            showAllergensInfo={showAllergensInfo}
-            toggleAllergensInfo={toggleAllergensInfo}
+    <div
+      className={deviceView === 'desktop' ? 'col-span-3' : ''}
+      ref={menuRef}
+      style={{ height: "calc(100vh - 140px)", overflowY: "auto" }}
+    >
+      <div className="space-y-10 pb-16">
+        {categories.map(category => (
+          <CategorySection 
+            key={category.id}
+            category={category}
+            products={products[category.id] || []}
+            isLoading={isLoading}
+            onSelectProduct={setSelectedProduct}
+            addToCart={addToCart}
+            deviceView={deviceView}
+            truncateText={truncateText}
+            language={language}
           />
-        </div>
-      </ScrollArea>
+        ))}
+
+        {isLoading && <CategorySectionSkeleton />}
+
+        {/* Allergens section */}
+        <AllergensSection 
+          allergens={allergens}
+          showAllergensInfo={showAllergensInfo}
+          toggleAllergensInfo={toggleAllergensInfo}
+        />
+      </div>
     </div>
   );
 };
+
