@@ -1,6 +1,7 @@
 
 // Supabase Edge Function per la traduzione con DeepL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 interface TranslateRequest {
@@ -11,10 +12,13 @@ interface TranslateRequest {
   fieldName: string;
 }
 
+const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const DEEPL_API_KEY = Deno.env.get('DEEPL_API_KEY') || '';
 
 serve(async (req) => {
-  // Gestione preflight CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -22,7 +26,6 @@ serve(async (req) => {
   try {
     const { text, targetLanguage } = await req.json() as TranslateRequest;
     
-    // Log per debug
     console.log(`[DEEPL] ==> Traduzione di: "${text}" in ${targetLanguage}`);
     
     if (!text || !targetLanguage) {
@@ -40,17 +43,14 @@ serve(async (req) => {
       );
     }
     
-    // Mappatura delle lingue da codice a formato DeepL
     const languageMap: Record<string, string> = {
-      'en': 'EN-US', // English (American)
-      'es': 'ES',    // Spanish
-      'fr': 'FR',    // French
-      'de': 'DE'     // German
+      'en': 'EN-US',
+      'es': 'ES',
+      'fr': 'FR',
+      'de': 'DE'
     };
-    
     const targetLang = languageMap[targetLanguage] || languageMap['en'];
     
-    // Chiamata all'API DeepL
     const response = await fetch('https://api-free.deepl.com/v2/translate', {
       method: 'POST',
       headers: {
@@ -88,6 +88,16 @@ serve(async (req) => {
       const translatedText = data.translations[0].text;
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
+
+      // SCALA 1 TOKEN SOLO DOPO UNA TRADUZIONE EFFETTUATA
+      try {
+        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+        if (incError) {
+          console.warn('[DEEPL] Warning: impossibile aggiornare i token:', incError);
+        }
+      } catch (tokErr) {
+        console.warn('[DEEPL] Warning: errore inatteso aggiornamento token:', tokErr);
+      }
       
       return new Response(
         JSON.stringify({ 

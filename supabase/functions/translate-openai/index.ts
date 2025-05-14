@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -186,10 +185,20 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
         // Non blocchiamo la risposta per errori nel salvataggio
       }
 
-      return new Response(
-        JSON.stringify({ translatedText }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // SOLO DOPO UNA TRADUZIONE EFFETTUATA, SCALA 1 TOKEN
+    try {
+      const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+      if (incError) {
+        console.warn('[OPENAI] Warning: impossibile aggiornare i token:', incError);
+      }
+    } catch (tokErr) {
+      console.warn('[OPENAI] Warning: errore inatteso aggiornamento token:', tokErr);
+    }
+
+    return new Response(
+      JSON.stringify({ translatedText }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
     } catch (fetchError) {
       console.error('Errore nella chiamata all\'API OpenAI:', fetchError);
       return new Response(

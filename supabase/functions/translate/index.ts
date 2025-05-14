@@ -1,6 +1,7 @@
 
 // Supabase Edge Function per la traduzione con Perplexity
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 interface TranslateRequest {
@@ -11,17 +12,21 @@ interface TranslateRequest {
   fieldName: string;
 }
 
+// Client Supabase
+const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY') || '';
 
 serve(async (req) => {
-  // Gestione preflight CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
   
   try {
     const { text, targetLanguage } = await req.json() as TranslateRequest;
-    
+
     // Log per debug
     console.log(`[PERPLEXITY] ==> Traduzione di: "${text}" in ${targetLanguage}`);
     
@@ -40,17 +45,14 @@ serve(async (req) => {
       );
     }
     
-    // Mappatura delle lingue per le istruzioni di Perplexity
     const languageMap: Record<string, string> = {
       'en': 'English',
       'es': 'Spanish',
       'fr': 'French',
       'de': 'German'
     };
-    
     const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
-    
-    // Istruzione aggiornata per Perplexity, allineata con quella di OpenAI
+
     const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
 Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
 
@@ -59,8 +61,7 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
 - Maintain the same capitalization pattern as the original text.
 - Preserve formatting (punctuation, line breaks, spacing).
 - Do not include any explanation, comments, or extra text — return only the translated text.`;
-    
-    // Chiamata all'API Perplexity
+
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -109,6 +110,16 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
       const translatedText = data.choices[0].message.content.trim();
       console.log(`[PERPLEXITY] <== Risultato: "${translatedText}"`);
       console.log("[PERPLEXITY] Traduzione completata con successo");
+
+      // SCALA 1 TOKEN SOLO SE LA TRADUZIONE È ANDATA A BUON FINE
+      try {
+        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+        if (incError) {
+          console.warn('[PERPLEXITY] Warning: impossibile aggiornare i token:', incError);
+        }
+      } catch (tokErr) {
+        console.warn('[PERPLEXITY] Warning: errore inatteso aggiornamento token:', tokErr);
+      }
       
       return new Response(
         JSON.stringify({ 
