@@ -61,7 +61,7 @@ serve(async (req) => {
       throw new Error('Invalid target language');
     }
 
-    // Check token usage
+    // Check token usage - using rpc with named parameters to avoid ambiguous column reference
     const { data: remainingTokens, error: tokenError } = await supabase.rpc('get_remaining_tokens');
     
     if (tokenError) {
@@ -100,8 +100,8 @@ serve(async (req) => {
 
     console.log('Translation completed successfully with DeepL');
 
-    // Record token usage
-    const { data: tokensIncremented, error: incrementError } = await supabase.rpc('increment_tokens', {
+    // Record token usage with explicit column references
+    const { error: incrementError } = await supabase.rpc('increment_tokens', {
       token_count: 1
     });
     
