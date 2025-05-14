@@ -1,4 +1,3 @@
-
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult } from '../types';
@@ -26,11 +25,10 @@ export const translateText = async (
   }
 
   console.log(`translateText: Avvio traduzione con servizio: ${currentService}`);
-
   try {
     // Verifica token rimanenti prima della traduzione
     const tokensData = await checkRemainingTokens();
-    
+
     if (tokensData === null) {
       return {
         success: false,
@@ -48,7 +46,7 @@ export const translateText = async (
       };
     }
 
-    // Passiamo esplicitamente il servizio corrente alla funzione di traduzione
+    // Traduzione
     const result = await translateTextViaEdgeFunction(
       text,
       targetLanguage,
@@ -70,14 +68,19 @@ export const translateText = async (
       );
 
       toast.success(`Traduzione completata con successo usando ${getServiceName(currentService)}`);
+
+      // Prova a forzare il refresh dei token (se disponibile in contesto globale)
+      if (typeof window !== "undefined" && window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent("refresh-tokens"));
+      }
     }
-    
+
     return result;
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);
     const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
     toast.error(`Errore del servizio di traduzione: ${errorMessage}`);
-    
+
     return {
       success: false,
       translatedText: '',

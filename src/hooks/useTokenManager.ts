@@ -80,8 +80,15 @@ export const useTokenManager = () => {
       )
       .subscribe();
 
+    // Ascolta l'evento custom per refresh forzato, es: dopo traduzione
+    const onRefresh = () => {
+      fetchTokenUsage();
+    };
+    window.addEventListener("refresh-tokens", onRefresh);
+
     return () => {
       supabase.removeChannel(channel);
+      window.removeEventListener("refresh-tokens", onRefresh);
     };
   }, []);
 

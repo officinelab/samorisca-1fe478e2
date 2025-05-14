@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -54,15 +55,16 @@ serve(async (req) => {
     console.log(`[OPENAI] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
     // --- Check token availability prima di traduzione
-    const { data: tokensData, error: tokensError } = await supabase.rpc('get_remaining_tokens');
-    if (tokensError) {
-      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensError);
+    const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
+      .rpc('get_remaining_tokens');
+    if (tokensErrorBefore) {
+      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensErrorBefore);
       return new Response(
         JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    if (tokensData <= 0) {
+    if (tokensDataBefore <= 0) {
       return new Response(
         JSON.stringify({ error: "Token mensili esauriti" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -136,39 +138,35 @@ serve(async (req) => {
 
     // === INCREMENTO TOKEN === 
     try {
-      // 1. Leggo valore tokens_used PRIMA
-      const { data: rowBefore, error: errBefore } = await supabase
+      // Loggo valore tokens_used prima
+      const { data: beforeRow, error: beforeError } = await supabase
         .from('translation_tokens')
         .select('month, tokens_used')
         .eq('month', (new Date()).toISOString().slice(0, 7))
         .maybeSingle();
+      console.log('[OPENAI][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
 
-      if (errBefore) {
-        console.warn('[OPENAI][DEBUG] Errore lettura tokens_used PRIMA:', errBefore);
+      // INCREMENTO con update diretto: tokens_used + 1
+      const { error: upError } = await supabase
+        .from('translation_tokens')
+        .update({
+          tokens_used: (beforeRow?.tokens_used || 0) + 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', (new Date()).toISOString().slice(0, 7));
+      if (upError) {
+        console.error('[OPENAI][TOKEN] Errore update token:', upError);
       } else {
-        console.log(`[OPENAI][DEBUG] [TOKEN] PRIMA:`, rowBefore);
+        console.log('[OPENAI][TOKEN] Token incrementato di 1 via update diretto');
       }
 
-      // 2. INCREMENTO tokens_used +1
-      const { data: incData, error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-      if (incError) {
-        console.error('[OPENAI][TOKEN] Errore incremento token:', incError);
-      } else {
-        console.log('[OPENAI][TOKEN] Token incrementato di 1');
-      }
-
-      // 3. Leggo valore tokens_used DOPO
-      const { data: rowAfter, error: errAfter } = await supabase
+      // Loggo valore tokens_used dopo
+      const { data: afterRow, error: afterError } = await supabase
         .from('translation_tokens')
         .select('month, tokens_used')
         .eq('month', (new Date()).toISOString().slice(0, 7))
         .maybeSingle();
-
-      if (errAfter) {
-        console.warn('[OPENAI][DEBUG] Errore lettura tokens_used DOPO:', errAfter);
-      } else {
-        console.log(`[OPENAI][DEBUG] [TOKEN] DOPO:`, rowAfter);
-      }
+      console.log('[OPENAI][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
       console.error('[OPENAI][TOKEN] Errore inatteso update token:', tokErr);
     }
