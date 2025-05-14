@@ -70,6 +70,11 @@ import EmptyState from "@/components/dashboard/EmptyState";
 import LoaderSkeleton from "@/components/dashboard/LoaderSkeleton";
 import ProductForm from "@/components/product/ProductForm";
 import CategoryFormPanel from "@/components/dashboard/CategoryFormPanel";
+import CategoriesList from "@/components/dashboard/CategoriesList";
+import ProductsList from "@/components/dashboard/ProductsList";
+import ProductDetail from "@/components/dashboard/ProductDetail";
+import MobileDashboardLayout from "@/components/dashboard/MobileDashboardLayout";
+import DesktopDashboardLayout from "@/components/dashboard/DesktopDashboardLayout";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -635,450 +640,133 @@ const Dashboard = () => {
     }
   };
 
-  const CategoriesList = () => {
-    return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">Categorie</h2>
-          <Button onClick={() => {
-            setEditingCategory(null);
-            setShowCategoryForm(true);
-          }} size="sm">
-            <PlusCircle className="h-4 w-4 mr-2" /> Nuova
-          </Button>
-        </div>
-        <ScrollArea className="flex-grow">
-          <div className="p-2">
-            {isLoadingCategories ? (
-              <LoaderSkeleton />
-            ) : (
-              <div className="space-y-1">
-                {categories.length === 0 ? (
-                  <EmptyState message="Nessuna categoria trovata.">
-                    <br />Crea una nuova categoria per iniziare.
-                  </EmptyState>
-                ) : (
-                  categories.map((category, index) => (
-                    <CategoryCard
-                      key={category.id}
-                      category={category}
-                      selected={selectedCategory === category.id}
-                      index={index}
-                      total={categories.length}
-                      onSelect={handleCategorySelect}
-                      onMoveUp={handleCategoryReorder.bind(null, category.id, 'up')}
-                      onMoveDown={handleCategoryReorder.bind(null, category.id, 'down')}
-                      onEdit={() => {
-                        setEditingCategory(category);
-                        setShowCategoryForm(true);
-                      }}
-                      onDelete={() => handleDeleteCategory(category.id)}
-                    />
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  };
+  // 2. CALLBACKS & HELPERS MOVED HERE
 
-  const ProductsList = () => {
-    const filteredProducts = products.filter(
-      product => product.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const handleBackToCategories = () => {
-      setShowMobileCategories(true);
-      setShowMobileProducts(false);
-    };
-
-    return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-2"
-              onClick={handleBackToCategories}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <div className="flex-1">
-            <Input
-              placeholder="Cerca prodotti..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
-              icon={<Search className="h-4 w-4" />}
-            />
-          </div>
+  // 3. CREATE THE PRODUCT FORM HANDLER
+  const ProductDetailFormComponent = isEditing ? (
+    <div className="h-full flex flex-col">
+      <div className="flex justify-between items-center p-4 border-b">
+        {isMobile && (
           <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2"
             onClick={() => {
-              if (!selectedCategory) {
-                toast.error("Seleziona prima una categoria");
-                return;
+              setShowMobileProducts(true);
+              setShowMobileDetail(false);
+            }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
+        <h2 className="text-lg font-semibold">
+          {products.find((p) => p.id === selectedProduct)
+            ? "Modifica Prodotto"
+            : "Nuovo Prodotto"}
+        </h2>
+      </div>
+      <ScrollArea className="flex-grow">
+        <div className="p-4">
+          <ProductForm
+            product={products.find((p) => p.id === selectedProduct)}
+            onSave={async (result) => {
+              if (result.success) {
+                toast.success("Prodotto aggiornato con successo!");
+                if (selectedCategory) {
+                  await loadProducts(selectedCategory);
+                  setSelectedProduct(result.productId || null);
+                }
+                setIsEditing(false);
+              } else {
+                toast.error(
+                  `Errore nell'aggiornamento del prodotto. ${result.error?.message || "Riprova più tardi."}`
+                );
               }
-              
-              setSelectedProduct(null);
-              setIsEditing(true);
-              
+            }}
+            onCancel={() => {
+              setIsEditing(false);
               if (isMobile) {
-                setShowMobileProducts(false);
                 setShowMobileDetail(true);
               }
             }}
-            size="sm"
-            className="ml-2"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" /> Nuovo
-          </Button>
+          />
         </div>
-        
-        <ScrollArea className="flex-grow">
-          <div className="p-4">
-            {!selectedCategory ? (
-              <EmptyState message="Seleziona una categoria per visualizzare i prodotti." />
-            ) : isLoadingProducts ? (
-              <LoaderSkeleton lines={3} height="h-20" />
-            ) : filteredProducts.length === 0 ? (
-              <EmptyState message={searchQuery
-                ? "Nessun prodotto trovato per questa ricerca."
-                : "Nessun prodotto in questa categoria."}
-              />
-            ) : (
-              <div className="space-y-2">
-                {filteredProducts.map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    selected={selectedProduct === product.id}
-                    index={index}
-                    total={filteredProducts.length}
-                    onSelect={handleProductSelect}
-                    onMoveUp={handleProductReorder.bind(null, product.id, 'up')}
-                    onMoveDown={handleProductReorder.bind(null, product.id, 'down')}
-                    onEdit={() => {
-                      setSelectedProduct(product.id);
-                      setIsEditing(true);
-                      
-                      if (isMobile) {
-                        setShowMobileProducts(false);
-                        setShowMobileDetail(true);
-                      }
-                    }}
-                    onDelete={() => handleDeleteProduct(product.id)}
-                    isMobile={isMobile}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  };
+      </ScrollArea>
+    </div>
+  ) : null;
 
-  const ProductDetail = () => {
-    const product = products.find(p => p.id === selectedProduct);
-
-    const handleBackToProducts = () => {
+  // 4. LAYOUT STATE & ACTIONS OBJECTS FOR PASSING TO LAYOUT COMPONENTS
+  const state = {
+    showMobileCategories,
+    showMobileProducts,
+    showMobileDetail,
+    categories,
+    selectedCategory,
+    isLoadingCategories,
+    products,
+    selectedProduct,
+    isLoadingProducts,
+    searchQuery,
+    isMobile,
+    isEditing,
+    ProductDetailFormComponent,
+    onCategoriesBack: () => {
+      setShowMobileCategories(true);
+      setShowMobileProducts(false);
+    },
+    onProductsBack: () => {
       setShowMobileProducts(true);
       setShowMobileDetail(false);
-    };
-
-    if (!selectedProduct && !isEditing) {
-      return (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          Seleziona un prodotto per visualizzare i dettagli.
-        </div>
-      );
     }
-
-    if (isEditing) {
-      // callback quando la submit va a buon fine o errore
-      const handleSave = async (result: { success: boolean; productId?: string; product?: Product; error?: any }) => {
-        if (result.success) {
-          toast.success("Prodotto aggiornato con successo!");
-          if (selectedCategory) {
-            await loadProducts(selectedCategory);
-            setSelectedProduct(result.productId || null);
-          }
-          setIsEditing(false);
-        } else {
-          toast.error(
-            `Errore nell'aggiornamento del prodotto. ${result.error?.message || "Riprova più tardi."}`
-          );
-        }
-      };
-
-      return (
-        <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center p-4 border-b">
-            {isMobile && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="mr-2"
-                onClick={handleBackToProducts}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            )}
-            <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
-          </div>
-          <ScrollArea className="flex-grow">
-            <div className="p-4">
-              <ProductForm 
-                product={product}
-                onSave={handleSave}
-                onCancel={() => {
-                  setIsEditing(false);
-                  if (isMobile) {
-                    setShowMobileDetail(true);
-                  }
-                }}
-              />
-            </div>
-          </ScrollArea>
-        </div>
-      );
-    }
-    
-    if (!product) return null;
-    
-    return (
-      <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-2"
-              onClick={handleBackToProducts}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
-          <div className="flex space-x-2">
-            <Button 
-              size="sm" 
-              onClick={() => setIsEditing(true)}
-            >
-              <Edit className="h-4 w-4 mr-2" /> Modifica
-            </Button>
-          </div>
-        </div>
-        
-        <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-6">
-            <div className="flex space-x-4">
-              {product.image_url ? (
-                <div className="w-32 h-32 rounded-md overflow-hidden">
-                  <img
-                    src={product.image_url}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-md">
-                  <Package className="h-10 w-10 text-gray-400" />
-                </div>
-              )}
-              
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold">{product.title}</h1>
-                    {product.label && (
-                      <span 
-                        className="px-2 py-0.5 rounded-full text-sm inline-block mt-1"
-                        style={{ 
-                          backgroundColor: product.label.color || '#e2e8f0',
-                          color: product.label.color ? '#fff' : '#000'
-                        }}
-                      >
-                        {product.label.title}
-                      </span>
-                    )}
-                  </div>
-                  {!product.is_active && (
-                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
-                      Non disponibile
-                    </span>
-                  )}
-                </div>
-                
-                {product.description && (
-                  <p className="text-gray-700 mt-2">{product.description}</p>
-                )}
-                
-                <div className="mt-4">
-                  <div className="flex items-center">
-                    <span className="text-gray-600 font-medium">Categoria: </span>
-                    <span className="ml-2">
-                      {categories.find(c => c.id === product.category_id)?.title || ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-lg font-semibold">
-                    <span>
-                      {product.price_standard} €{' '}
-                      {product.has_price_suffix && product.price_suffix && (
-                        <span className="text-gray-500 text-base">{product.price_suffix}</span>
-                      )}
-                    </span>
-                  </div>
-                  {product.has_multiple_prices && (
-                    <div className="flex flex-col gap-1">
-                      {product.price_variant_1_name && product.price_variant_1_value != null && (
-                        <div className="flex justify-between items-center">
-                          <span>
-                            {product.price_variant_1_value} €{' '}
-                            <span className="text-gray-700 text-sm">
-                              {product.price_variant_1_name}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                      {product.price_variant_2_name && product.price_variant_2_value != null && (
-                        <div className="flex justify-between items-center">
-                          <span>
-                            {product.price_variant_2_value} €{' '}
-                            <span className="text-gray-700 text-sm">
-                              {product.price_variant_2_name}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            
-            {product.features && product.features.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-semibold mb-4">Caratteristiche</h3>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {product.features.map((feature) => (
-                      <div 
-                        key={feature.id}
-                        className="bg-gray-100 rounded-full px-3 py-1 flex items-center"
-                      >
-                        {feature.icon_url && (
-                          <img src={feature.icon_url} alt={feature.title} className="w-4 h-4 mr-1" />
-                        )}
-                        {feature.title}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            {product.allergens && product.allergens.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-xl font-semibold mb-4">Allergeni</h3>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {product.allergens.map((allergen) => (
-                      <div 
-                        key={allergen.id}
-                        className="bg-gray-100 rounded-full px-3 py-1"
-                      >
-                        {allergen.number}: {allergen.title}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-4">Informazioni tecniche</h3>
-                
-                <Table>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">ID</TableCell>
-                      <TableCell>{product.id}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Ordine di visualizzazione</TableCell>
-                      <TableCell>{product.display_order}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Creato il</TableCell>
-                      <TableCell>
-                        {product.created_at && new Date(product.created_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Ultimo aggiornamento</TableCell>
-                      <TableCell>
-                        {product.updated_at && new Date(product.updated_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </div>
-        </ScrollArea>
-      </div>
-    );
   };
-
-  const MobileLayout = () => {
-    if (showMobileCategories) {
-      return <CategoriesList />;
-    } else if (showMobileProducts) {
-      return <ProductsList />;
-    } else if (showMobileDetail) {
-      return <ProductDetail />;
-    }
-    
-    return <CategoriesList />;
+  const actions = {
+    handleCategorySelect,
+    handleCategoryReorder: (direction: "up" | "down", id?: string) =>
+      handleCategoryReorder(id!, direction),
+    handleCategoryNew: () => {
+      setEditingCategory(null);
+      setShowCategoryForm(true);
+    },
+    handleCategoryEdit: (category: Category) => {
+      setEditingCategory(category);
+      setShowCategoryForm(true);
+    },
+    handleCategoryDelete,
+    handleProductSelect,
+    handleProductReorder: (direction: "up" | "down", id?: string) =>
+      handleProductReorder(id!, direction),
+    handleProductEdit: (id: string) => {
+      setSelectedProduct(id);
+      setIsEditing(true);
+      if (isMobile) {
+        setShowMobileProducts(false);
+        setShowMobileDetail(true);
+      }
+    },
+    handleProductDelete,
+    handleProductNew: () => {
+      if (!selectedCategory) {
+        toast.error("Seleziona prima una categoria");
+        return;
+      }
+      setSelectedProduct(null);
+      setIsEditing(true);
+      if (isMobile) {
+        setShowMobileProducts(false);
+        setShowMobileDetail(true);
+      }
+    },
+    setSearchQuery,
+    setIsEditing,
   };
-
-  const DesktopLayout = () => (
-    <div className="grid grid-cols-12 h-full divide-x">
-      <div className="col-span-2 h-full border-r">
-        <CategoriesList />
-      </div>
-      
-      <div className="col-span-5 h-full border-r">
-        <ProductsList />
-      </div>
-      
-      <div className="col-span-5 h-full">
-        <ProductDetail />
-      </div>
-    </div>
-  );
 
   return (
     <div className="h-[calc(100vh-4rem)]">
-      {isMobile ? <MobileLayout /> : <DesktopLayout />}
-      
+      {isMobile ? (
+        <MobileDashboardLayout state={state} actions={actions} />
+      ) : (
+        <DesktopDashboardLayout state={state} actions={actions} />
+      )}
       <CategoryFormPanel />
     </div>
   );
