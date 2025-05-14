@@ -72,15 +72,36 @@ serve(async (req) => {
       throw new Error('Monthly token quota exhausted');
     }
 
-    // Prepare prompt for Perplexity
-    const prompt = `Translate the following Italian restaurant menu content into ${languageNames[targetLanguage]}.
+    // Prepare context-specific system prompt
+    let systemPrompt = `You are a professional culinary translator specialized in Italian restaurant menus. You are translating from Italian to ${languageNames[targetLanguage]}.
 
-Please follow these rules:
-1. Preserve the original capitalization exactly (e.g. uppercase, title case).
-2. Keep traditional Italian dish names untranslated, unless a standard translation exists in the target language.
-3. Use correct and professional culinary terminology specific to the target language.
-4. Retain all formatting or styling (e.g. bold text, bullet points, line breaks).
-5. Do not include any commentary, explanation, or notes—return only the translated text.
+Your task involves translating different parts of a menu:
+1. Menu section headers (like "Antipasti", "Primi Piatti", "Secondi Piatti", "Contorni", "Dolci") 
+2. Dish titles (the name of each dish)
+3. Dish descriptions (ingredients and preparation methods)
+
+For each translation:
+- Maintain the EXACT same capitalization pattern as in the original text
+- Keep traditional Italian dish names untranslated (e.g., "Parmigiana", "Carbonara", "Tiramisù")
+- For ingredients and cooking methods, use the proper culinary terminology specific to ${languageNames[targetLanguage]}
+- Preserve all formatting (bullet points, numbering, spacing)
+- If a dish contains a regional designation (e.g., "alla romana", "alla siciliana"), either keep it in Italian or use an accepted translation if one exists
+- Be consistent with culinary conventions in ${languageNames[targetLanguage]}-speaking countries`;
+
+    // Prepare context-specific user prompt
+    const prompt = `Translate the following Italian restaurant menu text into ${languageNames[targetLanguage]}.
+
+This text may be one of:
+- A menu category (like "Antipasti", "Primi Piatti", etc.)
+- A dish name
+- A dish description with ingredients and preparation method
+
+Follow these strict rules:
+1. Preserve the EXACT capitalization pattern of the original
+2. Keep traditional Italian dish names in Italian
+3. Use professional culinary terminology appropriate for ${languageNames[targetLanguage]}
+4. Maintain all formatting elements (spaces, line breaks, punctuation)
+5. Return ONLY the translated text with no explanations, notes or additional content
 
 Text to translate:
 ${text}`;
@@ -99,7 +120,7 @@ ${text}`;
         messages: [
           {
             role: 'system',
-            content: `You are a professional translator with expertise in Italian cuisine and restaurant menus. When translating from Italian to ${languageNames[targetLanguage]}, preserve all proper nouns and replicate the original capitalization exactly. Use accurate and culturally appropriate culinary terminology in the target language. Traditional Italian dish names (e.g. "Spaghetti alla Carbonara", "Tiramisù") should generally remain untranslated unless a widely accepted equivalent exists. Maintain any stylistic formatting or emphasis as in the original.`
+            content: systemPrompt
           },
           {
             role: 'user',
