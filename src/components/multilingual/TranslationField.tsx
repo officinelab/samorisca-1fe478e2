@@ -12,6 +12,7 @@ import {
   TooltipProvider
 } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/sonner";
+import TranslationStatusBadge, { statusTitles } from "./TranslationStatusBadge";
 
 interface TranslationFieldProps {
   id: string;
@@ -21,6 +22,7 @@ interface TranslationFieldProps {
   language: SupportedLanguage;
   multiline?: boolean;
   onTranslationSaved?: (translated: string) => void;
+  updatedAt: string | undefined; // data dell'ultima modifica del record originale (es. prodotto)
 }
 
 export const TranslationField: React.FC<TranslationFieldProps> = ({
@@ -30,12 +32,14 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   originalText,
   language,
   multiline = false,
-  onTranslationSaved
+  onTranslationSaved,
+  updatedAt
 }) => {
   const [translatedText, setTranslatedText] = useState<string>("");
   const [isEdited, setIsEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [translationLastUpdated, setTranslationLastUpdated] = useState<string | null>(null);
   
   const { 
     translateText, 
@@ -46,16 +50,18 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     getServiceName 
   } = useTranslationService();
 
-  // Effetto per ricaricare la traduzione esistente
+  // Effetto per ricaricare la traduzione esistente E la data aggiornamento della traduzione
   useEffect(() => {
     const fetchExistingTranslation = async () => {
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
+      let translationDate: string | null = null;
       if (existing) {
-        setTranslatedText(existing);
+        setTranslatedText(existing.translatedText ?? ""); // Modifica: assumiamo che getExistingTranslation ora ritorni oggetto con translatedText & last_updated
+        translationDate = existing.last_updated ?? null;
       } else {
         setTranslatedText("");
       }
-      // Reset error state when language or service changes
+      setTranslationLastUpdated(translationDate);
       setError(null);
     };
 
@@ -181,9 +187,27 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     />
   );
 
+  // Calcolo status badge usando updatedAt(record originale) e translationLastUpdated (traduzione)
+  // Nota: updatedAt è la data del record italiano (prodotto originale, ecc)
+  // translationLastUpdated è la data dell’ultima modifica della traduzione
+
+  type StatusType = "missing" | "outdated" | "updated";
+  let translationStatus: StatusType = "missing";
+  if (translationLastUpdated) {
+    if (!updatedAt || new Date(translationLastUpdated) >= new Date(updatedAt)) {
+      translationStatus = "updated";
+    } else {
+      translationStatus = "outdated";
+    }
+  } else {
+    translationStatus = translatedText.trim() ? "updated" : "missing"; // fallback
+  }
+
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
+        {/* BADGE stato aggiornamento */}
+        <TranslationStatusBadge status={translationStatus} />
         {InputComponent}
         <div className="flex flex-col gap-2">
           <TooltipProvider>

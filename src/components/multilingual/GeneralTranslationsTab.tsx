@@ -39,20 +39,16 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-      
       try {
+        // Preleva anche updated_at
         const { data, error } = await supabase
           .from(selectedEntityType.type)
-          .select('id, title, description')
+          .select('id, title, description, updated_at')
           .order('display_order', { ascending: true });
-          
-        if (error) {
-          throw error;
-        }
-        
-        setItems(data.map((item: any) => ({ 
-          ...item, 
-          type: selectedEntityType.type 
+        if (error) throw error;
+        setItems(data.map((item: any) => ({
+          ...item,
+          type: selectedEntityType.type
         })));
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
@@ -60,7 +56,6 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         setLoading(false);
       }
     };
-    
     fetchItems();
   }, [selectedEntityType]);
 
@@ -96,7 +91,6 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
 
           <div className="md:col-span-2">
             <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
-            
             {loading ? (
               <div className="text-center py-8">Caricamento in corso...</div>
             ) : items.length === 0 ? (
@@ -124,6 +118,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                             fieldName="title"
                             originalText={item.title}
                             language={language}
+                            updatedAt={item.updated_at} // Passa updated_at originale!
                           />
                         </TableCell>
                       </TableRow>
@@ -145,6 +140,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                               originalText={item.description}
                               language={language}
                               multiline
+                              updatedAt={item.updated_at}
                             />
                           </TableCell>
                         </TableRow>
