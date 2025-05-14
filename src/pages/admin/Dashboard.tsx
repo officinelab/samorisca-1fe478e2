@@ -799,6 +799,22 @@ const Dashboard = () => {
     }
 
     if (isEditing) {
+      // callback quando la submit va a buon fine o errore
+      const handleSave = async (result: { success: boolean; productId?: string; product?: Product; error?: any }) => {
+        if (result.success) {
+          toast.success("Prodotto aggiornato con successo!");
+          if (selectedCategory) {
+            await loadProducts(selectedCategory);
+            setSelectedProduct(result.productId || null);
+          }
+          setIsEditing(false);
+        } else {
+          toast.error(
+            `Errore nell'aggiornamento del prodotto. ${result.error?.message || "Riprova più tardi."}`
+          );
+        }
+      };
+
       return (
         <div className="h-full flex flex-col">
           <div className="flex justify-between items-center p-4 border-b">
@@ -814,21 +830,17 @@ const Dashboard = () => {
             )}
             <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
           </div>
-
           <ScrollArea className="flex-grow">
             <div className="p-4">
               <ProductForm 
-                product={product} 
-                onSave={(data) => {
-                  console.log("ProductForm onSave triggered", { data, product });
-                  if (product) {
-                    console.log("Calling handleUpdateProduct", product.id, data);
-                    handleUpdateProduct(product.id, data);
-                  } else {
-                    console.log("Calling handleAddProduct", data);
-                    handleAddProduct(data);
+                product={product}
+                onSave={handleSave}
+                onCancel={() => {
+                  setIsEditing(false);
+                  if (isMobile) {
+                    setShowMobileDetail(true);
                   }
-                }} 
+                }}
               />
             </div>
           </ScrollArea>
