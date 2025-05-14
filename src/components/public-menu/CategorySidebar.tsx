@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -18,7 +18,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
-  // Sidebar desktop sticky SENZA overflow interno o ScrollArea
+  // Sidebar desktop sticky (manteniamo invariato)
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
@@ -46,26 +46,40 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // Categoria orizzontale mobile sticky, SENZA overflow-x-auto
+  // MOBILE: barra orizzontale scrollabile, stile come esempio fornito
   return (
-    <div className="mb-6 hide-scrollbar sticky top-14 z-30 bg-gray-50">
-      <div className="flex space-x-2 pb-2">
-        {categories.map(category => {
+    <div className="w-full overflow-hidden mb-6 sticky top-14 z-30 bg-gray-50">
+      <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
+        {categories.map((category) => {
           const categoryTitle = language !== 'it' && category[`title_${language}`]
             ? category[`title_${language}`]
             : category.title;
           return (
-            <Button
+            <button
               key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium shadow transition-colors
+                ${
+                  selectedCategory === category.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
               onClick={() => onSelectCategory(category.id)}
-              className="whitespace-nowrap"
             >
               {categoryTitle}
-            </Button>
+            </button>
           );
         })}
       </div>
+      {/* Inline style per no-scrollbar - si applica solo su mobile */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
