@@ -52,18 +52,20 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
         <div className="flex">
           <div className="flex-1 pr-4">
             <h3 className="font-bold text-lg mb-1">{title}</h3>
-            {/* Mostra etichetta se presente */}
+            {/* Etichetta sotto al nome, se presente */}
             {product.label && (
-              <LabelBadge
-                title={product.label.title}
-                color={product.label.color}
-                textColor={product.label.text_color}
-                className="mb-1"
-              />
+              <div className="mb-1">
+                <LabelBadge
+                  title={product.label.title}
+                  color={product.label.color}
+                  textColor={product.label.text_color}
+                />
+              </div>
             )}
             <p className="text-gray-600 text-sm mb-2">
               {truncateText(description, 110)}
             </p>
+            {/* Allergen section */}
             {product.allergens && product.allergens.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {product.allergens.map(allergen => (
@@ -73,8 +75,10 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
                 ))}
               </div>
             )}
-            {/* Mostra le icone delle features sotto gli allergeni */}
-            <ProductFeaturesIcons features={product.features} />
+            {/* Features sotto l'elenco allergeni */}
+            {product.features && product.features.length > 0 && (
+              <ProductFeaturesIcons features={product.features} />
+            )}
           </div>
           <div className="relative">
             <CardImage src={product.image_url} alt={title} mobileView />
@@ -197,14 +201,15 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
         <div className="flex justify-between items-start mb-1">
           <div>
             <h3 className="font-medium text-lg">{title}</h3>
-            {/* Mostra etichetta se presente */}
+            {/* Etichetta sotto al nome, se presente */}
             {product.label && (
-              <LabelBadge
-                title={product.label.title}
-                color={product.label.color}
-                textColor={product.label.text_color}
-                className="mb-1"
-              />
+              <div className="mb-1">
+                <LabelBadge
+                  title={product.label.title}
+                  color={product.label.color}
+                  textColor={product.label.text_color}
+                />
+              </div>
             )}
           </div>
           {/* Visualizzazione prezzo standard o varianti */}
@@ -227,8 +232,10 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
             ))}
           </div>
         )}
-        {/* Mostra le icone delle features sotto gli allergeni */}
-        <ProductFeaturesIcons features={product.features} />
+        {/* Features sotto l'elenco allergeni */}
+        {product.features && product.features.length > 0 && (
+          <ProductFeaturesIcons features={product.features} />
+        )}
         {/* Gestione varianti di prezzo */}
         {product.has_multiple_prices ? (
           <div className="space-y-2 mt-3">
