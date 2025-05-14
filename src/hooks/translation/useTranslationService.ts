@@ -3,185 +3,57 @@ import { useState, useEffect, useCallback } from 'react';
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult, TranslationService } from './types';
-import { 
-  checkRemainingTokens,
-  translateTextViaEdgeFunction
-} from './translationApi';
-import {
-  saveTranslation as saveTranslationToDb,
-  getExistingTranslation as getExistingTranslationFromDb
-} from './translationStorage';
 import { supabase } from '@/integrations/supabase/client';
-
-// Chiave per il localStorage (usata solo come fallback temporaneo)
-const TRANSLATION_SERVICE_KEY = 'preferred_translation_service';
+import { translateText } from './service/translationService';
+import { saveTranslation, getExistingTranslation } from './translationStorage';
+import { getServiceName } from './service/serviceUtils';
+import { loadServicePreference, saveServicePreference } from './service/servicePreference';
 
 export const useTranslationService = (): TranslationService => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [currentService, setCurrentService] = useState<TranslationServiceType>('perplexity');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carica la preferenza del servizio da Supabase
+  // Carica la preferenza del servizio
   useEffect(() => {
-    const loadTranslationServicePreference = async () => {
+    const loadPreference = async () => {
       try {
-        // Prima prova a caricare da Supabase
-        const { data, error } = await supabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'translation_service')
-          .single();
-        
-        if (error || !data) {
-          // Fallback: carica da localStorage
-          const savedService = localStorage.getItem(TRANSLATION_SERVICE_KEY);
-          if (savedService && (savedService === 'deepl' || savedService === 'perplexity' || savedService === 'openai')) {
-            setCurrentService(savedService as TranslationServiceType);
-            // Migra il valore da localStorage a Supabase
-            await saveServicePreference(savedService as TranslationServiceType);
-          }
-        } else {
-          // Usa il valore da Supabase
-          const serviceType = data.value as TranslationServiceType;
-          setCurrentService(serviceType);
-        }
+        const preferred = await loadServicePreference();
+        setCurrentService(preferred);
       } catch (error) {
-        console.error('Errore nel caricamento delle preferenze del servizio di traduzione:', error);
+        console.error('Errore nel caricamento delle preferenze:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadTranslationServicePreference();
+    loadPreference();
   }, []);
 
-  // Funzione per salvare la preferenza del servizio su Supabase
-  const saveServicePreference = async (service: TranslationServiceType): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'translation_service')
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Errore nella verifica delle impostazioni esistenti:', error);
-        return false;
-      }
-
-      if (data) {
-        // Aggiorna l'impostazione esistente
-        await supabase
-          .from('site_settings')
-          .update({ value: service })
-          .eq('key', 'translation_service');
-      } else {
-        // Crea una nuova impostazione
-        await supabase
-          .from('site_settings')
-          .insert([{ key: 'translation_service', value: service }]);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Errore nel salvataggio della preferenza del servizio:', error);
-      return false;
-    }
-  };
-
-  // Funzione per ottenere il nome del servizio di traduzione
-  const getServiceName = useCallback(() => {
-    switch(currentService) {
-      case 'perplexity':
-        return 'Perplexity AI';
-      case 'deepl':
-        return 'DeepL API';
-      case 'openai':
-        return 'OpenAI API';
-      default:
-        return 'Servizio sconosciuto';
-    }
-  }, [currentService]);
-
-  const translateText = async (
+  // Wrapper per il metodo di traduzione
+  const handleTranslateText = async (
     text: string,
     targetLanguage: SupportedLanguage,
     entityId: string,
     entityType: string,
     fieldName: string
   ): Promise<TranslationResult> => {
-    if (!text || text.trim() === '') {
-      return {
-        success: false,
-        translatedText: '',
-        message: 'Il testo da tradurre non può essere vuoto'
-      };
-    }
-
     setIsTranslating(true);
-    console.log(`useTranslationService: Avvio traduzione con servizio: ${currentService}`);
-
     try {
-      // Verifica token rimanenti prima della traduzione
-      const tokensData = await checkRemainingTokens();
-      
-      if (tokensData === null) {
-        return {
-          success: false,
-          translatedText: '',
-          message: 'Errore durante la verifica dei token disponibili'
-        };
-      }
-
-      if (tokensData <= 0) {
-        toast.error('Token mensili esauriti. Riprova il prossimo mese.');
-        return {
-          success: false,
-          translatedText: '',
-          message: 'Token mensili esauriti. Riprova il prossimo mese.'
-        };
-      }
-
-      // Passiamo esplicitamente il servizio corrente alla funzione di traduzione
-      const result = await translateTextViaEdgeFunction(
-        text,
-        targetLanguage,
-        entityId,
-        entityType,
-        fieldName,
-        currentService // Passiamo esplicitamente il servizio attuale
+      return await translateText(
+        text, 
+        targetLanguage, 
+        entityId, 
+        entityType, 
+        fieldName, 
+        currentService
       );
-
-      if (result.success) {
-        // Salviamo la traduzione nel database
-        await saveTranslationToDb(
-          entityId,
-          entityType,
-          fieldName,
-          text,
-          result.translatedText,
-          targetLanguage
-        );
-
-        toast.success(`Traduzione completata con successo usando ${getServiceName()}`);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Errore del servizio di traduzione:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
-      toast.error(`Errore del servizio di traduzione: ${errorMessage}`);
-      
-      return {
-        success: false,
-        translatedText: '',
-        message: `Errore del servizio di traduzione: ${errorMessage}`
-      };
     } finally {
       setIsTranslating(false);
     }
   };
 
+  // Funzione per cambiare il servizio di traduzione
   const setTranslationService = async (service: TranslationServiceType) => {
     console.log(`useTranslationService: Cambio servizio da ${currentService} a ${service}`);
     
@@ -190,7 +62,7 @@ export const useTranslationService = (): TranslationService => {
     
     if (success) {
       setCurrentService(service);
-      const serviceName = getServiceName();
+      const serviceName = getServiceName(service);
       toast.success(`Servizio di traduzione impostato a: ${serviceName}`);
       
       // Forza il ricaricamento della pagina per aggiornare tutti i componenti
@@ -200,14 +72,42 @@ export const useTranslationService = (): TranslationService => {
     }
   };
 
+  // Wrapper per getServiceName per mantenere compatibilità API
+  const getServiceNameCallback = useCallback(() => {
+    return getServiceName(currentService);
+  }, [currentService]);
+
+  // Verifica la disponibilità dell'API key di OpenAI
+  useEffect(() => {
+    const checkOpenAIKey = async () => {
+      try {
+        // Invoca una funzione edge personalizzata per verificare la disponibilità dell'API key
+        const { error } = await supabase.functions.invoke('translate-openai', {
+          body: { checkApiKeyOnly: true }
+        });
+        
+        if (error) {
+          console.warn('OpenAI API non configurata correttamente:', error);
+        }
+      } catch (error) {
+        console.error('Errore nella verifica dell\'API OpenAI:', error);
+      }
+    };
+    
+    // Verifica solo se il servizio attuale è OpenAI
+    if (currentService === 'openai' && !isLoading) {
+      checkOpenAIKey();
+    }
+  }, [currentService, isLoading]);
+
   return {
-    translateText,
-    saveTranslation: saveTranslationToDb,
-    getExistingTranslation: getExistingTranslationFromDb,
+    translateText: handleTranslateText,
+    saveTranslation,
+    getExistingTranslation,
     isTranslating,
     currentService,
     setTranslationService,
-    getServiceName,
+    getServiceName: getServiceNameCallback,
     isLoading
   };
 };
