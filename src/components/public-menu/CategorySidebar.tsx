@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
-  // Sidebar desktop sticky (manteniamo invariato)
+  // Sidebar desktop sticky (invariato)
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
@@ -45,9 +46,9 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale scrollabile, stile come esempio fornito
+  // MOBILE: barra orizzontale scrollabile, con top maggiore per non sovrapporsi all'header
   return (
-    <div className="w-full overflow-hidden mb-6 sticky top-14 z-30 bg-gray-50 pt-4">
+    <div className="w-full overflow-hidden mb-6 sticky top-20 z-30 bg-gray-50 pt-4">
       <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
         {categories.map((category) => {
           const categoryTitle = language !== 'it' && category[`title_${language}`]
@@ -69,7 +70,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
           );
         })}
       </div>
-      {/* Inline style per no-scrollbar - si applica solo su mobile */}
+      {/* Inline style per no-scrollbar */}
       <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
