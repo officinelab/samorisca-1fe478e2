@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -19,47 +18,42 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
-  // Se deviceView è desktop, mostra la sidebar laterale sticky e sempre sopra (z-index)
+  // Sidebar desktop sticky SENZA overflow interno o ScrollArea
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
         <div className="sticky top-24 z-30 bg-gray-50">
           <h3 className="text-lg font-semibold mb-2">Categorie</h3>
-          <ScrollArea className="h-[calc(100vh-180px)]">
-            <div className="space-y-1 pr-4">
-              {categories.map(category => {
-                // Usa il titolo tradotto se disponibile nella lingua selezionata
-                const categoryTitle = language !== 'it' && category[`title_${language}`]
-                  ? category[`title_${language}`]
-                  : category.title;
-                
-                return (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => onSelectCategory(category.id)}
-                  >
-                    {categoryTitle}
-                  </Button>
-                );
-              })}
-            </div>
-          </ScrollArea>
+          <div className="space-y-1 pr-4">
+            {categories.map(category => {
+              const categoryTitle = language !== 'it' && category[`title_${language}`]
+                ? category[`title_${language}`]
+                : category.title;
+              return (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => onSelectCategory(category.id)}
+                >
+                  {categoryTitle}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
   }
 
-  // Altrimenti, mostra la barra categorie orizzontale sempre sticky sopra il menu (mobile)
+  // Categoria orizzontale mobile sticky, SENZA overflow-x-auto
   return (
-    <div className="mb-6 overflow-x-auto hide-scrollbar sticky top-14 z-30 bg-gray-50">
+    <div className="mb-6 hide-scrollbar sticky top-14 z-30 bg-gray-50">
       <div className="flex space-x-2 pb-2">
         {categories.map(category => {
           const categoryTitle = language !== 'it' && category[`title_${language}`]
             ? category[`title_${language}`]
             : category.title;
-          
           return (
             <Button
               key={category.id}
@@ -75,4 +69,3 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     </div>
   );
 };
-

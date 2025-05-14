@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Product } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
@@ -37,7 +36,6 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     <div
       className={deviceView === 'desktop' ? 'col-span-3' : ''}
       ref={menuRef}
-      style={{ height: "calc(100vh - 140px)", overflowY: "auto" }}
     >
       <div className="space-y-10 pb-16">
         {categories.map(category => (
@@ -66,4 +64,3 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     </div>
   );
 };
-
