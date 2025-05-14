@@ -18,6 +18,7 @@ interface TranslatableItem {
   title: string;
   description?: string | null;
   type: string;
+  updated_at?: string; // <- nuovo campo opzionale!
 }
 
 const entityOptions: EntityOption[] = [
@@ -46,10 +47,13 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
           .select('id, title, description, updated_at')
           .order('display_order', { ascending: true });
         if (error) throw error;
-        setItems(data.map((item: any) => ({
-          ...item,
-          type: selectedEntityType.type
-        })));
+        setItems(
+          data.map((item: any) => ({
+            ...item,
+            type: selectedEntityType.type,
+            updated_at: item.updated_at // Popoliamo il campo!
+          }))
+        );
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
       } finally {
@@ -88,7 +92,6 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
               </SelectContent>
             </Select>
           </div>
-
           <div className="md:col-span-2">
             <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
             {loading ? (
@@ -118,12 +121,10 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                             fieldName="title"
                             originalText={item.title}
                             language={language}
-                            updatedAt={item.updated_at} // Passa updated_at originale!
+                            updatedAt={item.updated_at} // updated_at ora esiste!
                           />
                         </TableCell>
                       </TableRow>
-                      
-                      {/* If item has description (like allergens), add another row for it */}
                       {item.description && (
                         <TableRow>
                           <TableCell className="align-top border-t-0 flex items-center gap-2">

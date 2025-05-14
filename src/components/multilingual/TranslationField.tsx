@@ -25,6 +25,12 @@ interface TranslationFieldProps {
   updatedAt: string | undefined; // data dell'ultima modifica del record originale (es. prodotto)
 }
 
+// Definiamo il tipo per la risposta di getExistingTranslation
+type ExistingTranslation = {
+  translatedText: string | null;
+  last_updated: string | null;
+} | null;
+
 export const TranslationField: React.FC<TranslationFieldProps> = ({
   id,
   entityType,
@@ -50,13 +56,14 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     getServiceName 
   } = useTranslationService();
 
-  // Effetto per ricaricare la traduzione esistente E la data aggiornamento della traduzione
+  // Effetto per ricaricare la traduzione esistente e la data aggiornamento della traduzione
   useEffect(() => {
     const fetchExistingTranslation = async () => {
-      const existing = await getExistingTranslation(id, entityType, fieldName, language);
+      const existing: ExistingTranslation = await getExistingTranslation(id, entityType, fieldName, language);
+
       let translationDate: string | null = null;
-      if (existing) {
-        setTranslatedText(existing.translatedText ?? ""); // Modifica: assumiamo che getExistingTranslation ora ritorni oggetto con translatedText & last_updated
+      if (existing && typeof existing === "object") {
+        setTranslatedText(existing.translatedText ?? "");
         translationDate = existing.last_updated ?? null;
       } else {
         setTranslatedText("");
