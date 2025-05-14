@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SupportedLanguage } from "@/types/translation";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider
 } from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/sonner";
 
 interface TranslationFieldProps {
   id: string;
@@ -34,6 +35,9 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 }) => {
   const [translatedText, setTranslatedText] = useState<string>("");
   const [isEdited, setIsEdited] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  
   const { 
     translateText, 
     getExistingTranslation, 
@@ -52,6 +56,8 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
       } else {
         setTranslatedText("");
       }
+      // Reset error state when language or service changes
+      setError(null);
     };
 
     fetchExistingTranslation();
@@ -60,29 +66,59 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   // Gestione traduzione
   const handleTranslate = async () => {
     if (!originalText.trim()) return;
+    
+    // Reset error state
+    setError(null);
 
     console.log(`TranslationField (${fieldName}): Avvio traduzione con servizio: ${currentService}`);
 
-    const result = await translateText(
-      originalText,
-      language,
-      id,
-      entityType,
-      fieldName
-    );
+    try {
+      const result = await translateText(
+        originalText,
+        language,
+        id,
+        entityType,
+        fieldName
+      );
 
-    if (result.success && result.translatedText) {
-      console.log(`Risultato traduzione per ${fieldName}: "${result.translatedText}" usando ${currentService}`);
-      setTranslatedText(result.translatedText);
-      if (onTranslationSaved) {
-        onTranslationSaved(result.translatedText);
+      if (result.success && result.translatedText) {
+        console.log(`Risultato traduzione per ${fieldName}: "${result.translatedText}" usando ${currentService}`);
+        setTranslatedText(result.translatedText);
+        if (onTranslationSaved) {
+          onTranslationSaved(result.translatedText);
+        }
+        // Reset error and retry count on success
+        setError(null);
+        setRetryCount(0);
+      } else {
+        setError(result.message || 'Errore sconosciuto durante la traduzione');
+        console.error(`Errore traduzione per ${fieldName}:`, result.message);
       }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Errore sconosciuto';
+      setError(errorMsg);
+      console.error(`Eccezione durante traduzione per ${fieldName}:`, errorMsg);
     }
+  };
+
+  const handleRetryWithFallback = async () => {
+    setRetryCount(prev => prev + 1);
+    
+    // Se abbiamo già fatto un tentativo con OpenAI, suggerisci di cambiare servizio
+    if (retryCount > 0 && currentService === 'openai') {
+      toast.info('Prova a cambiare il servizio di traduzione', {
+        description: 'OpenAI potrebbe non essere disponibile. Prova Perplexity AI o DeepL come alternativa.'
+      });
+    }
+    
+    await handleTranslate();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setTranslatedText(e.target.value);
     setIsEdited(true);
+    // Clear error state when user edits manually
+    setError(null);
   };
 
   const handleSaveManual = async () => {
@@ -128,7 +164,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     <Textarea 
       value={translatedText} 
       onChange={handleInputChange}
-      className="w-full"
+      className={`w-full ${error ? 'border-red-300' : ''}`}
       rows={3}
       placeholder={`Traduzione in ${language}...`}
     />
@@ -136,7 +172,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     <Input 
       value={translatedText} 
       onChange={handleInputChange}
-      className="w-full"
+      className={`w-full ${error ? 'border-red-300' : ''}`}
       placeholder={`Traduzione in ${language}...`}
     />
   );
@@ -152,15 +188,22 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={handleTranslate}
+                  onClick={error ? handleRetryWithFallback : handleTranslate}
                   disabled={isTranslating || !originalText.trim()}
-                  className="whitespace-nowrap"
+                  className={`whitespace-nowrap ${error ? 'border-amber-500 hover:bg-amber-100' : ''}`}
                 >
-                  {getButtonLabel()}
+                  {error ? (
+                    <div className="flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                      <span>Riprova</span>
+                    </div>
+                  ) : (
+                    getButtonLabel()
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {getTooltipText()}
+                {error ? 'Riprova la traduzione' : getTooltipText()}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -176,6 +219,11 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
           )}
         </div>
       </div>
+      {error && (
+        <p className="text-xs text-red-500">
+          Errore: {error}
+        </p>
+      )}
     </div>
   );
 };

@@ -1,16 +1,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from "../_shared/cors.ts";
 
 // Costanti per l'API OpenAI
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const MODEL = "gpt-4o-mini"; // Utilizziamo un modello efficiente e moderno
-
-// Configurazione CORS
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 // Client Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
@@ -108,58 +103,66 @@ serve(async (req) => {
     const targetLangName = mapLanguageCode(targetLanguage);
     const prompt = `Traduci il seguente testo in ${targetLangName}. Mantieni il formato e il tono originali. Restituisci SOLO il testo tradotto, senza commenti o spiegazioni aggiuntive.\n\nTesto: "${text}"`;
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: 'system', content: 'Sei un traduttore professionale. Traduci con precisione mantenendo il significato originale.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.3,
-      })
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            { role: 'system', content: 'Sei un traduttore professionale. Traduci con precisione mantenendo il significato originale.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.3,
+        })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Errore API OpenAI:', errorData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Errore API OpenAI:', errorData);
+        return new Response(
+          JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'}` }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const data = await response.json();
+      const translatedText = data.choices[0].message.content.trim();
+      
+      console.log(`[OPENAI] <== Risultato: "${translatedText}"`);
+      console.log(`[OPENAI] Traduzione completata con successo`);
+
+      // Salvataggio della traduzione nel database
+      const { error: saveError } = await supabase
+        .from('translations')
+        .upsert({
+          entity_id: entityId,
+          entity_type: entityType,
+          field: fieldName,
+          language: targetLanguage,
+          original_text: text,
+          translated_text: translatedText,
+          updated_at: new Date().toISOString()
+        });
+
+      if (saveError) {
+        console.error('Errore nel salvataggio della traduzione:', saveError);
+      }
+
       return new Response(
-        JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'}` }),
+        JSON.stringify({ translatedText }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (fetchError) {
+      console.error('Errore nella chiamata all\'API OpenAI:', fetchError);
+      return new Response(
+        JSON.stringify({ error: `Errore nella chiamata all'API OpenAI: ${fetchError.message}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const data = await response.json();
-    const translatedText = data.choices[0].message.content.trim();
-    
-    console.log(`[OPENAI] <== Risultato: "${translatedText}"`);
-    console.log(`[OPENAI] Traduzione completata con successo`);
-
-    // Salvataggio della traduzione nel database
-    const { error: saveError } = await supabase
-      .from('translations')
-      .upsert({
-        entity_id: entityId,
-        entity_type: entityType,
-        field: fieldName,
-        language: targetLanguage,
-        original_text: text,
-        translated_text: translatedText,
-        updated_at: new Date().toISOString()
-      });
-
-    if (saveError) {
-      console.error('Errore nel salvataggio della traduzione:', saveError);
-    }
-
-    return new Response(
-      JSON.stringify({ translatedText }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);
     return new Response(

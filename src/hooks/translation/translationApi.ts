@@ -43,44 +43,68 @@ export const translateTextViaEdgeFunction = async (
     console.log(`Chiamando edge function "${functionName}" per traduzione con servizio: ${serviceType}`);
     console.log(`Testo da tradurre: "${text}" in lingua: ${targetLanguage}`);
     
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body: {
-        text,
-        targetLanguage,
-        entityId,
-        entityType,
-        fieldName
-      },
-    });
+    try {
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {
+          text,
+          targetLanguage,
+          entityId,
+          entityType,
+          fieldName
+        },
+      });
 
-    if (error) {
-      console.error(`Errore di traduzione con ${serviceType}:`, error);
-      toast.error(`Errore durante la traduzione: ${error.message}`);
+      if (error) {
+        console.error(`Errore di traduzione con ${serviceType}:`, error);
+        
+        // Messaggio di errore più specifico per i problemi di connessione
+        if (error.message && error.message.includes('Failed to send a request')) {
+          toast.error(`Errore di connessione alla funzione Edge. Verificare che la funzione "${functionName}" sia correttamente deployata e accessibile.`);
+          return {
+            success: false,
+            translatedText: '',
+            message: `Errore di connessione: ${error.message}. Verifica che Supabase sia configurato correttamente e che la funzione edge sia attiva.`,
+            service: serviceType
+          };
+        }
+        
+        toast.error(`Errore durante la traduzione: ${error.message}`);
+        return {
+          success: false,
+          translatedText: '',
+          message: `Errore durante la traduzione: ${error.message}`,
+          service: serviceType
+        };
+      }
+
+      if (!data?.translatedText) {
+        toast.error('Nessun testo tradotto ricevuto');
+        return {
+          success: false,
+          translatedText: '',
+          message: 'Nessun testo tradotto ricevuto',
+          service: serviceType
+        };
+      }
+
+      console.log(`Risultato della traduzione da ${serviceType}: "${data.translatedText}"`);
+      
+      return {
+        success: true,
+        translatedText: data.translatedText,
+        service: serviceType
+      };
+    } catch (invocationError) {
+      console.error(`Errore nell'invocazione della funzione ${functionName}:`, invocationError);
+      toast.error(`Errore nell'invocazione della funzione: ${invocationError.message}`);
+      
       return {
         success: false,
         translatedText: '',
-        message: `Errore durante la traduzione: ${error.message}`,
+        message: `Errore nell'invocazione della funzione: ${invocationError.message}`,
         service: serviceType
       };
     }
-
-    if (!data?.translatedText) {
-      toast.error('Nessun testo tradotto ricevuto');
-      return {
-        success: false,
-        translatedText: '',
-        message: 'Nessun testo tradotto ricevuto',
-        service: serviceType
-      };
-    }
-
-    console.log(`Risultato della traduzione da ${serviceType}: "${data.translatedText}"`);
-    
-    return {
-      success: true,
-      translatedText: data.translatedText,
-      service: serviceType
-    };
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);
     const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
