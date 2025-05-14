@@ -73,15 +73,17 @@ serve(async (req) => {
     }
 
     // Prepare prompt for Perplexity
-    const prompt = `Sei un esperto traduttore specializzato in cucina italiana. Traduci il seguente testo italiano in ${languageNames[targetLanguage]} come se fosse destinato a un menu di un ristorante italiano, usando termini culinari appropriati e naturali. 
+    const prompt = `Translate the following Italian restaurant menu content into ${languageNames[targetLanguage]}.
 
-Importante:
-- Mantieni ESATTAMENTE lo stesso formato di maiuscole e minuscole del testo originale
-- Non tradurre i nomi propri di piatti italiani tradizionali
-- Usa la terminologia culinaria appropriata per la lingua di destinazione
-- Restituisci SOLO la traduzione, senza spiegazioni o testo aggiuntivo
+Please follow these rules:
+1. Preserve the original capitalization exactly (e.g. uppercase, title case).
+2. Keep traditional Italian dish names untranslated, unless a standard translation exists in the target language.
+3. Use correct and professional culinary terminology specific to the target language.
+4. Retain all formatting or styling (e.g. bold text, bullet points, line breaks).
+5. Do not include any commentary, explanation, or notes—return only the translated text.
 
-Testo da tradurre: "${text}"`;
+Text to translate:
+${text}`;
 
     console.log(`Translating text to ${targetLanguage}. Text length: ${text.length}`);
 
@@ -97,13 +99,7 @@ Testo da tradurre: "${text}"`;
         messages: [
           {
             role: 'system',
-            content: `Sei un traduttore professionista specializzato nella traduzione dall'italiano al ${languageNames[targetLanguage]}, con particolare expertise nella terminologia gastronomica e nei menu di ristoranti italiani. 
-            
-Devi rispettare rigorosamente le seguenti regole:
-1. Mantieni ESATTAMENTE lo stesso formato di maiuscole e minuscole del testo originale
-2. Non tradurre i nomi propri dei piatti italiani tradizionali (es. lasagne, tagliatelle, panna cotta)
-3. Usa esclusivamente la terminologia culinaria appropriata e naturale per la lingua di destinazione
-4. Non aggiungere alcun testo, spiegazione o commento oltre alla traduzione richiesta`
+            content: `You are a professional translator with expertise in Italian cuisine and restaurant menus. When translating from Italian to ${languageNames[targetLanguage]}, preserve all proper nouns and replicate the original capitalization exactly. Use accurate and culturally appropriate culinary terminology in the target language. Traditional Italian dish names (e.g. "Spaghetti alla Carbonara", "Tiramisù") should generally remain untranslated unless a widely accepted equivalent exists. Maintain any stylistic formatting or emphasis as in the original.`
           },
           {
             role: 'user',
