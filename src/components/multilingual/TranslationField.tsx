@@ -52,7 +52,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   const handleTranslate = async () => {
     if (!originalText.trim()) return;
 
-    console.log(`TranslationField: Translating with ${currentService}`);
+    console.log(`TranslationField: Traduzione con ${currentService}`);
 
     const result = await translateText(
       originalText,
@@ -63,7 +63,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     );
 
     if (result.success && result.translatedText) {
-      console.log(`Translation result: "${result.translatedText}"`);
+      console.log(`Risultato traduzione: "${result.translatedText}"`);
       setTranslatedText(result.translatedText);
       if (onTranslationSaved) {
         onTranslationSaved(result.translatedText);

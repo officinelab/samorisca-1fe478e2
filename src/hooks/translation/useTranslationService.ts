@@ -32,7 +32,7 @@ export const useTranslationService = (): TranslationService => {
     }
 
     setIsTranslating(true);
-    console.log(`Using translation service: ${currentService}`); // Debug log for service selection
+    console.log(`Usando il servizio di traduzione: ${currentService}`); // Debug log per il servizio selezionato
 
     try {
       // Check remaining tokens before translation
@@ -55,18 +55,18 @@ export const useTranslationService = (): TranslationService => {
         };
       }
 
-      // Call the appropriate Edge Function for translation based on current service
+      // Chiamiamo la edge function appropriata in base al servizio selezionato
       const result = await translateTextViaEdgeFunction(
         text,
         targetLanguage,
         entityId,
         entityType,
         fieldName,
-        currentService // Assicuriamoci di passare il servizio corrente
+        currentService // Passiamo il servizio corrente alla funzione di traduzione
       );
 
       if (result.success) {
-        // Save translation to database
+        // Salviamo la traduzione nel database
         await saveTranslationToDb(
           entityId,
           entityType,
@@ -82,7 +82,7 @@ export const useTranslationService = (): TranslationService => {
       
       return result;
     } catch (error) {
-      console.error('Translation service error:', error);
+      console.error('Errore del servizio di traduzione:', error);
       const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
       toast.error(`Errore del servizio di traduzione: ${errorMessage}`);
       
@@ -99,7 +99,7 @@ export const useTranslationService = (): TranslationService => {
   const setTranslationService = (service: TranslationServiceType) => {
     setCurrentService(service);
     toast.success(`Servizio di traduzione impostato a: ${service === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`);
-    console.log(`Translation service changed to: ${service}`); // Debug log for service change
+    console.log(`Servizio di traduzione cambiato a: ${service}`); // Debug log per il cambio di servizio
   };
 
   return {

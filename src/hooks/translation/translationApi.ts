@@ -30,11 +30,11 @@ export const translateTextViaEdgeFunction = async (
   serviceType: TranslationServiceType = 'perplexity'
 ): Promise<TranslationResult> => {
   try {
-    // Choose the appropriate service endpoint
+    // Scegliamo il nome della funzione edge in base al servizio selezionato
     const functionName = serviceType === 'deepl' ? 'translate-deepl' : 'translate';
     
-    console.log(`Calling ${functionName} edge function for text: "${text}"`); // Debug log
-    console.log(`Using translation service: ${serviceType}`); // Debug log for service type
+    console.log(`Chiamando ${functionName} edge function per il testo: "${text}"`); // Debug log
+    console.log(`Usando il servizio di traduzione: ${serviceType}`); // Debug log per il tipo di servizio
     
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: {
@@ -47,7 +47,7 @@ export const translateTextViaEdgeFunction = async (
     });
 
     if (error) {
-      console.error(`Translation error (${serviceType}):`, error);
+      console.error(`Errore di traduzione (${serviceType}):`, error);
       toast.error(`Errore durante la traduzione: ${error.message}`);
       return {
         success: false,
@@ -65,14 +65,14 @@ export const translateTextViaEdgeFunction = async (
       };
     }
 
-    console.log(`Translation result from ${serviceType}: "${data.translatedText}"`); // Debug log
+    console.log(`Risultato della traduzione da ${serviceType}: "${data.translatedText}"`); // Debug log
     
     return {
       success: true,
       translatedText: data.translatedText
     };
   } catch (error) {
-    console.error('Translation service error:', error);
+    console.error('Errore del servizio di traduzione:', error);
     const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
     toast.error(`Errore del servizio di traduzione: ${errorMessage}`);
     
