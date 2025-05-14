@@ -18,9 +18,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
     );
   }
 
-  // Estrae updated_at dal prodotto (in italiano, base record)
-  const updatedAt = product.updated_at;
-
   return (
     <div className="space-y-6">
       <div className="flex gap-4 items-start">
@@ -62,7 +59,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                 fieldName="title"
                 originalText={product.title}
                 language={language}
-                updatedAt={updatedAt}
               />
             </TableCell>
           </TableRow>
@@ -87,7 +83,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   originalText={product.description}
                   language={language}
                   multiline
-                  updatedAt={updatedAt}
                 />
               </TableCell>
             </TableRow>
@@ -107,7 +102,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_suffix"
                   originalText={product.price_suffix}
                   language={language}
-                  updatedAt={updatedAt}
                 />
               </TableCell>
             </TableRow>
@@ -127,7 +121,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_variant_1_name"
                   originalText={product.price_variant_1_name}
                   language={language}
-                  updatedAt={updatedAt}
                 />
               </TableCell>
             </TableRow>
@@ -146,7 +139,6 @@ export const ProductTranslationDetail = ({ product, language }: ProductTranslati
                   fieldName="price_variant_2_name"
                   originalText={product.price_variant_2_name}
                   language={language}
-                  updatedAt={updatedAt}
                 />
               </TableCell>
             </TableRow>
