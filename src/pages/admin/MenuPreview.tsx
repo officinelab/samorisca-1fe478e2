@@ -41,7 +41,10 @@ const MenuPreview = () => {
         </TabsList>
         <TabsContent value="mobile" className="mt-4">
           <div className="mx-auto max-w-md border rounded-lg overflow-hidden shadow-lg h-[70vh] bg-white">
-            <PublicMenu isPreview={true} previewLanguage={language} deviceView="mobile" />
+            {/* Aggiungi scrollbar verticale all'anteprima mobile */}
+            <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+              <PublicMenu isPreview={true} previewLanguage={language} deviceView="mobile" />
+            </div>
           </div>
         </TabsContent>
         <TabsContent value="desktop" className="mt-4">
