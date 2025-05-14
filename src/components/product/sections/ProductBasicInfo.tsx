@@ -1,58 +1,29 @@
 
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import ImageUploader from "@/components/ImageUploader";
-import { UseFormReturn } from "react-hook-form";
-import { ProductFormValues } from "@/types/form";
 
-interface ProductBasicInfoProps {
-  form: UseFormReturn<ProductFormValues>;
-}
-
-const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
+const ProductBasicInfo = ({ form }) => {
   return (
-    <>
-      {/* Nome Prodotto */}
+    <div className="space-y-4">
+      {/* Title */}
       <FormField
         control={form.control}
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nome Prodotto</FormLabel>
+            <FormLabel>Nome prodotto</FormLabel>
             <FormControl>
-              <Input placeholder="Nome del prodotto" {...field} />
+              <Input placeholder="Inserisci il nome" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      {/* Stato Attivo */}
-      <FormField
-        control={form.control}
-        name="is_active"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel>Stato Attivo</FormLabel>
-              <FormDescription>
-                Mostra questo prodotto nel menu
-              </FormDescription>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      {/* Descrizione */}
+      {/* Description */}
       <FormField
         control={form.control}
         name="description"
@@ -60,41 +31,38 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
           <FormItem>
             <FormLabel>Descrizione</FormLabel>
             <FormControl>
-              <Textarea
-                placeholder="Descrizione del prodotto"
-                className="min-h-32"
-                {...field}
-                value={field.value || ""}
-              />
+              <Textarea placeholder="Descrizione (opzionale)" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      {/* Immagine Prodotto */}
+      {/* Is Active Switch */}
       <FormField
         control={form.control}
-        name="image_url"
+        name="is_active"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Immagine Prodotto</FormLabel>
-            <FormControl>
-              <ImageUploader
-                currentImage={field.value || ""}
-                onImageUploaded={(url) => {
-                  field.onChange(url);
+            <FormLabel className="flex items-center space-x-2">
+              <span>Disponibile</span>
+              <Switch
+                checked={!!field.value}
+                onCheckedChange={(val) => {
+                  // Defensive check for Switch value, always use boolean!
+                  form.setValue("is_active", Boolean(val), { shouldDirty: true });
                 }}
-                label="Carica immagine del prodotto"
-                bucketName="products"
+                // Forward field ref for React Hook Form
+                ref={field.ref}
               />
-            </FormControl>
+            </FormLabel>
             <FormMessage />
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 };
 
 export default ProductBasicInfo;
+
