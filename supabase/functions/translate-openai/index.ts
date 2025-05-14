@@ -126,7 +126,7 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
           },
           { role: 'user', content: text }
         ],
-        temperature: 0.3,
+        temperature: 0.1,
       };
 
       // Log dettagliato della richiesta inviata a OpenAI
