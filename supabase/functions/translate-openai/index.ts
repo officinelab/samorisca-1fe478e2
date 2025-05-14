@@ -178,31 +178,31 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
 
         if (saveError) {
           console.error('Errore nel salvataggio della traduzione:', saveError);
-          // Continuiamo comunque anche se non riusciamo a salvare nel database
         }
       } catch (saveErr) {
         console.warn('Impossibile salvare la traduzione nel database:', saveErr);
-        // Non blocchiamo la risposta per errori nel salvataggio
       }
 
-    // SOLO DOPO UNA TRADUZIONE EFFETTUATA, SCALA 1 TOKEN
-    try {
-      const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-      if (incError) {
-        console.warn('[OPENAI] Warning: impossibile aggiornare i token:', incError);
+      // SCALA 1 TOKEN SOLO DOPO UNA TRADUZIONE EFFETTUATA
+      try {
+        const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+        if (incError) {
+          console.warn('[OPENAI] Warning: impossibile aggiornare i token:', incError);
+        } else {
+          console.log('[OPENAI] 1 token scalato con successo.');
+        }
+      } catch (tokErr) {
+        console.warn('[OPENAI] Warning: errore inatteso aggiornamento token:', tokErr);
       }
-    } catch (tokErr) {
-      console.warn('[OPENAI] Warning: errore inatteso aggiornamento token:', tokErr);
-    }
 
-    return new Response(
-      JSON.stringify({ translatedText }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      return new Response(
+        JSON.stringify({ translatedText }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     } catch (fetchError) {
       console.error('Errore nella chiamata all\'API OpenAI:', fetchError);
       return new Response(
-        JSON.stringify({ error: `Errore nella chiamata all'API OpenAI: ${fetchError.message}` }),
+        JSON.stringify({ error: `Errore nella chiamata all\'API OpenAI: ${fetchError.message}` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

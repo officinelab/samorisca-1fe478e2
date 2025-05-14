@@ -1,4 +1,3 @@
-
 // Supabase Edge Function per la traduzione con DeepL
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -94,6 +93,8 @@ serve(async (req) => {
         const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
         if (incError) {
           console.warn('[DEEPL] Warning: impossibile aggiornare i token:', incError);
+        } else {
+          console.log('[DEEPL] 1 token scalato con successo.');
         }
       } catch (tokErr) {
         console.warn('[DEEPL] Warning: errore inatteso aggiornamento token:', tokErr);

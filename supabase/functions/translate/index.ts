@@ -1,4 +1,3 @@
-
 // Supabase Edge Function per la traduzione con Perplexity
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -116,6 +115,8 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
         const { error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
         if (incError) {
           console.warn('[PERPLEXITY] Warning: impossibile aggiornare i token:', incError);
+        } else {
+          console.log('[PERPLEXITY] 1 token scalato con successo.');
         }
       } catch (tokErr) {
         console.warn('[PERPLEXITY] Warning: errore inatteso aggiornamento token:', tokErr);
