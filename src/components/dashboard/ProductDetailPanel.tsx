@@ -15,7 +15,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
   const suffisso =
     product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
-  // Raccogli varianti di prezzo effettivamente valorizzate
+  // Raccogli varianti di prezzo effettivamente valorizzate (solo number o not null)
   const varianti = [
     {
       value: product.price_variant_1_value,
@@ -26,7 +26,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
       name: product.price_variant_2_name,
     },
   ].filter(
-    (v) => v.value !== null && v.value !== undefined && v.value !== ""
+    (v) => v.value !== null && v.value !== undefined
   );
 
   return (
@@ -61,7 +61,7 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
         <div className="text-base flex flex-col gap-1">
 
           {/* Solo il prezzo principale seguito dal suffisso (NO etichetta "Prezzo standard") */}
-          {(prezzoStandard !== null && prezzoStandard !== undefined && prezzoStandard !== "") && (
+          {prezzoStandard !== null && prezzoStandard !== undefined && (
             <div className="mb-1 font-medium">
               {prezzoStandard.toLocaleString("it-IT", {
                 style: "currency",
@@ -76,8 +76,8 @@ const ProductDetailPanel: React.FC<ProductDetailPanelProps> = ({ product }) => {
           {varianti.length > 0 &&
             varianti.map((v, idx) => (
               <div key={idx} className="pl-2 text-sm text-gray-700 font-normal">
-                {v.value !== null && v.value !== undefined
-                  ? `${Number(v.value).toLocaleString("it-IT", {
+                {typeof v.value === "number"
+                  ? `${v.value.toLocaleString("it-IT", {
                       style: "currency",
                       currency: "EUR",
                       minimumFractionDigits: 2,
