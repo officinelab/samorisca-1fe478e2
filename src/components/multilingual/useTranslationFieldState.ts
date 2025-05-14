@@ -61,8 +61,13 @@ export function useTranslationFieldState({
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      // Risolti warning e campo appropriato
-      if (existing && typeof existing === "object" && "translatedText" in existing && "last_updated" in existing) {
+      // Ensure existing is not null before accessing its properties
+      if (
+        existing !== null &&
+        typeof existing === "object" &&
+        "translatedText" in existing &&
+        "last_updated" in existing
+      ) {
         translationObj = {
           translatedText: (existing as any).translatedText,
           last_updated: (existing as any).last_updated // dalla tabella translations
@@ -74,7 +79,7 @@ export function useTranslationFieldState({
       }
       setTranslatedData(translationObj);
 
-      // Prende solo il campo updated_at dal prodotto (MAIN)
+      // Get updated_at from the product table
       let updatedAtProd = "";
       try {
         const tableName = getTableName(entityType);
