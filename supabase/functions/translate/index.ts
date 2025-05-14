@@ -56,7 +56,6 @@ Translate all phrases naturally and idiomatically into ${targetLanguageName}, fo
 
 - Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
 - General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
-- Maintain the same capitalization pattern as the original text.
 - Preserve formatting (punctuation, line breaks, spacing).
 - Do not include any explanation, comments, or extra text — return only the translated text.`;
     
