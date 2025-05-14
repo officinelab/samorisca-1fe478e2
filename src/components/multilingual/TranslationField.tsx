@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { Input } from "@/components/ui/input";
@@ -71,6 +70,11 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     setError(null);
 
     console.log(`TranslationField (${fieldName}): Avvio traduzione con servizio: ${currentService}`);
+
+    if (originalText === "GAMBERO CRUDO") {
+      console.log(`[DEBUG-SPECIAL] Rilevato testo speciale "GAMBERO CRUDO" per traduzione`);
+      console.log(`[DEBUG-SPECIAL] Parametri: ID=${id}, entityType=${entityType}, fieldName=${fieldName}, language=${language}`);
+    }
 
     try {
       const result = await translateText(

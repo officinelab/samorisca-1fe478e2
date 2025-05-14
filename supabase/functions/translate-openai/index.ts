@@ -105,19 +105,13 @@ serve(async (req) => {
     const targetLangName = mapLanguageCode(targetLanguage);
     
     try {
-      // Chiamata all'API di OpenAI con il nuovo prompt specializzato per menu ristoranti
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [
-            { 
-              role: 'system', 
-              content: `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
+      // Prepara il corpo della richiesta per debug
+      const requestBody = {
+        model: MODEL,
+        messages: [
+          { 
+            role: 'system', 
+            content: `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
 Translate all phrases naturally and idiomatically into ${targetLangName}, following these rules:
 
 - Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
@@ -125,23 +119,41 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
 - Maintain the same capitalization pattern as the original text.
 - Preserve formatting (punctuation, line breaks, spacing).
 - Do not include any explanation, comments, or extra text — return only the translated text.` 
-            },
-            { role: 'user', content: text }
-          ],
-          temperature: 0.3,
-        })
+          },
+          { role: 'user', content: text }
+        ],
+        temperature: 0.3,
+      };
+
+      // Log dettagliato della richiesta inviata a OpenAI
+      console.log(`[OPENAI-DEBUG] Richiesta a OpenAI API:`, JSON.stringify(requestBody, null, 2));
+
+      // Chiamata all'API di OpenAI con il prompt specializzato
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Errore API OpenAI:', errorData);
+        console.error('Codice di stato HTTP:', response.status);
+        console.error('Messaggio di stato:', response.statusText);
         return new Response(
-          JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'}` }),
+          JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'} (Stato ${response.status})` }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       const data = await response.json();
+
+      // Log dettagliato della risposta completa di OpenAI per debug
+      console.log(`[OPENAI-DEBUG] Risposta completa di OpenAI:`, JSON.stringify(data, null, 2));
+
       const translatedText = data.choices[0].message.content.trim();
       
       console.log(`[OPENAI] <== Risultato: "${translatedText}"`);
@@ -158,7 +170,7 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
             language: targetLanguage,
             original_text: text,
             translated_text: translatedText,
-            updated_at: new Date().toISOString()
+            last_updated: new Date().toISOString()
           });
 
         if (saveError) {

@@ -47,7 +47,21 @@ export const translateTextViaEdgeFunction = async (
     console.log(`Chiamando edge function "${functionName}" per traduzione con servizio: ${serviceType}`);
     console.log(`Testo da tradurre: "${text}" in lingua: ${targetLanguage}`);
     
+    // Debug speciale per "GAMBERO CRUDO"
+    if (text === "GAMBERO CRUDO") {
+      console.log(`[DEBUG-SPECIAL] Invio richiesta specifica per traduzione di "GAMBERO CRUDO":`, {
+        body: {
+          text,
+          targetLanguage,
+          entityId,
+          entityType,
+          fieldName
+        }
+      });
+    }
+
     try {
+      const startTime = Date.now();
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           text,
@@ -57,6 +71,10 @@ export const translateTextViaEdgeFunction = async (
           fieldName
         },
       });
+      const endTime = Date.now();
+      
+      // Log del tempo di risposta per debug
+      console.log(`[API-TIMING] Edge function ${functionName} ha risposto in ${endTime - startTime}ms`);
 
       if (error) {
         console.error(`Errore di traduzione con ${serviceType}:`, error);
@@ -74,6 +92,13 @@ export const translateTextViaEdgeFunction = async (
             message: `Errore di connessione: ${error.message}. Verifica che Supabase sia configurato correttamente e che la funzione edge sia attiva.`,
             service: serviceType
           };
+        }
+        
+        if (error.message && error.message.includes('non-2xx status code')) {
+          // Errore specifico per i codici di stato non 2xx
+          const statusMatch = error.message.match(/status code (\d+)/);
+          const statusCode = statusMatch ? statusMatch[1] : 'sconosciuto';
+          console.error(`[ERROR] Ricevuto status code ${statusCode} dalla funzione edge`);
         }
         
         toast({
@@ -112,6 +137,8 @@ export const translateTextViaEdgeFunction = async (
       };
     } catch (invocationError) {
       console.error(`Errore nell'invocazione della funzione ${functionName}:`, invocationError);
+      console.error('Stack trace completo:', invocationError.stack);
+      
       toast({
         variant: "destructive", 
         title: "Errore",
