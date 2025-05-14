@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SupportedLanguage } from "@/types/translation";
 import { Loader2 } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider
+} from "@/components/ui/tooltip";
 
 interface TranslationFieldProps {
   id: string;
@@ -91,6 +97,10 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     return `Traduci (${currentService === 'perplexity' ? 'AI' : 'DeepL'})`;
   };
 
+  const getTooltipText = () => {
+    return `Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`;
+  };
+
   const InputComponent = multiline ? (
     <Textarea 
       value={translatedText} 
@@ -113,16 +123,24 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
       <div className="flex gap-2">
         {InputComponent}
         <div className="flex flex-col gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleTranslate}
-            disabled={isTranslating || !originalText.trim()}
-            title={`Traduci con ${currentService === 'perplexity' ? 'Perplexity AI' : 'DeepL API'}`}
-            className="whitespace-nowrap"
-          >
-            {getButtonLabel()}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTranslate}
+                  disabled={isTranslating || !originalText.trim()}
+                  className="whitespace-nowrap"
+                >
+                  {getButtonLabel()}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {getTooltipText()}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {isEdited && (
             <Button 
               variant="default" 
