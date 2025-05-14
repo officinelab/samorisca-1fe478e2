@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { Input } from "@/components/ui/input";
@@ -84,15 +83,18 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   // Fetch translation + original last_updated
   useEffect(() => {
     const fetchData = async () => {
-      // Prende la traduzione (con last_updated)
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      // Gestione nullità di existing
-      if (existing && typeof existing === "object" && "translatedText" in existing) {
+      // Fix: Make sure 'existing' is neither null nor undefined before property access
+      if (
+        existing != null &&
+        typeof existing === "object" &&
+        "translatedText" in existing
+      ) {
         translationObj = {
-          translatedText: existing.translatedText,
-          last_updated: (existing as any).last_updated, // fallback types
+          translatedText: (existing as any).translatedText,
+          last_updated: (existing as any).last_updated,
         };
       } else if (typeof existing === "string") {
         translationObj = { translatedText: existing };
