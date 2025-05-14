@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { toast } from "@/components/ui/sonner";
@@ -68,9 +69,10 @@ export function useTranslationFieldState({
         "translatedText" in existing &&
         "last_updated" in existing
       ) {
+        const existingObj = existing as { translatedText: string; last_updated?: string };
         translationObj = {
-          translatedText: (existing as any).translatedText,
-          last_updated: (existing as any).last_updated // dalla tabella translations
+          translatedText: existingObj.translatedText,
+          last_updated: existingObj.last_updated // dalla tabella translations
         };
       } else if (typeof existing === "string") {
         translationObj = { translatedText: existing };
