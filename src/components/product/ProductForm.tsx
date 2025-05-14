@@ -16,7 +16,7 @@ import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
-  onSave?: (result: { success: boolean; productId?: string; product?: Product; error?: any }) => void;
+  onSave?: () => void;
   onCancel?: () => void;
 }
 
@@ -32,35 +32,37 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     selectedFeatures,
     setSelectedFeatures,
     handleSubmit
-  } = useProductForm(product);
-
-  // Internal handler: invoca handleSubmit e chiama onSave col risultato SOLO dopo submit avvenuto
-  const internalOnSubmit = async (values: any) => {
-    const result = await handleSubmit(values);
-    if (onSave) {
-      onSave(result);
-    }
-    return result;
-  };
+  } = useProductForm(product, onSave);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(internalOnSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
         <ProductBasicInfo form={form} />
+        
+        {/* Selezione etichetta */}
         <ProductLabelSelect form={form} labels={labels} />
+        
+        {/* Selezione caratteristiche - espandibile */}
         <FeaturesSelector
           selectedFeatureIds={selectedFeatures}
           onChange={setSelectedFeatures}
         />
+
+        {/* Informazioni prezzo */}
         <ProductPriceInfo 
           form={form} 
           hasPriceSuffix={hasPriceSuffix}
           hasMultiplePrices={hasMultiplePrices}
         />
+
+        {/* Selezione allergeni - espandibile */}
         <AllergenSelector
           selectedAllergenIds={selectedAllergens}
           onChange={setSelectedAllergens}
         />
+
+        {/* Pulsanti azione */}
         <ProductActionButtons
           isSubmitting={isSubmitting}
           onCancel={onCancel}
@@ -71,4 +73,3 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
 };
 
 export default ProductForm;
-

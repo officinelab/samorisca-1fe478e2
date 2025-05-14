@@ -1,3 +1,4 @@
+
 import { Product } from "@/types/database";
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
@@ -5,7 +6,7 @@ import { useProductAllergens } from "./useProductAllergens";
 import { useProductFeatures } from "./useProductFeatures";
 import { useProductFormSubmit } from "./useProductFormSubmit";
 
-export const useProductForm = (product?: Product, onSave?: (data: any) => void) => {
+export const useProductForm = (product?: Product, onSave?: () => void) => {
   // Hook per il form e lo stato
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   
