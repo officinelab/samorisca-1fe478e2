@@ -5,6 +5,7 @@ export interface TranslationResult {
   success: boolean;
   translatedText: string;
   message?: string;
+  service?: TranslationServiceType;
 }
 
 export interface TranslationService {

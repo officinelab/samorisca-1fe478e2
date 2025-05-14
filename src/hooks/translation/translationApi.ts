@@ -71,7 +71,7 @@ export const translateTextViaEdgeFunction = async (
     return {
       success: true,
       translatedText: data.translatedText,
-      service: serviceType // Aggiungiamo l'informazione su quale servizio è stato usato
+      service: serviceType // Ora questa proprietà è definita nell'interfaccia
     };
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);
