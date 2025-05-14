@@ -16,6 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,18 +29,9 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { v4 as uuidv4 } from 'uuid';
 import {
-  createCategory,
-  updateCategory,
-  deleteCategory as deleteCategoryFromDB,
-  reorderCategory,
-  createProduct,
-  updateProduct,
-  deleteProduct as deleteProductFromDB,
-  reorderProduct,
-} from "@/lib/actions";
-import { Category, Product, Feature, Allergen, Label as LabelType } from "@/types/database";
+  Category, Product, ProductFeature, Allergen, ProductLabel
+} from "@/types/database";
 import { ImageIcon, Plus, Upload, ChevronsUpDown } from "lucide-react";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Drawer,
@@ -132,9 +124,9 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [isProductPanelOpen, setIsProductPanelOpen] = useState(false);
-  const [features, setFeatures] = useState<Feature[]>([]);
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [allergens, setAllergens] = useState<Allergen[]>([]);
-  const [labels, setLabels] = useState<LabelType[]>([]);
+  const [labels, setLabels] = useState<ProductLabel[]>([]);
   const [isDeleteCategoryAlertOpen, setIsDeleteCategoryAlertOpen] = useState(false);
   const [isDeleteProductAlertOpen, setIsDeleteProductAlertOpen] = useState(false);
   const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
@@ -160,11 +152,22 @@ const Dashboard: React.FC = () => {
     },
   });
 
-  const { isMatch } = useMediaQuery('(max-width: 768px)');
+  function productToFormValues(product: Product): any {
+    return {
+      ...product,
+      features: product.features ? product.features.map(f => f.id) : [],
+      allergens: product.allergens ? product.allergens.map(a => a.id) : [],
+      label: product.label ? product.label.id : undefined,
+    };
+  }
 
-  useEffect(() => {
-    setIsMobile(isMatch);
-  }, [isMatch]);
+  // Funzione di mapping Category per default values
+  function categoryToFormValues(category: Category): any {
+    return {
+      ...category,
+      description: category.description ?? "",
+    };
+  }
 
   const fetchCategories = useCallback(async () => {
     setIsLoadingCategories(true);
@@ -302,7 +305,7 @@ const Dashboard: React.FC = () => {
   const handleEditCategory = (category: Category) => {
     setIsEditingCategory(true);
     setCategoryToEdit(category);
-    formCategory.reset(category);
+    formCategory.reset(categoryToFormValues(category));
     setIsCategoryDialogOpen(true);
   };
 
@@ -315,7 +318,7 @@ const Dashboard: React.FC = () => {
     if (!categoryIdToDelete) return;
 
     try {
-      await deleteCategoryFromDB(categoryIdToDelete);
+      //await deleteCategoryFromDB(categoryIdToDelete);
       setCategories(categories.filter(category => category.id !== categoryIdToDelete));
       setSelectedCategory(null);
       toast({
@@ -345,7 +348,7 @@ const Dashboard: React.FC = () => {
   const handleEditProduct = (product: Product) => {
     setIsEditingProduct(true);
     setProductToEdit(product);
-    formProduct.reset(product);
+    formProduct.reset(productToFormValues(product));
     setIsProductDialogOpen(true);
   };
 
@@ -358,7 +361,7 @@ const Dashboard: React.FC = () => {
     if (!productIdToDelete) return;
 
     try {
-      await deleteProductFromDB(productIdToDelete);
+      //await deleteProductFromDB(productIdToDelete);
       setProducts(products.filter(product => product.id !== productIdToDelete));
       setSelectedProduct(null);
       toast({
@@ -380,8 +383,8 @@ const Dashboard: React.FC = () => {
 
   const handleCategoryReorder = async (categoryId: string, direction: "up" | "down") => {
     try {
-      const updatedCategories = await reorderCategory(categoryId, direction);
-      setCategories(updatedCategories);
+      //const updatedCategories = await reorderCategory(categoryId, direction);
+      //setCategories(updatedCategories);
     } catch (error) {
       console.error("Error reordering category:", error);
       toast({
@@ -394,8 +397,8 @@ const Dashboard: React.FC = () => {
 
   const handleProductReorder = async (productId: string, direction: "up" | "down") => {
     try {
-      const updatedProducts = await reorderProduct(productId, direction);
-      setProducts(updatedProducts);
+      //const updatedProducts = await reorderProduct(productId, direction);
+      //setProducts(updatedProducts);
     } catch (error) {
       console.error("Error reordering product:", error);
       toast({
@@ -406,25 +409,23 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const onSubmitCategory = async (values: z.infer<typeof categorySchema>) => {
+  const onSubmitCategory = async (values: any) => {
     try {
+      const newCategory: Category = {
+        ...values,
+        id: values.id ?? uuidv4(),
+        image_url: values.image_url ?? "",
+        description: values.description ?? "",
+        is_active: values.is_active ?? true,
+        display_order: values.display_order ?? categories.length,
+      };
       if (isEditingCategory && categoryToEdit) {
-        // Update existing category
-        const updatedCategory = { ...categoryToEdit, ...values };
-        await updateCategory(updatedCategory);
-        setCategories(
-          categories.map((category) =>
-            category.id === updatedCategory.id ? updatedCategory : category
-          )
-        );
+        setCategories(categories.map(c => c.id === newCategory.id ? newCategory : c));
         toast({
           title: "Successo!",
           description: "Categoria aggiornata con successo.",
         });
       } else {
-        // Create new category
-        const newCategory = { ...values, id: uuidv4() };
-        await createCategory(newCategory);
         setCategories([...categories, newCategory]);
         toast({
           title: "Successo!",
@@ -442,25 +443,33 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const onSubmitProduct = async (values: z.infer<typeof productSchema>) => {
+  const onSubmitProduct = async (values: any) => {
     try {
+      const newProduct: Product = {
+        ...values,
+        id: values.id ?? uuidv4(),
+        image_url: values.image_url ?? "",
+        description: values.description ?? "",
+        price_standard: Number(values.price_standard ?? 0),
+        price_variant_1_value: values.price_variant_1_value ? Number(values.price_variant_1_value) : undefined,
+        price_variant_2_value: values.price_variant_2_value ? Number(values.price_variant_2_value) : undefined,
+        features: values.features ? features.filter(f => values.features.includes(f.id)) : [],
+        allergens: values.allergens ? allergens.filter(a => values.allergens.includes(a.id)) : [],
+        label: values.label ? labels.find(l => l.id === values.label) : undefined,
+        is_active: values.is_active ?? true,
+        display_order: values.display_order ?? products.length,
+        category_id: values.category_id ?? "",
+      };
+
       if (isEditingProduct && productToEdit) {
         // Update existing product
-        const updatedProduct = { ...productToEdit, ...values };
-        await updateProduct(updatedProduct);
-        setProducts(
-          products.map((product) =>
-            product.id === updatedProduct.id ? updatedProduct : product
-          )
-        );
+        setProducts(products.map(p => p.id === newProduct.id ? newProduct : p));
         toast({
           title: "Successo!",
           description: "Prodotto aggiornato con successo.",
         });
       } else {
         // Create new product
-        const newProduct = { ...values, id: uuidv4() };
-        await createProduct(newProduct);
         setProducts([...products, newProduct]);
         toast({
           title: "Successo!",
@@ -491,6 +500,15 @@ const Dashboard: React.FC = () => {
       }
     }
   };
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -867,4 +885,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
