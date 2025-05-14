@@ -50,8 +50,15 @@ serve(async (req) => {
     
     const targetLanguageName = languageMap[targetLanguage] || languageMap['en'];
     
-    // Istruzione per Perplexity
-    const systemPrompt = `You are a translator. Translate the given text into ${targetLanguageName}. Return ONLY the translation, nothing else.`;
+    // Istruzione aggiornata per Perplexity, allineata con quella di OpenAI
+    const systemPrompt = `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
+Translate all phrases naturally and idiomatically into ${targetLanguageName}, following these rules:
+
+- Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
+- General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
+- Maintain the same capitalization pattern as the original text.
+- Preserve formatting (punctuation, line breaks, spacing).
+- Do not include any explanation, comments, or extra text — return only the translated text.`;
     
     // Chiamata all'API Perplexity
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
