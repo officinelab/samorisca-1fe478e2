@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -54,10 +53,10 @@ serve(async (req) => {
 
     console.log(`[OPENAI] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
-    // Calcolo token rimanenti
+    // --- Check token availability prima di traduzione
     const { data: tokensData, error: tokensError } = await supabase.rpc('get_remaining_tokens');
     if (tokensError) {
-      logDetailedError('Errore nel controllo dei token', tokensError);
+      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensError);
       return new Response(
         JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -70,122 +69,117 @@ serve(async (req) => {
       );
     }
 
-    // Uso modularizzazione per nome lingua e prompt
+    // Prompt e traduzione
     const targetLangName = mapLanguageCode(targetLanguage);
     const systemPrompt = getSystemPrompt(targetLangName);
 
-    try {
-      const requestBody = {
-        model: MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: text }
-        ],
-        temperature: 0.1,
-      };
+    const requestBody = {
+      model: MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: text }
+      ],
+      temperature: 0.1,
+    };
 
-      console.log(`[OPENAI-DEBUG] Richiesta a OpenAI API:`, JSON.stringify(requestBody, null, 2));
+    // --- Invio richiesta a OpenAI
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        logDetailedError('Errore API OpenAI', errorData);
-        console.error('Codice di stato HTTP:', response.status);
-        console.error('Messaggio di stato:', response.statusText);
-        return new Response(
-          JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'} (Stato ${response.status})` }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const data = await response.json();
-      console.log(`[OPENAI-DEBUG] Risposta completa di OpenAI:`, JSON.stringify(data, null, 2));
-
-      const translatedText = data.choices[0].message.content.trim();
-      console.log(`[OPENAI] <== Risultato: "${translatedText}"`);
-      console.log(`[OPENAI] Traduzione completata con successo`);
-
-      // Salvataggio della traduzione
-      try {
-        const { error: saveError } = await supabase
-          .from('translations')
-          .upsert({
-            entity_id: entityId,
-            entity_type: entityType,
-            field: fieldName,
-            language: targetLanguage,
-            original_text: text,
-            translated_text: translatedText,
-            last_updated: new Date().toISOString()
-          });
-
-        if (saveError) {
-          logDetailedError('Errore nel salvataggio della traduzione', saveError);
-        }
-      } catch (saveErr) {
-        logDetailedError('Impossibile salvare la traduzione nel database', saveErr);
-      }
-
-      // ==== INCREMENTO TOKEN CON DEBUG ====
-      try {
-        // 1. Recupero il valore attuale tokens_used per debugging
-        const { data: tokensRow, error: selError } = await supabase
-          .from('translation_tokens')
-          .select('*')
-          .eq('month', (new Date()).toISOString().slice(0, 7)) // formato YYYY-MM
-          .single();
-
-        if (selError) {
-          console.warn('[OPENAI][DEBUG] Errore nel recupero tokens_used:', selError);
-        } else {
-          console.log(`[OPENAI][DEBUG] Valore attuale tokens_used PRIMA:`, tokensRow?.tokens_used);
-        }
-
-        const { data: incData, error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-        if (incError) {
-          console.warn('[OPENAI] Errore aggiornamento token:', incError);
-        } else {
-          console.log('[OPENAI] 1 token scalato con successo.');
-        }
-
-        // 2. Recupero il valore attuale tokens_used DOPO
-        const { data: tokensRowAfter, error: selAfterError } = await supabase
-          .from('translation_tokens')
-          .select('*')
-          .eq('month', (new Date()).toISOString().slice(0, 7))
-          .single();
-
-        if (selAfterError) {
-          console.warn('[OPENAI][DEBUG] Errore nel recupero tokens_used DOPO:', selAfterError);
-        } else {
-          console.log(`[OPENAI][DEBUG] Valore tokens_used DOPO:`, tokensRowAfter?.tokens_used);
-        }
-      } catch (tokErr) {
-        console.warn('[OPENAI][DEBUG] Errore inatteso aggiornamento token:', tokErr);
-      }
-      // ==== /INCREMENTO TOKEN ====
-
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[OPENAI] Errore API:', errorData);
       return new Response(
-        JSON.stringify({ translatedText }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } catch (fetchError) {
-      logDetailedError('Errore nella chiamata all\'API OpenAI', fetchError);
-      return new Response(
-        JSON.stringify({ error: `Errore nella chiamata all\'API OpenAI: ${fetchError.message}` }),
+        JSON.stringify({ error: `Errore API OpenAI: ${errorData.error?.message || 'Errore sconosciuto'} (Stato ${response.status})` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const data = await response.json();
+    const translatedText = data.choices[0].message.content.trim();
+
+    if (!translatedText) {
+      return new Response(
+        JSON.stringify({ error: "Nessun testo tradotto restituito da OpenAI." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    console.log(`[OPENAI] <== Risultato: "${translatedText}"`);
+    console.log("[OPENAI] Traduzione completata con successo");
+
+    // --- Salva traduzione
+    try {
+      const { error: saveError } = await supabase
+        .from('translations')
+        .upsert({
+          entity_id: entityId,
+          entity_type: entityType,
+          field: fieldName,
+          language: targetLanguage,
+          original_text: text,
+          translated_text: translatedText,
+          last_updated: new Date().toISOString()
+        });
+
+      if (saveError) {
+        console.error('[OPENAI][DB] Errore nel salvataggio della traduzione:', saveError);
+      }
+    } catch (saveErr) {
+      console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
+    }
+
+    // === INCREMENTO TOKEN === 
+    try {
+      // 1. Leggo valore tokens_used PRIMA
+      const { data: rowBefore, error: errBefore } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+
+      if (errBefore) {
+        console.warn('[OPENAI][DEBUG] Errore lettura tokens_used PRIMA:', errBefore);
+      } else {
+        console.log(`[OPENAI][DEBUG] [TOKEN] PRIMA:`, rowBefore);
+      }
+
+      // 2. INCREMENTO tokens_used +1
+      const { data: incData, error: incError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+      if (incError) {
+        console.error('[OPENAI][TOKEN] Errore incremento token:', incError);
+      } else {
+        console.log('[OPENAI][TOKEN] Token incrementato di 1');
+      }
+
+      // 3. Leggo valore tokens_used DOPO
+      const { data: rowAfter, error: errAfter } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+
+      if (errAfter) {
+        console.warn('[OPENAI][DEBUG] Errore lettura tokens_used DOPO:', errAfter);
+      } else {
+        console.log(`[OPENAI][DEBUG] [TOKEN] DOPO:`, rowAfter);
+      }
+    } catch (tokErr) {
+      console.error('[OPENAI][TOKEN] Errore inatteso update token:', tokErr);
+    }
+    // === /INCREMENTO TOKEN ===
+
+    return new Response(
+      JSON.stringify({ translatedText }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    logDetailedError('Errore del servizio di traduzione', error);
+    console.error('[OPENAI][GLOBAL ERROR] Errore generale:', error);
     return new Response(
       JSON.stringify({ error: `Errore del servizio di traduzione: ${error.message}` }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
