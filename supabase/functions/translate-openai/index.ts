@@ -14,13 +14,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Funzione per mappare i codici lingua al formato desiderato
 function mapLanguageCode(code: string): string {
-  const langMap: Record<string, string> = {
+  const languageNames: Record<string, string> = {
     'en': 'English',
     'fr': 'French',
     'de': 'German',
     'es': 'Spanish'
   };
-  return langMap[code] || 'English';
+  return languageNames[code] || 'English';
 }
 
 serve(async (req) => {
@@ -101,10 +101,11 @@ serve(async (req) => {
       // Non blocchiamo la traduzione per errori nel contatore
     }
 
-    // Chiamata all'API di OpenAI con prompt specializzato per menu gastronomici
+    // Ottieni il nome completo della lingua di destinazione
     const targetLangName = mapLanguageCode(targetLanguage);
     
     try {
+      // Chiamata all'API di OpenAI con il nuovo prompt specializzato per menu ristoranti
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -116,10 +117,14 @@ serve(async (req) => {
           messages: [
             { 
               role: 'system', 
-              content: `Sei un traduttore specializzato in gastronomia e ristorazione. Traduci il seguente testo in ${targetLangName}. 
-                        Mantieni i nomi dei piatti, la formattazione e la terminologia culinaria. 
-                        Preserva nomi propri e termini specifici della cucina italiana.
-                        Restituisci SOLO il testo tradotto, senza commenti o spiegazioni.` 
+              content: `You are a professional translator specializing in restaurant menus and Italian culinary terminology. 
+Translate all phrases naturally and idiomatically into ${targetLangName}, following these rules:
+
+- Only preserve traditional Italian dish names that are internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
+- General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
+- Maintain the same capitalization pattern as the original text.
+- Preserve formatting (punctuation, line breaks, spacing).
+- Do not include any explanation, comments, or extra text — return only the translated text.` 
             },
             { role: 'user', content: text }
           ],
