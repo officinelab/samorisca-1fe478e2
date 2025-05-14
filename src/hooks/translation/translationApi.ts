@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { TranslationResult } from './types';
 
 export const checkRemainingTokens = async (): Promise<number | null> => {
@@ -10,7 +10,11 @@ export const checkRemainingTokens = async (): Promise<number | null> => {
     
     if (error) {
       console.error('Error checking remaining tokens:', error);
-      toast.error('Errore durante la verifica dei token disponibili');
+      toast({
+        variant: "destructive",
+        title: "Errore",
+        description: "Errore durante la verifica dei token disponibili"
+      });
       return null;
     }
     
@@ -59,7 +63,11 @@ export const translateTextViaEdgeFunction = async (
         
         // Messaggio di errore più specifico per i problemi di connessione
         if (error.message && error.message.includes('Failed to send a request')) {
-          toast.error(`Errore di connessione alla funzione Edge. Verificare che la funzione "${functionName}" sia correttamente deployata e accessibile.`);
+          toast({
+            variant: "destructive",
+            title: "Errore di connessione",
+            description: `Impossibile contattare la funzione Edge "${functionName}". Verifica che sia correttamente deployata.`
+          });
           return {
             success: false,
             translatedText: '',
@@ -68,7 +76,11 @@ export const translateTextViaEdgeFunction = async (
           };
         }
         
-        toast.error(`Errore durante la traduzione: ${error.message}`);
+        toast({
+          variant: "destructive",
+          title: "Errore di traduzione",
+          description: error.message || "Errore sconosciuto"
+        });
         return {
           success: false,
           translatedText: '',
@@ -78,7 +90,11 @@ export const translateTextViaEdgeFunction = async (
       }
 
       if (!data?.translatedText) {
-        toast.error('Nessun testo tradotto ricevuto');
+        toast({
+          variant: "destructive",
+          title: "Errore",
+          description: "Nessun testo tradotto ricevuto"
+        });
         return {
           success: false,
           translatedText: '',
@@ -96,7 +112,11 @@ export const translateTextViaEdgeFunction = async (
       };
     } catch (invocationError) {
       console.error(`Errore nell'invocazione della funzione ${functionName}:`, invocationError);
-      toast.error(`Errore nell'invocazione della funzione: ${invocationError.message}`);
+      toast({
+        variant: "destructive", 
+        title: "Errore",
+        description: `Errore nell'invocazione della funzione: ${invocationError.message}`
+      });
       
       return {
         success: false,
@@ -108,7 +128,11 @@ export const translateTextViaEdgeFunction = async (
   } catch (error) {
     console.error('Errore del servizio di traduzione:', error);
     const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto';
-    toast.error(`Errore del servizio di traduzione: ${errorMessage}`);
+    toast({
+      variant: "destructive",
+      title: "Errore",
+      description: `Errore del servizio di traduzione: ${errorMessage}`
+    });
     
     return {
       success: false,

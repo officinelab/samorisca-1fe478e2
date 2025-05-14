@@ -86,22 +86,23 @@ serve(async (req) => {
     // Stima dei token utilizzati (approssimativa)
     const estimatedTokens = Math.ceil(text.length / 4);
     
-    // Incremento contatore token
-    const { data: incrementResult, error: incrementError } = await supabase.rpc('increment_tokens', {
-      token_count: estimatedTokens
-    });
+    try {
+      // Incremento contatore token
+      const { error: incrementError } = await supabase.rpc('increment_tokens', {
+        token_count: estimatedTokens
+      });
 
-    if (incrementError) {
-      console.error('Errore nell\'incremento dei token:', incrementError);
-      return new Response(
-        JSON.stringify({ error: "Errore nell'aggiornamento del conteggio token" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (incrementError) {
+        console.error('Errore nell\'incremento dei token:', incrementError);
+        // Continuiamo comunque con la traduzione anche se c'è un errore nell'incremento
+      }
+    } catch (counterErr) {
+      console.warn('Impossibile incrementare il contatore token:', counterErr);
+      // Non blocchiamo la traduzione per errori nel contatore
     }
 
-    // Chiamata all'API di OpenAI
+    // Chiamata all'API di OpenAI con prompt specializzato per menu gastronomici
     const targetLangName = mapLanguageCode(targetLanguage);
-    const prompt = `Traduci il seguente testo in ${targetLangName}. Mantieni il formato e il tono originali. Restituisci SOLO il testo tradotto, senza commenti o spiegazioni aggiuntive.\n\nTesto: "${text}"`;
     
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -113,8 +114,14 @@ serve(async (req) => {
         body: JSON.stringify({
           model: MODEL,
           messages: [
-            { role: 'system', content: 'Sei un traduttore professionale. Traduci con precisione mantenendo il significato originale.' },
-            { role: 'user', content: prompt }
+            { 
+              role: 'system', 
+              content: `Sei un traduttore specializzato in gastronomia e ristorazione. Traduci il seguente testo in ${targetLangName}. 
+                        Mantieni i nomi dei piatti, la formattazione e la terminologia culinaria. 
+                        Preserva nomi propri e termini specifici della cucina italiana.
+                        Restituisci SOLO il testo tradotto, senza commenti o spiegazioni.` 
+            },
+            { role: 'user', content: text }
           ],
           temperature: 0.3,
         })
@@ -136,20 +143,26 @@ serve(async (req) => {
       console.log(`[OPENAI] Traduzione completata con successo`);
 
       // Salvataggio della traduzione nel database
-      const { error: saveError } = await supabase
-        .from('translations')
-        .upsert({
-          entity_id: entityId,
-          entity_type: entityType,
-          field: fieldName,
-          language: targetLanguage,
-          original_text: text,
-          translated_text: translatedText,
-          updated_at: new Date().toISOString()
-        });
+      try {
+        const { error: saveError } = await supabase
+          .from('translations')
+          .upsert({
+            entity_id: entityId,
+            entity_type: entityType,
+            field: fieldName,
+            language: targetLanguage,
+            original_text: text,
+            translated_text: translatedText,
+            updated_at: new Date().toISOString()
+          });
 
-      if (saveError) {
-        console.error('Errore nel salvataggio della traduzione:', saveError);
+        if (saveError) {
+          console.error('Errore nel salvataggio della traduzione:', saveError);
+          // Continuiamo comunque anche se non riusciamo a salvare nel database
+        }
+      } catch (saveErr) {
+        console.warn('Impossibile salvare la traduzione nel database:', saveErr);
+        // Non blocchiamo la risposta per errori nel salvataggio
       }
 
       return new Response(
