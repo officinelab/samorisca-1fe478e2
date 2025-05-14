@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { toast } from "@/components/ui/sonner";
@@ -62,14 +61,11 @@ export function useTranslationFieldState({
       let translationObj: TranslationData | null = null;
       const existing = await getExistingTranslation(id, entityType, fieldName, language);
 
-      if (
-        existing !== null &&
-        typeof existing === "object" &&
-        "translatedText" in existing
-      ) {
+      // Risolti warning e campo appropriato
+      if (existing && typeof existing === "object" && "translatedText" in existing && "last_updated" in existing) {
         translationObj = {
           translatedText: (existing as any).translatedText,
-          last_updated: (existing as any).last_updated,
+          last_updated: (existing as any).last_updated // dalla tabella translations
         };
       } else if (typeof existing === "string") {
         translationObj = { translatedText: existing };
@@ -78,26 +74,26 @@ export function useTranslationFieldState({
       }
       setTranslatedData(translationObj);
 
-      // Prende il last_updated dell'originale (italiano)
-      let lastUpdatedIt = "";
+      // Prende solo il campo updated_at dal prodotto (MAIN)
+      let updatedAtProd = "";
       try {
         const tableName = getTableName(entityType);
         if (tableName) {
           const { data } = await import("@/integrations/supabase/client").then((mod) =>
             mod.supabase
               .from(tableName)
-              .select("updated_at, last_updated")
+              .select("updated_at")
               .eq("id", id)
               .maybeSingle()
           );
           if (data && typeof data === "object") {
-            lastUpdatedIt = (data as any).last_updated ?? (data as any).updated_at ?? "";
+            updatedAtProd = (data as any).updated_at ?? "";
           }
         }
       } catch (err) {
-        lastUpdatedIt = "";
+        updatedAtProd = "";
       }
-      setOriginalLastUpdated(lastUpdatedIt);
+      setOriginalLastUpdated(updatedAtProd); // rename per chiarezza, ora usato solo updatedAtProd
       setError(null);
     };
 
@@ -170,14 +166,17 @@ export function useTranslationFieldState({
     }
   };
 
-  // STATUS computation
+  // STATUS computation aggiornata: confronta solo updated_at prodotto VS last_updated traduzione (translationObj)
   let status: TranslationStatus = "missing";
+  const prodottoUpdatedAt = originalLastUpdated;
+  const traduzioneLastUpdated = translatedData?.last_updated;
+
   if (!translatedData || !translatedData.translatedText) {
     status = "missing";
   } else if (
-    translatedData?.last_updated &&
-    originalLastUpdated &&
-    new Date(translatedData.last_updated) < new Date(originalLastUpdated)
+    traduzioneLastUpdated &&
+    prodottoUpdatedAt &&
+    new Date(traduzioneLastUpdated) < new Date(prodottoUpdatedAt)
   ) {
     status = "outdated";
   } else if (translatedData?.translatedText) {
