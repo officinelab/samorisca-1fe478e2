@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useTranslationService } from "@/hooks/useTranslationService";
+import { useTranslationService } from "@/hooks/translation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
