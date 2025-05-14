@@ -67,14 +67,13 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
             <h4 className="font-semibold mb-1">Prezzo</h4>
             {product.has_multiple_prices ? (
               <div className="space-y-2">
-                {/* Prezzo standard */}
+                {/* Prezzo standard SOLO con suffisso */}
                 <div className="flex justify-between items-center gap-2">
                   <span>
                     {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""}
                   </span>
                   <span className="font-medium">
-                    {product.price_standard?.toFixed(2)} €
-                    {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    {product.price_standard?.toFixed(2)} €{priceSuffix}
                   </span>
                   <Button
                     variant="outline"
@@ -93,7 +92,6 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                     <span>{product.price_variant_1_name}</span>
                     <span className="font-medium">
                       {product.price_variant_1_value?.toFixed(2)} €
-                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                     </span>
                     <Button
                       variant="outline"
@@ -113,7 +111,6 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                     <span>{product.price_variant_2_name}</span>
                     <span className="font-medium">
                       {product.price_variant_2_value?.toFixed(2)} €
-                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                     </span>
                     <Button
                       variant="outline"
@@ -153,3 +150,4 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     </Dialog>
   );
 };
+
