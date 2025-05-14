@@ -23,10 +23,10 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   
   if (!product) return null;
 
-  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
-  
+  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
@@ -67,40 +67,87 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
             <h4 className="font-semibold mb-1">Prezzo</h4>
             {product.has_multiple_prices ? (
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Standard</span>
-                  <span className="font-medium">{product.price_standard?.toFixed(2)} €</span>
+                {/* Prezzo standard */}
+                <div className="flex justify-between items-center gap-2">
+                  <span>
+                    {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""}
+                  </span>
+                  <span className="font-medium">
+                    {product.price_standard?.toFixed(2)} €
+                    {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      addToCart(product);
+                      onClose();
+                    }}
+                  >
+                    Aggiungi <Plus className="ml-2" size={16} />
+                  </Button>
                 </div>
-                
-                {product.price_variant_1_name && product.price_variant_1_value && (
-                  <div className="flex justify-between">
+                {/* Variante 1 */}
+                {product.price_variant_1_name && product.price_variant_1_value !== null && (
+                  <div className="flex justify-between items-center gap-2">
                     <span>{product.price_variant_1_name}</span>
-                    <span className="font-medium">{product.price_variant_1_value?.toFixed(2)} €</span>
+                    <span className="font-medium">
+                      {product.price_variant_1_value?.toFixed(2)} €
+                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
+                        onClose();
+                      }}
+                    >
+                      Aggiungi <Plus className="ml-2" size={16} />
+                    </Button>
                   </div>
                 )}
-                
-                {product.price_variant_2_name && product.price_variant_2_value && (
-                  <div className="flex justify-between">
+                {/* Variante 2 */}
+                {product.price_variant_2_name && product.price_variant_2_value !== null && (
+                  <div className="flex justify-between items-center gap-2">
                     <span>{product.price_variant_2_name}</span>
-                    <span className="font-medium">{product.price_variant_2_value?.toFixed(2)} €</span>
+                    <span className="font-medium">
+                      {product.price_variant_2_value?.toFixed(2)} €
+                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
+                        onClose();
+                      }}
+                    >
+                      Aggiungi <Plus className="ml-2" size={16} />
+                    </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="font-medium">{product.price_standard?.toFixed(2)} €</p>
+              <p className="font-medium">
+                {product.price_standard?.toFixed(2)} €
+                {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+              </p>
             )}
           </div>
         </div>
         
         <div className="flex justify-end">
-          <Button 
-            onClick={() => {
-              addToCart(product);
-              onClose();
-            }}
-          >
-            Aggiungi all'ordine <Plus className="ml-2" size={16} />
-          </Button>
+          {!product.has_multiple_prices && (
+            <Button 
+              onClick={() => {
+                addToCart(product);
+                onClose();
+              }}
+            >
+              Aggiungi all'ordine <Plus className="ml-2" size={16} />
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

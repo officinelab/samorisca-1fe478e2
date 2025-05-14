@@ -21,9 +21,9 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
   addToCart,
   truncateText
 }) => {
-  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
+  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
@@ -34,7 +34,6 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
             <p className="text-gray-600 text-sm mb-2">
               {truncateText(description, 110)}
             </p>
-            
             {product.allergens && product.allergens.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {product.allergens.map(allergen => (
@@ -44,24 +43,99 @@ export const ProductCardMobile: React.FC<ProductCardsProps> = ({
                 ))}
               </div>
             )}
-            
-            <div className="font-medium">{product.price_standard?.toFixed(2)} €</div>
+            {/* Visualizzazione prezzi */}
+            {product.has_multiple_prices ? (
+              <div className="space-y-2">
+                {/* Prezzo Standard */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium flex-shrink-0">
+                    {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""} 
+                  </span>
+                  <span className="font-medium">
+                    {product.price_standard?.toFixed(2)} €
+                    {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                  </span>
+                  <Button
+                    variant="default" 
+                    size="icon"
+                    onClick={e => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className="ml-2 rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                {/* Variante 1 */}
+                {product.price_variant_1_name && product.price_variant_1_value !== null && (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium flex-shrink-0">
+                      {product.price_variant_1_name}
+                    </span>
+                    <span className="font-medium">
+                      {product.price_variant_1_value?.toFixed(2)} €
+                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    </span>
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={e => {
+                        e.stopPropagation();
+                        addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
+                      }}
+                      className="ml-2 rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    >
+                      <Plus size={16} />
+                    </Button>
+                  </div>
+                )}
+                {/* Variante 2 */}
+                {product.price_variant_2_name && product.price_variant_2_value !== null && (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium flex-shrink-0">
+                      {product.price_variant_2_name}
+                    </span>
+                    <span className="font-medium">
+                      {product.price_variant_2_value?.toFixed(2)} €
+                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    </span>
+                    <Button
+                      variant="default"
+                      size="icon"
+                      onClick={e => {
+                        e.stopPropagation();
+                        addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
+                      }}
+                      className="ml-2 rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    >
+                      <Plus size={16} />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="font-medium flex items-center">
+                {product.price_standard?.toFixed(2)} €
+                {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+              </div>
+            )}
           </div>
-          
           <div className="relative">
             <CardImage src={product.image_url} alt={title} mobileView />
-            
-            <Button 
-              variant="default" 
-              size="icon" 
-              onClick={e => {
-                e.stopPropagation();
-                addToCart(product);
-              }} 
-              className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
-            >
-              <Plus size={16} />
-            </Button>
+            {!product.has_multiple_prices && (
+              <Button 
+                variant="default" 
+                size="icon" 
+                onClick={e => {
+                  e.stopPropagation();
+                  addToCart(product);
+                }} 
+                className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+              >
+                <Plus size={16} />
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -76,11 +150,10 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
   deviceView
 }) => {
   const isMobileView = useIsMobile() || deviceView === 'mobile';
-  
-  // Usa displayTitle e displayDescription se disponibili, altrimenti fallback ai campi originali
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
-  
+  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+
   return (
     <Card horizontal className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
       {product.image_url ? (
@@ -95,22 +168,22 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
           <span className="text-gray-400">Nessuna immagine</span>
         </div>
       )}
-      
       <CardContent className="flex-1 p-4">
         <div className="flex justify-between items-start mb-1">
           <h3 className="font-medium text-lg">
             {title}
           </h3>
-          
-          {!product.has_multiple_prices && (
-            <span className="font-medium">{product.price_standard?.toFixed(2)} €</span>
-          )}
+          {/* Visualizzazione prezzo standard o varianti */}
+          {!product.has_multiple_prices ? (
+            <span className="font-medium flex items-center">
+              {product.price_standard?.toFixed(2)} €
+              {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+            </span>
+          ) : null}
         </div>
-        
         {description && (
           <p className="text-gray-600 text-sm mb-2">{description}</p>
         )}
-        
         {product.allergens && product.allergens.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {product.allergens.map(allergen => (
@@ -120,48 +193,60 @@ export const ProductCardDesktop: React.FC<ProductCardsProps> = ({
             ))}
           </div>
         )}
-        
+        {/* Gestione varianti di prezzo */}
         {product.has_multiple_prices ? (
           <div className="space-y-2 mt-3">
+            {/* Prezzo Standard */}
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full justify-between" 
+              className="w-full justify-between flex items-center" 
               onClick={e => {
                 e.stopPropagation();
                 addToCart(product);
               }}
             >
-              Standard: {product.price_standard?.toFixed(2)} €
+              <span>
+                {(product.price_variant_1_name || product.price_variant_2_name) ? "Standard" : ""}
+                {': '}
+                {product.price_standard?.toFixed(2)} €
+                {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+              </span>
               <Plus size={16} />
             </Button>
-            
-            {product.price_variant_1_name && product.price_variant_1_value && (
+            {/* Variante 1 */}
+            {product.price_variant_1_name && product.price_variant_1_value !== null && (
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full justify-between" 
+                className="w-full justify-between flex items-center" 
                 onClick={e => {
                   e.stopPropagation();
-                  addToCart(product, product.price_variant_1_name, product.price_variant_1_value);
+                  addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                 }}
               >
-                {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
+                <span>
+                  {product.price_variant_1_name}: {product.price_variant_1_value?.toFixed(2)} €
+                  {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                </span>
                 <Plus size={16} />
               </Button>
             )}
-            
-            {product.price_variant_2_name && product.price_variant_2_value && (
+            {/* Variante 2 */}
+            {product.price_variant_2_name && product.price_variant_2_value !== null && (
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full justify-between" 
+                className="w-full justify-between flex items-center"
                 onClick={e => {
                   e.stopPropagation();
-                  addToCart(product, product.price_variant_2_name, product.price_variant_2_value);
+                  addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                 }}
               >
-                {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                <span>
+                  {product.price_variant_2_name}: {product.price_variant_2_value?.toFixed(2)} €
+                  {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                </span>
                 <Plus size={16} />
               </Button>
             )}
