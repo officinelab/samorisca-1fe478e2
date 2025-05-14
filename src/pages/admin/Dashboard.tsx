@@ -68,6 +68,8 @@ import CategoryCard from "@/components/dashboard/CategoryCard";
 import ProductCard from "@/components/dashboard/ProductCard";
 import EmptyState from "@/components/dashboard/EmptyState";
 import LoaderSkeleton from "@/components/dashboard/LoaderSkeleton";
+import ProductForm from "@/components/product/ProductForm";
+import CategoryFormPanel from "@/components/dashboard/CategoryFormPanel";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
