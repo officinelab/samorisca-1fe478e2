@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/sonner";
 import { saveSetting } from "./settingsStorage";
 
@@ -91,6 +90,34 @@ export const updateDefaultProductImage = (imageUrl: string): boolean => {
     }));
     
     toast.success("Immagine predefinita per i prodotti aggiornata");
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Update the service & cover charge price
+ */
+export const updateServiceCoverCharge = (price: number): boolean => {
+  if (saveSetting('serviceCoverCharge', price)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'serviceCoverCharge', value: price } 
+    }));
+    toast.success("Servizio e coperto aggiornato");
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Update showPricesInOrder toggle
+ */
+export const updateShowPricesInOrder = (value: boolean): boolean => {
+  if (saveSetting('showPricesInOrder', value)) {
+    window.dispatchEvent(new CustomEvent('siteSettingsUpdated', { 
+      detail: { key: 'showPricesInOrder', value } 
+    }));
+    toast.success("Preferenza visualizzazione prezzi aggiornata");
     return true;
   }
   return false;
