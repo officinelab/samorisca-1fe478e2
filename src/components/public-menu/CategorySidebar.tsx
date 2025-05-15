@@ -18,6 +18,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
+  // DEBUG: Mostra che props arrivano
+  console.log('--- [CategorySidebar] ---');
+  console.log('language:', language);
+  console.log('categories sample:', categories && categories.length > 0 ? categories[0] : null);
+
   // Sidebar desktop sticky (invariato)
   if (deviceView === 'desktop') {
     return (
@@ -26,9 +31,18 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
           <h3 className="text-lg font-semibold mb-2">Categorie</h3>
           <div className="space-y-1 pr-4">
             {categories.map(category => {
-              const categoryTitle = language !== 'it' && category[`title_${language}`]
-                ? category[`title_${language}`]
-                : category.title;
+              const key =
+                language !== 'it' &&
+                typeof language === "string" &&
+                category[`title_${language}`]
+                  ? `title_${language}`
+                  : 'title';
+
+              // Mostra anche nel debug il campo usato
+              console.log(
+                `[CategorySidebar] category.id: ${category.id} | language: ${language} | title: ${category[key]}`
+              );
+
               return (
                 <Button
                   key={category.id}
@@ -36,7 +50,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
                   className="w-full justify-start"
                   onClick={() => onSelectCategory(category.id)}
                 >
-                  {categoryTitle}
+                  {category[key] || category.title}
                 </Button>
               );
             })}
@@ -51,9 +65,18 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     <div className="w-full overflow-hidden mb-6 sticky top-20 z-30 bg-gray-50 pt-4">
       <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
         {categories.map((category) => {
-          const categoryTitle = language !== 'it' && category[`title_${language}`]
-            ? category[`title_${language}`]
-            : category.title;
+          const key =
+            language !== 'it' &&
+            typeof language === "string" &&
+            category[`title_${language}`]
+              ? `title_${language}`
+              : 'title';
+
+          // Debug anche qui
+          console.log(
+            `[CategorySidebar MOBILE] category.id: ${category.id} | language: ${language} | title: ${category[key]}`
+          );
+
           return (
             <button
               key={category.id}
@@ -65,7 +88,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 }`}
               onClick={() => onSelectCategory(category.id)}
             >
-              {categoryTitle}
+              {category[key] || category.title}
             </button>
           );
         })}
