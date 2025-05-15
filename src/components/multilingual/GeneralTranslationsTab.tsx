@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,19 +39,13 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-
       try {
+        // recupera sempre tutti i dati madre
         let selectString = "id, title";
-        // Solo per categorie e allergeni esiste description
         if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
           selectString += ", description";
         }
-
-        let query = supabase
-          .from(selectedEntityType.type)
-          .select(selectString);
-
-        // L'ordine visuale è garantito solo se esiste display_order
+        let query = supabase.from(selectedEntityType.type).select(selectString);
         if (
           selectedEntityType.type === "categories" ||
           selectedEntityType.type === "allergens" ||
@@ -61,17 +54,39 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         ) {
           query = query.order("display_order", { ascending: true });
         }
-
         const { data, error } = await query;
         if (error) throw error;
 
-        // Mappa i dati: metti description solo se presente
-        setItems((data || []).map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description !== undefined ? item.description : null,
-          type: selectedEntityType.type
-        })));
+        // Se lingua ≠ italiano, cerca le traduzioni
+        let translationsMap: Record<string, Record<string, string>> = {};
+        if (language !== "it" && data.length > 0) {
+          const { data: trans } = await supabase
+            .from("translations")
+            .select("*")
+            .in("entity_id", data.map((it: any) => it.id))
+            .eq("entity_type", selectedEntityType.type)
+            .eq("language", language);
+
+          (trans || []).forEach((tr: any) => {
+            if (!translationsMap[tr.entity_id]) translationsMap[tr.entity_id] = {};
+            translationsMap[tr.entity_id][tr.field] = tr.translated_text;
+          });
+        }
+
+        // Map dati con le traduzioni applicate se disponibili
+        setItems(
+          (data || []).map((item: any) => ({
+            id: item.id,
+            title: (language !== "it" && translationsMap[item.id]?.title) || item.title,
+            description:
+              (language !== "it" && translationsMap[item.id]?.description !== undefined
+                ? translationsMap[item.id]?.description
+                : item.description !== undefined
+                ? item.description
+                : null),
+            type: selectedEntityType.type,
+          }))
+        );
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
         setItems([]);
@@ -81,7 +96,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
     };
 
     fetchItems();
-  }, [selectedEntityType]);
+  }, [selectedEntityType, language]);
 
   const handleEntityTypeChange = (value: string) => {
     const selectedOption = entityOptions.find(option => option.value === value);
