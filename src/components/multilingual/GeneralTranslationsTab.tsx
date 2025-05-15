@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +18,8 @@ interface TranslatableItem {
   id: string;
   title: string;
   description?: string | null;
-  type: string;
+  // CHANGE: type is now strictly the allowed literal union
+  type: "categories" | "allergens" | "product_features" | "product_labels";
 }
 
 const entityOptions: EntityOption[] = [
@@ -84,6 +86,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                 : item.description !== undefined
                 ? item.description
                 : null,
+            // Ensure type is the strict literal type
             type: selectedEntityType.type,
           }))
         );
