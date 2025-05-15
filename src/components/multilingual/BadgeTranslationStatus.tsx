@@ -8,16 +8,16 @@ type Status = "missing" | "outdated" | "updated" | "loading" | "error";
 
 interface BadgeTranslationStatusProps {
   entityId: string;
-  entityType: string; // può essere "products", "categories", ecc.
+  entityType: string;
   fieldName: string;
   language: SupportedLanguage;
 }
 
 /**
- * Badge che mostra lo stato della traduzione:
- * - Rosso: traduzione mancante
- * - Arancione: traduzione obsoleta
- * - Verde: traduzione aggiornata
+ * Questo componente mostra un piccolo badge colorato che rappresenta lo stato della traduzione:
+ * - Rosso: la traduzione non esiste (missing)
+ * - Arancione: traduzione obsoleta (outdated)
+ * - Verde: traduzione aggiornata (updated)
  */
 export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
   entityId,
@@ -32,31 +32,22 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     async function fetchStatus() {
       setStatus("loading");
 
-      // Decidi quale tabella interrogare
-      let updatedAt: string | null = null;
+      // 1. Prendi updated_at dalla tabella products 
+      // 2. Prendi last_updated dalla tabella translations per la lingua richiesta
 
-      if (entityType === "products" || entityType === "categories") {
-        // Prende updated_at dalla tabella appropriata
-        const { data: entity, error } = await supabase
-          .from(entityType)
-          .select("updated_at")
-          .eq("id", entityId)
-          .maybeSingle();
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("updated_at")
+        .eq("id", entityId)
+        .maybeSingle();
 
-        if (!active) return;
+      if (!active) return;
 
-        if (error || !entity) {
-          setStatus("error");
-          return;
-        }
-        updatedAt = entity.updated_at;
-      } else {
-        console.warn(`BadgeTranslationStatus: entityType non supportato (${entityType})`);
+      if (productError || !product) {
         setStatus("error");
         return;
       }
 
-      // Prende last_updated dalla tabella translations
       const { data: translation, error: translationError } = await supabase
         .from("translations")
         .select("last_updated")
@@ -68,19 +59,19 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
 
       if (!active) return;
 
-      // Traduzione mancante?
+      // Se non esiste traduzione → missing (rosso)
       if (!translation || translationError) {
         setStatus("missing");
         return;
       }
 
-      const entityUpdated = updatedAt ? Date.parse(updatedAt) : 0;
+      const productUpdated = product.updated_at ? Date.parse(product.updated_at) : 0;
       const translationUpdated = translation.last_updated ? Date.parse(translation.last_updated) : 0;
 
-      if (translationUpdated >= entityUpdated) {
-        setStatus("updated"); // Verde
-      } else if (translationUpdated < entityUpdated) {
-        setStatus("outdated"); // Arancione
+      if (translationUpdated >= productUpdated) {
+        setStatus("updated");      // Verde
+      } else if (translationUpdated < productUpdated) {
+        setStatus("outdated");    // Arancione
       } else {
         setStatus("error");
       }
@@ -100,6 +91,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
+
   if (status === "missing") {
     return (
       <span className="flex items-center ml-1" title="Traduzione mancante">
@@ -107,6 +99,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
+
   if (status === "outdated") {
     return (
       <span className="flex items-center ml-1" title="Traduzione da aggiornare">
@@ -114,6 +107,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
+
   if (status === "updated") {
     return (
       <span className="flex items-center ml-1" title="Traduzione aggiornata">
@@ -121,9 +115,11 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
+
   return (
     <span className="flex items-center ml-1" title="Errore nel controllo badge">
       <CircleX className="w-3.5 h-3.5 text-gray-400" />
     </span>
   );
 };
+
