@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,9 @@ import { toast } from "@/hooks/use-toast";
 
 const exampleProduct: Product = {
   id: "demo-id",
+  category_id: "demo-category-id",
+  is_active: true,
+  display_order: 1,
   title: "Pizza Margherita",
   displayTitle: "Pizza Margherita",
   description: "Pomodoro, mozzarella fiordilatte, basilico, olio extravergine.",
@@ -72,8 +74,7 @@ export default function OnlineMenuLayoutSection() {
             {selectedLayout === "default" ? "Selezionato" : "Seleziona"}
           </Button>
         </div>
-        {/*
-        <div>
+        {/* <div>
           <ProductCardWrapper
             product={exampleProduct}
             onProductSelect={() => {}}
@@ -92,8 +93,7 @@ export default function OnlineMenuLayoutSection() {
           >
             {selectedLayout === "compact" ? "Selezionato" : "Seleziona"}
           </Button>
-        </div>
-        */}
+        </div> */}
       </div>
     </div>
   );
