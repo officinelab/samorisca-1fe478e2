@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { CircleX, CircleCheck, CircleAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +10,7 @@ interface BadgeTranslationStatusProps {
   entityType: string; // può essere "products", "categories", ecc.
   fieldName: string;
   language: SupportedLanguage;
+  refreshKey?: number; // 👈 NUOVA PROP
 }
 
 /**
@@ -24,6 +24,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
   entityType,
   fieldName,
   language,
+  refreshKey // 👈
 }) => {
   const [status, setStatus] = useState<Status>("loading");
 
@@ -31,8 +32,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     let active = true;
     async function fetchStatus() {
       setStatus("loading");
-
-      // Decidi quale tabella interrogare
       let updatedAt: string | null = null;
 
       if (entityType === "products" || entityType === "categories") {
@@ -55,7 +54,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
         return;
       }
 
-      // Prende last_updated dalla tabella translations
       const { data: translation, error: translationError } = await supabase
         .from("translations")
         .select("last_updated")
@@ -67,18 +65,15 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
 
       if (!active) return;
 
-      // Traduzione mancante?
       if (!translation || translationError) {
         setStatus("missing");
         return;
       }
 
-      // Confronto robusto dei timestamp: verde anche se i valori coincidono esattamente
       const entityUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
       const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
 
       if (translationUpdated >= entityUpdated) {
-        // Traduzione aggiornata, anche se le date coincidono
         setStatus("updated");
       } else if (translationUpdated < entityUpdated) {
         setStatus("outdated");
@@ -91,7 +86,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     return () => {
       active = false;
     };
-  }, [entityId, entityType, fieldName, language]);
+  }, [entityId, entityType, fieldName, language, refreshKey]); // 👈 AGGIUNTA refreshKey tra le dipendenze
 
   // Badge grafico
   if (status === "loading") {

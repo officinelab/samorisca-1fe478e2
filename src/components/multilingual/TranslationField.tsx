@@ -38,7 +38,8 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   const [isEdited, setIsEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const { 
     translateText, 
     getExistingTranslation, 
@@ -96,6 +97,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
         // Reset error and retry count on success
         setError(null);
         setRetryCount(0);
+        setRefreshKey(k => k + 1);
       } else {
         setError(result.message || 'Errore sconosciuto durante la traduzione');
         console.error(`Errore traduzione per ${fieldName}:`, result.message);
@@ -141,6 +143,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     if (onTranslationSaved) {
       onTranslationSaved(translatedText);
     }
+    setRefreshKey(k => k + 1);
   };
 
   // Ottieni il testo per il tooltip
@@ -194,6 +197,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
             entityType={entityType}
             fieldName={fieldName}
             language={language}
+            refreshKey={refreshKey}
           />
         </div>
         <div className="flex flex-col gap-2">
