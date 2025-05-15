@@ -41,7 +41,7 @@ const layoutLabel: Record<string, string> = {
 
 // Queste percentuali determinano la "scala" delle anteprime in settings
 const PREVIEW_SCALE_DESKTOP = 0.90; // 90%
-const PREVIEW_SCALE_MOBILE = 0.96; // 96%
+const PREVIEW_SCALE_MOBILE = 0.90; // 90% SCALA UGUALE ALLA DESKTOP (puoi cambiarla se vuoi leggere differenze tra le due)
 
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
@@ -119,7 +119,7 @@ export default function OnlineMenuLayoutSection() {
             </div>
           </div>
         </div>
-        {/* Mobile Preview, scalata */}
+        {/* Mobile Preview, scalata proporzionalmente */}
         <div className="flex flex-col items-center" style={{ width: 376 }}>
           <div
             style={{
