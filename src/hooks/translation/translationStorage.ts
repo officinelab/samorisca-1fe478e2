@@ -45,8 +45,9 @@ export const saveTranslation = async (
         }]);
     }
 
-    // Update direct field in the corresponding table if applicable
-    await updateEntityDirectField(entityId, entityType, field, translatedText, language);
+    // Aggiorna SOLO il campo di traduzione (es. title_en) nella tabella di destinazione,
+    // senza propagare altri campi o side effects
+    await updateEntityDirectFieldMinimal(entityId, entityType, field, translatedText, language);
 
     return true;
   } catch (error) {
@@ -82,18 +83,17 @@ export const getExistingTranslation = async (
   }
 };
 
-const updateEntityDirectField = async (
+const updateEntityDirectFieldMinimal = async (
   entityId: string,
   entityType: string,
   field: string,
   translatedText: string,
   language: SupportedLanguage
 ): Promise<void> => {
+  // Aggiorna SOLO la colonna di traduzione corrispondente nel DB, es title_en
+  const langSuffix = `_${language}`;
+  const targetField = `${field}${langSuffix}`;
   try {
-    const langSuffix = `_${language}`;
-    const targetField = `${field}${langSuffix}`;
-    
-    // Update the field in the appropriate table
     switch (entityType) {
       case 'categories':
         await supabase
@@ -120,7 +120,6 @@ const updateEntityDirectField = async (
           .eq('id', entityId);
         break;
       case 'product_labels':
-        // Check if the field exists in product_labels
         if (field === 'title') {
           await supabase
             .from('product_labels')
