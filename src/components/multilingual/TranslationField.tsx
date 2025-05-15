@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
   TooltipProvider
 } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/sonner";
+import { BadgeTranslationStatus } from "./BadgeTranslationStatus";
 
 interface TranslationFieldProps {
   id: string;
@@ -184,7 +186,16 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        {InputComponent}
+        {/* Wrapper che mostra la traduzione + stato badge */}
+        <div className="flex items-start gap-1 w-full">
+          {InputComponent}
+          <BadgeTranslationStatus
+            entityId={id}
+            entityType={entityType}
+            fieldName={fieldName}
+            language={language}
+          />
+        </div>
         <div className="flex flex-col gap-2">
           <TooltipProvider>
             <Tooltip>
