@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage } from '@/types/translation';
 
+// 1. Aggiorna PRIMA products/categories, POI la tabella translations
 export const saveTranslation = async (
   entityId: string,
   entityType: string,
@@ -11,6 +12,10 @@ export const saveTranslation = async (
   language: SupportedLanguage
 ): Promise<boolean> => {
   try {
+    // Aggiorna PRIMA il campo di traduzione nella tabella products/categories
+    await updateEntityDirectFieldMinimal(entityId, entityType, field, translatedText, language);
+
+    // Poi aggiorna/crea la traduzione nella tabella translations
     // Check if translation already exists
     const { data: existingTranslation } = await supabase
       .from('translations')
@@ -44,10 +49,6 @@ export const saveTranslation = async (
           language
         }]);
     }
-
-    // Aggiorna SOLO il campo di traduzione (es. title_en) nella tabella di destinazione,
-    // senza propagare altri campi o side effects
-    await updateEntityDirectFieldMinimal(entityId, entityType, field, translatedText, language);
 
     return true;
   } catch (error) {
