@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,14 @@ const exampleProduct: Product = {
   price_suffix: "",
   allergens: [],
   features: [],
-  // Riempi altri campi richiesti, se necessario.
+  // Altri eventuali campi richiesti...
 };
+
+// Funzione di troncamento testo simile a quella del menu pubblico
+function truncateText(text: string | null = "", maxLength: number = 120) {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+}
 
 const layoutLabel: Record<string, string> = {
   default: "Classico",
@@ -61,8 +68,8 @@ export default function OnlineMenuLayoutSection() {
             onProductSelect={() => {}}
             addToCart={() => {}}
             deviceView="desktop"
-            truncateText={text => text || ""}
-            layoutType="default"
+            truncateText={truncateText}
+            layoutType={selectedLayout}
           />
           <Label className="block text-center mt-2">Classico</Label>
           <Button
@@ -80,7 +87,7 @@ export default function OnlineMenuLayoutSection() {
             onProductSelect={() => {}}
             addToCart={() => {}}
             deviceView="desktop"
-            truncateText={text => text || ""}
+            truncateText={truncateText}
             layoutType="compact"
           />
           <Label className="block text-center mt-2">Compatto</Label>
