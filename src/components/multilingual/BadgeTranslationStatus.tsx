@@ -14,16 +14,13 @@ interface BadgeTranslationStatusProps {
 }
 
 /**
- * Questo componente mostra un piccolo badge colorato che rappresenta lo stato della traduzione:
- * - Rosso: la traduzione non esiste (missing)
- * - Arancione: traduzione obsoleta (outdated)
- * - Verde: traduzione aggiornata (updated)
+ * Badge di stato: rosso se manca, arancione se obsoleto, verde se ok.
  */
 export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
   entityId,
   entityType,
   fieldName,
-  language,
+  language
 }) => {
   const [status, setStatus] = useState<Status>("loading");
 
@@ -32,22 +29,24 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     async function fetchStatus() {
       setStatus("loading");
 
-      // 1. Prendi updated_at dalla tabella products 
-      // 2. Prendi last_updated dalla tabella translations per la lingua richiesta
+      // Determina che tabella interrogare:
+      const baseTable = entityType === "categories" ? "categories" : "products";
 
-      const { data: product, error: productError } = await supabase
-        .from("products")
+      // 1. Ottieni updated_at dalla tabella base (products o categories)
+      const { data: baseEntity, error: baseError } = await supabase
+        .from(baseTable)
         .select("updated_at")
         .eq("id", entityId)
         .maybeSingle();
 
       if (!active) return;
 
-      if (productError || !product) {
+      if (baseError || !baseEntity) {
         setStatus("error");
         return;
       }
 
+      // 2. Ottieni last_updated dalla tabella translations
       const { data: translation, error: translationError } = await supabase
         .from("translations")
         .select("last_updated")
@@ -59,19 +58,18 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
 
       if (!active) return;
 
-      // Se non esiste traduzione → missing (rosso)
-      if (!translation || translationError) {
+      if (translationError || !translation) {
         setStatus("missing");
         return;
       }
 
-      const productUpdated = product.updated_at ? Date.parse(product.updated_at) : 0;
+      const baseUpdated = baseEntity.updated_at ? Date.parse(baseEntity.updated_at) : 0;
       const translationUpdated = translation.last_updated ? Date.parse(translation.last_updated) : 0;
 
-      if (translationUpdated >= productUpdated) {
-        setStatus("updated");      // Verde
-      } else if (translationUpdated < productUpdated) {
-        setStatus("outdated");    // Arancione
+      if (translationUpdated >= baseUpdated) {
+        setStatus("updated");
+      } else if (translationUpdated < baseUpdated) {
+        setStatus("outdated");
       } else {
         setStatus("error");
       }
@@ -83,7 +81,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     };
   }, [entityId, entityType, fieldName, language]);
 
-  // Badge grafico
+  // Badge visuale
   if (status === "loading") {
     return (
       <span className="flex items-center ml-1">
@@ -91,7 +89,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
-
   if (status === "missing") {
     return (
       <span className="flex items-center ml-1" title="Traduzione mancante">
@@ -99,7 +96,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
-
   if (status === "outdated") {
     return (
       <span className="flex items-center ml-1" title="Traduzione da aggiornare">
@@ -107,7 +103,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
-
   if (status === "updated") {
     return (
       <span className="flex items-center ml-1" title="Traduzione aggiornata">
@@ -115,11 +110,9 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       </span>
     );
   }
-
   return (
     <span className="flex items-center ml-1" title="Errore nel controllo badge">
       <CircleX className="w-3.5 h-3.5 text-gray-400" />
     </span>
   );
 };
-

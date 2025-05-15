@@ -186,7 +186,6 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        {/* Wrapper che mostra la traduzione + stato badge */}
         <div className="flex items-start gap-1 w-full">
           {InputComponent}
           <BadgeTranslationStatus
