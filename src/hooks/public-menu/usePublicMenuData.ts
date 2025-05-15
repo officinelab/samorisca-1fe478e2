@@ -47,6 +47,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
           if (featErr) throw featErr;
           featuresData = features || [];
 
+          // --- INIZIO MODIFICA: prendiamo le traduzioni solo dalla tabella translations ---
           if (featuresData.length > 0 && language !== 'it') {
             const { data: featuresTrans } = await supabase
               .from('translations')
@@ -59,6 +60,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
               featuresTranslations[tr.entity_id].push(tr);
             });
           }
+          // --- FINE MODIFICA ---
         }
 
         // Fetch product labels (with translations)
@@ -70,6 +72,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
           if (labErr) throw labErr;
           labelsData = labels || [];
 
+          // --- INIZIO MODIFICA: prendiamo le traduzioni solo dalla tabella translations ---
           if (labelsData.length > 0 && language !== 'it') {
             const { data: labelsTrans } = await supabase
               .from('translations')
@@ -82,6 +85,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
               labelsTranslations[tr.entity_id].push(tr);
             });
           }
+          // --- FINE MODIFICA ---
         }
 
         if (categoriesData && categoriesData.length > 0) {
@@ -116,7 +120,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
 
             // ... allergeni e features come prima
             let productFeaturesRelations: { product_id: string, feature_id: string }[] = [];
-            let featuresData: ProductFeature[] = [];
+            let featuresDataLocal: ProductFeature[] = [];
             if (productsData && productsData.length > 0) {
               const productIds = productsData.map(p => p.id);
               const { data: rel, error: relErr } = await supabase
@@ -133,7 +137,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
                   .in('id', allFeatureIds)
                   .order('display_order', { ascending: true });
                 if (featErr) throw featErr;
-                featuresData = feats || [];
+                featuresDataLocal = feats || [];
               }
             }
 
@@ -202,21 +206,23 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
                 .filter(r => r.product_id === product.id)
                 .map(r => r.feature_id);
 
-              // Valorizza le traduzioni delle caratteristiche
-              let myFeatures = featuresData
+              // Valorizza le traduzioni delle caratteristiche SOLO dalla tabella translations
+              let myFeatures = featuresDataLocal
                 .filter(f => myFeatureIds.includes(f.id))
                 .map(f => {
                   let displayTitle = f.title;
+                  // --- INIZIO MODIFICA ---
                   if (language !== 'it' && featuresTranslations[f.id]) {
                     featuresTranslations[f.id].forEach(tr => {
                       if (tr.field === "title" && tr.translated_text) displayTitle = tr.translated_text;
                     });
                   }
+                  // --- FINE MODIFICA ---
                   return { ...f, displayTitle };
                 })
                 .sort((a, b) => a.display_order - b.display_order);
 
-              // Etichetta prodotto, includendo la traduzione
+              // Etichetta prodotto, includendo la traduzione SOLO dalla tabella translations
               let label = null;
               if (product.label) {
                 const baseLabel = product.label as ProductLabel;
