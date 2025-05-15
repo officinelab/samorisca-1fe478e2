@@ -57,9 +57,9 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         const { data, error } = await query;
         if (error) throw error;
 
-        // Se lingua ≠ italiano, cerca le traduzioni
+        // Se la lingua selezionata NON è italiano (ovvero sempre per SupportedLanguage), cerca le traduzioni
         let translationsMap: Record<string, Record<string, string>> = {};
-        if (language !== "it" && data.length > 0) {
+        if (data.length > 0) {
           const { data: trans } = await supabase
             .from("translations")
             .select("*")
@@ -77,13 +77,13 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         setItems(
           (data || []).map((item: any) => ({
             id: item.id,
-            title: (language !== "it" && translationsMap[item.id]?.title) || item.title,
+            title: translationsMap[item.id]?.title || item.title,
             description:
-              (language !== "it" && translationsMap[item.id]?.description !== undefined
+              translationsMap[item.id]?.description !== undefined
                 ? translationsMap[item.id]?.description
                 : item.description !== undefined
                 ? item.description
-                : null),
+                : null,
             type: selectedEntityType.type,
           }))
         );
