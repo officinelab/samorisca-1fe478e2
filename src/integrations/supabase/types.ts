@@ -70,55 +70,31 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
-          description_de: string | null
-          description_en: string | null
-          description_es: string | null
-          description_fr: string | null
           display_order: number
           id: string
           image_url: string | null
           is_active: boolean | null
           title: string
-          title_de: string | null
-          title_en: string | null
-          title_es: string | null
-          title_fr: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
-          description_de?: string | null
-          description_en?: string | null
-          description_es?: string | null
-          description_fr?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           title: string
-          title_de?: string | null
-          title_en?: string | null
-          title_es?: string | null
-          title_fr?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
-          description_de?: string | null
-          description_en?: string | null
-          description_es?: string | null
-          description_fr?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           title?: string
-          title_de?: string | null
-          title_en?: string | null
-          title_es?: string | null
-          title_fr?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -340,10 +316,6 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
-          description_de: string | null
-          description_en: string | null
-          description_es: string | null
-          description_fr: string | null
           display_order: number
           has_multiple_prices: boolean | null
           has_price_suffix: boolean | null
@@ -358,20 +330,12 @@ export type Database = {
           price_variant_2_name: string | null
           price_variant_2_value: number | null
           title: string
-          title_de: string | null
-          title_en: string | null
-          title_es: string | null
-          title_fr: string | null
           updated_at: string | null
         }
         Insert: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          description_de?: string | null
-          description_en?: string | null
-          description_es?: string | null
-          description_fr?: string | null
           display_order?: number
           has_multiple_prices?: boolean | null
           has_price_suffix?: boolean | null
@@ -386,20 +350,12 @@ export type Database = {
           price_variant_2_name?: string | null
           price_variant_2_value?: number | null
           title: string
-          title_de?: string | null
-          title_en?: string | null
-          title_es?: string | null
-          title_fr?: string | null
           updated_at?: string | null
         }
         Update: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          description_de?: string | null
-          description_en?: string | null
-          description_es?: string | null
-          description_fr?: string | null
           display_order?: number
           has_multiple_prices?: boolean | null
           has_price_suffix?: boolean | null
@@ -414,10 +370,6 @@ export type Database = {
           price_variant_2_name?: string | null
           price_variant_2_value?: number | null
           title?: string
-          title_de?: string | null
-          title_en?: string | null
-          title_es?: string | null
-          title_fr?: string | null
           updated_at?: string | null
         }
         Relationships: [

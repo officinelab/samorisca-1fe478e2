@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -33,6 +32,57 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
 
         if (categoriesError) throw categoriesError;
         setCategories(categoriesData || []);
+
+        let featuresTranslations: Record<string, any[]> = {};
+        let featuresData: ProductFeature[] = [];
+        let labelsTranslations: Record<string, any[]> = {};
+        let labelsData: ProductLabel[] = [];
+
+        // Fetch features (with translations)
+        {
+          const { data: features, error: featErr } = await supabase
+            .from('product_features')
+            .select('*')
+            .order('display_order', { ascending: true });
+          if (featErr) throw featErr;
+          featuresData = features || [];
+
+          if (featuresData.length > 0 && language !== 'it') {
+            const { data: featuresTrans } = await supabase
+              .from('translations')
+              .select('*')
+              .in('entity_id', featuresData.map(f => f.id))
+              .eq('entity_type', 'product_features')
+              .eq('language', language);
+            (featuresTrans || []).forEach(tr => {
+              if (!featuresTranslations[tr.entity_id]) featuresTranslations[tr.entity_id] = [];
+              featuresTranslations[tr.entity_id].push(tr);
+            });
+          }
+        }
+
+        // Fetch product labels (with translations)
+        {
+          const { data: labels, error: labErr } = await supabase
+            .from('product_labels')
+            .select('*')
+            .order('display_order', { ascending: true });
+          if (labErr) throw labErr;
+          labelsData = labels || [];
+
+          if (labelsData.length > 0 && language !== 'it') {
+            const { data: labelsTrans } = await supabase
+              .from('translations')
+              .select('*')
+              .in('entity_id', labelsData.map(l => l.id))
+              .eq('entity_type', 'product_labels')
+              .eq('language', language);
+            (labelsTrans || []).forEach(tr => {
+              if (!labelsTranslations[tr.entity_id]) labelsTranslations[tr.entity_id] = [];
+              labelsTranslations[tr.entity_id].push(tr);
+            });
+          }
+        }
 
         if (categoriesData && categoriesData.length > 0) {
           const productsMap: Record<string, Product[]> = {};
@@ -157,17 +207,31 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
                 .filter(f => myFeatureIds.includes(f.id))
                 .map(f => {
                   let displayTitle = f.title;
-                  if (language !== 'it') {
-                    // Se ci sono traduzioni centralizzate
-                    // Richiede fetch generale di translations sulle feature se utenti le usano visivamente
+                  if (language !== 'it' && featuresTranslations[f.id]) {
+                    featuresTranslations[f.id].forEach(tr => {
+                      if (tr.field === "title" && tr.translated_text) displayTitle = tr.translated_text;
+                    });
                   }
                   return { ...f, displayTitle };
                 })
                 .sort((a, b) => a.display_order - b.display_order);
 
+              // Etichetta prodotto, includendo la traduzione
+              let label = null;
+              if (product.label) {
+                const baseLabel = product.label as ProductLabel;
+                let displayTitle = baseLabel.title;
+                if (language !== "it" && labelsTranslations[baseLabel.id]) {
+                  labelsTranslations[baseLabel.id].forEach(tr => {
+                    if (tr.field === "title" && tr.translated_text) displayTitle = tr.translated_text;
+                  });
+                }
+                label = { ...baseLabel, displayTitle };
+              }
+
               return {
                 ...product,
-                label: product.label as ProductLabel | null,
+                label: label,
                 features: myFeatures,
                 allergens: productAllergensDetails,
                 displayTitle,
