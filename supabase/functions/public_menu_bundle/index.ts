@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 // Copia dei CORS headers standard
@@ -44,26 +45,10 @@ serve(async (req) => {
     });
   }
 
-  // Estrai la lingua richiesta
-  const language = (body?.language && typeof body.language === 'string') ? body.language : "it";
-
-  // Nuovo: Aggiungi i campi di traduzione nelle categorie, se esistono (ad esempio title_en)
-  // Mantieni sempre il title italiano, e aggiungi le traduzioni se presenti
+  // batch collect all IDs
   const languageSupported = ["en", "fr", "de", "es"];
-  const categoriesWithTranslations = (categories || []).map((cat: any) => {
-    const catObj: any = { ...cat };
-    languageSupported.forEach(lang => {
-      if (cat[`title_${lang}`]) {
-        catObj[`title_${lang}`] = cat[`title_${lang}`];
-      }
-      if (cat[`description_${lang}`]) {
-        catObj[`description_${lang}`] = cat[`description_${lang}`];
-      }
-    });
-    return catObj;
-  });
-
-  const categoryIds = (categories || []).map((c: any) => c.id);
+  const categoriesList = (categories || []);
+  const categoryIds = categoriesList.map((c: any) => c.id);
   if (!categoryIds.length)
     return new Response(JSON.stringify({ categories: [], products: {}, allergens: [] }), { headers: corsHeaders });
 
@@ -121,6 +106,7 @@ serve(async (req) => {
   let translations: Record<string, Record<string, any[]>> = {};
   if (needsTranslation) {
     const toTranslate = [
+      ...categoryIds.map(id => ({ entity_type: "categories", id })),
       ...productIds.map(id => ({ entity_type: "products", id })),
       ...featureIds.map(id => ({ entity_type: "product_features", id })),
       ...labelIds.map(id => ({ entity_type: "product_labels", id })),
@@ -151,6 +137,13 @@ serve(async (req) => {
     return tr?.translated_text ?? base[field];
   }
 
+  // *********** FIX: Categorie con displayTitle dalla tabella translations
+  const categoriesWithDisplayTitle = (categoriesList || []).map((cat: any) => ({
+    ...cat,
+    displayTitle: translateField(cat, "categories", "title", cat.id),
+    displayDescription: translateField(cat, "categories", "description", cat.id),
+  }));
+
   // Costruzione delle mappe id -> oggetto
   const allergensMap = Object.fromEntries((allergens || []).map((a) => [a.id, a]));
   const featuresMap = Object.fromEntries((features || []).map((f) => [f.id, f]));
@@ -158,7 +151,7 @@ serve(async (req) => {
 
   // Raggruppa prodotti per categoria ed arricchisci con allergeni / features / label tradotte
   const productsByCategory: Record<string, any[]> = {};
-  for (const category of categoriesWithTranslations) {
+  for (const category of categoriesWithDisplayTitle) {
     const catProducts = (allProducts || []).filter((p: any) => p.category_id === category.id);
     productsByCategory[category.id] = catProducts.map((product: any) => {
       // Prodotti tradotti
@@ -217,7 +210,7 @@ serve(async (req) => {
 
   return new Response(
     JSON.stringify({
-      categories: categoriesWithTranslations,
+      categories: categoriesWithDisplayTitle, // <-- ora con displayTitle corretto
       products: productsByCategory,
       allergens: allAllergens,
     }),
