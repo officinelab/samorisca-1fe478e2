@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,10 @@ const layoutLabel: Record<string, string> = {
   // compact: "Compatto",
 };
 
+// Queste percentuali determinano la "scala" delle anteprime in settings
+const PREVIEW_SCALE_DESKTOP = 0.90; // 90%
+const PREVIEW_SCALE_MOBILE = 0.96; // 96%
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
@@ -56,50 +61,73 @@ export default function OnlineMenuLayoutSection() {
   };
 
   return (
-    <div className="max-w-xl space-y-8">
+    <div className="max-w-4xl space-y-8 mx-auto">
       <h2 className="text-xl font-semibold">Layout menu online</h2>
       <p className="text-muted-foreground mb-2">
         Scegli come vengono mostrate le voci del menu pubblico.
       </p>
-
-      {/* Anteprima Responsive: mostra sia Desktop che Mobile, proprio come il menu pubblico */}
-      <div className="flex gap-8 flex-wrap justify-start">
-        {/* Anteprima Desktop */}
-        <div className="w-80 border rounded-md shadow bg-white p-3">
-          <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
-          <ProductCardWrapper
-            product={exampleProduct}
-            onProductSelect={() => {}}
-            addToCart={() => {}}
-            truncateText={truncateText}
-            deviceView="desktop"
-            layoutType={selectedLayout}
-          />
-          <Label className="block text-center mt-2">Classico</Label>
-          <Button
-            size="sm"
-            variant={selectedLayout === "default" ? "default" : "outline"}
-            className="mx-auto block mt-2"
-            onClick={() => handleSelect("default")}
+      {/* Anteprime: Desktop + Mobile, affiancate */}
+      <div className="flex gap-8 flex-wrap justify-center items-start">
+        {/* Desktop Preview, scalata */}
+        <div className="flex flex-col items-center" style={{ width: 360 }}>
+          <div
+            style={{
+              transform: `scale(${PREVIEW_SCALE_DESKTOP})`,
+              transformOrigin: "top center",
+              width: 400, // Larghezza reale del container interno desktop
+              minWidth: 320,
+            }}
+            className="rounded-md"
           >
-            {selectedLayout === "default" ? "Selezionato" : "Seleziona"}
-          </Button>
+            <div className="max-w-lg w-full min-w-[320px] border rounded-md shadow bg-white p-3 mx-auto">
+              <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
+              <ProductCardWrapper
+                product={exampleProduct}
+                onProductSelect={() => {}}
+                addToCart={() => {}}
+                truncateText={truncateText}
+                deviceView="desktop"
+                layoutType={selectedLayout}
+              />
+              <Label className="block text-center mt-2">Classico</Label>
+              <Button
+                size="sm"
+                variant={selectedLayout === "default" ? "default" : "outline"}
+                className="mx-auto block mt-2"
+                onClick={() => handleSelect("default")}
+              >
+                {selectedLayout === "default" ? "Selezionato" : "Seleziona"}
+              </Button>
+            </div>
+          </div>
         </div>
-
-        {/* Anteprima Mobile (allargata come nella pagina preview) */}
-        <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
-          <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
-          <ProductCardWrapper
-            product={exampleProduct}
-            onProductSelect={() => {}}
-            addToCart={() => {}}
-            truncateText={truncateText}
-            deviceView="mobile"
-            layoutType={selectedLayout}
-          />
-          <Label className="block text-center mt-2">Classico</Label>
+        {/* Mobile Preview, scalata */}
+        <div className="flex flex-col items-center" style={{ width: 332 }}>
+          <div
+            style={{
+              transform: `scale(${PREVIEW_SCALE_MOBILE})`,
+              transformOrigin: "top center",
+              width: 346,  // dimensione reale mobile pubblica, allargata rispetto a prima
+              minWidth: 290,
+            }}
+            className="rounded-md"
+          >
+            <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
+              <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
+              <ProductCardWrapper
+                product={exampleProduct}
+                onProductSelect={() => {}}
+                addToCart={() => {}}
+                truncateText={truncateText}
+                deviceView="mobile"
+                layoutType={selectedLayout}
+              />
+              <Label className="block text-center mt-2">Classico</Label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
