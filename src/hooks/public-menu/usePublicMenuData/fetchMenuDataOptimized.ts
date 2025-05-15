@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen, Category, Product, ProductFeature, ProductLabel } from "@/types/database";
 
@@ -77,7 +76,7 @@ export async function fetchMenuDataOptimized(language: string) {
 
   // 5. Traduzioni batch (per opzioni multilingua)
   const needsTranslation = language !== "it";
-  let translations: Record<string, any[]> = {};
+  let translations: Record<string, Record<string, any[]>> = {};
   if (needsTranslation) {
     const toTranslate = [
       ...productIds.map(id => ({ entity_type: "products", id })),
@@ -156,8 +155,7 @@ export async function fetchMenuDataOptimized(language: string) {
       let label: ProductLabel | null = null;
       const label_base = labelsMap[product.label_id ?? ""];
       if (label_base) {
-        const displayTitle = translateField(label_base, "product_labels", "title", label_base.id);
-        label = { ...label_base, displayTitle };
+        label = { ...label_base };
       }
 
       return {
