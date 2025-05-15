@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 // Copia dei CORS headers standard
@@ -44,6 +43,25 @@ serve(async (req) => {
       headers: corsHeaders
     });
   }
+
+  // Estrai la lingua richiesta
+  const language = (body?.language && typeof body.language === 'string') ? body.language : "it";
+
+  // Nuovo: Aggiungi i campi di traduzione nelle categorie, se esistono (ad esempio title_en)
+  // Mantieni sempre il title italiano, e aggiungi le traduzioni se presenti
+  const languageSupported = ["en", "fr", "de", "es"];
+  const categoriesWithTranslations = (categories || []).map((cat: any) => {
+    const catObj: any = { ...cat };
+    languageSupported.forEach(lang => {
+      if (cat[`title_${lang}`]) {
+        catObj[`title_${lang}`] = cat[`title_${lang}`];
+      }
+      if (cat[`description_${lang}`]) {
+        catObj[`description_${lang}`] = cat[`description_${lang}`];
+      }
+    });
+    return catObj;
+  });
 
   const categoryIds = (categories || []).map((c: any) => c.id);
   if (!categoryIds.length)
@@ -140,7 +158,7 @@ serve(async (req) => {
 
   // Raggruppa prodotti per categoria ed arricchisci con allergeni / features / label tradotte
   const productsByCategory: Record<string, any[]> = {};
-  for (const category of categories) {
+  for (const category of categoriesWithTranslations) {
     const catProducts = (allProducts || []).filter((p: any) => p.category_id === category.id);
     productsByCategory[category.id] = catProducts.map((product: any) => {
       // Prodotti tradotti
@@ -199,7 +217,7 @@ serve(async (req) => {
 
   return new Response(
     JSON.stringify({
-      categories,
+      categories: categoriesWithTranslations,
       products: productsByCategory,
       allergens: allAllergens,
     }),
