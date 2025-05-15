@@ -1,10 +1,12 @@
-
 import React, { useEffect, useState } from "react";
 import { CircleX, CircleCheck, CircleAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 
 type Status = "missing" | "outdated" | "updated" | "loading" | "error";
+
+// Refined type: all entities for this badge must have id and updated_at
+type EntityWithUpdatedAt = { updated_at: string };
 
 interface BadgeTranslationStatusProps {
   entityId: string;
@@ -36,10 +38,14 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       setStatus("loading");
       let updatedAt: string | null = null;
 
-      // La logica qui sotto ora supporta anche allergens, product_features, product_labels
       let sourceTable = null;
-      if (entityType === "products" || entityType === "categories" ||
-          entityType === "allergens" || entityType === "product_features" || entityType === "product_labels") {
+      if (
+        entityType === "products" ||
+        entityType === "categories" ||
+        entityType === "allergens" ||
+        entityType === "product_features" ||
+        entityType === "product_labels"
+      ) {
         sourceTable = entityType;
       }
       if (!sourceTable) {
@@ -47,11 +53,12 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
         return;
       }
 
+      // Add query select type explicitly
       const { data: entity, error } = await supabase
         .from(sourceTable)
         .select("updated_at")
         .eq("id", entityId)
-        .maybeSingle();
+        .maybeSingle<EntityWithUpdatedAt>();
 
       if (!active) return;
       if (error || !entity) {
