@@ -8,6 +8,7 @@ import { Product } from "@/types/database";
 import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { toast } from "@/hooks/use-toast";
 
+// Esempio prodotto di test
 const exampleProduct: Product = {
   id: "demo-id",
   category_id: "demo-category-id",
@@ -24,10 +25,10 @@ const exampleProduct: Product = {
   price_suffix: "",
   allergens: [],
   features: [],
-  // Altri eventuali campi richiesti...
+  // altri eventuali campi se servono
 };
 
-// Funzione di troncamento testo simile a quella del menu pubblico
+// Funzione di troncamento testo (coerente col menu pubblico)
 function truncateText(text: string | null = "", maxLength: number = 120) {
   if (!text) return "";
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
@@ -61,14 +62,18 @@ export default function OnlineMenuLayoutSection() {
       <p className="text-muted-foreground mb-2">
         Scegli come vengono mostrate le voci del menu pubblico.
       </p>
-      <div className="flex gap-6 justify-start">
-        <div>
+
+      {/* Anteprima Responsive: mostra sia Desktop che Mobile, proprio come il menu pubblico */}
+      <div className="flex gap-8 flex-wrap justify-start">
+        {/* Anteprima Desktop */}
+        <div className="w-80 border rounded-md shadow bg-white p-3">
+          <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
           <ProductCardWrapper
             product={exampleProduct}
             onProductSelect={() => {}}
             addToCart={() => {}}
-            deviceView="desktop"
             truncateText={truncateText}
+            deviceView="desktop"
             layoutType={selectedLayout}
           />
           <Label className="block text-center mt-2">Classico</Label>
@@ -81,26 +86,20 @@ export default function OnlineMenuLayoutSection() {
             {selectedLayout === "default" ? "Selezionato" : "Seleziona"}
           </Button>
         </div>
-        {/* <div>
+
+        {/* Anteprima Mobile */}
+        <div className="w-56 border rounded-md shadow bg-white p-3">
+          <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
           <ProductCardWrapper
             product={exampleProduct}
             onProductSelect={() => {}}
             addToCart={() => {}}
-            deviceView="desktop"
             truncateText={truncateText}
-            layoutType="compact"
+            deviceView="mobile"
+            layoutType={selectedLayout}
           />
-          <Label className="block text-center mt-2">Compatto</Label>
-          <Button
-            size="sm"
-            variant={selectedLayout === "compact" ? "default" : "outline"}
-            className="mx-auto block mt-2"
-            onClick={() => handleSelect("compact")}
-            disabled // futura espansione
-          >
-            {selectedLayout === "compact" ? "Selezionato" : "Seleziona"}
-          </Button>
-        </div> */}
+          <Label className="block text-center mt-2">Classico</Label>
+        </div>
       </div>
     </div>
   );
