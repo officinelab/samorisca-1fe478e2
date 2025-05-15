@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +7,7 @@ import { usePublicMenuData } from "@/hooks/public-menu/usePublicMenuData";
 import { useMenuNavigation } from "@/hooks/public-menu/useMenuNavigation";
 import { useProductDetails } from "@/hooks/public-menu/useProductDetails";
 import { useCart } from "@/hooks/useCart";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 // Import components
 import { Header } from "@/components/public-menu/Header";
@@ -70,7 +70,13 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     submitOrder,
     getCartItemsCount 
   } = useCart();
-  
+
+  // ⬇️ Recupero impostazione mostra prezzi
+  const { siteSettings } = useSiteSettings();
+  const showPricesInOrder = typeof siteSettings?.showPricesInOrder === 'boolean' 
+    ? siteSettings.showPricesInOrder 
+    : true; // fallback true
+
   // Initialize selected category when categories are loaded
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
@@ -137,6 +143,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClearCart={clearCart}
         onSubmitOrder={submitOrder}
         calculateTotal={calculateTotal}
+        showPricesInOrder={showPricesInOrder}
       />
       
       {/* Footer */}

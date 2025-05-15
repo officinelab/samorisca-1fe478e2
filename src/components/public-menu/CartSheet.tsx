@@ -24,6 +24,7 @@ interface CartSheetProps {
   onClearCart: () => void;
   onSubmitOrder: () => void;
   calculateTotal: () => number;
+  showPricesInOrder?: boolean; // <-- nuova prop opzionale
 }
 
 export const CartSheet: React.FC<CartSheetProps> = ({
@@ -35,7 +36,8 @@ export const CartSheet: React.FC<CartSheetProps> = ({
   onItemRemoveCompletely,
   onClearCart,
   onSubmitOrder,
-  calculateTotal
+  calculateTotal,
+  showPricesInOrder = true // default: true
 }) => {
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -101,9 +103,12 @@ export const CartSheet: React.FC<CartSheetProps> = ({
                             <Plus size={14} />
                           </Button>
                         </div>
-                        <p className="font-medium">
-                          {(item.price * item.quantity).toFixed(2)} €
-                        </p>
+                        {/* MOSTRA IL PREZZO SOLO SE showPricesInOrder */}
+                        {showPricesInOrder && (
+                          <p className="font-medium">
+                            {(item.price * item.quantity).toFixed(2)} €
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -111,21 +116,38 @@ export const CartSheet: React.FC<CartSheetProps> = ({
               </div>
             </div>
             
-            <div className="mt-4 border-t pt-4 space-y-4">
-              <div className="flex justify-between font-medium text-lg">
-                <span>Totale</span>
-                <span>{calculateTotal().toFixed(2)} €</span>
+            {/* SEZIONE TOTALE */}
+            {showPricesInOrder && (
+              <div className="mt-4 border-t pt-4 space-y-4">
+                <div className="flex justify-between font-medium text-lg">
+                  <span>Totale</span>
+                  <span>{calculateTotal().toFixed(2)} €</span>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button variant="outline" className="flex-1" onClick={onClearCart}>
+                    Annulla
+                  </Button>
+                  <Button className="flex-1" onClick={onSubmitOrder}>
+                    Conferma
+                  </Button>
+                </div>
               </div>
-              
-              <div className="flex space-x-2">
-                <Button variant="outline" className="flex-1" onClick={onClearCart}>
-                  Annulla
-                </Button>
-                <Button className="flex-1" onClick={onSubmitOrder}>
-                  Conferma
-                </Button>
+            )}
+
+            {/* SE non mostra prezzi, mostra solo bottoni e spazio */}
+            {!showPricesInOrder && (
+              <div className="mt-4 border-t pt-4 space-y-4">
+                <div className="flex space-x-2">
+                  <Button variant="outline" className="flex-1" onClick={onClearCart}>
+                    Annulla
+                  </Button>
+                  <Button className="flex-1" onClick={onSubmitOrder}>
+                    Conferma
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="h-40 flex flex-col items-center justify-center text-center mt-8">
