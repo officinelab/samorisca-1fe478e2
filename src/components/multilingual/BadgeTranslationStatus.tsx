@@ -36,7 +36,6 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       let updatedAt: string | null = null;
 
       if (entityType === "products" || entityType === "categories") {
-        // Prende updated_at dalla tabella appropriata
         const { data: entity, error } = await supabase
           .from(entityType)
           .select("updated_at")
@@ -74,13 +73,15 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
         return;
       }
 
-      const entityUpdated = updatedAt ? Date.parse(updatedAt) : 0;
-      const translationUpdated = translation.last_updated ? Date.parse(translation.last_updated) : 0;
+      // Confronto robusto dei timestamp: verde anche se i valori coincidono esattamente
+      const entityUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
+      const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
 
       if (translationUpdated >= entityUpdated) {
-        setStatus("updated"); // Verde
+        // Traduzione aggiornata, anche se le date coincidono
+        setStatus("updated");
       } else if (translationUpdated < entityUpdated) {
-        setStatus("outdated"); // Arancione
+        setStatus("outdated");
       } else {
         setStatus("error");
       }
