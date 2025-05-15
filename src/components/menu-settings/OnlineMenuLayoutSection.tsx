@@ -6,6 +6,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
 import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { toast } from "@/hooks/use-toast";
+import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 
 // Esempio prodotto di test
 const exampleProduct: Product = {
@@ -160,6 +161,30 @@ export default function OnlineMenuLayoutSection() {
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
+          </div>
+        </div>
+      </div>
+      {/* Anteprima Finestra dettagli prodotto (scalata) */}
+      <div className="flex justify-center mt-8">
+        <div
+          style={{
+            transform: `scale(${PREVIEW_SCALE_DESKTOP})`,
+            transformOrigin: "top center",
+            width: 400,
+            minWidth: 300,
+            maxWidth: 440,
+            pointerEvents: "none", // avoids interaction
+            opacity: 0.98,
+          }}
+        >
+          <div className="shadow-lg rounded-lg border bg-white relative">
+            <span className="block text-center text-xs text-muted-foreground pt-2">Anteprima finestra dettagli prodotto</span>
+            <ProductDetailsDialog
+              product={exampleProduct}
+              open={true}
+              onClose={() => {}}
+              addToCart={() => {}}
+            />
           </div>
         </div>
       </div>
