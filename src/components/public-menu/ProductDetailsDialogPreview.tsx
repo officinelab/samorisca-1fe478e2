@@ -10,11 +10,13 @@ import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
 interface ProductDetailsDialogPreviewProps {
   product: Product | null;
   addToCart?: (product: Product, variantName?: string, variantPrice?: number) => void;
+  hideImage?: boolean;
 }
 
 export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewProps> = ({
   product,
-  addToCart
+  addToCart,
+  hideImage = false,
 }) => {
   if (!product) return null;
 
@@ -37,7 +39,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
         )}
       </div>
       <div className="grid gap-4">
-        {product.image_url && (
+        {!hideImage && product.image_url && (
           <div className="w-full h-48 relative rounded-md overflow-hidden">
             <img
               src={product.image_url}

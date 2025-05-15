@@ -179,8 +179,13 @@ export default function OnlineMenuLayoutSection() {
           }}
         >
           <div className="shadow-lg rounded-lg border bg-white relative">
-            <span className="block text-center text-xs text-muted-foreground pt-2">Anteprima finestra dettagli prodotto</span>
-            <ProductDetailsDialogPreview product={exampleProduct} />
+            <span className="block text-center text-xs text-muted-foreground pt-2">
+              Anteprima finestra dettagli prodotto
+            </span>
+            <ProductDetailsDialogPreview
+              product={exampleProduct}
+              hideImage={selectedLayout === "custom1"}
+            />
           </div>
         </div>
       </div>
