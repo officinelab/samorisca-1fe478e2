@@ -1,7 +1,10 @@
+
 import React from 'react';
-import { Category, Product } from "@/types/database";
+import { Category, Product, ProductFeature } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
 import { AllergensSection } from "@/components/public-menu/AllergensSection";
+import { ProductFeaturesSection } from "./ProductFeaturesSection";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -32,6 +35,24 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   truncateText,
   language
 }) => {
+  // Raccogli tutte le features usate nei prodotti del menu
+  const allFeatures: ProductFeature[] = React.useMemo(() => {
+    const featuresMap = new Map<string, ProductFeature>();
+    Object.values(products).forEach(productList => {
+      productList?.forEach(prod => {
+        prod.features?.forEach(feature => {
+          if (feature && !featuresMap.has(feature.id)) {
+            featuresMap.set(feature.id, feature);
+          }
+        });
+      });
+    });
+    return Array.from(featuresMap.values());
+  }, [products]);
+
+  // Stato e handling espansione sezione caratteristiche prodotti
+  const [showFeatures, setShowFeatures] = React.useState(false);
+
   return (
     <div
       className={deviceView === 'desktop' ? 'col-span-3' : ''}
@@ -60,7 +81,31 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           showAllergensInfo={showAllergensInfo}
           toggleAllergensInfo={toggleAllergensInfo}
         />
+
+        {/* Expandable Product Features section */}
+        <div className="pt-6 border-t">
+          <Accordion
+            type="single"
+            collapsible
+            value={showFeatures ? "features" : undefined}
+            onValueChange={v => setShowFeatures(v === "features")}
+          >
+            <AccordionItem value="features" className="border-0">
+              <AccordionTrigger className="flex items-center mb-2 text-base px-0 hover:underline hover:bg-transparent">
+                Info prodotti
+              </AccordionTrigger>
+              <AccordionContent>
+                <ProductFeaturesSection
+                  features={allFeatures}
+                  deviceView={deviceView}
+                  open={showFeatures}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       </div>
     </div>
   );
 };
+
