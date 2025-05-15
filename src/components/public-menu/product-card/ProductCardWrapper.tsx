@@ -4,9 +4,11 @@ import { ProductCardMobile } from "./ProductCardMobile";
 import { ProductCardDesktop } from "./ProductCardDesktop";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ProductCardMobileCustom1 } from "./ProductCardMobileCustom1";
+import { ProductCardDesktopCustom1 } from "./ProductCardDesktopCustom1";
 
 type DeviceView = 'mobile' | 'desktop';
-type ProductCardLayoutType = 'default' | 'compact';
+type ProductCardLayoutType = 'default' | 'compact' | 'custom1';
 
 interface ProductCardWrapperProps {
   product: Product;
@@ -24,6 +26,10 @@ const productCardLayouts = {
     Desktop: ProductCardDesktop,
   },
   // compact: { Mobile: ProductCardMobileCompact, Desktop: ProductCardDesktopCompact },
+  custom1: {
+    Mobile: ProductCardMobileCustom1,
+    Desktop: ProductCardDesktopCustom1,
+  },
 };
 
 export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
@@ -58,3 +64,4 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
     />
   );
 };
+
