@@ -1,7 +1,9 @@
+
 import React from 'react';
-import { Category, Product } from "@/types/database";
+import { Category, Product, ProductFeature } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
 import { AllergensSection } from "@/components/public-menu/AllergensSection";
+import ProductFeaturesSection from "@/components/public-menu/ProductFeaturesSection";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -16,6 +18,7 @@ interface MenuContentProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
+  features?: ProductFeature[]; // aggiunto
 }
 
 export const MenuContent: React.FC<MenuContentProps> = ({
@@ -30,7 +33,8 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   setSelectedProduct,
   addToCart,
   truncateText,
-  language
+  language,
+  features = [],
 }) => {
   return (
     <div
@@ -59,6 +63,13 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           allergens={allergens}
           showAllergensInfo={showAllergensInfo}
           toggleAllergensInfo={toggleAllergensInfo}
+        />
+
+        {/* Product features section */}
+        <ProductFeaturesSection
+          products={products}
+          features={features}
+          deviceView={deviceView}
         />
       </div>
     </div>
