@@ -12,7 +12,6 @@ import {
   TooltipProvider
 } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/sonner";
-import { BadgeTranslationStatus } from "./BadgeTranslationStatus";
 
 interface TranslationFieldProps {
   id: string;
@@ -37,9 +36,6 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   const [isEdited, setIsEdited] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [badgeStatus, setBadgeStatus] = useState<"missing" | "outdated" | "upToDate">("missing");
-  const [entityUpdatedAt, setEntityUpdatedAt] = useState<string | null>(null);
-  const [translationUpdatedAt, setTranslationUpdatedAt] = useState<string | null>(null);
   
   const { 
     translateText, 
@@ -65,69 +61,6 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 
     fetchExistingTranslation();
   }, [id, entityType, fieldName, language, getExistingTranslation, currentService]);
-
-  // Carica la traduzione esistente e la data updated_at madre
-  useEffect(() => {
-    const fetchData = async () => {
-      // 1. Prendi traduzione (per data last_updated)
-      let translation = null;
-      let lastUpdated = null;
-      try {
-        const { data, error } = await supabase
-          .from('translations')
-          .select('translated_text, last_updated')
-          .eq('entity_id', id)
-          .eq('entity_type', entityType)
-          .eq('field', fieldName)
-          .eq('language', language)
-          .maybeSingle();
-
-        if (data && data.translated_text) {
-          translation = data.translated_text;
-          lastUpdated = data.last_updated;
-          setTranslationUpdatedAt(lastUpdated);
-        } else {
-          translation = null;
-          setTranslationUpdatedAt(null);
-        }
-      } catch (err) {
-        setTranslationUpdatedAt(null);
-      }
-
-      // 2. Prendi updated_at della voce madre (prodotti/categorie/allergeni)
-      let motherUpdatedAt: string | null = null;
-      try {
-        let table = entityType;
-        if (entityType === "product_features") table = "product_features";
-        if (entityType === "product_labels") table = "product_labels";
-        const { data, error } = await supabase
-          .from(table)
-          .select('updated_at')
-          .eq('id', id)
-          .maybeSingle();
-
-        if (data && data.updated_at) {
-          motherUpdatedAt = data.updated_at;
-          setEntityUpdatedAt(motherUpdatedAt);
-        }
-      } catch (err) {
-        setEntityUpdatedAt(null);
-      }
-
-      // 3. Determina status badge
-      if (!translation) {
-        setBadgeStatus("missing");
-      } else if (motherUpdatedAt && lastUpdated && lastUpdated < motherUpdatedAt) {
-        setBadgeStatus("outdated");
-      } else if (motherUpdatedAt && lastUpdated && lastUpdated >= motherUpdatedAt) {
-        setBadgeStatus("upToDate");
-      } else {
-        setBadgeStatus("missing");
-      }
-    };
-  
-    fetchData();
-  }, [id, entityType, fieldName, language]);
 
   // Gestione traduzione
   const handleTranslate = async () => {
@@ -250,10 +183,8 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2">
         {InputComponent}
-        {/* Badge stato traduzione */}
-        <BadgeTranslationStatus status={badgeStatus} />
         <div className="flex flex-col gap-2">
           <TooltipProvider>
             <Tooltip>
