@@ -19,7 +19,6 @@ interface MenuContentProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
-  servizioCoperto?: number | null; // <--- AGGIUNTO PROP
 }
 
 export const MenuContent: React.FC<MenuContentProps> = ({
@@ -34,8 +33,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   setSelectedProduct,
   addToCart,
   truncateText,
-  language,
-  servizioCoperto
+  language
 }) => {
   // Raccogli tutte le features usate nei prodotti del menu
   const allFeatures: ProductFeature[] = React.useMemo(() => {
@@ -61,26 +59,18 @@ export const MenuContent: React.FC<MenuContentProps> = ({
       ref={menuRef}
     >
       <div className="space-y-10 pb-16">
-        {categories.map((category, idx) => (
-          <React.Fragment key={category.id}>
-            {idx > 0 && servizioCoperto !== null && servizioCoperto > 0 && (
-              <div className="flex justify-end">
-                <span className="italic text-sm text-gray-600">
-                  Servizio e Coperto: {servizioCoperto.toFixed(2)} €
-                </span>
-              </div>
-            )}
-            <CategorySection 
-              category={category}
-              products={products[category.id] || []}
-              isLoading={isLoading}
-              onSelectProduct={setSelectedProduct}
-              addToCart={addToCart}
-              deviceView={deviceView}
-              truncateText={truncateText}
-              language={language}
-            />
-          </React.Fragment>
+        {categories.map(category => (
+          <CategorySection 
+            key={category.id}
+            category={category}
+            products={products[category.id] || []}
+            isLoading={isLoading}
+            onSelectProduct={setSelectedProduct}
+            addToCart={addToCart}
+            deviceView={deviceView}
+            truncateText={truncateText}
+            language={language}
+          />
         ))}
 
         {isLoading && <CategorySectionSkeleton />}

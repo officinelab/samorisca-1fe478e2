@@ -77,12 +77,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     ? siteSettings.showPricesInOrder 
     : true; // fallback true
 
-  // Estrai servizio e coperto, parseFloat e mostrali solo se > 0
-  const servizioCopertoValRaw = siteSettings?.servizioCoperto ?? "";
-  const servizioCoperto = servizioCopertoValRaw !== undefined && !isNaN(parseFloat(servizioCopertoValRaw))
-    ? parseFloat(servizioCopertoValRaw)
-    : null;
-
   // Initialize selected category when categories are loaded
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
@@ -123,7 +117,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             addToCart={addToCart}
             truncateText={truncateText}
             language={language}
-            servizioCoperto={servizioCoperto}
           />
         </div>
       </div>
