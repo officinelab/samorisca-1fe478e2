@@ -19,6 +19,7 @@ interface MenuContentProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
   serviceCoverCharge?: number;
+  productCardLayoutType?: 'default' | 'compact';
 }
 
 export const MenuContent: React.FC<MenuContentProps> = ({
@@ -34,7 +35,8 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   addToCart,
   truncateText,
   language,
-  serviceCoverCharge = 0
+  serviceCoverCharge = 0,
+  productCardLayoutType = "default"
 }) => {
   // Raccogli tutte le features usate nei prodotti del menu
   const allFeatures: ProductFeature[] = React.useMemo(() => {
@@ -71,6 +73,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
               deviceView={deviceView}
               truncateText={truncateText}
               language={language}
+              productCardLayoutType={productCardLayoutType}
             />
             {/* Mostra il prezzo Servizio e Coperto tra categorie, tranne dopo l'ultima */}
             {(serviceCoverCharge && serviceCoverCharge > 0 && idx < categories.length - 1) && (

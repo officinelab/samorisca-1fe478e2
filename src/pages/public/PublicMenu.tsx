@@ -87,7 +87,9 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
   }
-  
+
+  const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
@@ -124,6 +126,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             truncateText={truncateText}
             language={language}
             serviceCoverCharge={serviceCoverCharge}
+            productCardLayoutType={productCardLayoutType}
           />
         </div>
       </div>
