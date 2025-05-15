@@ -13,13 +13,15 @@ interface ProductDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
+  hideImage?: boolean;
 }
 
 export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   product,
   open,
   onClose,
-  addToCart
+  addToCart,
+  hideImage = false
 }) => {
   const handleClose = () => onClose();
 
@@ -45,7 +47,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           )}
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {product.image_url && (
+          {!hideImage && product.image_url && (
             <div className="w-full h-48 relative rounded-md overflow-hidden">
               <img
                 src={product.image_url}
@@ -168,3 +170,4 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     </Dialog>
   );
 };
+
