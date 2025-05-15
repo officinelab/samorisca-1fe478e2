@@ -1,7 +1,9 @@
+
 import React from 'react';
-import { Category, Product } from "@/types/database";
+import { Category, Product, ProductFeature } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
 import { AllergensSection } from "@/components/public-menu/AllergensSection";
+import ProductFeaturesSection from "@/components/public-menu/ProductFeaturesSection";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -32,11 +34,19 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   truncateText,
   language
 }) => {
+  // Raggruppa tutte le features dei prodotti (senza duplicati)
+  const collectedFeatures: Record<string, ProductFeature> = {};
+  Object.values(products).flat().forEach(p => {
+    if (p.features && Array.isArray(p.features)) {
+      p.features.forEach((f: ProductFeature) => {
+        if (f?.id) collectedFeatures[f.id] = f;
+      });
+    }
+  });
+  const uniqueFeatures = Object.values(collectedFeatures);
+
   return (
-    <div
-      className={deviceView === 'desktop' ? 'col-span-3' : ''}
-      ref={menuRef}
-    >
+    <div className={deviceView === 'desktop' ? 'col-span-3' : ''} ref={menuRef}>
       <div className="space-y-10 pb-16">
         {categories.map(category => (
           <CategorySection 
@@ -59,6 +69,12 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           allergens={allergens}
           showAllergensInfo={showAllergensInfo}
           toggleAllergensInfo={toggleAllergensInfo}
+        />
+
+        {/* Sezione caratteristiche prodotti */}
+        <ProductFeaturesSection 
+          features={uniqueFeatures}
+          deviceView={deviceView}
         />
       </div>
     </div>
