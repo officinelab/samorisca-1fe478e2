@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,8 +86,8 @@ export default function OnlineMenuLayoutSection() {
           </Button>
         </div>
 
-        {/* Anteprima Mobile */}
-        <div className="w-56 border rounded-md shadow bg-white p-3">
+        {/* Anteprima Mobile (allargata come nella pagina preview) */}
+        <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
           <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
           <ProductCardWrapper
             product={exampleProduct}
