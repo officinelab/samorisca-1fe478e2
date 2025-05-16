@@ -114,6 +114,24 @@ const PREVIEW_SCALE_MOBILE = 0.90;
 // Chiave delle impostazioni font per ciascun layout
 const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
 
+// Funzione di utilità che restituisce il CSS style per titolo/descrizione in base alle impostazioni scelte
+function getPreviewFontStyles(layoutFontSettings: typeof layoutFontSettings) {
+  return {
+    title: {
+      fontFamily: layoutFontSettings.titleFont,
+      fontWeight: layoutFontSettings.titleBold ? "bold" : "normal",
+      fontStyle: layoutFontSettings.titleItalic ? "italic" : "normal",
+      fontSize: 22,
+      lineHeight: 1.13
+    },
+    description: {
+      fontFamily: layoutFontSettings.descriptionFont,
+      fontWeight: layoutFontSettings.descriptionBold ? "bold" : "normal",
+      fontStyle: layoutFontSettings.descriptionItalic ? "italic" : "normal"
+    }
+  };
+}
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
@@ -377,6 +395,7 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="desktop"
                 layoutType={selectedLayout}
+                previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
               <Button
@@ -410,6 +429,7 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="mobile"
                 layoutType={selectedLayout}
+                previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
@@ -433,10 +453,13 @@ export default function OnlineMenuLayoutSection() {
             <span className="block text-center text-xs text-muted-foreground pt-2">
               Anteprima finestra dettagli prodotto
             </span>
-            <ProductDetailsDialogPreview
-              product={exampleProduct}
-              hideImage={selectedLayout === "custom1"}
-            />
+            {/* Applichiamo il font scelto anche nella preview dettagli prodotto, solo in anteprima */}
+            <div style={getPreviewFontStyles(layoutFontSettings).title}>
+              <span style={getPreviewFontStyles(layoutFontSettings).title}>{exampleProduct.title}</span>
+            </div>
+            <div style={{ ...getPreviewFontStyles(layoutFontSettings).description, marginTop: 6 }}>
+              {exampleProduct.description}
+            </div>
           </div>
         </div>
       </div>

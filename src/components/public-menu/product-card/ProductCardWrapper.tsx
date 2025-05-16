@@ -17,6 +17,11 @@ interface ProductCardWrapperProps {
   deviceView: DeviceView;
   truncateText: (text: string | null, maxLength: number) => string;
   layoutType?: ProductCardLayoutType;
+  // Nuovo: stili font opzionali solo preview anteprima layout menu settings
+  previewFontStyles?: {
+    title?: React.CSSProperties;
+    description?: React.CSSProperties;
+  };
 }
 
 // Mappa dei layout disponibili, pronto per espansioni future
@@ -38,7 +43,8 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
   addToCart,
   deviceView,
   truncateText,
-  layoutType = 'default'
+  layoutType = 'default',
+  previewFontStyles
 }) => {
   const isMobile = useIsMobile();
 
@@ -51,6 +57,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         onProductSelect={onProductSelect}
         addToCart={addToCart}
         truncateText={truncateText}
+        previewFontStyles={previewFontStyles}
       />
     );
   }
@@ -61,7 +68,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
       product={product}
       onProductSelect={onProductSelect}
       addToCart={addToCart}
+      previewFontStyles={previewFontStyles}
     />
   );
 };
-

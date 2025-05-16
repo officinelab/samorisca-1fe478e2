@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -12,13 +13,18 @@ interface ProductCardMobileProps {
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
+  previewFontStyles?: {
+    title?: React.CSSProperties;
+    description?: React.CSSProperties;
+  };
 }
 
 export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   product,
   onProductSelect,
   addToCart,
-  truncateText
+  truncateText,
+  previewFontStyles
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -29,7 +35,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-lg mb-1">{title}</h3>
+            <h3 className="font-bold text-lg mb-1" style={previewFontStyles?.title}>{title}</h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
@@ -39,7 +45,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                 />
               </div>
             )}
-            <p className="text-gray-600 text-sm mb-2">
+            <p className="text-gray-600 text-sm mb-2" style={previewFontStyles?.description}>
               {truncateText(description, 110)}
             </p>
             {product.allergens && product.allergens.length > 0 && (
