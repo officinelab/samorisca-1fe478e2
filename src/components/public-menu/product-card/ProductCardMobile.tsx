@@ -12,35 +12,24 @@ interface ProductCardMobileProps {
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
-  previewFontStyles?: {
-    title?: React.CSSProperties;
-    description?: React.CSSProperties;
-  };
 }
 
 export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   product,
   onProductSelect,
   addToCart,
-  truncateText,
-  previewFontStyles
+  truncateText
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
-
-  // Override fontSize per titolo in mobile preview (18px)
-  const titleStyle = {
-    ...(previewFontStyles?.title || {}),
-    fontSize: 18
-  };
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-lg mb-1" style={titleStyle}>{title}</h3>
+            <h3 className="font-bold text-lg mb-1">{title}</h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
@@ -50,7 +39,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                 />
               </div>
             )}
-            <p className="text-gray-600 text-sm mb-2" style={previewFontStyles?.description}>
+            <p className="text-gray-600 text-sm mb-2">
               {truncateText(description, 110)}
             </p>
             {product.allergens && product.allergens.length > 0 && (

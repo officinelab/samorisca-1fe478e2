@@ -16,11 +16,6 @@ interface ProductDetailsDialogProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   hideImage?: boolean;
   language?: string;
-  // Nuovo: stili font opzionali SOLO preview o menu pubblico
-  previewFontStyles?: {
-    title?: React.CSSProperties;
-    description?: React.CSSProperties;
-  };
 }
 
 export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
@@ -29,8 +24,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   onClose,
   addToCart,
   hideImage = false,
-  language = "it",
-  previewFontStyles
+  language = "it"
 }) => {
   const handleClose = () => onClose();
   const { t } = usePublicMenuUiStrings(language);
@@ -45,7 +39,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle style={previewFontStyles?.title}>{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           {product.label && (
             <div className="mt-2">
               <LabelBadge
@@ -68,9 +62,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           )}
           <div>
             <h4 className="font-semibold mb-1">{t("description")}</h4>
-            <p className="text-gray-600" style={previewFontStyles?.description}>
-              {description || t("description") + "..."}
-            </p>
+            <p className="text-gray-600">{description || t("description") + "..."}</p>
           </div>
           {product.allergens && product.allergens.length > 0 && (
             <div>
