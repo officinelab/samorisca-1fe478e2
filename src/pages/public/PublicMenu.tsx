@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -101,8 +100,9 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     if (categories.length > 0 && !selectedCategory) {
       initializeCategory(categories[0].id);
     }
-    // Only run when categories/selectedCategory changes
-  }, [categories, selectedCategory, initializeCategory]);
+    // Only run when categories (not selectedCategory) changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, initializeCategory]);
 
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
