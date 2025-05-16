@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,9 +17,7 @@ interface TranslatableItem {
   id: string;
   title: string;
   description?: string | null;
-  type: "categories" | "allergens" | "product_features" | "product_labels";
-  translationTitle?: string; // valore tradotto, opzionale
-  translationDescription?: string | null; // desc tradotta, opzionale
+  type: string;
 }
 
 const entityOptions: EntityOption[] = [
@@ -43,7 +40,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
     const fetchItems = async () => {
       setLoading(true);
       try {
-        // recupera sempre tutti i dati madre ORIGINALI
+        // recupera sempre tutti i dati madre
         let selectString = "id, title";
         if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
           selectString += ", description";
@@ -60,9 +57,9 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         const { data, error } = await query;
         if (error) throw error;
 
-        // Se la lingua selezionata NON è italiano cerca le traduzioni, ma NON sovrascrive la colonna originale!
+        // Se lingua ≠ italiano, cerca le traduzioni
         let translationsMap: Record<string, Record<string, string>> = {};
-        if (data.length > 0) {
+        if (language !== "it" && data.length > 0) {
           const { data: trans } = await supabase
             .from("translations")
             .select("*")
@@ -76,15 +73,18 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
           });
         }
 
-        // Mappa: colonna originale = italiano, campo tradotto separato
+        // Map dati con le traduzioni applicate se disponibili
         setItems(
           (data || []).map((item: any) => ({
             id: item.id,
-            title: item.title ?? "",
-            description: item.description !== undefined ? item.description : null,
+            title: (language !== "it" && translationsMap[item.id]?.title) || item.title,
+            description:
+              (language !== "it" && translationsMap[item.id]?.description !== undefined
+                ? translationsMap[item.id]?.description
+                : item.description !== undefined
+                ? item.description
+                : null),
             type: selectedEntityType.type,
-            translationTitle: translationsMap[item.id]?.title ?? "",
-            translationDescription: translationsMap[item.id]?.description ?? "",
           }))
         );
       } catch (error) {
@@ -158,13 +158,12 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                             fieldName="title"
                             originalText={item.title}
                             language={language}
-                            // mostro la traduzione solo a destra (campo di input gestirà il recupero se già salvata)
                           />
                         </TableCell>
                       </TableRow>
 
-                      {/* Riga descrizione SOLO se esiste */}
-                      {(item.description !== undefined && item.description !== null && item.description !== "") && (
+                      {/* Mostra la riga descrizione SOLO se esiste */}
+                      {item.description && (
                         <TableRow>
                           <TableCell className="align-top border-t-0 flex items-center gap-2">
                             <div className="text-sm text-muted-foreground">
@@ -180,7 +179,6 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                               originalText={item.description}
                               language={language}
                               multiline
-                              // la traduzione attuale (se esiste) sarà caricata dal custom hook, allineata alla lingua
                             />
                           </TableCell>
                         </TableRow>

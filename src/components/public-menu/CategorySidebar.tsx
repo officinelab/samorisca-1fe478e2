@@ -18,12 +18,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
-  // DEBUG: Visualizza props principali
-  console.log('--- [CategorySidebar] ---');
-  console.log('language:', language);
-  console.log('categories sample:', categories && categories.length > 0 ? categories[0] : null);
-
-  // Sidebar desktop sticky
+  // Sidebar desktop sticky (invariato)
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
@@ -31,11 +26,9 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
           <h3 className="text-lg font-semibold mb-2">Categorie</h3>
           <div className="space-y-1 pr-4">
             {categories.map(category => {
-              // Sempre mostra displayTitle (tradotto dal backend) o fallback all'originale
-              const displayTitle = category.displayTitle || category.title;
-              console.log(
-                `[CategorySidebar] category.id: ${category.id} | language: ${language} | displayTitle: ${displayTitle}`
-              );
+              const categoryTitle = language !== 'it' && category[`title_${language}`]
+                ? category[`title_${language}`]
+                : category.title;
               return (
                 <Button
                   key={category.id}
@@ -43,7 +36,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
                   className="w-full justify-start"
                   onClick={() => onSelectCategory(category.id)}
                 >
-                  {displayTitle}
+                  {categoryTitle}
                 </Button>
               );
             })}
@@ -58,10 +51,9 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     <div className="w-full overflow-hidden mb-6 sticky top-20 z-30 bg-gray-50 pt-4">
       <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
         {categories.map((category) => {
-          const displayTitle = category.displayTitle || category.title;
-          console.log(
-            `[CategorySidebar MOBILE] category.id: ${category.id} | language: ${language} | displayTitle: ${displayTitle}`
-          );
+          const categoryTitle = language !== 'it' && category[`title_${language}`]
+            ? category[`title_${language}`]
+            : category.title;
           return (
             <button
               key={category.id}
@@ -73,7 +65,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
                 }`}
               onClick={() => onSelectCategory(category.id)}
             >
-              {displayTitle}
+              {categoryTitle}
             </button>
           );
         })}
