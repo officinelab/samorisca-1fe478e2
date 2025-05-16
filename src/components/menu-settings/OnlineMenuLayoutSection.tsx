@@ -114,8 +114,18 @@ const PREVIEW_SCALE_MOBILE = 0.90;
 // Chiave delle impostazioni font per ciascun layout
 const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
 
+// Tipo esplicito per le impostazioni font
+type LayoutFontSettings = {
+  titleFont: string;
+  titleBold: boolean;
+  titleItalic: boolean;
+  descriptionFont: string;
+  descriptionBold: boolean;
+  descriptionItalic: boolean;
+};
+
 // Funzione di utilità che restituisce il CSS style per titolo/descrizione in base alle impostazioni scelte
-function getPreviewFontStyles(layoutFontSettings: typeof layoutFontSettings) {
+function getPreviewFontStyles(layoutFontSettings: LayoutFontSettings) {
   return {
     title: {
       fontFamily: layoutFontSettings.titleFont,
@@ -137,14 +147,7 @@ export default function OnlineMenuLayoutSection() {
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
   // Stato locale per le impostazioni font del layout selezionato
-  const [layoutFontSettings, setLayoutFontSettings] = useState<{
-    titleFont: string;
-    titleBold: boolean;
-    titleItalic: boolean;
-    descriptionFont: string;
-    descriptionBold: boolean;
-    descriptionItalic: boolean;
-  }>({
+  const [layoutFontSettings, setLayoutFontSettings] = useState<LayoutFontSettings>({
     titleFont: DEFAULT_FONTS[0].css,
     titleBold: false,
     titleItalic: false,
