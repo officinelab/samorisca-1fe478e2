@@ -77,19 +77,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     ? siteSettings.showPricesInOrder 
     : true; // fallback true
 
-  // ⬇️ Recupero prezzo Servizio e Coperto (accetta numeri e stringhe convertibili a numero)
-  const serviceCoverCharge =
-    typeof siteSettings?.serviceCoverCharge === "number"
-      ? siteSettings.serviceCoverCharge
-      : parseFloat(siteSettings?.serviceCoverCharge);
-
   // Initialize selected category when categories are loaded
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
   }
-
-  const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
-
+  
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
@@ -125,8 +117,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             addToCart={addToCart}
             truncateText={truncateText}
             language={language}
-            serviceCoverCharge={serviceCoverCharge}
-            productCardLayoutType={productCardLayoutType}
           />
         </div>
       </div>

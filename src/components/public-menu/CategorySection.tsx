@@ -14,7 +14,6 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: 'default' | 'compact';
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -25,8 +24,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   addToCart,
   deviceView,
   truncateText,
-  language = 'it',
-  productCardLayoutType = "default"
+  language = 'it'
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
@@ -61,7 +59,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 addToCart={addToCart}
                 deviceView={deviceView}
                 truncateText={truncateText}
-                layoutType={productCardLayoutType}
               />
             );
           }) : (

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -7,7 +8,6 @@ import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesMa
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import SiteSettingsManager from "@/components/menu-settings/SiteSettingsManager";
 import Allergens from "./Allergens";
-import OnlineMenuLayoutSection from "@/components/menu-settings/OnlineMenuLayoutSection";
 
 const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
@@ -34,7 +34,6 @@ const MenuSettings = () => {
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
           <TabsTrigger value="layouts">Layouts di Stampa</TabsTrigger>
           <TabsTrigger value="settings">Settaggi</TabsTrigger>
-          <TabsTrigger value="publicmenulayout">Layout menu online</TabsTrigger>
         </TabsList>
         
         <TabsContent value="labels" className="space-y-4">
@@ -80,10 +79,6 @@ const MenuSettings = () => {
           </p>
           <Separator className="my-4" />
           <SiteSettingsManager />
-        </TabsContent>
-
-        <TabsContent value="publicmenulayout" className="space-y-4">
-          <OnlineMenuLayoutSection />
         </TabsContent>
       </Tabs>
     </div>;
