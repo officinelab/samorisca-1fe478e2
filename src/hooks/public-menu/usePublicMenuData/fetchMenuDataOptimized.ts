@@ -51,10 +51,7 @@ export async function fetchMenuDataOptimized(language: string) {
       .select("*")
       .in("id", featureIds)
       .order("display_order", { ascending: true });
-    features = (featuresData || []).map((feat) => ({
-      ...feat,
-      displayTitle: translateField(feat, "product_features", "title", feat.id)
-    }));
+    features = featuresData || [];
   }
   // Labels
   let labels: ProductLabel[] = [];
@@ -156,8 +153,8 @@ export async function fetchMenuDataOptimized(language: string) {
       const productFeatures = myFeatureRels.map(r => {
         const feat = featuresMap[r.feature_id];
         if (!feat) return null;
-        // displayTitle già presente in feat grazie a sopra!
-        return { ...feat };
+        const displayTitle = translateField(feat, "product_features", "title", feat.id);
+        return { ...feat, displayTitle };
       }).filter(Boolean);
 
       // Label
