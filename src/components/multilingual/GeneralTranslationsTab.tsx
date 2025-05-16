@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,46 +39,28 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-
+      
       try {
-        let selectString = "id, title";
-        // Solo per categorie e allergeni esiste description
-        if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
-          selectString += ", description";
-        }
-
-        let query = supabase
+        const { data, error } = await supabase
           .from(selectedEntityType.type)
-          .select(selectString);
-
-        // L'ordine visuale è garantito solo se esiste display_order
-        if (
-          selectedEntityType.type === "categories" ||
-          selectedEntityType.type === "allergens" ||
-          selectedEntityType.type === "product_features" ||
-          selectedEntityType.type === "product_labels"
-        ) {
-          query = query.order("display_order", { ascending: true });
+          .select('id, title, description')
+          .order('display_order', { ascending: true });
+          
+        if (error) {
+          throw error;
         }
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        // Mappa i dati: metti description solo se presente
-        setItems((data || []).map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description !== undefined ? item.description : null,
-          type: selectedEntityType.type
+        
+        setItems(data.map((item: any) => ({ 
+          ...item, 
+          type: selectedEntityType.type 
         })));
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
-        setItems([]);
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchItems();
   }, [selectedEntityType]);
 
@@ -115,7 +96,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
 
           <div className="md:col-span-2">
             <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
-
+            
             {loading ? (
               <div className="text-center py-8">Caricamento in corso...</div>
             ) : items.length === 0 ? (
@@ -146,8 +127,8 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                           />
                         </TableCell>
                       </TableRow>
-
-                      {/* Mostra la riga descrizione SOLO se esiste */}
+                      
+                      {/* If item has description (like allergens), add another row for it */}
                       {item.description && (
                         <TableRow>
                           <TableCell className="align-top border-t-0 flex items-center gap-2">

@@ -88,11 +88,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     initializeCategory(categories[0].id);
   }
 
-  // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
-
-  // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
-  const hideProductDetailImage = productCardLayoutType === "custom1";
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -144,7 +140,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         open={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
-        hideImage={hideProductDetailImage}
       />
       
       {/* Cart sheet */}

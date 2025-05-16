@@ -6,8 +6,6 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
 import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { toast } from "@/hooks/use-toast";
-import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
-import { ProductDetailsDialogPreview } from "@/components/public-menu/ProductDetailsDialogPreview";
 
 // Esempio prodotto di test
 const exampleProduct: Product = {
@@ -43,7 +41,7 @@ const layoutLabel: Record<string, string> = {
 
 // Queste percentuali determinano la "scala" delle anteprime in settings
 const PREVIEW_SCALE_DESKTOP = 0.90; // 90%
-const PREVIEW_SCALE_MOBILE = 0.90; // 90% SCALA UGUALE ALLA DESKTOP (puoi cambiarla se vuoi leggere differenze tra le due)
+const PREVIEW_SCALE_MOBILE = 0.96; // 96%
 
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
@@ -121,7 +119,7 @@ export default function OnlineMenuLayoutSection() {
             </div>
           </div>
         </div>
-        {/* Mobile Preview, scalata proporzionalmente */}
+        {/* Mobile Preview, scalata */}
         <div className="flex flex-col items-center" style={{ width: 376 }}>
           <div
             style={{
@@ -162,30 +160,6 @@ export default function OnlineMenuLayoutSection() {
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
-          </div>
-        </div>
-      </div>
-      {/* Anteprima Finestra dettagli prodotto (scalata, statica in frame) */}
-      <div className="flex justify-center mt-8">
-        <div
-          style={{
-            transform: `scale(${PREVIEW_SCALE_DESKTOP})`,
-            transformOrigin: "top center",
-            width: 400,
-            minWidth: 300,
-            maxWidth: 440,
-            pointerEvents: "none", // disables interaction
-            opacity: 0.98
-          }}
-        >
-          <div className="shadow-lg rounded-lg border bg-white relative">
-            <span className="block text-center text-xs text-muted-foreground pt-2">
-              Anteprima finestra dettagli prodotto
-            </span>
-            <ProductDetailsDialogPreview
-              product={exampleProduct}
-              hideImage={selectedLayout === "custom1"}
-            />
           </div>
         </div>
       </div>
