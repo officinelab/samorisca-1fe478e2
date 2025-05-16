@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Category } from "@/types/database";
 import { CategorySection } from "./CategorySection";
@@ -16,7 +17,7 @@ interface MenuContentProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
   serviceCoverCharge: number | string | undefined;
-  productCardLayoutType: string;
+  productCardLayoutType: string; // Ok ora come string
   fontSettings?: {
     titleFont: string;
     titleBold: boolean;

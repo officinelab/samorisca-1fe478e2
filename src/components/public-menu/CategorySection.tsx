@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
-import { ProductCard } from "./ProductCards";
+// Cambiato: importare il vero ProductCardWrapper!
+import { ProductCardWrapper } from "./product-card/ProductCardWrapper";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -14,7 +16,7 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: 'default' | 'compact';
+  productCardLayoutType?: string; // Tollera nuovi futuri layout
   fontSettings?: {
     titleFont: string;
     titleBold: boolean;
@@ -40,7 +42,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
 
-  // Usa la versione valorizzata da fetchMenuDataOptimized (displayTitle) o fallback su category.title
   const categoryTitle = category.displayTitle || category.title;
 
   return (
@@ -60,6 +61,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
               image_url: product.image_url || siteSettings.defaultProductImage
             };
 
+            // Usa il vero ProductCardWrapper!
             return (
               <ProductCardWrapper
                 key={product.id}

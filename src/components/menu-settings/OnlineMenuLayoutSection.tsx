@@ -114,6 +114,7 @@ const PREVIEW_SCALE_MOBILE = 0.90;
 // Chiave delle impostazioni font per ciascun layout
 const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
 
+// Esporta in maniera nominativa anche getFontSettingsForLayout
 export const getFontSettingsForLayout = (
   siteSettings: any,
   selectedLayout: string

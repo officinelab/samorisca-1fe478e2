@@ -17,6 +17,8 @@ import { MenuContent } from "@/components/public-menu/MenuContent";
 import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
+// Importa ora il selettore font layout correttamente dalla posizione
+import { getFontSettingsForLayout } from "@/components/menu-settings/OnlineMenuLayoutSection";
 
 // Local interfaces for PublicMenu props
 interface PublicMenuProps {
