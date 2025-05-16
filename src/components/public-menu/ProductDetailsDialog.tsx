@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
+import { useMenuUiTranslation } from "@/hooks/public-menu/useMenuUiTranslation";
 
 interface ProductDetailsDialogProps {
   product: Product | null;
@@ -13,6 +14,7 @@ interface ProductDetailsDialogProps {
   onClose: () => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   hideImage?: boolean;
+  language: string;
 }
 
 export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
@@ -20,9 +22,11 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   open,
   onClose,
   addToCart,
-  hideImage = false
+  hideImage = false,
+  language
 }) => {
   const handleClose = () => onClose();
+  const { t } = useMenuUiTranslation(language);
 
   if (!product) return null;
 
@@ -56,12 +60,12 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
             </div>
           )}
           <div>
-            <h4 className="font-semibold mb-1">Descrizione</h4>
-            <p className="text-gray-600">{description || "Nessuna descrizione disponibile."}</p>
+            <h4 className="font-semibold mb-1">{t("description")}</h4>
+            <p className="text-gray-600">{description || t("no_description")}</p>
           </div>
           {product.allergens && product.allergens.length > 0 && (
             <div>
-              <h4 className="font-semibold mb-1">Allergeni</h4>
+              <h4 className="font-semibold mb-1">{t("allergens")}</h4>
               <div className="flex flex-wrap gap-2 mb-2">
                 {product.allergens.map(allergen => (
                   <Badge key={allergen.id} variant="outline">
@@ -81,7 +85,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           )}
 
           <div>
-            <h4 className="font-semibold mb-1">Prezzo</h4>
+            <h4 className="font-semibold mb-1">{t("price")}</h4>
             {product.has_multiple_prices ? (
               <div className="space-y-2">
                 {/* Prezzo standard SOLO con suffisso */}
@@ -99,7 +103,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         onClose();
                       }}
                     >
-                      Aggiungi <Plus className="ml-2" size={16} />
+                      {t("add_to_cart")} <Plus className="ml-2" size={16} />
                     </Button>
                   </div>
                 )}
@@ -118,7 +122,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         onClose();
                       }}
                     >
-                      Aggiungi <Plus className="ml-2" size={16} />
+                      {t("add_to_cart")} <Plus className="ml-2" size={16} />
                     </Button>
                   </div>
                 )}
@@ -137,7 +141,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         onClose();
                       }}
                     >
-                      Aggiungi <Plus className="ml-2" size={16} />
+                      {t("add_to_cart")} <Plus className="ml-2" size={16} />
                     </Button>
                   </div>
                 )}
@@ -161,7 +165,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 onClose();
               }}
             >
-              Aggiungi all'ordine <Plus className="ml-2" size={16} />
+              {t("add_to_order")} <Plus className="ml-2" size={16} />
             </Button>
           )}
         </div>

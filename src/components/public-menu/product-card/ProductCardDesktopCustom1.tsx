@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,18 +6,22 @@ import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
+import { useMenuUiTranslation } from "@/hooks/public-menu/useMenuUiTranslation";
 
 interface ProductCardDesktopCustom1Props {
   product: Product;
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
+  language: string;
 }
 
 export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props> = ({
   product,
   onProductSelect,
-  addToCart
+  addToCart,
+  language
 }) => {
+  const { t } = useMenuUiTranslation(language);
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
@@ -125,7 +128,7 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
               addToCart(product);
             }}
           >
-            Aggiungi
+            {t("add_to_cart")}
             <Plus size={16} />
           </Button>
         )}

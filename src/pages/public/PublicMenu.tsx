@@ -17,6 +17,7 @@ import { MenuContent } from "@/components/public-menu/MenuContent";
 import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
+import { AllergensSection } from "@/components/public-menu/AllergensSection";
 
 // Local interfaces for PublicMenu props
 interface PublicMenuProps {
@@ -145,6 +146,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
         hideImage={hideProductDetailImage}
+        language={language}
       />
       
       {/* Cart sheet */}
@@ -159,6 +161,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onSubmitOrder={submitOrder}
         calculateTotal={calculateTotal}
         showPricesInOrder={showPricesInOrder}
+        language={language}
       />
       
       {/* Footer */}
