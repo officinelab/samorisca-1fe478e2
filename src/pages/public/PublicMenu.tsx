@@ -91,6 +91,45 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
 
+  // ==== NOVITÀ: Prepara stili font per prodotti e dettagli menu pubblico ====
+  // Replica funzione di OnlineMenuLayoutSection
+  function getPreviewFontStyles(layoutFontSettings: {
+    titleFont: string;
+    titleBold: boolean;
+    titleItalic: boolean;
+    descriptionFont: string;
+    descriptionBold: boolean;
+    descriptionItalic: boolean;
+  }) {
+    return {
+      title: {
+        fontFamily: layoutFontSettings.titleFont,
+        fontWeight: layoutFontSettings.titleBold ? "bold" : "normal",
+        fontStyle: layoutFontSettings.titleItalic ? "italic" : "normal",
+        fontSize: 22,
+        lineHeight: 1.13
+      },
+      description: {
+        fontFamily: layoutFontSettings.descriptionFont,
+        fontWeight: layoutFontSettings.descriptionBold ? "bold" : "normal",
+        fontStyle: layoutFontSettings.descriptionItalic ? "italic" : "normal"
+      }
+    };
+  }
+  // Leggi key dinamica come fa la sezione impostazioni:
+  const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
+  const fontSettingsRaw = siteSettings?.[FONT_SETTINGS_KEY(productCardLayoutType)];
+  const fallbackFontSettings = {
+    titleFont: "Inter, sans-serif",
+    titleBold: false,
+    titleItalic: false,
+    descriptionFont: "Inter, sans-serif",
+    descriptionBold: false,
+    descriptionItalic: false,
+  };
+  const effectiveFontSettings = fontSettingsRaw || fallbackFontSettings;
+  const previewFontStyles = getPreviewFontStyles(effectiveFontSettings);
+
   // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
   const hideProductDetailImage = productCardLayoutType === "custom1";
 
@@ -131,6 +170,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             language={language}
             serviceCoverCharge={serviceCoverCharge}
             productCardLayoutType={productCardLayoutType}
+            // Passa anche gli stili font
+            previewFontStyles={previewFontStyles}
           />
         </div>
       </div>
@@ -145,6 +186,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
         hideImage={hideProductDetailImage}
+        // Passa stili font a dettagli prodotto!
+        previewFontStyles={previewFontStyles}
       />
       
       {/* Cart sheet */}

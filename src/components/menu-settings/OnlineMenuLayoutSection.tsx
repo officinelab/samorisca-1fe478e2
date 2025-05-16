@@ -456,13 +456,11 @@ export default function OnlineMenuLayoutSection() {
             <span className="block text-center text-xs text-muted-foreground pt-2">
               Anteprima finestra dettagli prodotto
             </span>
-            {/* Usare ProductDetailsDialogPreview per la vera anteprima dettagli prodotto */}
             <ProductDetailsDialogPreview
               product={exampleProduct}
               hideImage={false}
               language="it"
-              // Applichiamo i font scelti anche alla preview, se definiti
-              // Non servono altre props: il componente eredita già titolo/descrizione ecc.
+              previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
             />
           </div>
         </div>

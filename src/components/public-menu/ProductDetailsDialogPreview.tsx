@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +12,19 @@ interface ProductDetailsDialogPreviewProps {
   addToCart?: (product: Product, variantName?: string, variantPrice?: number) => void;
   hideImage?: boolean;
   language?: string;
+  // Nuovo: stili font opzionali SOLO preview o menu pubblico
+  previewFontStyles?: {
+    title?: React.CSSProperties;
+    description?: React.CSSProperties;
+  };
 }
 
 export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewProps> = ({
   product,
   addToCart,
   hideImage = false,
-  language = "it"
+  language = "it",
+  previewFontStyles
 }) => {
   if (!product) return null;
 
@@ -32,7 +37,8 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   return (
     <div className="w-full px-4 pb-4">
       <div className="py-4">
-        <h3 className="text-2xl font-semibold">{title}</h3>
+        {/* Applichiamo gli stili font se presenti */}
+        <h3 className="text-2xl font-semibold" style={previewFontStyles?.title}>{title}</h3>
         {product.label && (
           <div className="mt-2">
             <LabelBadge
@@ -55,7 +61,9 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
         )}
         <div>
           <h4 className="font-semibold mb-1">{t("description")}</h4>
-          <p className="text-gray-600">{description || t("description") + "..."}</p>
+          <p className="text-gray-600" style={previewFontStyles?.description}>
+            {description || t("description") + "..."}
+          </p>
         </div>
         {product.allergens && product.allergens.length > 0 && (
           <div>
