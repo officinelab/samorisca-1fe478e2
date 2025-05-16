@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -95,14 +95,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       ? siteSettings.serviceCoverCharge
       : parseFloat(siteSettings?.serviceCoverCharge);
 
-  // Initialize selected category when categories are loaded (inside useEffect to respect rules of hooks)
-  useEffect(() => {
-    if (categories.length > 0 && !selectedCategory) {
-      initializeCategory(categories[0].id);
-    }
-    // Only run when categories (not selectedCategory) changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories, initializeCategory]);
+  // Initialize selected category when categories are loaded
+  if (categories.length > 0 && !selectedCategory) {
+    initializeCategory(categories[0].id);
+  }
 
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
