@@ -49,6 +49,8 @@ export interface ProductLabel {
   display_order: number;
   created_at?: string;
   updated_at?: string;
+  // Add displayTitle for translations/multilingual support
+  displayTitle?: string;
 }
 
 export interface ProductFeature {
