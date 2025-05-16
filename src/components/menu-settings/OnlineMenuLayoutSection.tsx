@@ -1,15 +1,14 @@
+
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
-import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { toast } from "@/hooks/use-toast";
-import { ProductDetailsDialogPreview } from "@/components/public-menu/ProductDetailsDialogPreview";
-import { FontSelector, DEFAULT_GOOGLE_FONTS } from "./FontSelector";
+import { OnlineMenuLayoutSelector } from "./OnlineMenuLayoutSelector";
+import { OnlineMenuFontSelectors } from "./OnlineMenuFontSelectors";
+import { OnlineMenuLayoutPreview } from "./OnlineMenuLayoutPreview";
+import { OnlineMenuProductDetailsPreview } from "./OnlineMenuProductDetailsPreview";
 
-// Esempio prodotto di test con allergeni, etichetta, caratteristiche
+// Esempio prodotto di test
 const exampleProduct: Product = {
   id: "demo-id",
   category_id: "demo-category-id",
@@ -24,18 +23,16 @@ const exampleProduct: Product = {
   has_multiple_prices: false,
   has_price_suffix: false,
   price_suffix: "",
-  // Etichetta esempio
   label: {
     id: "label-demo",
     title: "NUOVO",
     displayTitle: "NUOVO",
-    color: "#0ea5e9", // blu
+    color: "#0ea5e9",
     text_color: "#fff",
     display_order: 1,
     created_at: "",
     updated_at: ""
   },
-  // Allergeni di esempio
   allergens: [
     {
       id: "allergen-1",
@@ -43,7 +40,7 @@ const exampleProduct: Product = {
       title: "Glutine",
       displayTitle: "Glutine",
       description: null,
-      icon_url: "/placeholder.svg", // Usa sempre lo stesso per esempio
+      icon_url: "/placeholder.svg",
       display_order: 1
     },
     {
@@ -56,7 +53,6 @@ const exampleProduct: Product = {
       display_order: 2
     }
   ],
-  // Caratteristiche prodotto di esempio
   features: [
     {
       id: "feature-1",
@@ -75,21 +71,10 @@ const exampleProduct: Product = {
   ],
 };
 
-// Funzione di troncamento testo (coerente col menu pubblico)
 function truncateText(text: string | null = "", maxLength: number = 120) {
   if (!text) return "";
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 }
-
-const layoutLabel: Record<string, string> = {
-  default: "Classico",
-  // compact: "Compatto",
-  custom1: "Custom 1"
-};
-
-// Queste percentuali determinano la "scala" delle anteprime in settings
-const PREVIEW_SCALE_DESKTOP = 0.90; // 90%
-const PREVIEW_SCALE_MOBILE = 0.90; // 90% SCALA UGUALE ALLA DESKTOP (puoi cambiarla se vuoi leggere differenze tra le due)
 
 const DEFAULT_FONT_SETTINGS = {
   title: {
@@ -139,126 +124,26 @@ export default function OnlineMenuLayoutSection() {
       <p className="text-muted-foreground mb-2">
         Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo e descrizione.
       </p>
-      {/* Pulsanti selezione layout */}
-      <div className="flex gap-3 justify-center mb-5">
-        <Button
-          size="sm"
-          variant={selectedLayout === "default" ? "default" : "outline"}
-          className="mx-auto"
-          onClick={() => setSelectedLayout("default")}
-        >
-          Classico
-        </Button>
-        <Button
-          size="sm"
-          variant={selectedLayout === "custom1" ? "default" : "outline"}
-          className="mx-auto"
-          onClick={() => setSelectedLayout("custom1")}
-        >
-          Custom 1
-        </Button>
-      </div>
-      {/* Selezione Font */}
-      <div className="flex gap-10 mb-6 flex-wrap items-center justify-center">
-        <FontSelector
-          label="Font Titolo"
-          value={fontSettings.title}
-          onChange={val => handleFontChange("title", val)}
-        />
-        <FontSelector
-          label="Font Descrizione"
-          value={fontSettings.description}
-          onChange={val => handleFontChange("description", val)}
-        />
-      </div>
-      {/* Anteprime: Desktop + Mobile */}
-      <div className="flex gap-8 flex-wrap justify-center items-start">
-        {/* Desktop Preview */}
-        <div className="flex flex-col items-center" style={{ width: 460 }}>
-          <div
-            style={{
-              transform: `scale(${0.90})`,
-              transformOrigin: "top center",
-              width: 520,
-              minWidth: 350,
-            }}
-            className="rounded-md"
-          >
-            <div className="max-w-2xl w-full min-w-[350px] border rounded-md shadow bg-white p-3 mx-auto">
-              <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
-              <ProductCardWrapper
-                product={exampleProduct}
-                onProductSelect={() => {}}
-                addToCart={() => {}}
-                truncateText={truncateText}
-                deviceView="desktop"
-                layoutType={selectedLayout}
-                fontSettings={fontSettings}
-              />
-              <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mx-auto block mt-2"
-                disabled
-              >
-                {selectedLayout === "default" ? "Selezionando 'Classico'" : "Selezionando 'Custom 1'"}
-              </Button>
-            </div>
-          </div>
-        </div>
-        {/* Mobile Preview */}
-        <div className="flex flex-col items-center" style={{ width: 376 }}>
-          <div
-            style={{
-              transform: `scale(${0.90})`,
-              transformOrigin: "top center",
-              width: 375,
-              minWidth: 310,
-            }}
-            className="rounded-md"
-          >
-            <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
-              <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
-              <ProductCardWrapper
-                product={exampleProduct}
-                onProductSelect={() => {}}
-                addToCart={() => {}}
-                truncateText={truncateText}
-                deviceView="mobile"
-                layoutType={selectedLayout}
-                fontSettings={fontSettings}
-              />
-              <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Dettaglio prodotto anteprima */}
-      <div className="flex justify-center mt-8">
-        <div
-          style={{
-            transform: `scale(${0.90})`,
-            transformOrigin: "top center",
-            width: 400,
-            minWidth: 300,
-            maxWidth: 440,
-            pointerEvents: "none",
-            opacity: 0.98
-          }}
-        >
-          <div className="shadow-lg rounded-lg border bg-white relative">
-            <span className="block text-center text-xs text-muted-foreground pt-2">
-              Anteprima finestra dettagli prodotto
-            </span>
-            <ProductDetailsDialogPreview
-              product={exampleProduct}
-              hideImage={selectedLayout === "custom1"}
-              fontSettings={fontSettings}
-            />
-          </div>
-        </div>
-      </div>
+
+      <OnlineMenuLayoutSelector
+        selectedLayout={selectedLayout}
+        onSelect={setSelectedLayout}
+      />
+
+      <OnlineMenuFontSelectors fontSettings={fontSettings} onFontChange={handleFontChange} />
+
+      <OnlineMenuLayoutPreview
+        selectedLayout={selectedLayout}
+        fontSettings={fontSettings}
+        exampleProduct={exampleProduct}
+        truncateText={truncateText}
+      />
+
+      <OnlineMenuProductDetailsPreview
+        selectedLayout={selectedLayout}
+        fontSettings={fontSettings}
+        exampleProduct={exampleProduct}
+      />
     </div>
   );
 }
