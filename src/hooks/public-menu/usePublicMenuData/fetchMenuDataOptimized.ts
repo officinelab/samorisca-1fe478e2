@@ -154,6 +154,7 @@ export async function fetchMenuDataOptimized(language: string) {
         const feat = featuresMap[r.feature_id];
         if (!feat) return null;
         const displayTitle = translateField(feat, "product_features", "title", feat.id);
+        // Assegna il campo displayTitle all'oggetto feature
         return { ...feat, displayTitle };
       }).filter(Boolean);
 
