@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,7 +19,6 @@ import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
 
-// Local interfaces for PublicMenu props
 interface PublicMenuProps {
   isPreview?: boolean;
   previewLanguage?: string;
@@ -32,8 +32,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
-  
-  // Use custom hooks
+
   const { 
     categories, 
     products, 
@@ -42,7 +41,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     language, 
     setLanguage 
   } = usePublicMenuData(isPreview, previewLanguage);
-  
+
   const {
     selectedCategory,
     showBackToTop,
@@ -51,13 +50,13 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     scrollToTop,
     initializeCategory
   } = useMenuNavigation();
-  
+
   const {
     selectedProduct,
     setSelectedProduct,
     truncateText
   } = useProductDetails();
-  
+
   const { 
     cart, 
     isCartOpen, 
@@ -72,12 +71,24 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   } = useCart();
 
   // ⬇️ Recupero impostazione mostra prezzi
-  const { siteSettings } = useSiteSettings();
+  const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
+
+  // Mostra uno skeleton o loader se le impostazioni sono ancora in caricamento
+  if (isLoadingSiteSettings) {
+    return (
+      <div className="flex flex-col min-h-screen justify-center items-center bg-gray-50">
+        <div className="animate-pulse w-60 h-32 bg-gray-200 rounded mb-4"></div>
+        <div className="w-1/3 h-10 bg-gray-200 rounded mb-2"></div>
+        <div className="w-1/2 h-8 bg-gray-100 rounded mb-6"></div>
+        <div className="w-[90%] h-48 bg-gray-100 rounded"></div>
+      </div>
+    );
+  }
+
   const showPricesInOrder = typeof siteSettings?.showPricesInOrder === 'boolean' 
     ? siteSettings.showPricesInOrder 
-    : true; // fallback true
+    : true;
 
-  // ⬇️ Recupero prezzo Servizio e Coperto (accetta numeri e stringhe convertibili a numero)
   const serviceCoverCharge =
     typeof siteSettings?.serviceCoverCharge === "number"
       ? siteSettings.serviceCoverCharge
@@ -90,7 +101,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
-  // ⬇️ Imposta fontSettings in base al layout selezionato
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
   const fontSettings = publicMenuFontSettings?.[productCardLayoutType] || {};
 
