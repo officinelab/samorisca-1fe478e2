@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
+import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
 
 interface ProductCardMobileProps {
   product: Product;
@@ -29,6 +30,9 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+
+  // Carica dinamicamente il font titolo
+  useDynamicGoogleFont(fontSettings?.title?.fontFamily);
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>

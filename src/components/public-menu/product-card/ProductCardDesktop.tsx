@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
+import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
 
 interface ProductCardDesktopProps {
   product: Product;
@@ -29,6 +29,9 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+
+  // Carica dinamicamente il font titolo
+  useDynamicGoogleFont(fontSettings?.title?.fontFamily);
 
   return (
     <Card horizontal className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
