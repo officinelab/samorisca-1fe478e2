@@ -119,6 +119,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
                   features={allFeatures}
                   deviceView={deviceView}
                   open={showFeatures}
+                  language={language}
                 />
               </AccordionContent>
             </AccordionItem>

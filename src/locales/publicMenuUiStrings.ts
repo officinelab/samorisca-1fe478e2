@@ -1,3 +1,4 @@
+
 export type PublicMenuUiLang = 'it' | 'en' | 'es' | 'fr';
 
 export type PublicMenuUiStringKey =
@@ -16,9 +17,8 @@ export type PublicMenuUiStringKey =
   | "empty_order"
   | "total"
   | "cancel"
-  | "confirm";
-  
-
+  | "confirm"
+  | "product_features"; // Aggiornato qui
 
 const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>> = {
   it: {
@@ -38,7 +38,7 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Totale",
     cancel: "Annulla",
     confirm: "Conferma",
-    product_features: "Caratteristiche dei prodotti",
+    product_features: "Caratteristiche dei prodotti"
   },
   en: {
     service_and_cover: "Service and cover",
@@ -57,7 +57,7 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Cancel",
     confirm: "Confirm",
-    product_features: "Product features",
+    product_features: "Product features"
   },
   es: {
     service_and_cover: "Servicio y cubierto",
@@ -76,7 +76,7 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Cancelar",
     confirm: "Confirmar",
-    product_features: "Características del producto",
+    product_features: "Características del producto"
   },
   fr: {
     service_and_cover: "Service et couvert",
@@ -95,7 +95,7 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Annuler",
     confirm: "Confirmer",
-    product_features: "Caractéristiques du produit",
+    product_features: "Caractéristiques du produit"
   },
 };
 

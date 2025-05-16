@@ -17,7 +17,6 @@ export interface Allergen {
   description_de?: string | null;
   // Campi di visualizzazione per le traduzioni
   displayTitle?: string;
-  displayDescription?: string;
 }
 
 export interface Category {
@@ -64,6 +63,7 @@ export interface ProductFeature {
   title_fr?: string | null;
   title_es?: string | null;
   title_de?: string | null;
+  displayTitle?: string; // Aggiunto qui
 }
 
 export interface Product {
