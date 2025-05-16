@@ -142,6 +142,24 @@ function getPreviewFontStyles(layoutFontSettings: LayoutFontSettings) {
   };
 }
 
+// Funzione che restituisce gli stili del font titolo/descrizione ma permette di forzarne la size
+function getPreviewFontStylesWithSize(layoutFontSettings: LayoutFontSettings, forcedTitleFontSize?: number) {
+  return {
+    title: {
+      fontFamily: layoutFontSettings.titleFont,
+      fontWeight: layoutFontSettings.titleBold ? "bold" : "normal",
+      fontStyle: layoutFontSettings.titleItalic ? "italic" : "normal",
+      fontSize: forcedTitleFontSize ? forcedTitleFontSize : 22, // default desktop
+      lineHeight: 1.13,
+    },
+    description: {
+      fontFamily: layoutFontSettings.descriptionFont,
+      fontWeight: layoutFontSettings.descriptionBold ? "bold" : "normal",
+      fontStyle: layoutFontSettings.descriptionItalic ? "italic" : "normal"
+    }
+  };
+}
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
@@ -398,7 +416,8 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="desktop"
                 layoutType={selectedLayout}
-                previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
+                // desktop: 22px
+                previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 22)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
               <Button
@@ -432,7 +451,8 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="mobile"
                 layoutType={selectedLayout}
-                previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
+                // mobile: 18px
+                previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 18)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
@@ -460,7 +480,8 @@ export default function OnlineMenuLayoutSection() {
               product={exampleProduct}
               hideImage={false}
               language="it"
-              previewFontStyles={getPreviewFontStyles(layoutFontSettings)}
+              // dettagli prodotti: 20px
+              previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 20)}
             />
           </div>
         </div>

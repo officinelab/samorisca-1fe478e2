@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -30,12 +29,18 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
+  // Override fontSize per titolo in mobile preview (18px)
+  const titleStyle = {
+    ...(previewFontStyles?.title || {}),
+    fontSize: 18
+  };
+
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-lg mb-1" style={previewFontStyles?.title}>{title}</h3>
+            <h3 className="font-bold text-lg mb-1" style={titleStyle}>{title}</h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge

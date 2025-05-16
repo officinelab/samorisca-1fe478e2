@@ -34,11 +34,17 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
+  // Override fontSize per titolo dettagli prodotto (20px)
+  const titleStyle = {
+    ...(previewFontStyles?.title || {}),
+    fontSize: 20
+  };
+
   return (
     <div className="w-full px-4 pb-4">
       <div className="py-4">
         {/* Applichiamo gli stili font se presenti */}
-        <h3 className="text-2xl font-semibold" style={previewFontStyles?.title}>{title}</h3>
+        <h3 className="text-2xl font-semibold" style={titleStyle}>{title}</h3>
         {product.label && (
           <div className="mt-2">
             <LabelBadge
