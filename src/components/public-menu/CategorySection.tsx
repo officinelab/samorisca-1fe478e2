@@ -65,7 +65,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 deviceView={deviceView}
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
-                fontSettings={fontSettings}
+                fontSettings={fontSettings} {/* <--- PROPAGAZIONE fontSettings */}
               />
             );
           }) : (

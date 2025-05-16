@@ -86,7 +86,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
               truncateText={truncateText}
               language={language}
               productCardLayoutType={productCardLayoutType}
-              fontSettings={fontSettings}
+              fontSettings={fontSettings} {/* <--- PROPAGAZIONE fontSettings */}
             />
             {/* Mostra il prezzo Servizio e Coperto tra categorie, tranne dopo l'ultima */}
             {(serviceCoverCharge && serviceCoverCharge > 0 && idx < categories.length - 1) && (
