@@ -61,7 +61,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 deviceView={deviceView}
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
-                language={language}
               />
             );
           }) : (
@@ -98,3 +97,4 @@ export const CategorySectionSkeleton: React.FC = () => {
     </div>
   );
 };
+
