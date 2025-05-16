@@ -10,6 +10,15 @@ import { ProductCardDesktopCustom1 } from "./ProductCardDesktopCustom1";
 type DeviceView = 'mobile' | 'desktop';
 type ProductCardLayoutType = 'default' | 'compact' | 'custom1';
 
+interface ProductFontSettings {
+  titleFont: string;
+  titleBold: boolean;
+  titleItalic: boolean;
+  descriptionFont: string;
+  descriptionBold: boolean;
+  descriptionItalic: boolean;
+}
+
 interface ProductCardWrapperProps {
   product: Product;
   onProductSelect: (product: Product) => void;
@@ -17,15 +26,15 @@ interface ProductCardWrapperProps {
   deviceView: DeviceView;
   truncateText: (text: string | null, maxLength: number) => string;
   layoutType?: ProductCardLayoutType;
+  fontSettings?: ProductFontSettings;
 }
 
-// Mappa dei layout disponibili, pronto per espansioni future
+// Mappa dei layout disponibili...
 const productCardLayouts = {
   default: {
     Mobile: ProductCardMobile,
     Desktop: ProductCardDesktop,
   },
-  // compact: { Mobile: ProductCardMobileCompact, Desktop: ProductCardDesktopCompact },
   custom1: {
     Mobile: ProductCardMobileCustom1,
     Desktop: ProductCardDesktopCustom1,
@@ -38,30 +47,28 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
   addToCart,
   deviceView,
   truncateText,
-  layoutType = 'default'
+  layoutType = 'default',
+  fontSettings
 }) => {
   const isMobile = useIsMobile();
+
+  const propsForCard = {
+    product,
+    onProductSelect,
+    addToCart,
+    fontSettings,
+    truncateText
+  };
 
   const LayoutSet = productCardLayouts[layoutType] || productCardLayouts.default;
   if (deviceView === "mobile" || isMobile) {
     const MobileComponent = LayoutSet.Mobile;
     return (
-      <MobileComponent
-        product={product}
-        onProductSelect={onProductSelect}
-        addToCart={addToCart}
-        truncateText={truncateText}
-      />
+      <MobileComponent {...propsForCard} />
     );
   }
-
   const DesktopComponent = LayoutSet.Desktop;
   return (
-    <DesktopComponent
-      product={product}
-      onProductSelect={onProductSelect}
-      addToCart={addToCart}
-    />
+    <DesktopComponent {...propsForCard} />
   );
 };
-

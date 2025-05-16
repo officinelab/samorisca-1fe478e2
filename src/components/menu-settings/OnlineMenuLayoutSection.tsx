@@ -114,6 +114,23 @@ const PREVIEW_SCALE_MOBILE = 0.90;
 // Chiave delle impostazioni font per ciascun layout
 const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
 
+export const getFontSettingsForLayout = (
+  siteSettings: any,
+  selectedLayout: string
+) => {
+  const key = `publicMenuFont__${selectedLayout}`;
+  return (
+    siteSettings?.[key] || {
+      titleFont: DEFAULT_FONTS[0].css,
+      titleBold: false,
+      titleItalic: false,
+      descriptionFont: DEFAULT_FONTS[0].css,
+      descriptionBold: false,
+      descriptionItalic: false,
+    }
+  );
+};
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
@@ -126,14 +143,9 @@ export default function OnlineMenuLayoutSection() {
     descriptionFont: string;
     descriptionBold: boolean;
     descriptionItalic: boolean;
-  }>({
-    titleFont: DEFAULT_FONTS[0].css,
-    titleBold: false,
-    titleItalic: false,
-    descriptionFont: DEFAULT_FONTS[0].css,
-    descriptionBold: false,
-    descriptionItalic: false
-  });
+  }>(
+    getFontSettingsForLayout(siteSettings, selectedLayout)
+  );
 
   // Carica impostazioni font dal sito/app settings per il layout corrente
   useEffect(() => {
@@ -219,6 +231,29 @@ export default function OnlineMenuLayoutSection() {
     fontWeight: layoutFontSettings.descriptionBold ? "bold" : "normal",
     fontStyle: layoutFontSettings.descriptionItalic ? "italic" : "normal"
   });
+
+  // Nuova funzione per calcolare lo stile
+  const buildFontStyle = (
+    font: string,
+    bold: boolean,
+    italic: boolean,
+    size: number | undefined = undefined,
+  ) => ({
+    fontFamily: font,
+    fontWeight: bold ? "bold" : "normal",
+    fontStyle: italic ? "italic" : "normal",
+    ...(size && { fontSize: size }),
+  });
+
+  // --> NUOVA PARTE: prepara le fontSettings da passare alle anteprime
+  const previewFontSettings = {
+    titleFont: layoutFontSettings.titleFont,
+    titleBold: layoutFontSettings.titleBold,
+    titleItalic: layoutFontSettings.titleItalic,
+    descriptionFont: layoutFontSettings.descriptionFont,
+    descriptionBold: layoutFontSettings.descriptionBold,
+    descriptionItalic: layoutFontSettings.descriptionItalic,
+  };
 
   return (
     <div className="max-w-4xl space-y-8 mx-auto">
@@ -377,6 +412,7 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="desktop"
                 layoutType={selectedLayout}
+                fontSettings={previewFontSettings}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
               <Button
@@ -410,6 +446,7 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="mobile"
                 layoutType={selectedLayout}
+                fontSettings={previewFontSettings}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
@@ -436,6 +473,7 @@ export default function OnlineMenuLayoutSection() {
             <ProductDetailsDialogPreview
               product={exampleProduct}
               hideImage={selectedLayout === "custom1"}
+              fontSettings={previewFontSettings}
             />
           </div>
         </div>

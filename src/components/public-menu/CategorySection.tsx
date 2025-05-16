@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
@@ -16,6 +15,14 @@ interface CategorySectionProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
   productCardLayoutType?: 'default' | 'compact';
+  fontSettings?: {
+    titleFont: string;
+    titleBold: boolean;
+    titleItalic: boolean;
+    descriptionFont: string;
+    descriptionBold: boolean;
+    descriptionItalic: boolean;
+  };
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -27,7 +34,8 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   deviceView,
   truncateText,
   language = 'it',
-  productCardLayoutType = "default"
+  productCardLayoutType = "default",
+  fontSettings
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
@@ -36,7 +44,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   const categoryTitle = category.displayTitle || category.title;
 
   return (
-    <section id={`category-${category.id}`} className="scroll-mt-20">
+    <section id={`cat-${category.id}`} className="mb-6">
       <h2 className="text-2xl font-bold mb-4">{categoryTitle}</h2>
       {isLoading ? (
         <div className="space-y-4">
@@ -45,7 +53,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
           <Skeleton className="h-24 w-full" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           {products?.length > 0 ? products.map(product => {
             const productWithDefaultImage = {
               ...product,
@@ -53,7 +61,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
             };
 
             return (
-              <ProductCard
+              <ProductCardWrapper
                 key={product.id}
                 product={productWithDefaultImage}
                 onProductSelect={onSelectProduct}
@@ -61,6 +69,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 deviceView={deviceView}
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
+                fontSettings={fontSettings}
               />
             );
           }) : (
@@ -97,4 +106,3 @@ export const CategorySectionSkeleton: React.FC = () => {
     </div>
   );
 };
-
