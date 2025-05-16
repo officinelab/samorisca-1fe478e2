@@ -1,10 +1,11 @@
 import React from 'react';
 import { Category, Product, ProductFeature } from "@/types/database";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
-import { AllergensSection } from "@/components/public-menu/AllergensSection";
 import { ProductFeaturesSection } from "./ProductFeaturesSection";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
+import { Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -54,10 +55,13 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     return Array.from(featuresMap.values());
   }, [products]);
 
-  // Stato e handling espansione sezione caratteristiche prodotti
-  const [showFeatures, setShowFeatures] = React.useState(false);
-
+  const [expandedAccordion, setExpandedAccordion] = React.useState<string | undefined>(undefined);
   const { t } = usePublicMenuUiStrings(language);
+
+  // Unifica onValueChange per entrambe le voci
+  const handleAccordionChange = (value: string | undefined) => {
+    setExpandedAccordion(value);
+  };
 
   return (
     <div
@@ -94,31 +98,54 @@ export const MenuContent: React.FC<MenuContentProps> = ({
 
         {isLoading && <CategorySectionSkeleton />}
 
-        {/* Allergens section */}
-        <AllergensSection 
-          allergens={allergens}
-          showAllergensInfo={showAllergensInfo}
-          toggleAllergensInfo={toggleAllergensInfo}
-          language={language}
-        />
-
-        {/* Expandable Product Features section */}
+        {/* Accordion unificato per info allergeni e info prodotti */}
         <div className="pt-6 border-t">
           <Accordion
             type="single"
             collapsible
-            value={showFeatures ? "features" : undefined}
-            onValueChange={v => setShowFeatures(v === "features")}
+            value={expandedAccordion}
+            onValueChange={handleAccordionChange}
           >
+            {/* Allergen Info section */}
+            <AccordionItem value="allergens" className="border-0">
+              <AccordionTrigger className="flex items-center mb-2 text-base px-0 hover:underline hover:bg-transparent font-medium gap-2">
+                <Info size={18} className="mr-2" />
+                <span className="flex-1 text-left">{t("show_allergens_info")}</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <h3 className="font-semibold mb-2">{t("allergens_legend")}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {allergens.map(allergen => (
+                      <div key={allergen.id} className="flex items-center">
+                        {allergen.icon_url && (
+                          <img
+                            src={allergen.icon_url}
+                            alt={allergen.displayTitle || allergen.title}
+                            className="w-6 h-6 object-contain mr-2"
+                          />
+                        )}
+                        <Badge variant="outline" className="mr-2">
+                          {allergen.number}
+                        </Badge>
+                        <span className="text-sm">{allergen.displayTitle || allergen.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            {/* Product Features Info section */}
             <AccordionItem value="features" className="border-0">
-              <AccordionTrigger className="flex items-center mb-2 text-base px-0 hover:underline hover:bg-transparent">
-                {t("info_products")}
+              <AccordionTrigger className="flex items-center mb-2 text-base px-0 hover:underline hover:bg-transparent font-medium gap-2">
+                <Info size={18} className="mr-2" />
+                <span className="flex-1 text-left">{t("info_products")}</span>
               </AccordionTrigger>
               <AccordionContent>
                 <ProductFeaturesSection
                   features={allFeatures}
                   deviceView={deviceView}
-                  open={showFeatures}
+                  open={expandedAccordion === "features"}
                   language={language}
                 />
               </AccordionContent>
