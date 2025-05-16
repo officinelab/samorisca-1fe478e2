@@ -115,6 +115,11 @@ export async function fetchMenuDataOptimized(language: string) {
     return tr?.translated_text ?? base[field];
   }
 
+  // Crea le mappe di lookup per features, allergens, labels
+  const allergensMap = Object.fromEntries((allergens || []).map(a => [a.id, a]));
+  const featuresMap = Object.fromEntries((features || []).map(f => [f.id, f]));
+  const labelsMap = Object.fromEntries((labels || []).map(l => [l.id, l]));
+
   // ⬇️ Applichiamo le traduzioni anche alle categorie
   const categoriesWithDisplay = categories.map((cat) => ({
     ...cat,
