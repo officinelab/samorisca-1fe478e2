@@ -17,8 +17,6 @@ import { MenuContent } from "@/components/public-menu/MenuContent";
 import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
-// Importa ora il selettore font layout correttamente dalla posizione
-import { getFontSettingsForLayout } from "@/components/menu-settings/OnlineMenuLayoutSection";
 
 // Local interfaces for PublicMenu props
 interface PublicMenuProps {
@@ -93,9 +91,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
 
-  // Calcola qui le fontSettings in base al layout scelto
-  const fontSettings = getFontSettingsForLayout(siteSettings, productCardLayoutType);
-
   // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
   const hideProductDetailImage = productCardLayoutType === "custom1";
 
@@ -136,7 +131,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             language={language}
             serviceCoverCharge={serviceCoverCharge}
             productCardLayoutType={productCardLayoutType}
-            fontSettings={fontSettings}
           />
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,48 +12,23 @@ interface ProductCardDesktopCustom1Props {
   product: Product;
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
-  fontSettings?: {
-    titleFont: string;
-    titleBold: boolean;
-    titleItalic: boolean;
-    descriptionFont: string;
-    descriptionBold: boolean;
-    descriptionItalic: boolean;
-  };
 }
 
 export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props> = ({
   product,
   onProductSelect,
-  addToCart,
-  fontSettings
+  addToCart
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
-
-  const titleStyle = fontSettings
-    ? {
-        fontFamily: fontSettings.titleFont,
-        fontWeight: fontSettings.titleBold ? "bold" : "normal",
-        fontStyle: fontSettings.titleItalic ? "italic" : "normal",
-      }
-    : {};
-
-  const descStyle = fontSettings
-    ? {
-        fontFamily: fontSettings.descriptionFont,
-        fontWeight: fontSettings.descriptionBold ? "bold" : "normal",
-        fontStyle: fontSettings.descriptionItalic ? "italic" : "normal",
-      }
-    : {};
 
   return (
     <Card className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
       <CardContent className="flex-1 p-4">
         <div className="flex justify-between items-start mb-1">
           <div>
-            <h3 className="font-medium text-lg" style={titleStyle}>{title}</h3>
+            <h3 className="font-medium text-lg">{title}</h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
@@ -71,7 +47,7 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
           ) : null}
         </div>
         {description && (
-          <p className="text-gray-600 text-sm mb-2" style={descStyle}>{description}</p>
+          <p className="text-gray-600 text-sm mb-2">{description}</p>
         )}
         {product.allergens && product.allergens.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
-import { ProductCardWrapper, ProductCardLayoutType } from "./product-card/ProductCardWrapper";
+import { ProductCard } from "./ProductCards";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -15,17 +15,7 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: ProductCardLayoutType;
-  fontSettings?: {
-    titleFont: string;
-    titleBold: boolean;
-    titleItalic: boolean;
-    descriptionFont: string;
-    descriptionBold: boolean;
-    descriptionItalic: boolean;
-  };
-  showAllergensInfo?: boolean; // <-- Fix: Add these optional props
-  toggleAllergensInfo?: () => void;
+  productCardLayoutType?: 'default' | 'compact';
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -37,18 +27,16 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   deviceView,
   truncateText,
   language = 'it',
-  productCardLayoutType = "default",
-  fontSettings,
-  showAllergensInfo,
-  toggleAllergensInfo,
+  productCardLayoutType = "default"
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
 
+  // Usa la versione valorizzata da fetchMenuDataOptimized (displayTitle) o fallback su category.title
   const categoryTitle = category.displayTitle || category.title;
 
   return (
-    <section id={`cat-${category.id}`} className="mb-6">
+    <section id={`category-${category.id}`} className="scroll-mt-20">
       <h2 className="text-2xl font-bold mb-4">{categoryTitle}</h2>
       {isLoading ? (
         <div className="space-y-4">
@@ -57,7 +45,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
           <Skeleton className="h-24 w-full" />
         </div>
       ) : (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4">
           {products?.length > 0 ? products.map(product => {
             const productWithDefaultImage = {
               ...product,
@@ -65,7 +53,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
             };
 
             return (
-              <ProductCardWrapper
+              <ProductCard
                 key={product.id}
                 product={productWithDefaultImage}
                 onProductSelect={onSelectProduct}
@@ -73,7 +61,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 deviceView={deviceView}
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
-                fontSettings={fontSettings}
               />
             );
           }) : (
@@ -110,3 +97,4 @@ export const CategorySectionSkeleton: React.FC = () => {
     </div>
   );
 };
+
