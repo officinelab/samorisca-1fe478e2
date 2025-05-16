@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
@@ -31,10 +32,8 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
 
-  // Usa il titolo tradotto se disponibile nella lingua selezionata, altrimenti usa il titolo italiano
-  const categoryTitle = language !== 'it' && category[`title_${language}`] 
-    ? category[`title_${language}`] 
-    : category.title;
+  // Usa la versione valorizzata da fetchMenuDataOptimized (displayTitle) o fallback su category.title
+  const categoryTitle = category.displayTitle || category.title;
 
   return (
     <section id={`category-${category.id}`} className="scroll-mt-20">
