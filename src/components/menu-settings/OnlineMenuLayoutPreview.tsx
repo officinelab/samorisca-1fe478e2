@@ -1,16 +1,15 @@
-
-import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
+import { ProductCardWrapper, type ProductCardLayoutType } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/types/database";
 
-const layoutLabel: Record<string, string> = {
+const layoutLabel: Record<ProductCardLayoutType, string> = {
   default: "Classico",
   custom1: "Custom 1"
 };
 
 interface OnlineMenuLayoutPreviewProps {
-  selectedLayout: string;
+  selectedLayout: ProductCardLayoutType;
   fontSettings: any;
   exampleProduct: Product;
   truncateText: (text: string | null, maxLength: number) => string;
@@ -43,7 +42,7 @@ export function OnlineMenuLayoutPreview({
               addToCart={() => {}}
               truncateText={truncateText}
               deviceView="desktop"
-              layoutType={selectedLayout}
+              layoutType={selectedLayout as ProductCardLayoutType}
               fontSettings={fontSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
@@ -77,7 +76,7 @@ export function OnlineMenuLayoutPreview({
               addToCart={() => {}}
               truncateText={truncateText}
               deviceView="mobile"
-              layoutType={selectedLayout}
+              layoutType={selectedLayout as ProductCardLayoutType}
               fontSettings={fontSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
