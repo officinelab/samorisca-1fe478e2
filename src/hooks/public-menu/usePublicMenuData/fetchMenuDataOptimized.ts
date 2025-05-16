@@ -163,12 +163,15 @@ export async function fetchMenuDataOptimized(language: string) {
       if (label_base) {
         label = { ...label_base };
       }
+      if (label) {
+        label.displayTitle = translateField(label, "product_labels", "title", label.id);
+      }
 
       return {
         ...product,
         allergens: productAllergens,
         features: productFeatures,
-        label,
+        label, // <-- ora con displayTitle valorizzato se serviva
         displayTitle,
         displayDescription,
         price_suffix: displayPriceSuffix,
