@@ -1,18 +1,23 @@
 
 import React from "react";
 import { ProductFeature } from "@/types/database";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 interface ProductFeaturesSectionProps {
   features: ProductFeature[];
   deviceView: "mobile" | "desktop";
   open: boolean;
+  language: string;
 }
 
 export const ProductFeaturesSection: React.FC<ProductFeaturesSectionProps> = ({
   features,
   deviceView,
-  open
+  open,
+  language
 }) => {
+  const { t } = usePublicMenuUiStrings(language);
+
   if (!open) return null;
 
   if (!features || features.length === 0) {
@@ -33,7 +38,7 @@ export const ProductFeaturesSection: React.FC<ProductFeaturesSectionProps> = ({
 
   return (
     <div className="bg-white rounded-lg p-4 shadow-sm">
-      <h3 className="font-semibold mb-2">Caratteristiche dei prodotti</h3>
+      <h3 className="font-semibold mb-2">{t("product_features")}</h3>
       <div className={`grid ${gridCols} gap-4`}>
         {sortedFeatures.map((feature) => (
           <div key={feature.id} className="flex items-center gap-2">
@@ -56,4 +61,3 @@ export const ProductFeaturesSection: React.FC<ProductFeaturesSectionProps> = ({
     </div>
   );
 };
-
