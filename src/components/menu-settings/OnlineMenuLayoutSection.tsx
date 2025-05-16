@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
@@ -105,6 +104,19 @@ export default function OnlineMenuLayoutSection() {
     setFontSettings(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || DEFAULT_FONT_SETTINGS);
   }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings]);
 
+  // Quando cambio il layout, salvo anche globalmente!
+  const handleLayoutChange = async (newLayout: string) => {
+    setSelectedLayout(newLayout);
+    // Aggiorno i font secondo le impostazioni già salvate
+    setFontSettings(publicMenuFontSettings?.[newLayout] || DEFAULT_FONT_SETTINGS);
+    // Salva il layout selezionato tra le impostazioni del sito
+    await saveSetting("publicMenuLayoutType", newLayout);
+    toast({
+      title: "Layout applicato",
+      description: `Hai selezionato il layout "${newLayout === "default" ? "Classico" : "Custom 1"}"`
+    });
+  };
+
   // Salva SOLO su publicMenuFontSettings, NON più sulle chiavi singole
   const handleFontChange = (key: "title" | "description", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
@@ -128,7 +140,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuLayoutSelector
         selectedLayout={selectedLayout}
-        onSelect={setSelectedLayout}
+        onSelect={handleLayoutChange}
       />
 
       <OnlineMenuFontSelectors fontSettings={fontSettings} onFontChange={handleFontChange} />
@@ -148,4 +160,3 @@ export default function OnlineMenuLayoutSection() {
     </div>
   );
 }
-
