@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ProductCardMobile } from "./ProductCardMobile";
 import { ProductCardDesktop } from "./ProductCardDesktop";
@@ -16,7 +17,6 @@ interface ProductCardWrapperProps {
   deviceView: DeviceView;
   truncateText: (text: string | null, maxLength: number) => string;
   layoutType?: ProductCardLayoutType;
-  language: string;
 }
 
 // Mappa dei layout disponibili, pronto per espansioni future
@@ -38,8 +38,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
   addToCart,
   deviceView,
   truncateText,
-  layoutType = 'default',
-  language
+  layoutType = 'default'
 }) => {
   const isMobile = useIsMobile();
 
@@ -52,7 +51,6 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         onProductSelect={onProductSelect}
         addToCart={addToCart}
         truncateText={truncateText}
-        language={language}
       />
     );
   }
@@ -63,7 +61,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
       product={product}
       onProductSelect={onProductSelect}
       addToCart={addToCart}
-      language={language}
     />
   );
 };
+

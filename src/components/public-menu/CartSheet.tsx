@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Product } from "@/types/database";
-import { useMenuUiTranslation } from "@/hooks/public-menu/useMenuUiTranslation";
 
 interface CartItem {
   id: string;
@@ -25,7 +25,6 @@ interface CartSheetProps {
   onSubmitOrder: () => void;
   calculateTotal: () => number;
   showPricesInOrder?: boolean; // <-- nuova prop opzionale
-  language?: string;
 }
 
 export const CartSheet: React.FC<CartSheetProps> = ({
@@ -38,18 +37,15 @@ export const CartSheet: React.FC<CartSheetProps> = ({
   onClearCart,
   onSubmitOrder,
   calculateTotal,
-  showPricesInOrder = true,
-  language = "it"
+  showPricesInOrder = true // default: true
 }) => {
-  const { t } = useMenuUiTranslation(language);
-
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-[90%] sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>{t("your_order")}</SheetTitle>
+          <SheetTitle>Il tuo ordine</SheetTitle>
           <SheetDescription>
-            {t("review_order")}
+            Rivedi il tuo ordine prima di comunicarlo al cameriere.
           </SheetDescription>
         </SheetHeader>
         
@@ -130,10 +126,10 @@ export const CartSheet: React.FC<CartSheetProps> = ({
                 
                 <div className="flex space-x-2">
                   <Button variant="outline" className="flex-1" onClick={onClearCart}>
-                    {t("cancel")}
+                    Annulla
                   </Button>
                   <Button className="flex-1" onClick={onSubmitOrder}>
-                    {t("confirm")}
+                    Conferma
                   </Button>
                 </div>
               </div>
@@ -144,10 +140,10 @@ export const CartSheet: React.FC<CartSheetProps> = ({
               <div className="mt-4 border-t pt-4 space-y-4">
                 <div className="flex space-x-2">
                   <Button variant="outline" className="flex-1" onClick={onClearCart}>
-                    {t("cancel")}
+                    Annulla
                   </Button>
                   <Button className="flex-1" onClick={onSubmitOrder}>
-                    {t("confirm")}
+                    Conferma
                   </Button>
                 </div>
               </div>
@@ -156,7 +152,7 @@ export const CartSheet: React.FC<CartSheetProps> = ({
         ) : (
           <div className="h-40 flex flex-col items-center justify-center text-center mt-8">
             <ShoppingCart className="h-12 w-12 text-gray-300 mb-2" />
-            <p className="text-gray-500">{t("empty_order")}</p>
+            <p className="text-gray-500">Il tuo ordine è vuoto</p>
           </div>
         )}
       </SheetContent>

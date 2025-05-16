@@ -7,26 +7,22 @@ import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
-import { useMenuUiTranslation } from "@/hooks/public-menu/useMenuUiTranslation";
 
 interface ProductCardDesktopProps {
   product: Product;
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
-  language: string;
 }
 
 export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   product,
   onProductSelect,
-  addToCart,
-  language
+  addToCart
 }) => {
   const isMobileView = useIsMobile();
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
-  const { t } = useMenuUiTranslation(language);
 
   return (
     <Card horizontal className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
@@ -39,7 +35,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
         />
       ) : (
         <div className={`w-1/6 bg-gray-100 flex items-center justify-center ${isMobileView ? "aspect-square" : "min-h-[150px]"}`}>
-          <span className="text-gray-400">{t("no_image")}</span>
+          <span className="text-gray-400">Nessuna immagine</span>
         </div>
       )}
       <CardContent className="flex-1 p-4">
@@ -142,7 +138,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
               addToCart(product);
             }}
           >
-            {!isMobileView && t("add_to_cart")}
+            {!isMobileView && "Aggiungi"}
             <Plus size={16} />
           </Button>
         )}
