@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,25 @@ export default function OnlineMenuLayoutSection() {
       <p className="text-muted-foreground mb-2">
         Scegli come vengono mostrate le voci del menu pubblico.
       </p>
+      {/* Pulsanti selezione layout spostati qui */}
+      <div className="flex gap-3 justify-center mb-5">
+        <Button
+          size="sm"
+          variant={selectedLayout === "default" ? "default" : "outline"}
+          className="mx-auto"
+          onClick={() => handleSelect("default")}
+        >
+          Classico
+        </Button>
+        <Button
+          size="sm"
+          variant={selectedLayout === "custom1" ? "default" : "outline"}
+          className="mx-auto"
+          onClick={() => handleSelect("custom1")}
+        >
+          Custom 1
+        </Button>
+      </div>
       {/* Anteprime: Desktop + Mobile, affiancate */}
       <div className="flex gap-8 flex-wrap justify-center items-start">
         {/* Desktop Preview, scalata */}
@@ -83,24 +103,6 @@ export default function OnlineMenuLayoutSection() {
           >
             <div className="max-w-2xl w-full min-w-[350px] border rounded-md shadow bg-white p-3 mx-auto">
               <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
-              <div className="flex gap-3 justify-center mb-2">
-                <Button
-                  size="sm"
-                  variant={selectedLayout === "default" ? "default" : "outline"}
-                  className="mx-auto"
-                  onClick={() => handleSelect("default")}
-                >
-                  Classico
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedLayout === "custom1" ? "default" : "outline"}
-                  className="mx-auto"
-                  onClick={() => handleSelect("custom1")}
-                >
-                  Custom 1
-                </Button>
-              </div>
               <ProductCardWrapper
                 product={exampleProduct}
                 onProductSelect={() => {}}
@@ -134,24 +136,6 @@ export default function OnlineMenuLayoutSection() {
           >
             <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
               <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
-              <div className="flex gap-3 justify-center mb-2">
-                <Button
-                  size="sm"
-                  variant={selectedLayout === "default" ? "default" : "outline"}
-                  className="mx-auto"
-                  onClick={() => handleSelect("default")}
-                >
-                  Classico
-                </Button>
-                <Button
-                  size="sm"
-                  variant={selectedLayout === "custom1" ? "default" : "outline"}
-                  className="mx-auto"
-                  onClick={() => handleSelect("custom1")}
-                >
-                  Custom 1
-                </Button>
-              </div>
               <ProductCardWrapper
                 product={exampleProduct}
                 onProductSelect={() => {}}
