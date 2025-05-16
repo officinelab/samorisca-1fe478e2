@@ -162,8 +162,11 @@ function getPreviewFontStylesWithSize(layoutFontSettings: LayoutFontSettings, fo
 
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
-  // La key deve essere sempre dinamica per ciascun layout selezionato
+  // State per layout selezionato
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
+
+  // State AGGIUNTO per nome custom font inserito dall’utente
+  const [customFontName, setCustomFontName] = useState("");
 
   // Dobbiamo leggere ogni volta la font settings della chiave giusta
   const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
@@ -215,6 +218,13 @@ export default function OnlineMenuLayoutSection() {
       loadGoogleFont(fontName);
     }
   }, [layoutFontSettings.titleFont, layoutFontSettings.descriptionFont]);
+
+  // LOGICA: Precarica il custom font se digitato/usato
+  useEffect(() => {
+    if (customFontName) {
+      loadGoogleFont(customFontName);
+    }
+  }, [customFontName]);
 
   // Gestore cambio layout: salva anche su impostazioni globali la key selezionata
   const handleSelect = (layout: string) => {
@@ -296,6 +306,13 @@ export default function OnlineMenuLayoutSection() {
     fontWeight: layoutFontSettings.descriptionBold ? "bold" : "normal",
     fontStyle: layoutFontSettings.descriptionItalic ? "italic" : "normal"
   });
+
+  // Funzione per aggiungere font custom
+  const handleAddGoogleFont = () => {
+    if (!customFontName) return;
+    loadGoogleFont(customFontName);
+    setCustomFontName("");
+  };
 
   return (
     <div className="max-w-4xl space-y-8 mx-auto">
