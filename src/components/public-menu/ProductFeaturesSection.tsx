@@ -40,8 +40,8 @@ export const ProductFeaturesSection: React.FC<ProductFeaturesSectionProps> = ({
             {feature.icon_url ? (
               <img
                 src={feature.icon_url}
-                alt={feature.title}
-                title={feature.title}
+                alt={feature.displayTitle || feature.title}
+                title={feature.displayTitle || feature.title}
                 className="w-7 h-7 object-contain"
               />
             ) : (
@@ -49,7 +49,7 @@ export const ProductFeaturesSection: React.FC<ProductFeaturesSectionProps> = ({
                 ?
               </div>
             )}
-            <span className="text-sm">{feature.title}</span>
+            <span className="text-sm">{feature.displayTitle || feature.title}</span>
           </div>
         ))}
       </div>
