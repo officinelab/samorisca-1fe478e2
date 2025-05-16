@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -34,7 +33,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
-                  title={product.label.title}
+                  title={product.label.displayTitle || product.label.title}
                   color={product.label.color}
                   textColor={product.label.text_color}
                 />

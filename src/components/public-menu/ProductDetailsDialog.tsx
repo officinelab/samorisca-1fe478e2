@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +38,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           {product.label && (
             <div className="mt-2">
               <LabelBadge
-                title={product.label.title}
+                title={product.label.displayTitle || product.label.title}
                 color={product.label.color}
                 textColor={product.label.text_color}
               />
@@ -170,4 +169,3 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     </Dialog>
   );
 };
-

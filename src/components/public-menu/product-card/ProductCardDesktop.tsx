@@ -45,7 +45,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
-                  title={product.label.title}
+                  title={product.label.displayTitle || product.label.title}
                   color={product.label.color}
                   textColor={product.label.text_color}
                 />

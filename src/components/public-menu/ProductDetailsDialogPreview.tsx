@@ -31,7 +31,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
         {product.label && (
           <div className="mt-2">
             <LabelBadge
-              title={product.label.title}
+              title={product.label.displayTitle || product.label.title}
               color={product.label.color}
               textColor={product.label.text_color}
             />
