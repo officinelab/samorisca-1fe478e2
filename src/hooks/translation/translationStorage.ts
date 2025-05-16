@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage } from '@/types/translation';
 
-// 1. Salvare SOLO su 'translations', NON più nei campi localizzati delle tabelle madre
+// 1. Aggiorna PRIMA products/categories, POI la tabella translations
 export const saveTranslation = async (
   entityId: string,
   entityType: string,
@@ -11,7 +12,11 @@ export const saveTranslation = async (
   language: SupportedLanguage
 ): Promise<boolean> => {
   try {
-    // Aggiorna/crea la traduzione nella tabella translations
+    // Aggiorna PRIMA il campo di traduzione nella tabella products/categories
+    await updateEntityDirectFieldMinimal(entityId, entityType, field, translatedText, language);
+
+    // Poi aggiorna/crea la traduzione nella tabella translations
+    // Check if translation already exists
     const { data: existingTranslation } = await supabase
       .from('translations')
       .select('*')
@@ -22,6 +27,7 @@ export const saveTranslation = async (
       .single();
 
     if (existingTranslation) {
+      // Update existing translation
       await supabase
         .from('translations')
         .update({
@@ -31,6 +37,7 @@ export const saveTranslation = async (
         })
         .eq('id', existingTranslation.id);
     } else {
+      // Create new translation
       await supabase
         .from('translations')
         .insert([{
@@ -77,7 +84,6 @@ export const getExistingTranslation = async (
   }
 };
 
-// Lasciare vuota la funzione di aggiornamento diretto, per compatibilità futura
 const updateEntityDirectFieldMinimal = async (
   entityId: string,
   entityType: string,
@@ -85,5 +91,47 @@ const updateEntityDirectFieldMinimal = async (
   translatedText: string,
   language: SupportedLanguage
 ): Promise<void> => {
-  // Non fa più nulla
+  // Aggiorna SOLO la colonna di traduzione corrispondente nel DB, es title_en
+  const langSuffix = `_${language}`;
+  const targetField = `${field}${langSuffix}`;
+  try {
+    switch (entityType) {
+      case 'categories':
+        await supabase
+          .from('categories')
+          .update({ [targetField]: translatedText })
+          .eq('id', entityId);
+        break;
+      case 'products':
+        await supabase
+          .from('products')
+          .update({ [targetField]: translatedText })
+          .eq('id', entityId);
+        break;
+      case 'allergens':
+        await supabase
+          .from('allergens')
+          .update({ [targetField]: translatedText })
+          .eq('id', entityId);
+        break;
+      case 'product_features':
+        await supabase
+          .from('product_features')
+          .update({ [targetField]: translatedText })
+          .eq('id', entityId);
+        break;
+      case 'product_labels':
+        if (field === 'title') {
+          await supabase
+            .from('product_labels')
+            .update({ [targetField]: translatedText })
+            .eq('id', entityId);
+        }
+        break;
+      default:
+        console.log(`No direct field update for entity type: ${entityType}`);
+    }
+  } catch (error) {
+    console.error('Error updating entity field:', error);
+  }
 };
