@@ -134,7 +134,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             language={language}
             serviceCoverCharge={serviceCoverCharge}
             productCardLayoutType={productCardLayoutType}
-            fontSettings={fontSettings} {/* <--- PROPAGAZIONE fontSettings */}
+            fontSettings={fontSettings}
           />
         </div>
       </div>
