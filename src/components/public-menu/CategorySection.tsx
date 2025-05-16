@@ -32,7 +32,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   const { siteSettings } = useSiteSettings();
 
   // Usa il titolo tradotto se disponibile nella lingua selezionata, altrimenti usa il titolo italiano
-  const categoryTitle = language !== 'it' && category[`title_${language}`] 
+  const categoryTitle = language !== 'en' && category[`title_${language}`] 
     ? category[`title_${language}`] 
     : category.title;
 
