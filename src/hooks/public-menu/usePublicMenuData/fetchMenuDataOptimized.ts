@@ -83,6 +83,7 @@ export async function fetchMenuDataOptimized(language: string) {
       ...featureIds.map(id => ({ entity_type: "product_features", id })),
       ...labelIds.map(id => ({ entity_type: "product_labels", id })),
       ...allergenIds.map(id => ({ entity_type: "allergens", id })),
+      ...categories.map(cat => ({ entity_type: "categories", id: cat.id })), // ⬅️ aggiungi categorie qui!
     ];
 
     // Batch query su translations
@@ -105,11 +106,6 @@ export async function fetchMenuDataOptimized(language: string) {
     }
   }
 
-  // 6. Organizzazione prodotti arricchiti
-  const allergensMap = Object.fromEntries((allergens || []).map(a => [a.id, a]));
-  const featuresMap = Object.fromEntries((features || []).map(f => [f.id, f]));
-  const labelsMap = Object.fromEntries((labels || []).map(l => [l.id, l]));
-
   // Utility helper per traduzioni
   function translateField(base, entity_type: string, field: string, id: string) {
     if (!needsTranslation) return base[field];
@@ -119,19 +115,24 @@ export async function fetchMenuDataOptimized(language: string) {
     return tr?.translated_text ?? base[field];
   }
 
-  // Raggruppa i prodotti per categorie
+  // ⬇️ Applichiamo le traduzioni anche alle categorie
+  const categoriesWithDisplay = categories.map((cat) => ({
+    ...cat,
+    displayTitle: translateField(cat, "categories", "title", cat.id),
+    displayDescription: translateField(cat, "categories", "description", cat.id),
+  }));
+
+  // Raggruppa i prodotti per categorie (usando categoriesWithDisplay)
   const productsByCategory: Record<string, Product[]> = {};
-  for (const category of categories) {
+  for (const category of categoriesWithDisplay) {
     const catProducts = (allProducts || []).filter(p => p.category_id === category.id);
     productsByCategory[category.id] = catProducts.map((product: Product) => {
-      // Traduzioni prodotto
       const displayTitle = translateField(product, "products", "title", product.id);
       const displayDescription = translateField(product, "products", "description", product.id);
       const displayPriceSuffix = translateField(product, "products", "price_suffix", product.id);
       const displayVariant1Name = translateField(product, "products", "price_variant_1_name", product.id);
       const displayVariant2Name = translateField(product, "products", "price_variant_2_name", product.id);
 
-      // Relazioni
       // Allergeni per questo prodotto
       const myAllergenRels = (productAllergensRels || []).filter(r => r.product_id === product.id);
       const productAllergens = myAllergenRels.map(r => {
@@ -179,8 +180,9 @@ export async function fetchMenuDataOptimized(language: string) {
     displayDescription: translateField(a, "allergens", "description", a.id),
   }));
 
+  // ⬇️ Qui restituiamo le categorie già arricchite!
   return {
-    categories,
+    categories: categoriesWithDisplay,
     products: productsByCategory,
     allergens: allAllergens,
   };
