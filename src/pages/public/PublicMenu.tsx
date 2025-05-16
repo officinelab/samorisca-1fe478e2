@@ -92,7 +92,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
   // ⬇️ Imposta fontSettings in base al layout selezionato
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
-  const fontSettings = publicMenuFontSettings?.[productCardLayoutType];
+  const fontSettings = publicMenuFontSettings?.[productCardLayoutType] || {};
 
   // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
   const hideProductDetailImage = productCardLayoutType === "custom1";
