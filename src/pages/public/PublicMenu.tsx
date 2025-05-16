@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,8 +18,6 @@ import { MenuContent } from "@/components/public-menu/MenuContent";
 import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
-
-import { loadGoogleFont } from "@/utils/loadGoogleFont";
 
 interface PublicMenuProps {
   isPreview?: boolean;
@@ -104,16 +103,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
   const fontSettings = publicMenuFontSettings?.[productCardLayoutType] || {};
-
-  // ⬇️ Caricamento dinamico del font se serve
-  useEffect(() => {
-    if (fontSettings?.title?.fontFamily) {
-      loadGoogleFont(fontSettings.title.fontFamily);
-    }
-    if (fontSettings?.description?.fontFamily) {
-      loadGoogleFont(fontSettings.description.fontFamily);
-    }
-  }, [fontSettings]);
 
   // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
   const hideProductDetailImage = productCardLayoutType === "custom1";
