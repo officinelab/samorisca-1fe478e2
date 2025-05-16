@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { ProductDetailsDialogPreview } from "@/components/public-menu/ProductDetailsDialogPreview";
 
-// Esempio prodotto di test
+// Esempio prodotto di test con allergeni, etichetta, caratteristiche
 const exampleProduct: Product = {
   id: "demo-id",
   category_id: "demo-category-id",
@@ -25,9 +24,55 @@ const exampleProduct: Product = {
   has_multiple_prices: false,
   has_price_suffix: false,
   price_suffix: "",
-  allergens: [],
-  features: [],
-  // altri eventuali campi se servono
+  // Etichetta esempio
+  label: {
+    id: "label-demo",
+    title: "NUOVO",
+    displayTitle: "NUOVO",
+    color: "#0ea5e9", // blu
+    text_color: "#fff",
+    display_order: 1,
+    created_at: "",
+    updated_at: ""
+  },
+  // Allergeni di esempio
+  allergens: [
+    {
+      id: "allergen-1",
+      number: 1,
+      title: "Glutine",
+      displayTitle: "Glutine",
+      description: null,
+      icon_url: "/placeholder.svg", // Usa sempre lo stesso per esempio
+      display_order: 1
+    },
+    {
+      id: "allergen-7",
+      number: 7,
+      title: "Latte",
+      displayTitle: "Latte e derivati",
+      description: null,
+      icon_url: "/placeholder.svg",
+      display_order: 2
+    }
+  ],
+  // Caratteristiche prodotto di esempio
+  features: [
+    {
+      id: "feature-1",
+      title: "Vegetariano",
+      displayTitle: "Vegetariano",
+      icon_url: "/placeholder.svg",
+      display_order: 1
+    },
+    {
+      id: "feature-2",
+      title: "Specialità chef",
+      displayTitle: "Specialità chef",
+      icon_url: "/placeholder.svg",
+      display_order: 2
+    }
+  ],
 };
 
 // Funzione di troncamento testo (coerente col menu pubblico)
