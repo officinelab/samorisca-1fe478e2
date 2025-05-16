@@ -38,6 +38,14 @@ export const AllergensSection: React.FC<AllergensSectionProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             {allergens.map(allergen => (
               <div key={allergen.id} className="flex items-center">
+                {/* Icona allergene se disponibile */}
+                {allergen.icon_url && (
+                  <img
+                    src={allergen.icon_url}
+                    alt={allergen.displayTitle || allergen.title}
+                    className="w-6 h-6 object-contain mr-2"
+                  />
+                )}
                 <Badge variant="outline" className="mr-2">
                   {allergen.number}
                 </Badge>
