@@ -6,19 +6,24 @@ import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 interface ProductDetailsDialogPreviewProps {
   product: Product | null;
   addToCart?: (product: Product, variantName?: string, variantPrice?: number) => void;
   hideImage?: boolean;
+  language?: string;
 }
 
 export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewProps> = ({
   product,
   addToCart,
   hideImage = false,
+  language = "it"
 }) => {
   if (!product) return null;
+
+  const { t } = usePublicMenuUiStrings(language);
 
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -49,12 +54,12 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
           </div>
         )}
         <div>
-          <h4 className="font-semibold mb-1">Descrizione</h4>
-          <p className="text-gray-600">{description || "Nessuna descrizione disponibile."}</p>
+          <h4 className="font-semibold mb-1">{t("description")}</h4>
+          <p className="text-gray-600">{description || t("description") + "..."}</p>
         </div>
         {product.allergens && product.allergens.length > 0 && (
           <div>
-            <h4 className="font-semibold mb-1">Allergeni</h4>
+            <h4 className="font-semibold mb-1">{t("allergens")}</h4>
             <div className="flex flex-wrap gap-2 mb-2">
               {product.allergens.map(allergen => (
                 <Badge key={allergen.id} variant="outline">
@@ -74,7 +79,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
         )}
 
         <div>
-          <h4 className="font-semibold mb-1">Prezzo</h4>
+          <h4 className="font-semibold mb-1">{t("price")}</h4>
           {product.has_multiple_prices ? (
             <div className="space-y-2">
               {/* Prezzo standard SOLO con suffisso */}
@@ -89,7 +94,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                     size="sm"
                     disabled
                   >
-                    Aggiungi <Plus className="ml-2" size={16} />
+                    {t("add")} <Plus className="ml-2" size={16} />
                   </Button>
                 </div>
               )}
@@ -105,7 +110,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                     size="sm"
                     disabled
                   >
-                    Aggiungi <Plus className="ml-2" size={16} />
+                    {t("add")} <Plus className="ml-2" size={16} />
                   </Button>
                 </div>
               )}
@@ -121,7 +126,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                     size="sm"
                     disabled
                   >
-                    Aggiungi <Plus className="ml-2" size={16} />
+                    {t("add")} <Plus className="ml-2" size={16} />
                   </Button>
                 </div>
               )}
@@ -140,7 +145,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
       <div className="flex justify-end mt-4">
         {!product.has_multiple_prices && (
           <Button disabled>
-            Aggiungi all'ordine <Plus className="ml-2" size={16} />
+            {t("add_to_cart")} <Plus className="ml-2" size={16} />
           </Button>
         )}
       </div>

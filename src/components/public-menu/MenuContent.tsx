@@ -4,6 +4,7 @@ import { CategorySection, CategorySectionSkeleton } from "@/components/public-me
 import { AllergensSection } from "@/components/public-menu/AllergensSection";
 import { ProductFeaturesSection } from "./ProductFeaturesSection";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -56,6 +57,8 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   // Stato e handling espansione sezione caratteristiche prodotti
   const [showFeatures, setShowFeatures] = React.useState(false);
 
+  const { t } = usePublicMenuUiStrings(language);
+
   return (
     <div
       className={deviceView === 'desktop' ? 'col-span-3' : ''}
@@ -79,7 +82,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
             {(serviceCoverCharge && serviceCoverCharge > 0 && idx < categories.length - 1) && (
               <div className="flex justify-end mt-2">
                 <span className="italic text-sm text-gray-700">
-                  Servizio e coperto:{" "}
+                  {t("service_and_cover")}:{" "}
                   <span className="font-medium">
                     {serviceCoverCharge.toLocaleString("it-IT", { style: 'currency', currency: 'EUR' })}
                   </span>
@@ -96,6 +99,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           allergens={allergens}
           showAllergensInfo={showAllergensInfo}
           toggleAllergensInfo={toggleAllergensInfo}
+          language={language}
         />
 
         {/* Expandable Product Features section */}
@@ -108,7 +112,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           >
             <AccordionItem value="features" className="border-0">
               <AccordionTrigger className="flex items-center mb-2 text-base px-0 hover:underline hover:bg-transparent">
-                Info prodotti
+                {t("info_products")}
               </AccordionTrigger>
               <AccordionContent>
                 <ProductFeaturesSection
