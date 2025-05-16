@@ -9,3 +9,7 @@ verify_jwt = true
 
 [functions.translate-openai]
 verify_jwt = true
+
+[functions.public_menu_bundle]
+verify_jwt = false
+

@@ -77,11 +77,23 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     ? siteSettings.showPricesInOrder 
     : true; // fallback true
 
+  // ⬇️ Recupero prezzo Servizio e Coperto (accetta numeri e stringhe convertibili a numero)
+  const serviceCoverCharge =
+    typeof siteSettings?.serviceCoverCharge === "number"
+      ? siteSettings.serviceCoverCharge
+      : parseFloat(siteSettings?.serviceCoverCharge);
+
   // Initialize selected category when categories are loaded
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
   }
-  
+
+  // ⬇️ Layout selezionato (default o custom1)
+  const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
+
+  // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
+  const hideProductDetailImage = productCardLayoutType === "custom1";
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
@@ -117,6 +129,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             addToCart={addToCart}
             truncateText={truncateText}
             language={language}
+            serviceCoverCharge={serviceCoverCharge}
+            productCardLayoutType={productCardLayoutType}
           />
         </div>
       </div>
@@ -130,6 +144,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         open={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
+        hideImage={hideProductDetailImage}
       />
       
       {/* Cart sheet */}

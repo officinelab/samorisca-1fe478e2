@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
-import { Allergen, Category, Product, ProductFeature, ProductLabel } from "@/types/database";
+import { Allergen, Category, Product } from "@/types/database";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { fetchMenuDataOptimized } from "./usePublicMenuData/fetchMenuDataOptimized";
 
 export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -11,6 +11,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState(previewLanguage);
+
   const { siteSettings } = useSiteSettings();
 
   useEffect(() => {
@@ -23,157 +24,10 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Categorie
-        const {
-          data: categoriesData,
-          error: categoriesError
-        } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order', {
-          ascending: true
-        });
-
-        if (categoriesError) throw categoriesError;
-        setCategories(categoriesData || []);
-
-        if (categoriesData && categoriesData.length > 0) {
-          // Caricamento prodotti con etichetta associata
-          const productsMap: Record<string, Product[]> = {};
-          for (const category of categoriesData) {
-            // Recupera prodotti con join con label
-            const { data: productsData, error: productsError } = await supabase
-              .from('products')
-              .select('*, label:label_id(*)')
-              .eq('category_id', category.id)
-              .eq('is_active', true)
-              .order('display_order', { ascending: true });
-
-            if (productsError) throw productsError;
-
-            // Recupera product_to_features e dati features per i prodotti di questa categoria
-            let productFeaturesRelations: { product_id: string, feature_id: string }[] = [];
-            let featuresData: ProductFeature[] = [];
-            if (productsData && productsData.length > 0) {
-              const productIds = productsData.map(p => p.id);
-
-              // Tabella relazioni product_to_features
-              const { data: rel, error: relErr } = await supabase
-                .from('product_to_features')
-                .select('*')
-                .in('product_id', productIds);
-              if (relErr) throw relErr;
-              productFeaturesRelations = rel || [];
-
-              // Trova tutti gli id di features usate da questi prodotti
-              const allFeatureIds = Array.from(new Set(productFeaturesRelations.map(r => r.feature_id)));
-
-              if (allFeatureIds.length > 0) {
-                const { data: feats, error: featErr } = await supabase
-                  .from('product_features')
-                  .select('*')
-                  .in('id', allFeatureIds)
-                  .order('display_order', { ascending: true });
-                if (featErr) throw featErr;
-                featuresData = feats || [];
-              }
-            }
-
-            // Per ogni prodotto, assegnalo le sue "features" come array completo
-            const productsWithDetails = await Promise.all((productsData || []).map(async product => {
-              // Allergen logic
-              const {
-                data: productAllergens,
-                error: allergensError
-              } = await supabase.from('product_allergens').select('allergen_id').eq('product_id', product.id);
-              if (allergensError) throw allergensError;
-
-              let productAllergensDetails: Allergen[] = [];
-              if (productAllergens && productAllergens.length > 0) {
-                const allergenIds = productAllergens.map(pa => pa.allergen_id);
-                const {
-                  data: allergensDetails,
-                  error: detailsError
-                } = await supabase.from('allergens').select('*').in('id', allergenIds).order('number', {
-                  ascending: true
-                });
-
-                if (detailsError) throw detailsError;
-
-                productAllergensDetails = (allergensDetails || []).map(allergen => {
-                  // Prima controlla se esiste una traduzione per la lingua corrente
-                  const translatedTitle = language !== 'it' && allergen[`title_${language}`]
-                    ? allergen[`title_${language}`]
-                    : allergen.title;
-
-                  const translatedDescription = language !== 'it' && allergen[`description_${language}`]
-                    ? allergen[`description_${language}`]
-                    : allergen.description;
-
-                  return {
-                    ...allergen,
-                    displayTitle: translatedTitle,
-                    displayDescription: translatedDescription
-                  };
-                });
-              }
-
-              // Traduzioni titolo/descrizione prodotto
-              const displayTitle = language !== 'it' && product[`title_${language}`]
-                ? product[`title_${language}`]
-                : product.title;
-
-              const displayDescription = language !== 'it' && product[`description_${language}`]
-                ? product[`description_${language}`]
-                : product.description;
-
-              // Assegna features al prodotto
-              const myFeatureIds = productFeaturesRelations
-                .filter(r => r.product_id === product.id)
-                .map(r => r.feature_id);
-              const myFeatures = featuresData
-                .filter(f => myFeatureIds.includes(f.id))
-                .sort((a, b) => a.display_order - b.display_order);
-
-              // Restituisci oggetto prodotto arricchito
-              return {
-                ...product,
-                label: product.label as ProductLabel | null, // ora presente
-                features: myFeatures, // ora presente
-                allergens: productAllergensDetails,
-                displayTitle,
-                displayDescription
-              } as Product;
-            }));
-
-            productsMap[category.id] = productsWithDetails;
-          }
-          setProducts(productsMap);
-        }
-
-        // Carica tutti gli allergeni e applica traduzione
-        const {
-          data: allergensData,
-          error: allergensError
-        } = await supabase.from('allergens').select('*').order('number', { ascending: true });
-
-        if (allergensError) throw allergensError;
-
-        const translatedAllergens = (allergensData || []).map(allergen => {
-          const translatedTitle = language !== 'it' && allergen[`title_${language}`]
-            ? allergen[`title_${language}`]
-            : allergen.title;
-
-          const translatedDescription = language !== 'it' && allergen[`description_${language}`]
-            ? allergen[`description_${language}`]
-            : allergen.description;
-
-          return {
-            ...allergen,
-            displayTitle: translatedTitle,
-            displayDescription: translatedDescription
-          };
-        });
-
-        setAllergens(translatedAllergens);
-
+        const { categories, products, allergens } = await fetchMenuDataOptimized(language);
+        setCategories(categories);
+        setProducts(products);
+        setAllergens(allergens);
       } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
         toast.error("Errore nel caricamento del menu. Riprova più tardi.");

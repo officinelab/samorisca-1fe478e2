@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +18,9 @@ interface TranslatableItem {
   id: string;
   title: string;
   description?: string | null;
-  type: string;
+  type: "categories" | "allergens" | "product_features" | "product_labels";
+  translationTitle?: string; // valore tradotto, opzionale
+  translationDescription?: string | null; // desc tradotta, opzionale
 }
 
 const entityOptions: EntityOption[] = [
@@ -39,30 +42,61 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-      
       try {
-        const { data, error } = await supabase
-          .from(selectedEntityType.type)
-          .select('id, title, description')
-          .order('display_order', { ascending: true });
-          
-        if (error) {
-          throw error;
+        // recupera sempre tutti i dati madre ORIGINALI
+        let selectString = "id, title";
+        if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
+          selectString += ", description";
         }
-        
-        setItems(data.map((item: any) => ({ 
-          ...item, 
-          type: selectedEntityType.type 
-        })));
+        let query = supabase.from(selectedEntityType.type).select(selectString);
+        if (
+          selectedEntityType.type === "categories" ||
+          selectedEntityType.type === "allergens" ||
+          selectedEntityType.type === "product_features" ||
+          selectedEntityType.type === "product_labels"
+        ) {
+          query = query.order("display_order", { ascending: true });
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Se la lingua selezionata NON è italiano cerca le traduzioni, ma NON sovrascrive la colonna originale!
+        let translationsMap: Record<string, Record<string, string>> = {};
+        if (data.length > 0) {
+          const { data: trans } = await supabase
+            .from("translations")
+            .select("*")
+            .in("entity_id", data.map((it: any) => it.id))
+            .eq("entity_type", selectedEntityType.type)
+            .eq("language", language);
+
+          (trans || []).forEach((tr: any) => {
+            if (!translationsMap[tr.entity_id]) translationsMap[tr.entity_id] = {};
+            translationsMap[tr.entity_id][tr.field] = tr.translated_text;
+          });
+        }
+
+        // Mappa: colonna originale = italiano, campo tradotto separato
+        setItems(
+          (data || []).map((item: any) => ({
+            id: item.id,
+            title: item.title ?? "",
+            description: item.description !== undefined ? item.description : null,
+            type: selectedEntityType.type,
+            translationTitle: translationsMap[item.id]?.title ?? "",
+            translationDescription: translationsMap[item.id]?.description ?? "",
+          }))
+        );
       } catch (error) {
         console.error(`Error fetching ${selectedEntityType.label}:`, error);
+        setItems([]);
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchItems();
-  }, [selectedEntityType]);
+  }, [selectedEntityType, language]);
 
   const handleEntityTypeChange = (value: string) => {
     const selectedOption = entityOptions.find(option => option.value === value);
@@ -96,7 +130,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
 
           <div className="md:col-span-2">
             <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
-            
+
             {loading ? (
               <div className="text-center py-8">Caricamento in corso...</div>
             ) : items.length === 0 ? (
@@ -124,12 +158,13 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                             fieldName="title"
                             originalText={item.title}
                             language={language}
+                            // mostro la traduzione solo a destra (campo di input gestirà il recupero se già salvata)
                           />
                         </TableCell>
                       </TableRow>
-                      
-                      {/* If item has description (like allergens), add another row for it */}
-                      {item.description && (
+
+                      {/* Riga descrizione SOLO se esiste */}
+                      {(item.description !== undefined && item.description !== null && item.description !== "") && (
                         <TableRow>
                           <TableCell className="align-top border-t-0 flex items-center gap-2">
                             <div className="text-sm text-muted-foreground">
@@ -145,6 +180,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                               originalText={item.description}
                               language={language}
                               multiline
+                              // la traduzione attuale (se esiste) sarà caricata dal custom hook, allineata alla lingua
                             />
                           </TableCell>
                         </TableRow>

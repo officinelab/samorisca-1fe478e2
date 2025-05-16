@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +10,7 @@ import { SupportedLanguage } from "@/types/translation";
 
 interface TranslationFieldProps {
   id: string;
-  entityType: string;
+  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels";
   fieldName: string;
   originalText: string;
   language: SupportedLanguage;

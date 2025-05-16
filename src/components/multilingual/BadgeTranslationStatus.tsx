@@ -5,26 +5,30 @@ import { SupportedLanguage } from "@/types/translation";
 
 type Status = "missing" | "outdated" | "updated" | "loading" | "error";
 
+// Refined type: all entities for this badge must have id and updated_at
+type EntityWithUpdatedAt = { updated_at: string };
+
 interface BadgeTranslationStatusProps {
   entityId: string;
-  entityType: string; // può essere "products", "categories", ecc.
+  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels";
   fieldName: string;
   language: SupportedLanguage;
-  refreshKey?: number; // 👈 NUOVA PROP
+  refreshKey?: number;
 }
 
 /**
  * Badge che mostra lo stato della traduzione:
- * - Rosso: traduzione mancante
- * - Arancione: traduzione obsoleta
- * - Verde: traduzione aggiornata
+ * Rosso: traduzione mancante
+ * Arancione: traduzione obsoleta
+ * Verde: traduzione aggiornata
+ * Grigio: errore
  */
 export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
   entityId,
   entityType,
   fieldName,
   language,
-  refreshKey // 👈
+  refreshKey
 }) => {
   const [status, setStatus] = useState<Status>("loading");
 
@@ -34,26 +38,36 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       setStatus("loading");
       let updatedAt: string | null = null;
 
-      if (entityType === "products" || entityType === "categories") {
-        const { data: entity, error } = await supabase
-          .from(entityType)
-          .select("updated_at")
-          .eq("id", entityId)
-          .maybeSingle();
-
-        if (!active) return;
-
-        if (error || !entity) {
-          setStatus("error");
-          return;
-        }
-        updatedAt = entity.updated_at;
-      } else {
-        console.warn(`BadgeTranslationStatus: entityType non supportato (${entityType})`);
+      let sourceTable = null;
+      if (
+        entityType === "products" ||
+        entityType === "categories" ||
+        entityType === "allergens" ||
+        entityType === "product_features" ||
+        entityType === "product_labels"
+      ) {
+        sourceTable = entityType;
+      }
+      if (!sourceTable) {
         setStatus("error");
         return;
       }
 
+      // Add query select type explicitly
+      const { data: entity, error } = await supabase
+        .from(sourceTable)
+        .select("updated_at")
+        .eq("id", entityId)
+        .maybeSingle<EntityWithUpdatedAt>();
+
+      if (!active) return;
+      if (error || !entity) {
+        setStatus("error");
+        return;
+      }
+      updatedAt = entity.updated_at;
+
+      // Fetch traduzione dalla tabella centralized translations
       const { data: translation, error: translationError } = await supabase
         .from("translations")
         .select("last_updated")
@@ -86,9 +100,9 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     return () => {
       active = false;
     };
-  }, [entityId, entityType, fieldName, language, refreshKey]); // 👈 AGGIUNTA refreshKey tra le dipendenze
+  }, [entityId, entityType, fieldName, language, refreshKey]);
 
-  // Badge grafico
+  // Badge UI
   if (status === "loading") {
     return (
       <span className="flex items-center ml-1">
