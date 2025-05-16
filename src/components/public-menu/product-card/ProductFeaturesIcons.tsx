@@ -15,7 +15,7 @@ export const ProductFeaturesIcons: React.FC<ProductFeaturesIconsProps> = ({ feat
             key={feature.id}
             src={feature.icon_url}
             alt={feature.title}
-            title={feature.displayTitle ?? feature.title}
+            title={feature.title}
             className="w-6 h-6 object-contain inline-block"
             style={{ display: "inline-block" }}
           />
