@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
@@ -12,12 +13,17 @@ interface ProductCardDesktopProps {
   product: Product;
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
+  fontSettings?: {
+    title: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    description: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+  };
 }
 
 export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   product,
   onProductSelect,
-  addToCart
+  addToCart,
+  fontSettings
 }) => {
   const isMobileView = useIsMobile();
   const title = product.displayTitle || product.title;
@@ -41,7 +47,16 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
       <CardContent className="flex-1 p-4">
         <div className="flex justify-between items-start mb-1">
           <div>
-            <h3 className="font-medium text-lg">{title}</h3>
+            <h3
+              className="font-medium text-lg"
+              style={{
+                fontFamily: fontSettings?.title?.fontFamily,
+                fontWeight: fontSettings?.title?.fontWeight,
+                fontStyle: fontSettings?.title?.fontStyle,
+              }}
+            >
+              {title}
+            </h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
@@ -60,7 +75,16 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
           ) : null}
         </div>
         {description && (
-          <p className="text-gray-600 text-sm mb-2">{description}</p>
+          <p
+            className="text-gray-600 text-sm mb-2"
+            style={{
+              fontFamily: fontSettings?.description?.fontFamily,
+              fontWeight: fontSettings?.description?.fontWeight,
+              fontStyle: fontSettings?.description?.fontStyle,
+            }}
+          >
+            {description}
+          </p>
         )}
         {product.allergens && product.allergens.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">

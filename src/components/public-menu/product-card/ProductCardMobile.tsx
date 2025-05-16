@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -12,13 +13,18 @@ interface ProductCardMobileProps {
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
+  fontSettings?: {
+    title: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    description: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+  };
 }
 
 export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   product,
   onProductSelect,
   addToCart,
-  truncateText
+  truncateText,
+  fontSettings
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -29,7 +35,16 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3 className="font-bold text-lg mb-1">{title}</h3>
+            <h3
+              className="font-bold text-lg mb-1"
+              style={{
+                fontFamily: fontSettings?.title?.fontFamily,
+                fontWeight: fontSettings?.title?.fontWeight,
+                fontStyle: fontSettings?.title?.fontStyle,
+              }}
+            >
+              {title}
+            </h3>
             {product.label && (
               <div className="mb-1">
                 <LabelBadge
@@ -39,7 +54,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                 />
               </div>
             )}
-            <p className="text-gray-600 text-sm mb-2">
+            <p
+              className="text-gray-600 text-sm mb-2"
+              style={{
+                fontFamily: fontSettings?.description?.fontFamily,
+                fontWeight: fontSettings?.description?.fontWeight,
+                fontStyle: fontSettings?.description?.fontStyle,
+              }}
+            >
               {truncateText(description, 110)}
             </p>
             {product.allergens && product.allergens.length > 0 && (
