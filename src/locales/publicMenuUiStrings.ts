@@ -17,6 +17,8 @@ export type PublicMenuUiStringKey =
   | "total"
   | "cancel"
   | "confirm";
+  | "product_features";
+
 
 const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>> = {
   it: {
