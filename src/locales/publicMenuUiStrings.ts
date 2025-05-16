@@ -16,8 +16,7 @@ export type PublicMenuUiStringKey =
   | "empty_order"
   | "total"
   | "cancel"
-  | "confirm"
-  | "product_features";
+  | "confirm";
   
 
 
