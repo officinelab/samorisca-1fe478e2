@@ -48,7 +48,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
         <div className="flex justify-between items-start mb-1">
           <div>
             <h3
-              className="font-medium text-lg"
+              className="text-lg mb-0"
               style={{
                 fontFamily: fontSettings?.title?.fontFamily,
                 fontWeight: fontSettings?.title?.fontWeight,

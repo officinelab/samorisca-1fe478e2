@@ -36,7 +36,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
         <div className="flex">
           <div className="flex-1 pr-4">
             <h3
-              className="font-bold text-lg mb-1"
+              className="text-lg font-bold mb-1"
               style={{
                 fontFamily: fontSettings?.title?.fontFamily,
                 fontWeight: fontSettings?.title?.fontWeight,
