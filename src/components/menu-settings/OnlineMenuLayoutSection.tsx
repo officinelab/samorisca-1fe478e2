@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { FontSelector } from "./font-settings/FontSelector";
 import { Bold, Italic } from "lucide-react";
 
 // Utility per i Google Fonts predefiniti
-const DEFAULT_FONTS = [
+export const DEFAULT_FONTS = [
   { name: "Inter", css: "Inter, sans-serif" },
   { name: "Roboto", css: "Roboto, sans-serif" },
   { name: "Lato", css: "Lato, sans-serif" },
