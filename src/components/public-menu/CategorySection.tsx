@@ -16,6 +16,11 @@ interface CategorySectionProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
   productCardLayoutType?: 'default' | 'compact';
+  // Permetti stili font opzionali per anteprima layout
+  previewFontStyles?: {
+    title?: React.CSSProperties;
+    description?: React.CSSProperties;
+  };
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -27,7 +32,8 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   deviceView,
   truncateText,
   language = 'it',
-  productCardLayoutType = "default"
+  productCardLayoutType = "default",
+  previewFontStyles
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
@@ -61,6 +67,8 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 deviceView={deviceView}
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
+                // Passa gli stili font se presenti
+                previewFontStyles={previewFontStyles}
               />
             );
           }) : (
