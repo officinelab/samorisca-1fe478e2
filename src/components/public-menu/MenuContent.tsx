@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Category } from "@/types/database";
 import { CategorySection } from "./CategorySection";
+import type { ProductCardLayoutType } from "./product-card/ProductCardWrapper";
 
 interface MenuContentProps {
   menuRef: React.RefObject<HTMLDivElement>;
@@ -17,7 +17,7 @@ interface MenuContentProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
   serviceCoverCharge: number | string | undefined;
-  productCardLayoutType: string; // Ok ora come string
+  productCardLayoutType: ProductCardLayoutType; // <-- Use correct type
   fontSettings?: {
     titleFont: string;
     titleBold: boolean;
@@ -60,15 +60,15 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           key={category.id}
           category={category}
           deviceView={deviceView}
-          showAllergensInfo={showAllergensInfo}
+          showAllergensInfo={showAllergensInfo}         // Fix: Pass props if needed by CategorySection
           toggleAllergensInfo={toggleAllergensInfo}
           allergens={allergens}
           products={products[category.id] || []}
-          setSelectedProduct={setSelectedProduct}
+          onSelectProduct={setSelectedProduct}         // Fix: Prop name should match CategorySectionProps
           addToCart={addToCart}
           truncateText={truncateText}
           language={language}
-          productCardLayoutType={productCardLayoutType}
+          productCardLayoutType={productCardLayoutType} // <-- Pass valid type
           fontSettings={fontSettings}
         />
       ))}

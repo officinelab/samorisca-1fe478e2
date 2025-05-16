@@ -2,8 +2,7 @@
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
-// Cambiato: importare il vero ProductCardWrapper!
-import { ProductCardWrapper } from "./product-card/ProductCardWrapper";
+import { ProductCardWrapper, ProductCardLayoutType } from "./product-card/ProductCardWrapper";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -16,7 +15,7 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: string; // Tollera nuovi futuri layout
+  productCardLayoutType?: ProductCardLayoutType;
   fontSettings?: {
     titleFont: string;
     titleBold: boolean;
@@ -25,6 +24,8 @@ interface CategorySectionProps {
     descriptionBold: boolean;
     descriptionItalic: boolean;
   };
+  showAllergensInfo?: boolean; // <-- Fix: Add these optional props
+  toggleAllergensInfo?: () => void;
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -37,7 +38,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   truncateText,
   language = 'it',
   productCardLayoutType = "default",
-  fontSettings
+  fontSettings,
+  showAllergensInfo,
+  toggleAllergensInfo,
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
@@ -61,7 +64,6 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
               image_url: product.image_url || siteSettings.defaultProductImage
             };
 
-            // Usa il vero ProductCardWrapper!
             return (
               <ProductCardWrapper
                 key={product.id}

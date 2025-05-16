@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ProductCardMobile } from "./ProductCardMobile";
 import { ProductCardDesktop } from "./ProductCardDesktop";
@@ -8,7 +7,7 @@ import { ProductCardMobileCustom1 } from "./ProductCardMobileCustom1";
 import { ProductCardDesktopCustom1 } from "./ProductCardDesktopCustom1";
 
 type DeviceView = 'mobile' | 'desktop';
-type ProductCardLayoutType = 'default' | 'compact' | 'custom1';
+export type ProductCardLayoutType = 'default' | 'compact' | 'custom1';
 
 interface ProductFontSettings {
   titleFont: string;
