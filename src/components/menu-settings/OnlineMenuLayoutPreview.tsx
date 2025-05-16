@@ -5,7 +5,8 @@ import { Product } from "@/types/database";
 
 const layoutLabel: Record<ProductCardLayoutType, string> = {
   default: "Classico",
-  custom1: "Custom 1"
+  custom1: "Custom 1",
+  compact: "Compatto"
 };
 
 interface OnlineMenuLayoutPreviewProps {
