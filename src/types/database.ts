@@ -64,6 +64,8 @@ export interface ProductFeature {
   title_fr?: string | null;
   title_es?: string | null;
   title_de?: string | null;
+  // Add displayTitle for translations/multilingual support
+  displayTitle?: string;
 }
 
 export interface Product {
