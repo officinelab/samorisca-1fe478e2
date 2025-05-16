@@ -1,4 +1,3 @@
-
 export interface Allergen {
   id: string;
   number: number;
@@ -38,6 +37,8 @@ export interface Category {
   description_fr?: string | null;
   description_es?: string | null;
   description_de?: string | null;
+  // Add displayTitle for translations/multilingual support
+  displayTitle?: string;
 }
 
 export interface ProductLabel {
