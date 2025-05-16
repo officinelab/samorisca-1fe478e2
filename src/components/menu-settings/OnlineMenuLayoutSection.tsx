@@ -6,8 +6,8 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
 import { ProductCardWrapper } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { toast } from "@/hooks/use-toast";
-import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { ProductDetailsDialogPreview } from "@/components/public-menu/ProductDetailsDialogPreview";
+import { FontSelector, DEFAULT_GOOGLE_FONTS } from "./FontSelector";
 
 // Esempio prodotto di test con allergeni, etichetta, caratteristiche
 const exampleProduct: Product = {
@@ -91,36 +91,61 @@ const layoutLabel: Record<string, string> = {
 const PREVIEW_SCALE_DESKTOP = 0.90; // 90%
 const PREVIEW_SCALE_MOBILE = 0.90; // 90% SCALA UGUALE ALLA DESKTOP (puoi cambiarla se vuoi leggere differenze tra le due)
 
+const DEFAULT_FONT_SETTINGS = {
+  title: {
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
+  description: {
+    fontFamily: "Open Sans",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+};
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
+  // Carica settings font per layout attuale
+  const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
+  const currFontSettings = publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS;
+
+  const [fontSettings, setFontSettings] = useState(currFontSettings);
+
+  // Mantieni sincronizzati font selezionati con il layout/cambi
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
-  }, [siteSettings?.publicMenuLayoutType]);
+    setFontSettings(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || DEFAULT_FONT_SETTINGS);
+  }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings]);
 
-  const handleSelect = (layout: string) => {
-    setSelectedLayout(layout);
-    saveSetting("publicMenuLayoutType", layout);
-    toast({
-      title: "Layout aggiornato",
-      description: layoutLabel[layout] || layout,
-    });
+  // Aggiorna font title/desc live
+  const handleFontChange = (key: "title" | "description", value: any) => {
+    const newValue = { ...fontSettings, [key]: value };
+    setFontSettings(newValue);
+    // Salva nelle impostazioni SOLO per layout attivo
+    const nextPublicMenuFontSettings = {
+      ...publicMenuFontSettings,
+      [selectedLayout]: newValue
+    };
+    saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
+    toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
   };
 
   return (
     <div className="max-w-4xl space-y-8 mx-auto">
       <h2 className="text-xl font-semibold">Layout menu online</h2>
       <p className="text-muted-foreground mb-2">
-        Scegli come vengono mostrate le voci del menu pubblico.
+        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo e descrizione.
       </p>
-      {/* Pulsanti selezione layout spostati qui */}
+      {/* Pulsanti selezione layout */}
       <div className="flex gap-3 justify-center mb-5">
         <Button
           size="sm"
           variant={selectedLayout === "default" ? "default" : "outline"}
           className="mx-auto"
-          onClick={() => handleSelect("default")}
+          onClick={() => setSelectedLayout("default")}
         >
           Classico
         </Button>
@@ -128,20 +153,33 @@ export default function OnlineMenuLayoutSection() {
           size="sm"
           variant={selectedLayout === "custom1" ? "default" : "outline"}
           className="mx-auto"
-          onClick={() => handleSelect("custom1")}
+          onClick={() => setSelectedLayout("custom1")}
         >
           Custom 1
         </Button>
       </div>
-      {/* Anteprime: Desktop + Mobile, affiancate */}
+      {/* Selezione Font */}
+      <div className="flex gap-10 mb-6 flex-wrap items-center justify-center">
+        <FontSelector
+          label="Font Titolo"
+          value={fontSettings.title}
+          onChange={val => handleFontChange("title", val)}
+        />
+        <FontSelector
+          label="Font Descrizione"
+          value={fontSettings.description}
+          onChange={val => handleFontChange("description", val)}
+        />
+      </div>
+      {/* Anteprime: Desktop + Mobile */}
       <div className="flex gap-8 flex-wrap justify-center items-start">
-        {/* Desktop Preview, scalata */}
+        {/* Desktop Preview */}
         <div className="flex flex-col items-center" style={{ width: 460 }}>
           <div
             style={{
-              transform: `scale(${PREVIEW_SCALE_DESKTOP})`,
+              transform: `scale(${0.90})`,
               transformOrigin: "top center",
-              width: 520, // Larghezza reale desktop, più ampia!
+              width: 520,
               minWidth: 350,
             }}
             className="rounded-md"
@@ -155,6 +193,7 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="desktop"
                 layoutType={selectedLayout}
+                fontSettings={fontSettings}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
               <Button
@@ -168,13 +207,13 @@ export default function OnlineMenuLayoutSection() {
             </div>
           </div>
         </div>
-        {/* Mobile Preview, scalata proporzionalmente */}
+        {/* Mobile Preview */}
         <div className="flex flex-col items-center" style={{ width: 376 }}>
           <div
             style={{
-              transform: `scale(${PREVIEW_SCALE_MOBILE})`,
+              transform: `scale(${0.90})`,
               transformOrigin: "top center",
-              width: 375, // Larghezza pubblica mobile reale
+              width: 375,
               minWidth: 310,
             }}
             className="rounded-md"
@@ -188,22 +227,23 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="mobile"
                 layoutType={selectedLayout}
+                fontSettings={fontSettings}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
           </div>
         </div>
       </div>
-      {/* Anteprima Finestra dettagli prodotto (scalata, statica in frame) */}
+      {/* Dettaglio prodotto anteprima */}
       <div className="flex justify-center mt-8">
         <div
           style={{
-            transform: `scale(${PREVIEW_SCALE_DESKTOP})`,
+            transform: `scale(${0.90})`,
             transformOrigin: "top center",
             width: 400,
             minWidth: 300,
             maxWidth: 440,
-            pointerEvents: "none", // disables interaction
+            pointerEvents: "none",
             opacity: 0.98
           }}
         >
@@ -214,6 +254,7 @@ export default function OnlineMenuLayoutSection() {
             <ProductDetailsDialogPreview
               product={exampleProduct}
               hideImage={selectedLayout === "custom1"}
+              fontSettings={fontSettings}
             />
           </div>
         </div>

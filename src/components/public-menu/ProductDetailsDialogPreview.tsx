@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +12,18 @@ interface ProductDetailsDialogPreviewProps {
   addToCart?: (product: Product, variantName?: string, variantPrice?: number) => void;
   hideImage?: boolean;
   language?: string;
+  fontSettings?: {
+    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+  };
 }
 
 export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewProps> = ({
   product,
   addToCart,
   hideImage = false,
-  language = "it"
+  language = "it",
+  fontSettings,
 }) => {
   if (!product) return null;
 
@@ -32,7 +36,16 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   return (
     <div className="w-full px-4 pb-4">
       <div className="py-4">
-        <h3 className="text-2xl font-semibold">{title}</h3>
+        <h3
+          className="text-2xl font-semibold"
+          style={{
+            fontFamily: fontSettings?.title?.fontFamily,
+            fontWeight: fontSettings?.title?.fontWeight,
+            fontStyle: fontSettings?.title?.fontStyle,
+          }}
+        >
+          {title}
+        </h3>
         {product.label && (
           <div className="mt-2">
             <LabelBadge
@@ -55,7 +68,16 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
         )}
         <div>
           <h4 className="font-semibold mb-1">{t("description")}</h4>
-          <p className="text-gray-600">{description || t("description") + "..."}</p>
+          <p
+            className="text-gray-600"
+            style={{
+              fontFamily: fontSettings?.description?.fontFamily,
+              fontWeight: fontSettings?.description?.fontWeight,
+              fontStyle: fontSettings?.description?.fontStyle,
+            }}
+          >
+            {description || t("description") + "..."}
+          </p>
         </div>
         {product.allergens && product.allergens.length > 0 && (
           <div>

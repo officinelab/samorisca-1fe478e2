@@ -90,6 +90,9 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
 
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
+  // ⬇️ Imposta fontSettings in base al layout selezionato
+  const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
+  const fontSettings = publicMenuFontSettings?.[productCardLayoutType];
 
   // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
   const hideProductDetailImage = productCardLayoutType === "custom1";
@@ -131,6 +134,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             language={language}
             serviceCoverCharge={serviceCoverCharge}
             productCardLayoutType={productCardLayoutType}
+            fontSettings={fontSettings}
           />
         </div>
       </div>
@@ -145,6 +149,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
         hideImage={hideProductDetailImage}
+        fontSettings={fontSettings}
       />
       
       {/* Cart sheet */}
