@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Bold, Italic, Plus } from "lucide-react";
+import { Bold, Italic, Plus, ExternalLink } from "lucide-react";
 
 export const DEFAULT_GOOGLE_FONTS = [
   "Roboto",
@@ -130,17 +130,39 @@ export function FontSelector({
         )}
       </div>
       {showAddFont && (
-        <div className="flex gap-2 mt-1 items-center">
-          <input
-            className="border px-2 py-1 rounded w-44"
-            type="text"
-            placeholder="Nome Google Font es. Nunito"
-            value={fontToAdd}
-            onChange={e => setFontToAdd(e.target.value)}
-          />
-          <button type="button" onClick={handleAddFont} className="text-blue-600 font-bold">
-            Aggiungi
-          </button>
+        <div className="flex flex-col gap-1 mt-2 rounded-md border border-blue-100 px-3 py-2 bg-blue-50 max-w-md relative">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-blue-900 text-sm">Aggiungi un font Google personalizzato</span>
+            <a
+              href="https://fonts.google.com/?subset=latin&sort=popularity"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline ml-2 group"
+              title="Vedi elenco completo dei Google Fonts"
+            >
+              Vedi elenco completo
+              <ExternalLink size={16} className="group-hover:text-blue-800" />
+            </a>
+          </div>
+          <span className="text-xs text-muted-foreground mb-1">
+            <span>Scrivi qui il <b>nome esatto</b> del font così come appare su Google Fonts (es. “Nunito”).</span>
+          </span>
+          <div className="flex items-center gap-2">
+            <input
+              className="border px-2 py-1 rounded w-44"
+              type="text"
+              placeholder="Nome Google Font es. Nunito"
+              value={fontToAdd}
+              onChange={e => setFontToAdd(e.target.value)}
+            />
+            <button 
+              type="button"
+              onClick={handleAddFont}
+              className="text-white bg-blue-600 px-3 py-1 rounded font-bold hover:bg-blue-800 transition-colors text-sm"
+            >
+              Aggiungi
+            </button>
+          </div>
         </div>
       )}
     </div>
