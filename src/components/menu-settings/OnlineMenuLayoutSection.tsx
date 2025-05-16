@@ -105,16 +105,17 @@ export default function OnlineMenuLayoutSection() {
     setFontSettings(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || DEFAULT_FONT_SETTINGS);
   }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings]);
 
-  // Aggiorna font title/desc live
+  // Salva SOLO su publicMenuFontSettings, NON più sulle chiavi singole
   const handleFontChange = (key: "title" | "description", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
     setFontSettings(newValue);
-    // Salva nelle impostazioni SOLO per layout attivo
+    // Salva nelle impostazioni SOLO per layout attivo nell'oggetto aggregato
     const nextPublicMenuFontSettings = {
       ...publicMenuFontSettings,
       [selectedLayout]: newValue
     };
     saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
+    // ... toast come prima ...
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
   };
 
@@ -147,3 +148,4 @@ export default function OnlineMenuLayoutSection() {
     </div>
   );
 }
+
