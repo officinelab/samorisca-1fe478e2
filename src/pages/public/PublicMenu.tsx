@@ -91,8 +91,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   // ⬇️ Layout selezionato (default o custom1)
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
 
-  // ==== NOVITÀ: Prepara stili font per prodotti e dettagli menu pubblico ====
-  // Replica funzione di OnlineMenuLayoutSection
+  // ============ Stili font per prodotti e dettagli menu pubblico per layout separato ============
+  // Legacy fallback: Inter, font impostato SOLO per il layout selezionato
   function getPreviewFontStyles(layoutFontSettings: {
     titleFont: string;
     titleBold: boolean;
@@ -100,13 +100,13 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     descriptionFont: string;
     descriptionBold: boolean;
     descriptionItalic: boolean;
-  }) {
+  }, forcedTitleFontSize?: number) {
     return {
       title: {
         fontFamily: layoutFontSettings.titleFont,
         fontWeight: layoutFontSettings.titleBold ? "bold" : "normal",
         fontStyle: layoutFontSettings.titleItalic ? "italic" : "normal",
-        fontSize: 22,
+        fontSize: forcedTitleFontSize ?? 22,
         lineHeight: 1.13
       },
       description: {
@@ -128,10 +128,17 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     descriptionItalic: false,
   };
   const effectiveFontSettings = fontSettingsRaw || fallbackFontSettings;
-  const previewFontStyles = getPreviewFontStyles(effectiveFontSettings);
 
-  // Nascondi immagine nella finestra dettagli prodotto solo se "custom1"
+  // ⬇️ Calcolo grandezza titoli diversa in base al layout e tipo di preview
+  // Decide se nascondere le immagini solo per custom1 (in dettaglio prodotto)
   const hideProductDetailImage = productCardLayoutType === "custom1";
+
+  // Variante: per mobile/desktop/dettagli
+  const previewFontStyles = {
+    desktop: getPreviewFontStyles(effectiveFontSettings, 22),
+    mobile: getPreviewFontStyles(effectiveFontSettings, 18),
+    details: getPreviewFontStyles(effectiveFontSettings, 20),
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -170,8 +177,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             language={language}
             serviceCoverCharge={serviceCoverCharge}
             productCardLayoutType={productCardLayoutType}
-            // Passa anche gli stili font
-            previewFontStyles={previewFontStyles}
+            // Passa anche gli stili font GIUSTI per tipo di preview
+            previewFontStyles={deviceView === "mobile" 
+              ? previewFontStyles.mobile
+              : previewFontStyles.desktop}
           />
         </div>
       </div>
@@ -186,8 +195,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
         hideImage={hideProductDetailImage}
-        // Passa stili font a dettagli prodotto!
-        previewFontStyles={previewFontStyles}
+        // Passa stili font solo per dettagli prodotto!
+        previewFontStyles={previewFontStyles.details}
       />
       
       {/* Cart sheet */}

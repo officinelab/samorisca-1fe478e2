@@ -162,31 +162,36 @@ function getPreviewFontStylesWithSize(layoutFontSettings: LayoutFontSettings, fo
 
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
+  // La key deve essere sempre dinamica per ciascun layout selezionato
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
-  // Stato locale per le impostazioni font del layout selezionato
-  const [layoutFontSettings, setLayoutFontSettings] = useState<LayoutFontSettings>({
-    titleFont: DEFAULT_FONTS[0].css,
-    titleBold: false,
-    titleItalic: false,
-    descriptionFont: DEFAULT_FONTS[0].css,
-    descriptionBold: false,
-    descriptionItalic: false
+  // Dobbiamo leggere ogni volta la font settings della chiave giusta
+  const FONT_SETTINGS_KEY = (layout: string) => `publicMenuFont__${layout}`;
+  // Salviamo lo stato font settings separato per ogni layout
+  const [layoutFontSettings, setLayoutFontSettings] = useState<LayoutFontSettings>(() => {
+    // Al primo render, cerca la key specifica per il layout selezionato
+    const key = FONT_SETTINGS_KEY(siteSettings?.publicMenuLayoutType || "default");
+    const layoutFonts = siteSettings?.[key];
+    if (layoutFonts) return layoutFonts;
+    return {
+      titleFont: DEFAULT_FONTS[0].css,
+      titleBold: false,
+      titleItalic: false,
+      descriptionFont: DEFAULT_FONTS[0].css,
+      descriptionBold: false,
+      descriptionItalic: false
+    }
   });
 
-  // Carica impostazioni font dal sito/app settings per il layout corrente
+  // Quando cambia layout o impostazioni, aggiorna font settings solo per la chiave giusta
   useEffect(() => {
     const key = FONT_SETTINGS_KEY(selectedLayout);
     const layoutFonts = siteSettings?.[key];
     if (layoutFonts) {
       setLayoutFontSettings(layoutFonts);
-      // Precarica i font salvati
-      loadGoogleFont(
-        layoutFonts.titleFont.replace(/['",]/g, "").split(",")[0].trim()
-      );
-      loadGoogleFont(
-        layoutFonts.descriptionFont.replace(/['",]/g, "").split(",")[0].trim()
-      );
+      // Precarica i font giusti
+      loadGoogleFont(layoutFonts.titleFont.replace(/['",]/g, "").split(",")[0].trim());
+      loadGoogleFont(layoutFonts.descriptionFont.replace(/['",]/g, "").split(",")[0].trim());
     } else {
       setLayoutFontSettings({
         titleFont: DEFAULT_FONTS[0].css,
@@ -199,7 +204,7 @@ export default function OnlineMenuLayoutSection() {
     }
   }, [siteSettings, selectedLayout]);
 
-  // Carica il font fissato quando cambiano le font options
+  // Carica ogni volta che si cambia font impostato (ci serve per extra fonts autoinstall)
   useEffect(() => {
     if (layoutFontSettings.titleFont) {
       const fontName = layoutFontSettings.titleFont.replace(/['",]/g, "").split(",")[0].trim();
@@ -211,39 +216,72 @@ export default function OnlineMenuLayoutSection() {
     }
   }, [layoutFontSettings.titleFont, layoutFontSettings.descriptionFont]);
 
+  // Gestore cambio layout: salva anche su impostazioni globali la key selezionata
   const handleSelect = (layout: string) => {
     setSelectedLayout(layout);
+    // Salva la scelta dell'utente
     saveSetting("publicMenuLayoutType", layout);
+    // Mostra toast
     toast({
       title: "Layout aggiornato",
       description: layoutLabel[layout] || layout,
     });
+    // Forza ricarica delle impostazioni font di quel layout (letto sopra nell'useEffect)
   };
 
-  // Salva le font options per il layout attuale
+  // Salva solo le font options della chiave attualmente attiva!
   const handleFontChange = (partial: Partial<typeof layoutFontSettings>) => {
     const updated = { ...layoutFontSettings, ...partial };
     setLayoutFontSettings(updated);
-    saveSetting(FONT_SETTINGS_KEY(selectedLayout), updated);
+    saveSetting(FONT_SETTINGS_KEY(selectedLayout), updated); // salva sulla chiave specifica
     toast({
       title: "Font aggiornati",
       description: "Anteprima aggiornata per il layout " + layoutLabel[selectedLayout],
     });
   };
 
-  // Gestore per installare nuovo font Google
-  const [customFontUrl, setCustomFontUrl] = useState("");
-  const [customFontName, setCustomFontName] = useState("");
-  const handleAddGoogleFont = () => {
-    if (!customFontName) return;
-    loadGoogleFont(customFontName);
-    toast({
-      title: "Font installato",
-      description: `${customFontName} è ora disponibile tra i font. Puoi selezionarlo dalle liste.`,
-    });
-    setCustomFontName("");
-    setCustomFontUrl("");
-  };
+  // Funzioni per ritornare fontStyles hardcoded per preview (Classico), come da richieste
+  function getClassicoPreviewFontStyles(partial?: Partial<LayoutFontSettings>, forcedTitleFontSize?: number) {
+    return {
+      title: {
+        fontFamily: partial?.titleFont || layoutFontSettings.titleFont,
+        fontWeight: partial?.titleBold ? "bold" : layoutFontSettings.titleBold ? "bold" : "normal",
+        fontStyle: partial?.titleItalic ? "italic" : layoutFontSettings.titleItalic ? "italic" : "normal",
+        // Classico: desktop 22, mobile 18, dettagli 20 (forzato da argomento)
+        fontSize: forcedTitleFontSize ?? 22,
+        lineHeight: 1.13
+      },
+      description: {
+        fontFamily: partial?.descriptionFont || layoutFontSettings.descriptionFont,
+        fontWeight: partial?.descriptionBold ? "bold" : layoutFontSettings.descriptionBold ? "bold" : "normal",
+        fontStyle: partial?.descriptionItalic ? "italic" : layoutFontSettings.descriptionItalic ? "italic" : "normal"
+      }
+    }
+  }
+
+  // Per il custom1 lasciamo le stesse taglie attuali (desktop 22, mobile 18, dettagli 20)
+  function getCustom1PreviewFontStyles(partial?: Partial<LayoutFontSettings>, forcedTitleFontSize?: number) {
+    return {
+      title: {
+        fontFamily: partial?.titleFont || layoutFontSettings.titleFont,
+        fontWeight: partial?.titleBold ? "bold" : layoutFontSettings.titleBold ? "bold" : "normal",
+        fontStyle: partial?.titleItalic ? "italic" : layoutFontSettings.titleItalic ? "italic" : "normal",
+        fontSize: forcedTitleFontSize ?? 22,
+        lineHeight: 1.13
+      },
+      description: {
+        fontFamily: partial?.descriptionFont || layoutFontSettings.descriptionFont,
+        fontWeight: partial?.descriptionBold ? "bold" : layoutFontSettings.descriptionBold ? "bold" : "normal",
+        fontStyle: partial?.descriptionItalic ? "italic" : layoutFontSettings.descriptionItalic ? "italic" : "normal"
+      }
+    }
+  }
+
+  // Scegli una previewFontStyles basata sul layout selezionato
+  const getPreviewFontStylesForLayout = (forcedTitleFontSize?: number) =>
+    selectedLayout === "custom1"
+      ? getCustom1PreviewFontStyles(undefined, forcedTitleFontSize)
+      : getClassicoPreviewFontStyles(undefined, forcedTitleFontSize);
 
   // Creazione combinazione di stili css per i preview
   const getTitleStyle = () => ({
@@ -394,7 +432,7 @@ export default function OnlineMenuLayoutSection() {
         </div>
       </Card>
 
-      {/* Anteprime: Desktop + Mobile, affiancate */}
+      {/* Anteprime: Desktop + Mobile */}
       <div className="flex gap-8 flex-wrap justify-center items-start">
         {/* Desktop Preview, scalata */}
         <div className="flex flex-col items-center" style={{ width: 460 }}>
@@ -416,8 +454,8 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="desktop"
                 layoutType={selectedLayout}
-                // desktop: 22px
-                previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 22)}
+                // desktop: 22px classico/custom1
+                previewFontStyles={getPreviewFontStylesForLayout(22)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
               <Button
@@ -451,8 +489,8 @@ export default function OnlineMenuLayoutSection() {
                 truncateText={truncateText}
                 deviceView="mobile"
                 layoutType={selectedLayout}
-                // mobile: 18px
-                previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 18)}
+                // mobile: 18px classico/custom1
+                previewFontStyles={getPreviewFontStylesForLayout(18)}
               />
               <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             </div>
@@ -478,10 +516,10 @@ export default function OnlineMenuLayoutSection() {
             </span>
             <ProductDetailsDialogPreview
               product={exampleProduct}
-              hideImage={false}
+              hideImage={selectedLayout === "custom1"}
               language="it"
-              // dettagli prodotti: 20px
-              previewFontStyles={getPreviewFontStylesWithSize(layoutFontSettings, 20)}
+              // dettagli prodotti: 20px classico/custom1
+              previewFontStyles={getPreviewFontStylesForLayout(20)}
             />
           </div>
         </div>
