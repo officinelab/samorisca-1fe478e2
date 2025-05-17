@@ -22,23 +22,22 @@ export const calculateAvailableHeight = (
   let marginTopMm = 20, marginBottomMm = 20;
   if (customLayout && customLayout.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
+      if (typeof pageIndex !== "number") pageIndex = 0;
+      // fallback robusto, se mancano odd/evenPages
       if (pageIndex % 2 === 0) {
-        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop;
-        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom;
+        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
       } else {
-        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop;
-        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom;
+        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
       }
     } else {
-      marginTopMm = customLayout.page.marginTop;
-      marginBottomMm = customLayout.page.marginBottom;
+      marginTopMm = customLayout.page.marginTop ?? 20;
+      marginBottomMm = customLayout.page.marginBottom ?? 20;
     }
   }
-
-  // FIX: headerHeight come opzionale
   const headerMm = customLayout?.headerHeight ?? 0;
 
-  // Per padding: otteniamolo se passato il ref a pageContainer (in mm)
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
     const style = window.getComputedStyle(pageContainerRef);
@@ -52,6 +51,11 @@ export const calculateAvailableHeight = (
     - mmToPx(headerMm)
     - paddingTopPx
     - paddingBottomPx;
+  // Fallback robusto e logging
+  if (!availablePx || isNaN(availablePx)) {
+    console.warn('calculateAvailableHeight: calcolo fallito, fallback sicuro a 960px', { baseHeightPx, marginTopMm, marginBottomMm, headerMm });
+    return 960; // Default fallback
+  }
   return availablePx;
 };
 

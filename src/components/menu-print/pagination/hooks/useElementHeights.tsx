@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react";
 import { Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
@@ -24,8 +23,6 @@ export function useElementHeights() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [heights, setHeights] = useState<ElementHeightsMap>({});
   const [toMeasure, setToMeasure] = useState<{ el: JSX.Element; keyData: ElementHeightKey }[]>([]);
-
-  // Nuova mappa per le ref dei singoli elementi
   const elementRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const requestMeasure = useCallback(
@@ -41,19 +38,22 @@ export function useElementHeights() {
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
-
-    // Aspetta il font loading per evitare misure errate
     (async () => {
       if ((document as any).fonts?.ready) {
         await (document as any).fonts.ready;
       }
       const newHeights: ElementHeightsMap = {};
-      // Misura direttamente dal ref degli elementi montati
       toMeasure.forEach((obj) => {
         const key = buildKey(obj.keyData);
         const ref = elementRefs.current[key];
         if (ref) {
-          newHeights[key] = Math.ceil(ref.getBoundingClientRect().height);
+          const rect = ref.getBoundingClientRect();
+          newHeights[key] = Math.ceil(rect.height);
+          if (rect.height === 0) {
+            console.warn("useElementHeights: Height is zero per", key, ref, obj.el);
+          }
+        } else {
+          console.warn("useElementHeights: ref non montata per", key);
         }
       });
       setHeights((prev) => {
@@ -73,6 +73,7 @@ export function useElementHeights() {
       ref={containerRef}
       style={{
         visibility: "hidden",
+        opacity: 0.01,
         position: "absolute",
         left: "-9999px",
         top: "0",
@@ -89,15 +90,17 @@ export function useElementHeights() {
         padding: "20mm 15mm",
       }}
       className="shadow-print-measure"
+      aria-hidden="true"
+      tabIndex={-1}
+      data-shadow-container
     >
       {toMeasure.map((elObj, idx) => {
         const key = buildKey(elObj.keyData);
         return (
           <div
-            // primo livello del blocco da misurare
             key={key}
             ref={el => { elementRefs.current[key] = el; }}
-            style={{ boxSizing: "border-box", width: '100%' }}
+            style={{ boxSizing: "border-box", width: '100%', minHeight: 2 }}
           >
             {elObj.el}
           </div>
@@ -105,6 +108,5 @@ export function useElementHeights() {
       })}
     </div>
   );
-
   return { heights, requestMeasure, ShadowContainer, buildKey };
 }

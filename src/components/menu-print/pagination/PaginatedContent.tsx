@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
@@ -108,7 +107,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   return (
     <div>
       {ShadowContainer}
-      {pages.map((pageContent, pageIndex) => (
+      {(pages.length > 0 ? pages : [null]).map((pageContent, pageIndex) => (
         <PrintPage
           key={`page-${pageIndex}`}
           pageIndex={startPageIndex + pageIndex}
@@ -117,35 +116,41 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
           showPageBoundaries={showPageBoundaries}
           customLayout={customLayout}
         >
-          {pageContent.map((content: PageContent) => {
-            if (content.type === 'category-title') {
-              const categoryContent = content as CategoryTitleContent;
-              return (
-                <RepeatedCategoryTitle
-                  key={categoryContent.key}
-                  category={categoryContent.category}
-                  language={language}
-                  customLayout={customLayout}
-                  isRepeated={categoryContent.isRepeated}
-                />
-              );
-            } else if (content.type === 'products-group') {
-              const productsContent = content as ProductsGroupContent;
-              return (
-                <div key={productsContent.key} className="category-products">
-                  {productsContent.products.map(productItem => (
-                    <ProductItem
-                      key={productItem.key}
-                      product={productItem.product}
+          {pageContent
+            ? pageContent.map((content) => {
+                if (content.type === 'category-title') {
+                  const categoryContent = content as import("./types/paginationTypes").CategoryTitleContent;
+                  return (
+                    <RepeatedCategoryTitle
+                      key={categoryContent.key}
+                      category={categoryContent.category}
                       language={language}
                       customLayout={customLayout}
+                      isRepeated={categoryContent.isRepeated}
                     />
-                  ))}
-                </div>
-              );
-            }
-            return null;
-          })}
+                  );
+                } else if (content.type === 'products-group') {
+                  const productsContent = content as import("./types/paginationTypes").ProductsGroupContent;
+                  return (
+                    <div key={productsContent.key} className="category-products">
+                      {productsContent.products.map(productItem => (
+                        <ProductItem
+                          key={productItem.key}
+                          product={productItem.product}
+                          language={language}
+                          customLayout={customLayout}
+                        />
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })
+            : (
+              <div className="flex flex-col items-center justify-center opacity-40 py-10 text-muted-foreground text-sm h-full min-h-[200px]">
+                (Nessun contenuto disponibile o in attesa di misurazione)
+              </div>
+            )}
         </PrintPage>
       ))}
     </div>
@@ -153,4 +158,3 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
 };
 
 export default PaginatedContent;
-
