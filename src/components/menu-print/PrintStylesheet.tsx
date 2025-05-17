@@ -1,22 +1,17 @@
+
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
 
-/**
- * Usa i margini del layout attivo per il CSS print dinamico.
- */
 const PrintStylesheet: React.FC = () => {
   const { layouts, activeLayout } = useMenuLayouts();
   const layout = activeLayout || (layouts && layouts[0]);
 
-  // Fallback ai margini costanti
   const fallback = PRINT_CONSTANTS.DEFAULT_MARGINS;
-
   let marginTop = fallback.TOP,
     marginRight = fallback.RIGHT,
     marginBottom = fallback.BOTTOM,
     marginLeft = fallback.LEFT;
-
   let oddTop = fallback.TOP,
     oddRight = fallback.RIGHT,
     oddBottom = fallback.BOTTOM,
@@ -32,7 +27,6 @@ const PrintStylesheet: React.FC = () => {
     marginBottom = layout.page.marginBottom ?? fallback.BOTTOM;
     marginLeft = layout.page.marginLeft ?? fallback.LEFT;
 
-    // Applico margini dispari/pario solo se previsti
     if (layout.page.useDistinctMarginsForPages) {
       oddTop = layout.page.oddPages?.marginTop ?? marginTop;
       oddRight = layout.page.oddPages?.marginRight ?? marginRight;
@@ -50,7 +44,7 @@ const PrintStylesheet: React.FC = () => {
     }
   }
 
-  // CSS paged media print con :right (dispari) e :left (pari)
+  // Forza box-sizing e margini coerenti col JS
   return (
     <style>
       {`
@@ -58,22 +52,16 @@ const PrintStylesheet: React.FC = () => {
           @page {
             size: A4;
           }
-          /* Margini dispari (destra) */
           @page :right {
             margin: ${oddTop}mm ${oddRight}mm ${oddBottom}mm ${oddLeft}mm;
           }
-          /* Margini pari (sinistra) */
           @page :left {
             margin: ${evenTop}mm ${evenRight}mm ${evenBottom}mm ${evenLeft}mm;
           }
-          html, body {
-            width: 210mm;
-            height: 297mm;
-            margin: 0;
-            padding: 0;
+          * {
+            box-sizing: border-box !important;
           }
-          * { box-sizing: border-box; }
-          .product-item, .category-block {
+          .product-item, .category-block, .category, .menu-item {
             page-break-inside: avoid;
             break-inside: avoid;
           }
@@ -102,7 +90,6 @@ const PrintStylesheet: React.FC = () => {
           .allergen-item {
             break-inside: avoid;
           }
-
           .item-title, .item-description {
             overflow-wrap: break-word;
             word-wrap: break-word;
@@ -115,8 +102,9 @@ const PrintStylesheet: React.FC = () => {
             overflow: visible !important;
           }
         }
+
         * {
-          box-sizing: border-box;
+          box-sizing: border-box !important;
         }
       `}
     </style>

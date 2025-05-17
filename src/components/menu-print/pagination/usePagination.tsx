@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -22,34 +23,6 @@ interface UsePaginationProps {
   layoutId?: string;
 }
 
-// Funzione dinamica per mm→px
-const getDynamicMmPx = (): number => {
-  if (typeof window !== "undefined" && document.body) {
-    const div = document.createElement("div");
-    div.style.width = "1mm";
-    div.style.position = "absolute";
-    div.style.visibility = "hidden";
-    document.body.appendChild(div);
-    const px = div.getBoundingClientRect().width;
-    document.body.removeChild(div);
-    return px;
-  }
-  return PRINT_CONSTANTS.MM_TO_PX;
-};
-
-// Confronto shallow tra array di pagine (basta per evitare loop inutili)
-function arePagesEqual(a: PrintPageContent[], b: PrintPageContent[]) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const pA = a[i], pB = b[i];
-    if (pA.length !== pB.length) return false;
-    for (let j = 0; j < pA.length; j++) {
-      if (pA[j].key !== pB[j].key) return false; // confronto shallow sulle chiavi
-    }
-  }
-  return true;
-}
-
 export const usePagination = ({
   categories,
   products,
@@ -62,12 +35,11 @@ export const usePagination = ({
 }: UsePaginationProps) => {
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
 
-  // Per creare la chiave uniforme come in useElementHeights
+  // Stessa funzione key come in useElementHeights
   function buildHeightKey(type: "category-title" | "product-item", id: string, pageIndex: number) {
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
 
-  // Memo version: calcola pages solo quanto serve, nessun rerender loop
   const pages = useMemo(() => {
     if (filteredCategories.length === 0) {
       return [];
@@ -114,9 +86,12 @@ export const usePagination = ({
       if (categoryProducts.length === 0) return;
 
       const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
-      let categoryTitleHeight =
-        measuredHeights?.[catKey] ??
-        estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
+      let categoryTitleHeight = measuredHeights?.[catKey];
+
+      // Se la misura reale non esiste ancora, fallback legacy
+      if (categoryTitleHeight == null) {
+        categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
+      }
 
       if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
         addRemainingProducts();
@@ -136,9 +111,10 @@ export const usePagination = ({
 
       categoryProducts.forEach((product, productIndex) => {
         const prodKey = buildHeightKey("product-item", product.id, currentPageIndex);
-        let productHeight =
-          measuredHeights?.[prodKey] ??
-          getProductHeight(product, language, customLayout, currentPageIndex);
+        let productHeight = measuredHeights?.[prodKey];
+        if (productHeight == null) {
+          productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
+        }
 
         if (currentHeight + productHeight > availableHeight) {
           addRemainingProducts();
@@ -178,7 +154,6 @@ export const usePagination = ({
     if (currentPageContent.length > 0) {
       allPages.push([...currentPageContent]);
     }
-    //console.log(`Generato totale ${allPages.length} pagine`);
     return allPages;
   }, [
     filteredCategories,
