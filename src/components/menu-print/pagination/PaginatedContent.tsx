@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
 import PrintPage from './PrintPage';
@@ -52,51 +53,56 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
     layoutId
   });
 
-  // In questo ciclo renderizza shadow elements solo una volta per title/prodotto/lang/layout/pageIndex
-  const toShadowRender: JSX.Element[] = [];
-  const uniqueTitles: Record<string, boolean> = {};
-  const uniqueProducts: Record<string, boolean> = {};
+  // Sposta la logica di richiesta misura in un effetto, per NON causare rerender ogni volta.
+  useEffect(() => {
+    const uniqueTitles: Record<string, boolean> = {};
+    const uniqueProducts: Record<string, boolean> = {};
 
-  categories.forEach((cat) => {
-    const catKey = buildKey({
-      type: "category-title",
-      id: cat.id,
-      language,
-      layoutId,
-      pageIndex: 0,
-    });
-    if (!uniqueTitles[catKey]) {
-      uniqueTitles[catKey] = true;
-      requestMeasure(
-        <RepeatedCategoryTitle
-          category={cat}
-          language={language}
-          customLayout={customLayout}
-        />,
-        { type: "category-title", id: cat.id, language, layoutId, pageIndex: 0 }
-      );
-    }
-    (products[cat.id] ?? []).forEach((product) => {
-      const prodKey = buildKey({
-        type: "product-item",
-        id: product.id,
+    // Monta solo se non già presente/misurato
+    categories.forEach((cat) => {
+      const catKeyObj = {
+        type: "category-title",
+        id: cat.id,
         language,
         layoutId,
         pageIndex: 0,
-      });
-      if (!uniqueProducts[prodKey]) {
-        uniqueProducts[prodKey] = true;
+      };
+      const catKey = buildKey(catKeyObj);
+      if (!uniqueTitles[catKey] && !measuredHeights[catKey]) {
+        uniqueTitles[catKey] = true;
         requestMeasure(
-          <ProductItem
-            product={product}
+          <RepeatedCategoryTitle
+            category={cat}
             language={language}
             customLayout={customLayout}
           />,
-          { type: "product-item", id: product.id, language, layoutId, pageIndex: 0 }
+          catKeyObj
         );
       }
+      (products[cat.id] ?? []).forEach((product) => {
+        const prodKeyObj = {
+          type: "product-item",
+          id: product.id,
+          language,
+          layoutId,
+          pageIndex: 0,
+        };
+        const prodKey = buildKey(prodKeyObj);
+        if (!uniqueProducts[prodKey] && !measuredHeights[prodKey]) {
+          uniqueProducts[prodKey] = true;
+          requestMeasure(
+            <ProductItem
+              product={product}
+              language={language}
+              customLayout={customLayout}
+            />,
+            prodKeyObj
+          );
+        }
+      });
     });
-  });
+    // Dipendenze: cambio categorie, prodotti, lingua, layout, measuredHeights (così aggiorna solo quando cambia qualcosa di rilevante)
+  }, [categories, products, language, customLayout, layoutId, measuredHeights, requestMeasure, buildKey]);
 
   // Renderizza ShadowContainer solo una volta per tutti i titoli/prodotti (invisibile)
   return (
@@ -147,3 +153,4 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
 };
 
 export default PaginatedContent;
+
