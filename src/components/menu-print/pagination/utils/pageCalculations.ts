@@ -1,10 +1,11 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
   getAvailableHeight, 
   calculateCategoryTitleHeight, 
-  calculateProductHeight
+  calculateProductHeight,
+  PX_PER_MM,
+  mmToPx,
 } from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
@@ -17,7 +18,6 @@ export const calculateAvailableHeight = (
 ): number => {
   // Margini (mm)
   let marginTop = 20, marginBottom = 20;
-  let paddingTop = 0, paddingBottom = 0;
   if (customLayout?.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
       if (pageIndex % 2 === 0) { // dispari
@@ -31,14 +31,10 @@ export const calculateAvailableHeight = (
       marginTop = customLayout.page.marginTop ?? 20;
       marginBottom = customLayout.page.marginBottom ?? 20;
     }
-
-    // Prendiamo paddingTop/paddingBottom dalla root del layout.page oppure fallback 0
-    paddingTop = (customLayout.page as any).paddingTop || 0;
-    paddingBottom = (customLayout.page as any).paddingBottom || 0;
   }
-  // Conversione mm → px (userà MM_TO_PX da constants, oppure fallback)
-  const MM_TO_PX = 3.78;
-  return (A4_HEIGHT_MM - marginTop - marginBottom - paddingTop - paddingBottom) * MM_TO_PX;
+
+  // Utilizza sempre la conversione precisa mm→px
+  return mmToPx(A4_HEIGHT_MM - marginTop - marginBottom);
 };
 
 /**
@@ -76,4 +72,3 @@ export const getFilteredCategories = (
 ): Category[] => {
   return categories.filter(cat => selectedCategories.includes(cat.id));
 };
-

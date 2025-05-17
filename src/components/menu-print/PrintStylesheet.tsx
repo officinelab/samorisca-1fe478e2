@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
@@ -59,11 +58,9 @@ const PrintStylesheet: React.FC = () => {
           @page {
             size: A4;
           }
-          /* Pagine dispari (destra) */
           @page :right {
             margin: ${oddTop}mm ${oddRight}mm ${oddBottom}mm ${oddLeft}mm;
           }
-          /* Pagine pari (sinistra) */
           @page :left {
             margin: ${evenTop}mm ${evenRight}mm ${evenBottom}mm ${evenLeft}mm;
           }
@@ -72,6 +69,11 @@ const PrintStylesheet: React.FC = () => {
             height: 297mm;
             margin: 0;
             padding: 0;
+          }
+          * { box-sizing: border-box; }
+          .product-item, .category-block {
+            page-break-inside: avoid;
+            break-inside: avoid;
           }
           body * {
             visibility: hidden;

@@ -3,25 +3,25 @@ import { Product, Category } from "@/types/database";
 import { PRINT_CONSTANTS } from "../constants";
 
 /**
- * Converte i millimetri in pixel per la visualizzazione su schermo
+ * Calcola e memorizza il fattore di conversione mm→px all'avvio.
  */
-export const mmToPx = (mm: number): number => {
-  try {
-    if (typeof window !== "undefined" && document.body) {
-      const div = document.createElement("div");
-      div.style.width = "1mm";
-      div.style.position = "absolute";
-      div.style.visibility = "hidden";
-      document.body.appendChild(div);
-      const pxPerMm = div.getBoundingClientRect().width;
-      document.body.removeChild(div);
-      return mm * pxPerMm;
-    }
-  } catch (e) {
-    // fallback
+export const PX_PER_MM = (() => {
+  if (typeof window !== "undefined" && document.body) {
+    const div = document.createElement("div");
+    div.style.width = "1mm";
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    document.body.appendChild(div);
+    const px = div.getBoundingClientRect().width;
+    document.body.removeChild(div);
+    return px;
   }
-  return mm * 3.543; // 3.543 px per mm @ 96dpi
-};
+  return 3.78; // fallback per Node/SSR
+})();
+
+export function mmToPx(mm: number): number {
+  return Math.ceil(mm * PX_PER_MM);
+}
 
 /**
  * Calcola la larghezza disponibile per il testo considerando i margini laterali
