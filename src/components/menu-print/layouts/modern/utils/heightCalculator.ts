@@ -1,4 +1,3 @@
-
 import { Category, Product } from '@/types/database';
 import { getProductHeight } from '@/components/menu-print/pagination/utils/pageCalculations';
 
@@ -7,12 +6,16 @@ import { getProductHeight } from '@/components/menu-print/pagination/utils/pageC
  * @param category La categoria di cui calcolare l'altezza
  * @param products I prodotti appartenenti alla categoria
  * @param language Il codice della lingua (opzionale)
+ * @param customLayout Il layout di stampa personalizzato (opzionale)
+ * @param pageIndex L'indice della pagina (opzionale)
  * @returns L'altezza stimata in pixel
  */
 export const calculateCategoryHeight = (
   category: Category, 
   products: Product[],
-  language: string = 'it'
+  language: string = 'it',
+  customLayout?: import('@/types/printLayout').PrintLayout | null,
+  pageIndex: number = 0
 ): number => {
   // Altezza base per il titolo della categoria
   const categoryTitleHeight = 60; // Altezza stimata per il titolo della categoria
@@ -20,7 +23,8 @@ export const calculateCategoryHeight = (
   // Calcola l'altezza totale di tutti i prodotti nella categoria
   const productsHeight = products.reduce((totalHeight, product) => {
     // Usa la funzione di calcolo dell'altezza del prodotto dalla utility esistente
-    const productHeight = getProductHeight(product, language);
+    // We need to match signature: getProductHeight(product, language, customLayout, pageIndex)
+    const productHeight = getProductHeight(product, language, customLayout, pageIndex);
     return totalHeight + productHeight;
   }, 0);
 

@@ -60,7 +60,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
 
     // Monta solo se non già presente/misurato
     categories.forEach((cat) => {
-      const catKeyObj = {
+      const catKeyObj: import("./hooks/useElementHeights").ElementHeightKey = {
         type: "category-title",
         id: cat.id,
         language,
@@ -80,7 +80,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
         );
       }
       (products[cat.id] ?? []).forEach((product) => {
-        const prodKeyObj = {
+        const prodKeyObj: import("./hooks/useElementHeights").ElementHeightKey = {
           type: "product-item",
           id: product.id,
           language,
