@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -30,8 +31,10 @@ export const calculateAvailableHeight = (
       marginTop = customLayout.page.marginTop ?? 20;
       marginBottom = customLayout.page.marginBottom ?? 20;
     }
-    paddingTop = customLayout.page.paddingTop || 0;
-    paddingBottom = customLayout.page.paddingBottom || 0;
+
+    // Prendiamo paddingTop/paddingBottom dalla root del layout.page oppure fallback 0
+    paddingTop = (customLayout.page as any).paddingTop || 0;
+    paddingBottom = (customLayout.page as any).paddingBottom || 0;
   }
   // Conversione mm → px (userà MM_TO_PX da constants, oppure fallback)
   const MM_TO_PX = 3.78;
@@ -73,3 +76,4 @@ export const getFilteredCategories = (
 ): Category[] => {
   return categories.filter(cat => selectedCategories.includes(cat.id));
 };
+

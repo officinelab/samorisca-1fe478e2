@@ -1,4 +1,5 @@
-import { useState, useEffect, React } from 'react';
+
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { 
@@ -56,7 +57,7 @@ export const usePagination = ({
   }
 
   // Cambiato: USA useLayoutEffect SENZA setTimeout
-  React.useLayoutEffect(() => {
+  useLayoutEffect(() => {
     const generatePages = () => {
       if (filteredCategories.length === 0) {
         setPages([]);
