@@ -61,9 +61,9 @@ const PrintStylesheet: React.FC = () => {
           * {
             box-sizing: border-box !important;
           }
-          .product-item, .category-block, .category, .menu-item {
-            page-break-inside: avoid;
-            break-inside: avoid;
+          .product-item, .category-block, .category, .menu-item, .category-products, .category-title {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .page {
             page-break-after: always;

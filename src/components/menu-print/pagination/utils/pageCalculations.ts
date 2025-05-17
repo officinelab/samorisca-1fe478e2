@@ -17,7 +17,7 @@ export const calculateAvailableHeight = (
   pageIndex: number,
   A4_HEIGHT_MM: number,
   customLayout?: PrintLayout | null,
-  pageContainerRef?: HTMLElement | null
+  pageContainerRef?: HTMLElement | null // passato solo se vuoi il padding attuale
 ): number => {
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
   let marginTopMm = 20, marginBottomMm = 20;
@@ -25,15 +25,15 @@ export const calculateAvailableHeight = (
     if (customLayout.page.useDistinctMarginsForPages) {
       // Indice pari = pagina dispari (1, 3, 5...)
       if (pageIndex % 2 === 0) {
-        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop;
-        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom;
+        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
       } else {
-        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop;
-        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom;
+        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
       }
     } else {
-      marginTopMm = customLayout.page.marginTop;
-      marginBottomMm = customLayout.page.marginBottom;
+      marginTopMm = customLayout.page.marginTop ?? 20;
+      marginBottomMm = customLayout.page.marginBottom ?? 20;
     }
   }
 
@@ -45,6 +45,10 @@ export const calculateAvailableHeight = (
     const style = window.getComputedStyle(pageContainerRef);
     paddingTopPx = parseFloat(style.paddingTop || "0");
     paddingBottomPx = parseFloat(style.paddingBottom || "0");
+  } else {
+    // fallback: ipotizziamo padding print stylesheet standard
+    paddingTopPx = mmToPx(20);
+    paddingBottomPx = mmToPx(20);
   }
 
   const availablePx = baseHeightPx 

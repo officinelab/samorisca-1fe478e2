@@ -35,10 +35,12 @@ export const usePagination = ({
 }: UsePaginationProps) => {
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
 
-  // Stessa funzione key come in useElementHeights
   function buildHeightKey(type: "category-title" | "product-item", id: string, pageIndex: number) {
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
+
+  // Valore di fallback di spacing (mm) se non definito
+  const fallbackSpacing = customLayout?.spacing?.betweenProducts ?? 5;
 
   const pages = useMemo(() => {
     if (filteredCategories.length === 0) {
@@ -112,11 +114,16 @@ export const usePagination = ({
       categoryProducts.forEach((product, productIndex) => {
         const prodKey = buildHeightKey("product-item", product.id, currentPageIndex);
         let productHeight = measuredHeights?.[prodKey];
+        // forziamo l'aggiunta del margin-bottom del prodotto corrente (in px)
+        const menuSpacingPx = mmToPx(customLayout?.spacing?.betweenProducts ?? fallbackSpacing);
+
         if (productHeight == null) {
           productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
         }
 
-        if (currentHeight + productHeight > availableHeight) {
+        const totalProductHeight = productHeight + menuSpacingPx;
+
+        if (currentHeight + totalProductHeight > availableHeight) {
           addRemainingProducts();
           if (!addNewPage()) return;
 
@@ -137,7 +144,7 @@ export const usePagination = ({
           product
         });
 
-        currentHeight += productHeight;
+        currentHeight += totalProductHeight;
       });
 
       addRemainingProducts();

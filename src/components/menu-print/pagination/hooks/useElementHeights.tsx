@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react";
 import { Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
@@ -38,7 +37,6 @@ export function useElementHeights() {
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
-    // Attendi sempre anche il font loading
     (async () => {
       if ((document as any).fonts?.ready) {
         await (document as any).fonts.ready;
@@ -46,9 +44,11 @@ export function useElementHeights() {
       const newHeights: ElementHeightsMap = {};
       Array.from(containerRef.current.children).forEach((child, i) => {
         const box = (child as HTMLElement).getBoundingClientRect();
+        const style = window.getComputedStyle(child as HTMLElement);
+        const marginBottom = parseFloat(style.marginBottom || "0");
         const target = toMeasure[i]?.keyData;
         if (target) {
-          newHeights[buildKey(target)] = Math.ceil(box.height);
+          newHeights[buildKey(target)] = Math.ceil(box.height + marginBottom);
         }
       });
       setHeights((prev) => {
@@ -63,7 +63,7 @@ export function useElementHeights() {
     // eslint-disable-next-line
   }, [toMeasure.length]);
 
-  // Container invisibile ma renderizzato nel DOM, con tutti gli stili print
+  // Container invisibile per misurazioni
   const ShadowContainer = (
     <div
       ref={containerRef}
