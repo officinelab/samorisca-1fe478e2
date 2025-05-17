@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, React } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { 
@@ -55,7 +55,8 @@ export const usePagination = ({
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
 
-  useEffect(() => {
+  // Cambiato: USA useLayoutEffect SENZA setTimeout
+  React.useLayoutEffect(() => {
     const generatePages = () => {
       if (filteredCategories.length === 0) {
         setPages([]);
@@ -172,9 +173,7 @@ export const usePagination = ({
       console.log(`Generato totale ${allPages.length} pagine`);
       setPages(allPages);
     };
-
-    const timer = setTimeout(generatePages, 100);
-    return () => clearTimeout(timer);
+    generatePages();
   }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, measuredHeights, layoutId]);
 
   return { pages };

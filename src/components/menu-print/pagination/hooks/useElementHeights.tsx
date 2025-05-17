@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useCallback, useState } from "react";
 import { Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
@@ -18,6 +17,7 @@ function buildKey(key: ElementHeightKey): string {
 
 /**
  * Per mountare titoli/prodotti reali invisibili e misurare la loro altezza DOM.
+ * ATTENDE IL CARICAMENTO FONT E USA GLI STILI DI STAMPA.
  */
 export function useElementHeights() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -40,37 +40,45 @@ export function useElementHeights() {
     []
   );
 
-  // Usa layout effect per misurare una volta che gli elementi sono montati
+  // Usa layout effect per misurare DOPO il paint
   useEffect(() => {
     if (!containerRef.current) return;
-    const newHeights: ElementHeightsMap = {};
 
-    Array.from(containerRef.current.children).forEach((child, i) => {
-      const box = (child as HTMLElement).getBoundingClientRect();
-      const target = toMeasure[i]?.keyData;
-      if (target) {
-        newHeights[buildKey(target)] = box.height;
+    // 1. Attendi caricamento dei font
+    (async () => {
+      if ((document as any).fonts && (document as any).fonts.ready) {
+        await (document as any).fonts.ready;
       }
-    });
-
-    // Aggiorna solo se cambiano le misure
-    setHeights((prev) => {
-      let changed = false;
-      for (const k in newHeights) {
-        if (prev[k] !== newHeights[k]) {
-          changed = true; break;
+      // 2. Misura
+      const newHeights: ElementHeightsMap = {};
+      Array.from(containerRef.current.children).forEach((child, i) => {
+        const box = (child as HTMLElement).getBoundingClientRect();
+        const target = toMeasure[i]?.keyData;
+        if (target) {
+          // Arrotonda l'altezza a intero superiore
+          newHeights[buildKey(target)] = Math.ceil(box.height);
         }
-      }
-      return changed ? { ...prev, ...newHeights } : prev;
-    });
+      });
 
-    // Svuota la coda di misurazione dopo aver misurato
-    setToMeasure([]);
+      // 3. Aggiorna solo se cambiano le misure
+      setHeights((prev) => {
+        let changed = false;
+        for (const k in newHeights) {
+          if (prev[k] !== newHeights[k]) {
+            changed = true; break;
+          }
+        }
+        return changed ? { ...prev, ...newHeights } : prev;
+      });
+
+      setToMeasure([]); // Svuota dopo misura
+    })();
     // eslint-disable-next-line
   }, [toMeasure.length]);
 
   /**
    * Rende il "container shadow" fuori schermo con tutti gli elementi da misurare.
+   * Applica lo stile *identico* a quello della stampa.
    */
   const ShadowContainer = (
     <div
@@ -82,11 +90,25 @@ export function useElementHeights() {
         top: "0",
         width: "210mm",
         zIndex: -99,
-        pointerEvents: "none"
+        pointerEvents: "none",
+        fontFamily: "'Arial', sans-serif", // Style base come fallback
+        fontSize: "12pt",
+        lineHeight: 1.25,
+        letterSpacing: "normal",
+        boxSizing: "border-box",
+        padding: "20mm 15mm",
       }}
+      className="shadow-print-measure"
     >
       {toMeasure.map((elObj, idx) => (
-        <div key={buildKey(elObj.keyData)}>{elObj.el}</div>
+        <div 
+          key={buildKey(elObj.keyData)}
+          style={{
+            boxSizing: "border-box"
+          }}
+        >
+          {elObj.el}
+        </div>
       ))}
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -8,14 +7,35 @@ import {
 } from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
- * Calcola l'altezza disponibile per il contenuto (rispettando i margini)
+ * Calcola l'altezza disponibile per il contenuto (rispettando i margini e padding)
  */
 export const calculateAvailableHeight = (
   pageIndex: number, 
   A4_HEIGHT_MM: number, 
   customLayout?: PrintLayout | null
 ): number => {
-  return getAvailableHeight(customLayout, pageIndex);
+  // Margini (mm)
+  let marginTop = 20, marginBottom = 20;
+  let paddingTop = 0, paddingBottom = 0;
+  if (customLayout?.page) {
+    if (customLayout.page.useDistinctMarginsForPages) {
+      if (pageIndex % 2 === 0) { // dispari
+        marginTop = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottom = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
+      } else { // pari
+        marginTop = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
+        marginBottom = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
+      }
+    } else {
+      marginTop = customLayout.page.marginTop ?? 20;
+      marginBottom = customLayout.page.marginBottom ?? 20;
+    }
+    paddingTop = customLayout.page.paddingTop || 0;
+    paddingBottom = customLayout.page.paddingBottom || 0;
+  }
+  // Conversione mm → px (userà MM_TO_PX da constants, oppure fallback)
+  const MM_TO_PX = 3.78;
+  return (A4_HEIGHT_MM - marginTop - marginBottom - paddingTop - paddingBottom) * MM_TO_PX;
 };
 
 /**

@@ -103,12 +103,12 @@ const PrintStylesheet: React.FC = () => {
             page-break-after: avoid;
             break-after: avoid;
           }
-          .category {
+          .category, .category-block {
             break-inside: avoid;
             page-break-inside: avoid;
             overflow: visible !important;
           }
-          .menu-item {
+          .menu-item, .product-item {
             break-inside: avoid;
             page-break-inside: avoid;
             overflow: visible !important;
@@ -128,6 +128,9 @@ const PrintStylesheet: React.FC = () => {
             max-height: none !important;
             overflow: visible !important;
           }
+        }
+        * {
+          box-sizing: border-box;
         }
       `}
     </style>
