@@ -50,7 +50,10 @@ export const usePagination = ({
     let currentPageContent: PageContent[] = [];
     let currentPageIndex = 0;
     let currentHeight = 0;
+
+    // STEP 1: calcolo availableHeight sempre aggiornato a pari/dispari tramite pageCalculations (già corretto)
     let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
+
     let lastCategoryId: string | null = null;
     let currentCategoryProducts: ProductItem[] = [];
     const MAX_PAGES = 100;
@@ -65,8 +68,9 @@ export const usePagination = ({
       }
       currentPageContent = [];
       currentPageIndex++;
-      currentHeight = 0;
+      // STEP 1: aggiorna availableHeight con pari/dispari e padding dinamici
       availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
+      currentHeight = 0;
       return true;
     };
 
@@ -89,16 +93,15 @@ export const usePagination = ({
 
       const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
       let categoryTitleHeight = measuredHeights?.[catKey];
-
-      // Se la misura reale non esiste ancora, fallback legacy
       if (categoryTitleHeight == null) {
         categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
       }
 
+      // STEP 3 – migliora il calcolo: la category-title va "caricata" su una nuova pagina SOLO se è visibile lì
       if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
         addRemainingProducts();
         if (!addNewPage()) return;
-        startingNewCategory = true;
+        // Se nuova pagina, serve ripetere il titolo solo se previsto dai dati
       }
 
       const categoryTitleContent: CategoryTitleContent = {

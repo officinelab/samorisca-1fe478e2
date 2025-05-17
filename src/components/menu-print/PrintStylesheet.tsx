@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
@@ -44,7 +43,7 @@ const PrintStylesheet: React.FC = () => {
     }
   }
 
-  // Forza box-sizing e margini coerenti col JS
+  // STEP 2: CSS PRINT aggiornato per margini coerenti JS <-> CSS
   return (
     <style>
       {`
@@ -102,7 +101,6 @@ const PrintStylesheet: React.FC = () => {
             overflow: visible !important;
           }
         }
-
         * {
           box-sizing: border-box !important;
         }

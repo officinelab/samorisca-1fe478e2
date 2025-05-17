@@ -9,8 +9,7 @@ import { PX_PER_MM, mmToPx } from "@/hooks/menu-print/printUnits";
 
 /**
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
- * Sottrae: margini pagina + eventuale header in mm
- * Tutto convertito in px tramite mmToPx UNIFICATO.
+ * Gestisce la distinzione pari/dispari con i margini coerenti fra JS e CSS.
  */
 export const calculateAvailableHeight = (
   pageIndex: number,
@@ -20,38 +19,44 @@ export const calculateAvailableHeight = (
 ): number => {
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
 
+  // STEP 1: calcolo MARGINI in base a pagina pari/dispari
   let marginTopMm = 20, marginBottomMm = 20;
   if (customLayout && customLayout.page) {
-    if (customLayout.page.useDistinctMarginsForPages) {
-      // Indice pari = pagina dispari (1, 3, 5...) -> pageIndex % 2 === 0
-      if (pageIndex % 2 === 0) {
-        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      } else {
-        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      }
+    // Logica corretta: pari/dispari
+    const distinct = customLayout.page.useDistinctMarginsForPages;
+    let margins;
+    if (distinct) {
+      // Attenzione: lato sinistro = dispari, lato destro = pari
+      // pageIndex 0,2,4... = dispari (sinistra/left)
+      // pageIndex 1,3,5... = pari (destra/right)
+      margins = (pageIndex % 2 === 0
+        ? customLayout.page.oddPages
+        : customLayout.page.evenPages);
     } else {
-      marginTopMm = customLayout.page.marginTop ?? 20;
-      marginBottomMm = customLayout.page.marginBottom ?? 20;
+      margins = customLayout.page;
     }
+    marginTopMm = margins.marginTop ?? 20;
+    marginBottomMm = margins.marginBottom ?? 20;
   }
 
-  // Se è dichiarato un header, sottrai anche quello
+  // Header opzionale, per sicurezza fallback 0
   const headerMm = typeof customLayout?.headerHeight === "number" ? customLayout.headerHeight : 0;
 
-  // Calcolo del padding (px) tramite getComputedStyle
+  // STEP 4: Calcolo del padding letto via DOM, fallback se assente
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
     const style = window.getComputedStyle(pageContainerRef);
     paddingTopPx = parseFloat(style.paddingTop || "0");
     paddingBottomPx = parseFloat(style.paddingBottom || "0");
+    // STEP 4.1: Log dei padding per verifica
+    console.log("[calculateAvailableHeight] DOM paddingTopPx:", paddingTopPx, "paddingBottomPx:", paddingBottomPx);
   } else {
-    // fallback: ipotizziamo padding print stylesheet standard (20mm top/bottom)
+    // fallback se il ref non è passato
     paddingTopPx = mmToPx(20);
     paddingBottomPx = mmToPx(20);
   }
 
+  // Disponibile = altezza base - margini - header - padding
   const availablePx = baseHeightPx 
     - mmToPx(marginTopMm)
     - mmToPx(marginBottomMm)
