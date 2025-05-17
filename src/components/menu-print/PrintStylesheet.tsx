@@ -1,14 +1,30 @@
 
 import React from "react";
+import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 
+/**
+ * Usa i margini del layout attivo per il CSS print dinamico.
+ */
 const PrintStylesheet: React.FC = () => {
+  const { layouts, activeLayout } = useMenuLayouts();
+  // Scegli il layout attivo o uno qualunque come fallback
+  const layout = activeLayout || (layouts && layouts[0]);
+  // Estrarre i margini
+  let marginTop = 20, marginRight = 15, marginBottom = 20, marginLeft = 15;
+  if (layout && layout.page) {
+    marginTop = layout.page.marginTop || 20;
+    marginRight = layout.page.marginRight || 15;
+    marginBottom = layout.page.marginBottom || 20;
+    marginLeft = layout.page.marginLeft || 15;
+  }
+
   return (
     <style>
       {`
         @media print {
           @page {
             size: A4;
-            margin: 0;
+            margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
           }
           html, body {
             width: 210mm;
@@ -34,14 +50,14 @@ const PrintStylesheet: React.FC = () => {
           .print-hidden {
             display: none !important;
           }
-          
-          /* Stile per il supporto corretto alla paginazione */
+          /* Supporto paginazione */
           .page {
             page-break-after: always;
             break-after: page;
             overflow: visible !important;
             display: block;
             height: auto !important;
+            background: white;
           }
           .page:last-of-type {
             page-break-after: avoid;
@@ -61,15 +77,12 @@ const PrintStylesheet: React.FC = () => {
             break-inside: avoid;
           }
 
-          /* Assicurarsi che tutti i contenuti siano visibili */
           .item-title, .item-description {
             overflow-wrap: break-word;
             word-wrap: break-word;
             hyphens: auto;
             max-width: 100%;
           }
-          
-          /* Assicurarsi che il contenuto fluisca correttamente tra le pagine */
           .menu-container {
             height: auto !important;
             max-height: none !important;

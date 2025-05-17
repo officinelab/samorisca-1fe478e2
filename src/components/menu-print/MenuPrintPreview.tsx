@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import MenuLayoutSelector from "./MenuLayoutSelector";
@@ -18,7 +17,7 @@ type MenuPrintPreviewProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
-  pageCount: number;
+  /* RIMOSSO: pageCount */
 };
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
@@ -33,11 +32,10 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  pageCount,
+  /* RIMOSSO: pageCount */
 }) => {
   const { layouts, activeLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
-  
-  // Cerca il layout attivo usando l'ID
+
   const selectedLayout = React.useMemo(() => {
     if (!layouts || layouts.length === 0) {
       console.warn("MenuPrintPreview - Nessun layout disponibile");
@@ -53,21 +51,18 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     
     return layout;
   }, [layouts, layoutId]);
-  
-  // Debug logs
+
   React.useEffect(() => {
     console.log("MenuPrintPreview - Props:", { 
       layoutId,
-      selectedCategories, 
-      pageCount 
+      selectedCategories
     });
     console.log("MenuPrintPreview - Selected layout:", selectedLayout);
     
-    // Avvisa l'utente se non è stato trovato nessun layout
     if (!selectedLayout && !isLayoutsLoading && layouts.length > 0) {
       toast.warning("Layout non trovato. Utilizzando layout predefinito.");
     }
-  }, [layoutId, selectedCategories, pageCount, selectedLayout, isLayoutsLoading, layouts]);
+  }, [layoutId, selectedCategories, selectedLayout, isLayoutsLoading, layouts]);
 
   if (isLayoutsLoading || !selectedLayout) {
     return (

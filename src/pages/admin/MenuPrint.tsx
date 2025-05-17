@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuPrintState } from "@/hooks/menu-print/useMenuPrintState";
 import { Card } from "@/components/ui/card";
@@ -35,7 +34,6 @@ const MenuPrint = () => {
     // Constants
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
-    pageCount,
     
     // Force layout refresh if needed
     forceLayoutRefresh
@@ -77,7 +75,6 @@ const MenuPrint = () => {
               allergens={allergens}
               printAllergens={printAllergens}
               restaurantLogo={restaurantLogo}
-              pageCount={pageCount}
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
             />
