@@ -6,7 +6,7 @@ import { Allergen, Category } from "@/types/database";
 
 interface PrintPreviewProps {
   printContentRef: React.RefObject<HTMLDivElement>;
-  layoutId: string;
+  layoutId: string; // Cambiato da layoutType a layoutId
   showPageBoundaries: boolean;
   categories: Category[];
   products: Record<string, any[]>;
@@ -15,13 +15,14 @@ interface PrintPreviewProps {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo: string | null;
+  pageCount: number;
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
 }
 
 const PrintPreview: React.FC<PrintPreviewProps> = ({
   printContentRef,
-  layoutId,
+  layoutId, // Cambiato da layoutType a layoutId
   showPageBoundaries,
   categories,
   products,
@@ -30,30 +31,30 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
+  pageCount,
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
 }) => {
-  // Forza refresh su cambio layout
+  // Ogni volta che cambia il layout, forziamo un aggiornamento completo del contenuto
   useEffect(() => {
-    if (!printContentRef.current) return;
-    // Hack per forzare re-render se necessario
+    console.log("PrintPreview - Layout ID cambiato:", layoutId);
+    
+    // Forza un refresh del contenuto dopo il cambio di layout
     const timer = setTimeout(() => {
-      const height = printContentRef.current!.style.height;
-      printContentRef.current!.style.height = '0';
-      setTimeout(() => {
-        if (printContentRef.current) {
-          printContentRef.current.style.height = height;
-        }
-      }, 10);
+      if (printContentRef.current) {
+        // Piccolo hack per forzare un re-render completo
+        const height = printContentRef.current.style.height;
+        printContentRef.current.style.height = '0';
+        setTimeout(() => {
+          if (printContentRef.current) {
+            printContentRef.current.style.height = height;
+          }
+        }, 10);
+      }
     }, 50);
+    
     return () => clearTimeout(timer);
   }, [layoutId, printContentRef]);
-
-  // Fallback per props essenziali (evita crash se undefined)
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const safeProducts = products && typeof products === 'object' ? products : {};
-  const safeSelectedCategories = Array.isArray(selectedCategories) ? selectedCategories : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
 
   return (
     <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
@@ -62,22 +63,23 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         <ScrollArea className="h-[80vh] print:h-auto">
           <div 
             id="print-content" 
-            className="bg-white print:p-0 relative"
+            className="bg-white print:p-0 relative" 
             ref={printContentRef}
-            data-layout-id={layoutId}
+            data-layout-id={layoutId} // Cambiato da data-layout-type a data-layout-id
           >
             <MenuPrintPreview
-              layoutId={layoutId}
+              layoutId={layoutId} // Cambiato da layoutType a layoutId
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
               showPageBoundaries={showPageBoundaries}
-              categories={safeCategories}
-              products={safeProducts}
-              selectedCategories={safeSelectedCategories}
+              categories={categories}
+              products={products}
+              selectedCategories={selectedCategories}
               language={language}
-              allergens={safeAllergens}
-              printAllergens={!!printAllergens}
+              allergens={allergens}
+              printAllergens={printAllergens}
               restaurantLogo={restaurantLogo}
+              pageCount={pageCount}
             />
           </div>
         </ScrollArea>

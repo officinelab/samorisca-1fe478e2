@@ -25,7 +25,7 @@ const getPageMargins = (customLayout: PrintLayout | null | undefined, pageIndex:
   // Verifica se sono abilitati margini distinti per pagine pari/dispari
   if (customLayout.page.useDistinctMarginsForPages) {
     // Pagina dispari (indice 0, 2, 4 = pagine 1, 3, 5...)
-    if (pageIndex % 2 === 0) {
+    if (pageIndex % 2 === 1) {
       return {
         marginTop: `${customLayout.page.oddPages?.marginTop || customLayout.page.marginTop}mm`,
         marginRight: `${customLayout.page.oddPages?.marginRight || customLayout.page.marginRight}mm`,

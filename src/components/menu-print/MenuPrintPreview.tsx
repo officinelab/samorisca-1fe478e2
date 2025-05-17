@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import MenuLayoutSelector from "./MenuLayoutSelector";
@@ -17,6 +18,7 @@ type MenuPrintPreviewProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
+  pageCount: number;
 };
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
@@ -31,13 +33,8 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
+  pageCount,
 }) => {
-  // Difensivo: fallback per dati
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const safeProducts = products && typeof products === 'object' ? products : {};
-  const safeSelectedCategories = Array.isArray(selectedCategories) ? selectedCategories : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
-
   const { layouts, activeLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
   
   // Cerca il layout attivo usando l'ID
@@ -62,6 +59,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     console.log("MenuPrintPreview - Props:", { 
       layoutId,
       selectedCategories, 
+      pageCount 
     });
     console.log("MenuPrintPreview - Selected layout:", selectedLayout);
     
@@ -69,17 +67,13 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     if (!selectedLayout && !isLayoutsLoading && layouts.length > 0) {
       toast.warning("Layout non trovato. Utilizzando layout predefinito.");
     }
-  }, [layoutId, selectedCategories, selectedLayout, isLayoutsLoading, layouts]);
+  }, [layoutId, selectedCategories, pageCount, selectedLayout, isLayoutsLoading, layouts]);
 
   if (isLayoutsLoading || !selectedLayout) {
     return (
       <div className="p-6 space-y-4">
         <Skeleton className="h-[40px] w-[80%]" />
         <Skeleton className="h-[600px] w-[100%]" />
-        {/* Se NIENTE, mostra fallback visivo */}
-        {!isLayoutsLoading && (
-          <div className="text-center text-muted-foreground">Nessun layout disponibile o errore nei dati.</div>
-        )}
       </div>
     );
   }
@@ -90,12 +84,12 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       A4_WIDTH_MM={A4_WIDTH_MM}
       A4_HEIGHT_MM={A4_HEIGHT_MM}
       showPageBoundaries={showPageBoundaries}
-      categories={safeCategories}
-      products={safeProducts}
-      selectedCategories={safeSelectedCategories}
+      categories={categories}
+      products={products}
+      selectedCategories={selectedCategories}
       language={language}
-      allergens={safeAllergens}
-      printAllergens={!!printAllergens}
+      allergens={allergens}
+      printAllergens={printAllergens}
       restaurantLogo={restaurantLogo}
     />
   );
