@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuPrintState } from "@/hooks/menu-print/useMenuPrintState";
 import { Card } from "@/components/ui/card";
@@ -35,7 +34,6 @@ const MenuPrint = () => {
     // Constants
     A4_WIDTH_MM,
     A4_HEIGHT_MM,
-    pageCount,
     
     // Force layout refresh if needed
     forceLayoutRefresh
@@ -54,8 +52,8 @@ const MenuPrint = () => {
             updateRestaurantLogo={updateRestaurantLogo}
             language={language}
             setLanguage={setLanguage}
-            layoutId={layoutId} // Cambiato da layoutType a layoutId
-            setLayoutId={setLayoutId} // Cambiato da setLayoutType a setLayoutId
+            layoutId={layoutId}
+            setLayoutId={setLayoutId}
             showPageBoundaries={showPageBoundaries}
             setShowPageBoundaries={setShowPageBoundaries}
             isLoading={isLoadingMenu}
@@ -68,7 +66,7 @@ const MenuPrint = () => {
           <ScrollArea className="h-[80vh] md:h-[85vh] p-4">
             <PrintPreview
               printContentRef={printContentRef}
-              layoutId={layoutId} // Cambiato da layoutType a layoutId
+              layoutId={layoutId}
               showPageBoundaries={showPageBoundaries}
               categories={categories}
               products={products}
@@ -77,7 +75,6 @@ const MenuPrint = () => {
               allergens={allergens}
               printAllergens={printAllergens}
               restaurantLogo={restaurantLogo}
-              pageCount={pageCount}
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
             />
