@@ -41,12 +41,12 @@ export type PrintLayout = {
   };
   cover: {
     logo: {
-      maxWidth: number; // percentuale della larghezza del foglio
-      maxHeight: number; // percentuale dell'altezza del foglio
+      maxWidth: number;
+      maxHeight: number;
       alignment: 'left' | 'center' | 'right';
       marginTop: number;
       marginBottom: number;
-      visible: boolean; // Aggiunta questa proprietà mancante
+      visible: boolean;
     };
     title: PrintLayoutElementConfig;
     subtitle: PrintLayoutElementConfig;
@@ -73,4 +73,5 @@ export type PrintLayout = {
     oddPages: PageMargins;
     evenPages: PageMargins;
   };
-}
+  headerHeight?: number; // Altezza header opzionale in mm
+};
