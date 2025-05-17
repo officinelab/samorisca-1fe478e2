@@ -4,9 +4,9 @@ import { saveLayoutToSupabase } from "../services/supabaseLayoutService";
 import { ensureValidPageMargins } from "./layoutValidator";
 
 /**
- * Old behavior: saves only one layout
- * New: iterates all, salva (upsert) tutti i layout (seriale)
- * Ritorna errore aggregato se almeno uno fallisce
+ * Salva in batch tutti i layout in Supabase (upsert seriale).
+ * Restituisce successo solo se tutti i salvataggi sono andati a buon fine,
+ * altrimenti ritorna l'elenco aggregato degli errori.
  */
 export const saveLayouts = async (
   layouts: PrintLayout[]
@@ -23,7 +23,7 @@ export const saveLayouts = async (
     const validatedLayouts = layouts.map(ensureValidPageMargins);
 
     let errors: string[] = [];
-    // Ciclo seriale (puoi cambiare in parallelo se vuoi, attenzione a Supabase API rate limit)
+    // Ciclo seriale su tutti i layout, upsert su Supabase
     for (const layout of validatedLayouts) {
       const { success, error } = await saveLayoutToSupabase(layout);
       if (!success) {
@@ -31,7 +31,7 @@ export const saveLayouts = async (
       }
     }
 
-    // Ritorna errore aggregato se almeno una save fallisce
+    // Ritorna errore aggregato se almeno uno fallisce
     if (errors.length > 0) {
       return {
         success: false,
@@ -48,4 +48,3 @@ export const saveLayouts = async (
     };
   }
 };
-

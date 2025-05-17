@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 // Step 1: Import zod ed estendi la validazione
 import { z } from "zod";
@@ -102,16 +101,11 @@ export const validatePrintLayout = (layout: PrintLayout) => {
 import { syncPageMargins, ensureValidMargins } from "../layoutOperations";
 
 /**
- * Ensures that a layout has valid page margins E schema coerente
+ * Assicura che un layout abbia margini validi e coerenti,
+ * e che rispetti interamente lo schema PrintLayout.
  */
 export const ensureValidPageMargins = (layout: PrintLayout): PrintLayout => {
-  // Prima assicurati che i margini siano validi a livello di campo
   const layoutWithValidMargins = ensureValidMargins(layout);
-
-  // Poi sincronizza le proprietà odd/even se serve
   const layoutSynced = syncPageMargins(layoutWithValidMargins);
-
-  // Esegui validazione schema completa (lancia se non valido)
   return validatePrintLayout(layoutSynced);
 };
-
