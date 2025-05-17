@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -86,11 +85,12 @@ export const usePagination = ({
       if (categoryProducts.length === 0) return;
 
       const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
+      // 🟢 DOM-first: prendi SOLO misurazione reale. Se non c'è, *rimanda* la costruzione pagina: tutto attenderà il rerender.
       let categoryTitleHeight = measuredHeights?.[catKey];
 
-      // Se la misura reale non esiste ancora, fallback legacy
       if (categoryTitleHeight == null) {
-        categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
+        // Se la misurazione DOM non è pronta, interrompi qui: l'effetto di misurazione farà il rerender.
+        return;
       }
 
       if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
@@ -112,8 +112,10 @@ export const usePagination = ({
       categoryProducts.forEach((product, productIndex) => {
         const prodKey = buildHeightKey("product-item", product.id, currentPageIndex);
         let productHeight = measuredHeights?.[prodKey];
+
         if (productHeight == null) {
-          productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
+          // Idem: attendi la misurazione reale e stoppa (verrà rilanciato dal rerender)
+          return;
         }
 
         if (currentHeight + productHeight > availableHeight) {
