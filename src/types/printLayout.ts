@@ -1,3 +1,4 @@
+
 export type FontStyle = 'normal' | 'italic' | 'bold';
 
 export type PrintLayoutElementConfig = {
@@ -72,5 +73,6 @@ export type PrintLayout = {
     oddPages: PageMargins;
     evenPages: PageMargins;
   };
-  headerHeight?: number; // Aggiunto per gestire l'altezza dell'header in stampa
-}
+  headerHeight?: number; // Spostato in radice PrintLayout (NON in page)
+};
+
