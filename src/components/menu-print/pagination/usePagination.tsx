@@ -34,22 +34,22 @@ export const usePagination = ({
 }: UsePaginationProps) => {
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
 
+  // Stessa funzione key come in useElementHeights
   function buildHeightKey(type: "category-title" | "product-item", id: string, pageIndex: number) {
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
 
   const pages = useMemo(() => {
     if (filteredCategories.length === 0) {
-      // Permetti 1 pagina vuota per forzare render
       return [];
     }
-    const allPages: import("./types/paginationTypes").PrintPageContent[] = [];
-    let currentPageContent: import("./types/paginationTypes").PageContent[] = [];
+    const allPages: PrintPageContent[] = [];
+    let currentPageContent: PageContent[] = [];
     let currentPageIndex = 0;
     let currentHeight = 0;
     let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
     let lastCategoryId: string | null = null;
-    let currentCategoryProducts: import("./types/paginationTypes").ProductItem[] = [];
+    let currentCategoryProducts: ProductItem[] = [];
     const MAX_PAGES = 100;
 
     const addNewPage = () => {
@@ -85,16 +85,12 @@ export const usePagination = ({
       if (categoryProducts.length === 0) return;
 
       const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
+      // 🟢 DOM-first: prendi SOLO misurazione reale. Se non c'è, *rimanda* la costruzione pagina: tutto attenderà il rerender.
       let categoryTitleHeight = measuredHeights?.[catKey];
 
       if (categoryTitleHeight == null) {
-        console.log('[usePagination] Attendo misurazione DOM per', catKey, '(category)');
+        // Se la misurazione DOM non è pronta, interrompi qui: l'effetto di misurazione farà il rerender.
         return;
-      }
-
-      if (!availableHeight || isNaN(availableHeight)) {
-        console.warn('[usePagination] availableHeight è nullo/NaN, fallback');
-        availableHeight = 800;
       }
 
       if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
@@ -103,13 +99,14 @@ export const usePagination = ({
         startingNewCategory = true;
       }
 
-      currentPageContent.push({
+      const categoryTitleContent: CategoryTitleContent = {
         type: 'category-title',
         key: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
         category,
         isRepeated: !startingNewCategory
-      });
+      };
 
+      currentPageContent.push(categoryTitleContent);
       currentHeight += categoryTitleHeight;
 
       categoryProducts.forEach((product, productIndex) => {
@@ -117,22 +114,22 @@ export const usePagination = ({
         let productHeight = measuredHeights?.[prodKey];
 
         if (productHeight == null) {
-          console.log('[usePagination] Attendo misurazione DOM per', prodKey, '(product)');
+          // Idem: attendi la misurazione reale e stoppa (verrà rilanciato dal rerender)
           return;
         }
-        if (!productHeight || isNaN(productHeight)) {
-          console.warn('[usePagination] productHeight è 0/NaN per', prodKey);
-        }
+
         if (currentHeight + productHeight > availableHeight) {
           addRemainingProducts();
           if (!addNewPage()) return;
 
-          currentPageContent.push({
+          const repeatedCategoryTitle: CategoryTitleContent = {
             type: 'category-title',
             key: `cat-title-${category.id}-${currentPageIndex}-repeat`,
             category,
             isRepeated: true
-          });
+          };
+
+          currentPageContent.push(repeatedCategoryTitle);
           currentHeight += categoryTitleHeight;
         }
 
@@ -148,7 +145,7 @@ export const usePagination = ({
       addRemainingProducts();
 
       if (categoryIndex < filteredCategories.length - 1) {
-        const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? 15) * ((window as any).PX_PER_MM || 3.78);
+        const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * ((window as any).PX_PER_MM || 3.78);
         currentHeight += spacingBetweenCategories;
       }
 
@@ -159,8 +156,6 @@ export const usePagination = ({
     if (currentPageContent.length > 0) {
       allPages.push([...currentPageContent]);
     }
-
-    // Permetti almeno 1 pagina "vuota" per il render se non ci sono dati, per forzare ShadowContainer
     return allPages;
   }, [
     filteredCategories,

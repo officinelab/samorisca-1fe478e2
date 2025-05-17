@@ -17,12 +17,15 @@ function buildKey(key: ElementHeightKey): string {
 }
 
 /**
- * Rendering invisibile effettivo degli elementi per misurazione DOM
+ * Nuova versione: monta REALMENTE gli elementi (invisibili ma pieni CSS),
+ * li misura via getBoundingClientRect(), e salva l’altezza in px.
  */
 export function useElementHeights() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [heights, setHeights] = useState<ElementHeightsMap>({});
   const [toMeasure, setToMeasure] = useState<{ el: JSX.Element; keyData: ElementHeightKey }[]>([]);
+
+  // Nuova mappa per le ref dei singoli elementi
   const elementRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const requestMeasure = useCallback(
@@ -38,25 +41,19 @@ export function useElementHeights() {
 
   useLayoutEffect(() => {
     if (!containerRef.current) return;
+
+    // Aspetta il font loading per evitare misure errate
     (async () => {
       if ((document as any).fonts?.ready) {
         await (document as any).fonts.ready;
       }
       const newHeights: ElementHeightsMap = {};
+      // Misura direttamente dal ref degli elementi montati
       toMeasure.forEach((obj) => {
         const key = buildKey(obj.keyData);
         const ref = elementRefs.current[key];
-        // Debug: log della ref e misura
-        if (!ref) {
-          console.warn("useElementHeights: ref NON montata per", key, obj.el);
-        } else {
-          const rect = ref.getBoundingClientRect();
-          newHeights[key] = Math.ceil(rect.height);
-          if (rect.height === 0) {
-            console.warn("useElementHeights: height 0 per", key, ref, obj.el);
-          } else {
-            console.log("useElementHeights: misurato", key, rect.height, ref);
-          }
+        if (ref) {
+          newHeights[key] = Math.ceil(ref.getBoundingClientRect().height);
         }
       });
       setHeights((prev) => {
@@ -70,21 +67,19 @@ export function useElementHeights() {
     })();
   }, [toMeasure.length]);
 
-  // Il container invisibile DEVE essere sempre presente nel DOM e con stili che lo rendano
-  // misurabile (no display: none!)
+  // Container invisibile ma renderizzato nel DOM, con tutti gli stili print
   const ShadowContainer = (
     <div
       ref={containerRef}
       style={{
-        position: "absolute",
         visibility: "hidden",
-        pointerEvents: "none",
-        left: 0,
-        top: 0,
+        position: "absolute",
+        left: "-9999px",
+        top: "0",
         width: "210mm",
         minHeight: "10mm",
-        opacity: 0.01,
         zIndex: -9999,
+        pointerEvents: "none",
         background: "white",
         fontFamily: "'Arial', sans-serif",
         fontSize: "12pt",
@@ -94,17 +89,15 @@ export function useElementHeights() {
         padding: "20mm 15mm",
       }}
       className="shadow-print-measure"
-      aria-hidden="true"
-      tabIndex={-1}
-      data-shadow-container
     >
       {toMeasure.map((elObj, idx) => {
         const key = buildKey(elObj.keyData);
         return (
           <div
+            // primo livello del blocco da misurare
             key={key}
             ref={el => { elementRefs.current[key] = el; }}
-            style={{ boxSizing: "border-box", width: '100%', minHeight: 2 }}
+            style={{ boxSizing: "border-box", width: '100%' }}
           >
             {elObj.el}
           </div>
@@ -112,5 +105,6 @@ export function useElementHeights() {
       })}
     </div>
   );
+
   return { heights, requestMeasure, ShadowContainer, buildKey };
 }
