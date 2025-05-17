@@ -2,7 +2,7 @@ import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 
 interface PrintPageProps {
-  pageIndex: number;
+  pageIndex: number; // 3, 4, 5, ... (numero umano già passato)
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
@@ -53,7 +53,7 @@ const getPageMargins = (customLayout: PrintLayout | null | undefined, pageIndex:
 };
 
 const PrintPage: React.FC<PrintPageProps> = ({ 
-  pageIndex, 
+  pageIndex, // 3, 4, 5, ... (numero umano già passato)
   A4_WIDTH_MM, 
   A4_HEIGHT_MM, 
   showPageBoundaries, 
@@ -95,6 +95,15 @@ const PrintPage: React.FC<PrintPageProps> = ({
         boxShadow: showPageBoundaries ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
       }}
     >
+      {/* Badge visibile solo in anteprima */}
+      {showPageBoundaries && (
+        <div 
+          className="absolute top-3 left-3 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-bold rounded shadow border border-blue-300"
+          style={{zIndex: 100}}
+        >
+          Pagina {pageIndex}
+        </div>
+      )}
       <div className="print-content" style={{ position: 'relative' }}>
         {children}
       </div>

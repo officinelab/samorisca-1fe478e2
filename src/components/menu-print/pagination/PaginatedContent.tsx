@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
@@ -30,7 +29,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   selectedCategories,
   language,
   customLayout,
-  startPageIndex = 1 // Inizia da pagina 1 per default (dopo la copertina)
+  startPageIndex = 1 // Default: in questa gestione partirà dalla 3
 }) => {
   const layoutId = customLayout?.id || "";
   // Hook per misurare le altezze reali
@@ -52,6 +51,16 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
     measuredHeights,
     layoutId
   });
+
+  // Salviamo il numero delle pagine menu (serve per assegnare il numero a Allergeni in ClassicLayout)
+  React.useEffect(() => {
+    if (typeof document !== "undefined") {
+      // Il primo pageIndex passato è startPageIndex (tip. 3), e pages.length è il numero di pagine menu
+      const allergensPageNumber = startPageIndex + (pages.length || 0);
+      const target = document.getElementById("allergens-page-number-label");
+      if (target) target.textContent = String(allergensPageNumber);
+    }
+  }, [pages.length, startPageIndex]);
 
   // Sposta la logica di richiesta misura in un effetto, per NON causare rerender ogni volta.
   useEffect(() => {
@@ -111,7 +120,7 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
       {pages.map((pageContent, pageIndex) => (
         <PrintPage
           key={`page-${pageIndex}`}
-          pageIndex={startPageIndex + pageIndex}
+          pageIndex={startPageIndex + pageIndex}    // Pass numero umano (3, 4, 5, ...)
           A4_WIDTH_MM={A4_WIDTH_MM}
           A4_HEIGHT_MM={A4_HEIGHT_MM}
           showPageBoundaries={showPageBoundaries}
@@ -153,4 +162,3 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
 };
 
 export default PaginatedContent;
-
