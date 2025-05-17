@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import MenuLayoutSelector from "./MenuLayoutSelector";
@@ -93,4 +92,3 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 };
 
 export default MenuPrintPreview;
-
