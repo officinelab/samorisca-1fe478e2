@@ -4,7 +4,7 @@ export const LAYOUTS_STORAGE_KEY = "menu_print_layouts";
 // Costanti per i calcoli di stampa coerenti con altri helper
 export const PRINT_CONSTANTS = {
   // Conversione da mm a px. Valore effettivo usato solo come fallback/SSR.
-  MM_TO_PX: 3.85,
+  MM_TO_PX: PX_PER_MM, // Importa solo per retrocompatibilità, ma si usa PX_PER_MM da printUnits
   
   // Dimensioni standard foglio A4 in millimetri
   A4_WIDTH_MM: 210,

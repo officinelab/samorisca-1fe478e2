@@ -1,27 +1,9 @@
 import { PrintLayout } from "@/types/printLayout";
 import { Product, Category } from "@/types/database";
 import { PRINT_CONSTANTS } from "../constants";
+import { PX_PER_MM, mmToPx } from "@/hooks/menu-print/printUnits";
 
-/**
- * Calcola e memorizza il fattore di conversione mm→px all'avvio.
- */
-export const PX_PER_MM = (() => {
-  if (typeof document !== "undefined" && document.body) {
-    const div = document.createElement('div');
-    div.style.width = '1mm';
-    div.style.position = 'absolute';
-    div.style.visibility = 'hidden';
-    document.body.appendChild(div);
-    const val = div.getBoundingClientRect().width;
-    document.body.removeChild(div);
-    return val;
-  }
-  return PRINT_CONSTANTS.MM_TO_PX;
-})();
-
-export function mmToPx(mm: number): number {
-  return Math.ceil(mm * PX_PER_MM);
-}
+// Rimuovi la vecchia definizione di PX_PER_MM e mmToPx (usa quelli importati)
 
 /**
  * Calcola l'altezza disponibile per il contenuto in una pagina A4

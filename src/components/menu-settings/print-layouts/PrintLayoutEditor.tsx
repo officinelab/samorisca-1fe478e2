@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -50,6 +49,37 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     
     handleSave
   } = useLayoutEditor(layout, onSave);
+
+  // Validazione margini e fontSize (step 8 minimal)
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const validate = () => {
+    // Margini
+    const page = editedLayout.page;
+    const allMargins = [
+      page.marginTop, page.marginRight, page.marginBottom, page.marginLeft,
+      ...(page.oddPages ? [page.oddPages.marginTop, page.oddPages.marginRight, page.oddPages.marginBottom, page.oddPages.marginLeft] : []),
+      ...(page.evenPages ? [page.evenPages.marginTop, page.evenPages.marginRight, page.evenPages.marginBottom, page.evenPages.marginLeft] : [])
+    ];
+    // FontSize elementari
+    const allFontSizes = [
+      ...Object.values(editedLayout.elements).map(e => e.fontSize)
+    ];
+    if (allMargins.some(m => m < 0)) {
+      setValidationError("I margini devono essere >= 0");
+      return false;
+    }
+    if (allFontSizes.some(f => f <= 0)) {
+      setValidationError("Tutti i font devono essere > 0");
+      return false;
+    }
+    setValidationError(null);
+    return true;
+  };
+
+  const handleSaveWithValidation = () => {
+    if (validate()) handleSave();
+  };
 
   return (
     <Card>
@@ -130,8 +160,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end mt-6">
-          <Button onClick={handleSave}>Salva modifiche</Button>
+        <div className="flex justify-end mt-6 flex-col items-end">
+          {validationError && (
+            <span className="text-sm text-red-500 mb-2">{validationError}</span>
+          )}
+          <Button onClick={handleSaveWithValidation}>Salva modifiche</Button>
         </div>
       </CardContent>
     </Card>
