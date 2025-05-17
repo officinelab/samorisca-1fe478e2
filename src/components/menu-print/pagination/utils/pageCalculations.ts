@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -23,15 +22,34 @@ export const calculateAvailableHeight = (
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
   // Fallback predefiniti robusti
   const fallbackMargins = { marginTop: 20, marginBottom: 20 };
+
   let marginTopMm = fallbackMargins.marginTop,
       marginBottomMm = fallbackMargins.marginBottom;
   if (customLayout && customLayout.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
-      const odd = customLayout.page.oddPages || {};
-      const even = customLayout.page.evenPages || {};
+      // Fallback for odd/even pages
+      const odd = customLayout.page.oddPages
+        ? {
+            marginTop: customLayout.page.oddPages.marginTop ?? customLayout.page.marginTop ?? fallbackMargins.marginTop,
+            marginBottom: customLayout.page.oddPages.marginBottom ?? customLayout.page.marginBottom ?? fallbackMargins.marginBottom,
+          }
+        : {
+            marginTop: customLayout.page.marginTop ?? fallbackMargins.marginTop,
+            marginBottom: customLayout.page.marginBottom ?? fallbackMargins.marginBottom,
+          };
+      const even = customLayout.page.evenPages
+        ? {
+            marginTop: customLayout.page.evenPages.marginTop ?? customLayout.page.marginTop ?? fallbackMargins.marginTop,
+            marginBottom: customLayout.page.evenPages.marginBottom ?? customLayout.page.marginBottom ?? fallbackMargins.marginBottom,
+          }
+        : {
+            marginTop: customLayout.page.marginTop ?? fallbackMargins.marginTop,
+            marginBottom: customLayout.page.marginBottom ?? fallbackMargins.marginBottom,
+          };
+
       const currentMargins = pageIndex % 2 === 0 ? odd : even;
-      marginTopMm = currentMargins.marginTop ?? customLayout.page.marginTop ?? fallbackMargins.marginTop;
-      marginBottomMm = currentMargins.marginBottom ?? customLayout.page.marginBottom ?? fallbackMargins.marginBottom;
+      marginTopMm = currentMargins.marginTop;
+      marginBottomMm = currentMargins.marginBottom;
     } else {
       marginTopMm = customLayout.page.marginTop ?? fallbackMargins.marginTop;
       marginBottomMm = customLayout.page.marginBottom ?? fallbackMargins.marginBottom;
