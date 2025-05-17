@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react";
 import { Category, Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
@@ -16,8 +17,7 @@ function buildKey(key: ElementHeightKey): string {
 }
 
 /**
- * Nuova versione: monta REALMENTE gli elementi (invisibili ma pieni CSS),
- * li misura via getBoundingClientRect(), e salva l’altezza in px.
+ * Rendering invisibile effettivo degli elementi per misurazione DOM
  */
 export function useElementHeights() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -46,14 +46,17 @@ export function useElementHeights() {
       toMeasure.forEach((obj) => {
         const key = buildKey(obj.keyData);
         const ref = elementRefs.current[key];
-        if (ref) {
+        // Debug: log della ref e misura
+        if (!ref) {
+          console.warn("useElementHeights: ref NON montata per", key, obj.el);
+        } else {
           const rect = ref.getBoundingClientRect();
           newHeights[key] = Math.ceil(rect.height);
           if (rect.height === 0) {
-            console.warn("useElementHeights: Height is zero per", key, ref, obj.el);
+            console.warn("useElementHeights: height 0 per", key, ref, obj.el);
+          } else {
+            console.log("useElementHeights: misurato", key, rect.height, ref);
           }
-        } else {
-          console.warn("useElementHeights: ref non montata per", key);
         }
       });
       setHeights((prev) => {
@@ -67,20 +70,21 @@ export function useElementHeights() {
     })();
   }, [toMeasure.length]);
 
-  // Container invisibile ma renderizzato nel DOM, con tutti gli stili print
+  // Il container invisibile DEVE essere sempre presente nel DOM e con stili che lo rendano
+  // misurabile (no display: none!)
   const ShadowContainer = (
     <div
       ref={containerRef}
       style={{
-        visibility: "hidden",
-        opacity: 0.01,
         position: "absolute",
-        left: "-9999px",
-        top: "0",
+        visibility: "hidden",
+        pointerEvents: "none",
+        left: 0,
+        top: 0,
         width: "210mm",
         minHeight: "10mm",
+        opacity: 0.01,
         zIndex: -9999,
-        pointerEvents: "none",
         background: "white",
         fontFamily: "'Arial', sans-serif",
         fontSize: "12pt",

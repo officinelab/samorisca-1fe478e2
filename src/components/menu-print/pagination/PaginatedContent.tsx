@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
@@ -100,10 +101,9 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
         }
       });
     });
-    // Dipendenze: cambio categorie, prodotti, lingua, layout, measuredHeights (così aggiorna solo quando cambia qualcosa di rilevante)
   }, [categories, products, language, customLayout, layoutId, measuredHeights, requestMeasure, buildKey]);
 
-  // Renderizza ShadowContainer solo una volta per tutti i titoli/prodotti (invisibile)
+  // FAI SEMPRE IL RENDER: anche se pages.length === 0
   return (
     <div>
       {ShadowContainer}

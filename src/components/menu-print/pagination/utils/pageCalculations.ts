@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -11,6 +12,7 @@ import { PX_PER_MM, mmToPx } from "@/hooks/menu-print/printUnits";
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
  * Sottrae: margini pagina + eventuale header in mm
  * Tutto convertito in px tramite mmToPx UNIFICATO.
+ * Fix: Fallback robusti sui margini
  */
 export const calculateAvailableHeight = (
   pageIndex: number,
@@ -19,21 +21,20 @@ export const calculateAvailableHeight = (
   pageContainerRef?: HTMLElement | null
 ): number => {
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
-  let marginTopMm = 20, marginBottomMm = 20;
+  // Fallback predefiniti robusti
+  const fallbackMargins = { marginTop: 20, marginBottom: 20 };
+  let marginTopMm = fallbackMargins.marginTop,
+      marginBottomMm = fallbackMargins.marginBottom;
   if (customLayout && customLayout.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
-      if (typeof pageIndex !== "number") pageIndex = 0;
-      // fallback robusto, se mancano odd/evenPages
-      if (pageIndex % 2 === 0) {
-        marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      } else {
-        marginTopMm = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottomMm = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      }
+      const odd = customLayout.page.oddPages || {};
+      const even = customLayout.page.evenPages || {};
+      const currentMargins = pageIndex % 2 === 0 ? odd : even;
+      marginTopMm = currentMargins.marginTop ?? customLayout.page.marginTop ?? fallbackMargins.marginTop;
+      marginBottomMm = currentMargins.marginBottom ?? customLayout.page.marginBottom ?? fallbackMargins.marginBottom;
     } else {
-      marginTopMm = customLayout.page.marginTop ?? 20;
-      marginBottomMm = customLayout.page.marginBottom ?? 20;
+      marginTopMm = customLayout.page.marginTop ?? fallbackMargins.marginTop;
+      marginBottomMm = customLayout.page.marginBottom ?? fallbackMargins.marginBottom;
     }
   }
   const headerMm = customLayout?.headerHeight ?? 0;
@@ -51,11 +52,15 @@ export const calculateAvailableHeight = (
     - mmToPx(headerMm)
     - paddingTopPx
     - paddingBottomPx;
-  // Fallback robusto e logging
   if (!availablePx || isNaN(availablePx)) {
     console.warn('calculateAvailableHeight: calcolo fallito, fallback sicuro a 960px', { baseHeightPx, marginTopMm, marginBottomMm, headerMm });
-    return 960; // Default fallback
+    return 960;
   }
+  // Debug: Mostra parametri usati per il calcolo
+  console.log("[calculateAvailableHeight] page", pageIndex, {
+    baseHeightPx, marginTopMm, marginBottomMm, headerMm,
+    paddingTopPx, paddingBottomPx, availablePx
+  });
   return availablePx;
 };
 
