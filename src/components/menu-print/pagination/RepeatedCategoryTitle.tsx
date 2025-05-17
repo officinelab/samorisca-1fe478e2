@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 
@@ -16,6 +15,14 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
   customLayout,
   isRepeated = false 
 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      console.log("[RepeatedCategoryTitle] boundingClientRect.height", ref.current.getBoundingClientRect().height);
+    }
+  }, []);
+
   // Utilizza lo stile del layout personalizzato se disponibile
   const getCategoryStyle = () => {
     if (!customLayout || !customLayout.elements.category) {
@@ -46,7 +53,7 @@ const RepeatedCategoryTitle: React.FC<RepeatedCategoryTitleProps> = ({
   };
   
   return (
-    <div className="category">
+    <div className="category" ref={ref}>
       <h2 
         className="category-title" 
         style={getCategoryStyle()}

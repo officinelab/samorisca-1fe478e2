@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -20,10 +19,11 @@ export const calculateAvailableHeight = (
   pageContainerRef?: HTMLElement | null // passato solo se vuoi il padding attuale
 ): number => {
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
+
   let marginTopMm = 20, marginBottomMm = 20;
   if (customLayout && customLayout.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
-      // Indice pari = pagina dispari (1, 3, 5...)
+      // Indice pari = pagina dispari (1, 3, 5...) -> pageIndex % 2 === 0
       if (pageIndex % 2 === 0) {
         marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
         marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
@@ -39,14 +39,15 @@ export const calculateAvailableHeight = (
 
   // Se è dichiarato un header, sottrai anche quello
   const headerMm = typeof customLayout?.headerHeight === "number" ? customLayout.headerHeight : 0;
-  // Per padding: otteniamolo se passato il ref a pageContainer (in mm)
+
+  // Calcolo del padding (px) tramite getComputedStyle
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
     const style = window.getComputedStyle(pageContainerRef);
     paddingTopPx = parseFloat(style.paddingTop || "0");
     paddingBottomPx = parseFloat(style.paddingBottom || "0");
   } else {
-    // fallback: ipotizziamo padding print stylesheet standard
+    // fallback: ipotizziamo padding print stylesheet standard (20mm top/bottom)
     paddingTopPx = mmToPx(20);
     paddingBottomPx = mmToPx(20);
   }
@@ -57,6 +58,18 @@ export const calculateAvailableHeight = (
     - mmToPx(headerMm)
     - paddingTopPx
     - paddingBottomPx;
+
+  // Log dettagliato per debug DOM vs JS
+  console.log("[calculateAvailableHeight] pageIndex", pageIndex, {
+    baseHeightPx,
+    marginTopMm,
+    marginBottomMm,
+    headerMm,
+    paddingTopPx,
+    paddingBottomPx,
+    availablePx
+  });
+
   return availablePx;
 };
 
