@@ -10,11 +10,6 @@ import {
 
 /**
  * Calcola l'altezza disponibile per il contenuto (rispettando margini, header e padding se info disponibili)
- *
- * @param pageIndex indice della pagina (0-based)
- * @param A4_HEIGHT_MM altezza foglio in mm
- * @param customLayout layout selezionato
- * @param pageContainerRef (opzionale) nodo DOM per lettura padding
  */
 export const calculateAvailableHeight = (
   pageIndex: number, 
@@ -22,7 +17,7 @@ export const calculateAvailableHeight = (
   customLayout?: PrintLayout | null,
   pageContainerRef?: HTMLElement | null
 ): number => {
-  // Usa sempre lo stesso mmToPx
+  // Utilizzo sempre il nuovo calcolo centralizzato
   return getAvailableHeight(customLayout, pageIndex, pageContainerRef);
 };
 

@@ -6,17 +6,17 @@ import { PRINT_CONSTANTS } from "../constants";
  * Calcola e memorizza il fattore di conversione mm→px all'avvio.
  */
 export const PX_PER_MM = (() => {
-  if (typeof window !== "undefined" && document.body) {
-    const div = document.createElement("div");
-    div.style.width = "1mm";
-    div.style.position = "absolute";
-    div.style.visibility = "hidden";
+  if (typeof document !== "undefined" && document.body) {
+    const div = document.createElement('div');
+    div.style.width = '1mm';
+    div.style.position = 'absolute';
+    div.style.visibility = 'hidden';
     document.body.appendChild(div);
-    const px = div.getBoundingClientRect().width;
+    const val = div.getBoundingClientRect().width;
     document.body.removeChild(div);
-    return px;
+    return val;
   }
-  return 3.78; // fallback per Node/SSR
+  return PRINT_CONSTANTS.MM_TO_PX;
 })();
 
 export function mmToPx(mm: number): number {
@@ -24,10 +24,8 @@ export function mmToPx(mm: number): number {
 }
 
 /**
- * Calcola l'altezza disponibile per il contenuto in una pagina
- * @param layout layout attivo di stampa
- * @param pageIndex indice corrente di pagina (0-based)
- * @param pageContainerRef optional: nodo DOM della pagina, per leggere paddingTop/paddingBottom
+ * Calcola l'altezza disponibile per il contenuto in una pagina A4
+ * - Sottrae margini (top+bottom), headerHeight (se presente), e padding top/bottom del container (se passato)
  */
 export const getAvailableHeight = (
   layout: PrintLayout | null | undefined,
@@ -35,47 +33,41 @@ export const getAvailableHeight = (
   pageContainerRef?: HTMLElement | null
 ): number => {
   const A4_HEIGHT_MM = PRINT_CONSTANTS.A4_HEIGHT_MM;
-  let marginTop = PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
-  let marginBottom = PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
 
-  if (layout?.page) {
-    if (layout.page.useDistinctMarginsForPages) {
-      // Pagine dispari (indice 0, 2, ...)
-      if (pageIndex % 2 === 0) {
-        marginTop = layout.page.oddPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
-        marginBottom = layout.page.oddPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
-      } else {
-        marginTop = layout.page.evenPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
-        marginBottom = layout.page.evenPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
-      }
+  // Recupero margini coerenti secondo la convenzione marginTop/marginBottom
+  let marginTop: number, marginBottom: number;
+  if (layout?.page?.useDistinctMarginsForPages) {
+    // Pari/dispari come per la stampa CSS
+    if (pageIndex % 2 === 0) {
+      marginTop = layout.page.oddPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+      marginBottom = layout.page.oddPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
     } else {
-      marginTop = layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
-      marginBottom = layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
+      marginTop = layout.page.evenPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+      marginBottom = layout.page.evenPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
     }
+  } else {
+    marginTop = layout?.page?.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+    marginBottom = layout?.page?.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
   }
 
-  // Opzionale: headerHeight mm > px
+  // Header height in mm→px (se definito su layout)
   let headerHeightPx = 0;
-  if (
-    layout &&
-    (typeof (layout as any).headerHeight === "number" || typeof (layout as any).headerHeight === "string")
-  ) {
+  if (layout && typeof (layout as any).headerHeight !== "undefined") {
     const value = typeof (layout as any).headerHeight === "string"
       ? parseFloat((layout as any).headerHeight)
       : (layout as any).headerHeight;
     headerHeightPx = mmToPx(Number(value) || 0);
   }
 
-  // Padding top/bottom della pagina (se passato via ref)
-  let paddingTopPx = 0,
-    paddingBottomPx = 0;
+  // Padding top/bottom in px, dal container .page (se passato)
+  let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
     const style = getComputedStyle(pageContainerRef);
     paddingTopPx = Math.ceil(parseFloat(style.paddingTop));
     paddingBottomPx = Math.ceil(parseFloat(style.paddingBottom));
   }
 
-  // A4 in px
+  // Calcola l'altezza totale pagina in px
   const A4_HEIGHT_PX = mmToPx(A4_HEIGHT_MM);
 
   return (
