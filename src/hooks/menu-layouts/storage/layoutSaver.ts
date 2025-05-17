@@ -4,43 +4,48 @@ import { saveLayoutToSupabase } from "../services/supabaseLayoutService";
 import { ensureValidPageMargins } from "./layoutValidator";
 
 /**
- * Saves layouts to Supabase
+ * Old behavior: saves only one layout
+ * New: iterates all, salva (upsert) tutti i layout (seriale)
+ * Ritorna errore aggregato se almeno uno fallisce
  */
 export const saveLayouts = async (
   layouts: PrintLayout[]
 ): Promise<{ success: boolean; error: string | null }> => {
   try {
-    // Validate input
-    if (!layouts) {
-      return { 
-        success: false, 
-        error: "Impossibile salvare layout null o undefined" 
+    if (!layouts || layouts.length === 0) {
+      return {
+        success: false,
+        error: "Impossibile salvare layout null o lista vuota"
       };
     }
-    
-    // Ensure all layouts have valid page margins
+
+    // Valida e normalizza tutti i layout PRIMA di procedere
     const validatedLayouts = layouts.map(ensureValidPageMargins);
-    
-    // Per ora salviamo solo l'ultimo layout modificato
-    // In futuro potremmo implementare una sincronizzazione completa se necessario
-    if (validatedLayouts.length > 0) {
-      const lastLayout = validatedLayouts[validatedLayouts.length - 1];
-      const { success, error } = await saveLayoutToSupabase(lastLayout);
-      
+
+    let errors: string[] = [];
+    // Ciclo seriale (puoi cambiare in parallelo se vuoi, attenzione a Supabase API rate limit)
+    for (const layout of validatedLayouts) {
+      const { success, error } = await saveLayoutToSupabase(layout);
       if (!success) {
-        return {
-          success: false,
-          error: error || "Si è verificato un errore durante il salvataggio del layout."
-        };
+        errors.push(`Layout ${layout.name} (${layout.id}): ${error}`);
       }
     }
-    
+
+    // Ritorna errore aggregato se almeno una save fallisce
+    if (errors.length > 0) {
+      return {
+        success: false,
+        error: errors.join("; ")
+      };
+    }
+
     return { success: true, error: null };
   } catch (err) {
     console.error("Errore durante il salvataggio dei layout:", err);
-    return { 
-      success: false, 
-      error: "Si è verificato un errore durante il salvataggio dei layout." 
+    return {
+      success: false,
+      error: `Si è verificato un errore durante il salvataggio dei layout: ${err}`
     };
   }
 };
+
