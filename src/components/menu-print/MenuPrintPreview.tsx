@@ -32,6 +32,12 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   printAllergens,
   restaurantLogo,
 }) => {
+  // Difensivo: fallback per dati
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const safeProducts = products && typeof products === 'object' ? products : {};
+  const safeSelectedCategories = Array.isArray(selectedCategories) ? selectedCategories : [];
+  const safeAllergens = Array.isArray(allergens) ? allergens : [];
+
   const { layouts, activeLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
   
   // Cerca il layout attivo usando l'ID
@@ -70,6 +76,10 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       <div className="p-6 space-y-4">
         <Skeleton className="h-[40px] w-[80%]" />
         <Skeleton className="h-[600px] w-[100%]" />
+        {/* Se NIENTE, mostra fallback visivo */}
+        {!isLayoutsLoading && (
+          <div className="text-center text-muted-foreground">Nessun layout disponibile o errore nei dati.</div>
+        )}
       </div>
     );
   }
@@ -80,12 +90,12 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       A4_WIDTH_MM={A4_WIDTH_MM}
       A4_HEIGHT_MM={A4_HEIGHT_MM}
       showPageBoundaries={showPageBoundaries}
-      categories={categories}
-      products={products}
-      selectedCategories={selectedCategories}
+      categories={safeCategories}
+      products={safeProducts}
+      selectedCategories={safeSelectedCategories}
       language={language}
-      allergens={allergens}
-      printAllergens={printAllergens}
+      allergens={safeAllergens}
+      printAllergens={!!printAllergens}
       restaurantLogo={restaurantLogo}
     />
   );

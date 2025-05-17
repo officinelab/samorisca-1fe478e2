@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MenuPrintPreview from "@/components/menu-print/MenuPrintPreview";
@@ -32,26 +33,27 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
 }) => {
-  // Ogni volta che cambia il layout, forziamo un aggiornamento completo del contenuto
+  // Forza refresh su cambio layout
   useEffect(() => {
-    console.log("PrintPreview - Layout ID cambiato:", layoutId);
-
-    // Forza un refresh del contenuto dopo il cambio di layout
+    if (!printContentRef.current) return;
+    // Hack per forzare re-render se necessario
     const timer = setTimeout(() => {
-      if (printContentRef.current) {
-        // Piccolo hack per forzare un re-render completo
-        const height = printContentRef.current.style.height;
-        printContentRef.current.style.height = '0';
-        setTimeout(() => {
-          if (printContentRef.current) {
-            printContentRef.current.style.height = height;
-          }
-        }, 10);
-      }
+      const height = printContentRef.current!.style.height;
+      printContentRef.current!.style.height = '0';
+      setTimeout(() => {
+        if (printContentRef.current) {
+          printContentRef.current.style.height = height;
+        }
+      }, 10);
     }, 50);
-
     return () => clearTimeout(timer);
   }, [layoutId, printContentRef]);
+
+  // Fallback per props essenziali (evita crash se undefined)
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const safeProducts = products && typeof products === 'object' ? products : {};
+  const safeSelectedCategories = Array.isArray(selectedCategories) ? selectedCategories : [];
+  const safeAllergens = Array.isArray(allergens) ? allergens : [];
 
   return (
     <div className="print:p-0 print:shadow-none print:bg-white print:w-full">
@@ -60,7 +62,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         <ScrollArea className="h-[80vh] print:h-auto">
           <div 
             id="print-content" 
-            className="bg-white print:p-0 relative" 
+            className="bg-white print:p-0 relative"
             ref={printContentRef}
             data-layout-id={layoutId}
           >
@@ -69,12 +71,12 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
               showPageBoundaries={showPageBoundaries}
-              categories={categories}
-              products={products}
-              selectedCategories={selectedCategories}
+              categories={safeCategories}
+              products={safeProducts}
+              selectedCategories={safeSelectedCategories}
               language={language}
-              allergens={allergens}
-              printAllergens={printAllergens}
+              allergens={safeAllergens}
+              printAllergens={!!printAllergens}
               restaurantLogo={restaurantLogo}
             />
           </div>
