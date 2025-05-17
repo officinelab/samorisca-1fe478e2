@@ -6,7 +6,7 @@ import { Allergen, Category } from "@/types/database";
 
 interface PrintPreviewProps {
   printContentRef: React.RefObject<HTMLDivElement>;
-  layoutId: string; // Cambiato da layoutType a layoutId
+  layoutId: string;
   showPageBoundaries: boolean;
   categories: Category[];
   products: Record<string, any[]>;
@@ -15,14 +15,13 @@ interface PrintPreviewProps {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo: string | null;
-  pageCount: number;
   A4_WIDTH_MM: number;
   A4_HEIGHT_MM: number;
 }
 
 const PrintPreview: React.FC<PrintPreviewProps> = ({
   printContentRef,
-  layoutId, // Cambiato da layoutType a layoutId
+  layoutId,
   showPageBoundaries,
   categories,
   products,
@@ -31,14 +30,13 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  pageCount,
   A4_WIDTH_MM,
   A4_HEIGHT_MM,
 }) => {
   // Ogni volta che cambia il layout, forziamo un aggiornamento completo del contenuto
   useEffect(() => {
     console.log("PrintPreview - Layout ID cambiato:", layoutId);
-    
+
     // Forza un refresh del contenuto dopo il cambio di layout
     const timer = setTimeout(() => {
       if (printContentRef.current) {
@@ -52,7 +50,7 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
         }, 10);
       }
     }, 50);
-    
+
     return () => clearTimeout(timer);
   }, [layoutId, printContentRef]);
 
@@ -65,10 +63,10 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
             id="print-content" 
             className="bg-white print:p-0 relative" 
             ref={printContentRef}
-            data-layout-id={layoutId} // Cambiato da data-layout-type a data-layout-id
+            data-layout-id={layoutId}
           >
             <MenuPrintPreview
-              layoutId={layoutId} // Cambiato da layoutType a layoutId
+              layoutId={layoutId}
               A4_WIDTH_MM={A4_WIDTH_MM}
               A4_HEIGHT_MM={A4_HEIGHT_MM}
               showPageBoundaries={showPageBoundaries}
@@ -79,7 +77,6 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
               allergens={allergens}
               printAllergens={printAllergens}
               restaurantLogo={restaurantLogo}
-              pageCount={pageCount}
             />
           </div>
         </ScrollArea>
@@ -89,3 +86,4 @@ const PrintPreview: React.FC<PrintPreviewProps> = ({
 };
 
 export default PrintPreview;
+
