@@ -19,61 +19,84 @@ export const calculateAvailableHeight = (
 ): number => {
   const baseHeightPx = mmToPx(A4_HEIGHT_MM);
 
-  // STEP 1: calcolo MARGINI in base a pagina pari/dispari
-  let marginTopMm = 20, marginBottomMm = 20;
+  // STEP 1: calcolo MARGINI effettivi in base a pagina pari/dispari (usiamo margini coerenti con il layout)
+  let marginTopMm = 20, marginBottomMm = 20, marginLeftMm = 15, marginRightMm = 15;
   if (customLayout && customLayout.page) {
-    // Logica corretta: pari/dispari
-    const distinct = customLayout.page.useDistinctMarginsForPages;
+    const { page } = customLayout;
+    const useDistinct = page.useDistinctMarginsForPages;
+    // N.B.: LEFT per pagine dispari, RIGHT per pari secondo convenzione di stampa
     let margins;
-    if (distinct) {
-      // Attenzione: lato sinistro = dispari, lato destro = pari
-      // pageIndex 0,2,4... = dispari (sinistra/left)
-      // pageIndex 1,3,5... = pari (destra/right)
-      margins = (pageIndex % 2 === 0
-        ? customLayout.page.oddPages
-        : customLayout.page.evenPages);
+    if (useDistinct) {
+      // pageIndex: 0-based. 0,2,4... = oddPages, 1,3,5... = evenPages
+      margins = (pageIndex % 2 === 0 ? page.oddPages : page.evenPages);
     } else {
-      margins = customLayout.page;
+      margins = page;
     }
     marginTopMm = margins.marginTop ?? 20;
     marginBottomMm = margins.marginBottom ?? 20;
+    marginLeftMm = margins.marginLeft ?? 15;
+    marginRightMm = margins.marginRight ?? 15;
   }
 
-  // Header opzionale, per sicurezza fallback 0
-  const headerMm = typeof customLayout?.headerHeight === "number" ? customLayout.headerHeight : 0;
+  // HEADER height va preso da customLayout.page.headerHeight
+  const headerMm = typeof customLayout?.page?.headerHeight === "number"
+    ? customLayout.page.headerHeight
+    : 0;
 
-  // STEP 4: Calcolo del padding letto via DOM, fallback se assente
+  // STEP 2: Calcolo del padding letto via DOM, fallback se assente
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
     const style = window.getComputedStyle(pageContainerRef);
     paddingTopPx = parseFloat(style.paddingTop || "0");
     paddingBottomPx = parseFloat(style.paddingBottom || "0");
-    // STEP 4.1: Log dei padding per verifica
+    // Debug per allineamento: mostro tutto
     console.log("[calculateAvailableHeight] DOM paddingTopPx:", paddingTopPx, "paddingBottomPx:", paddingBottomPx);
   } else {
-    // fallback se il ref non è passato
-    paddingTopPx = mmToPx(20);
-    paddingBottomPx = mmToPx(20);
+    // fallback coerente con margini di default
+    paddingTopPx = mmToPx(marginTopMm);
+    paddingBottomPx = mmToPx(marginBottomMm);
+    // Debug fallback
+    console.log("[calculateAvailableHeight] NO DOM, fallback paddingTopPx:", paddingTopPx, "paddingBottomPx:", paddingBottomPx);
   }
 
-  // Disponibile = altezza base - margini - header - padding
-  const availablePx = baseHeightPx 
-    - mmToPx(marginTopMm)
-    - mmToPx(marginBottomMm)
-    - mmToPx(headerMm)
-    - paddingTopPx
-    - paddingBottomPx;
-
-  // Log dettagliato per debug DOM vs JS
-  console.log("[calculateAvailableHeight] pageIndex", pageIndex, {
-    baseHeightPx,
-    marginTopMm,
-    marginBottomMm,
-    headerMm,
-    paddingTopPx,
-    paddingBottomPx,
-    availablePx
-  });
+  // Disponibile = altezza base - margini - header - solo padding residuo effettivo se è DIVERSO dai margini
+  // Se padding==marginTop/marginBottom, il padding è già contato nei margini! Quindi NON vanno sottratti due volte.
+  let availablePx;
+  if (pageContainerRef) {
+    // Se il padding effettivo nel DOM è DIVERSO dal marginTop/marginBottom, conta solo la differenza!
+    const expectedTopPx = mmToPx(marginTopMm);
+    const expectedBottomPx = mmToPx(marginBottomMm);
+    const paddingDeltaTop = Math.max(0, paddingTopPx - expectedTopPx);
+    const paddingDeltaBottom = Math.max(0, paddingBottomPx - expectedBottomPx);
+    availablePx = baseHeightPx
+      - mmToPx(marginTopMm)
+      - mmToPx(marginBottomMm)
+      - mmToPx(headerMm)
+      - paddingDeltaTop
+      - paddingDeltaBottom;
+    // Debug dettagliato
+    console.log(
+      "[calculateAvailableHeight] DRY RUN: baseHeightPx:", baseHeightPx,
+      "marginTopMm:", marginTopMm, "marginBottomMm:", marginBottomMm,
+      "headerMm:", headerMm,
+      "paddingTopPx:", paddingTopPx, "paddingBottomPx:", paddingBottomPx,
+      "expectedTopPx:", expectedTopPx, "expectedBottomPx:", expectedBottomPx,
+      "paddingDeltaTop:", paddingDeltaTop, "paddingDeltaBottom:", paddingDeltaBottom,
+      "availablePx:", availablePx
+    );
+  } else {
+    availablePx = baseHeightPx
+      - mmToPx(marginTopMm)
+      - mmToPx(marginBottomMm)
+      - mmToPx(headerMm);
+    // Debug fallback
+    console.log(
+      "[calculateAvailableHeight] fallback baseHeightPx:", baseHeightPx,
+      "marginTopMm:", marginTopMm, "marginBottomMm:", marginBottomMm,
+      "headerMm:", headerMm,
+      "availablePx:", availablePx
+    );
+  }
 
   return availablePx;
 };
