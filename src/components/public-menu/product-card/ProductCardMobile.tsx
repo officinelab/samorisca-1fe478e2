@@ -3,7 +3,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+// Sostituisco Plus con CirclePlus
+import { CirclePlus } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
@@ -101,9 +102,9 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
                   >
-                    <Plus size={16} />
+                    <CirclePlus size={18} />
                   </Button>
                 </div>
               )}
@@ -121,9 +122,9 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
                   >
-                    <Plus size={16} />
+                    <CirclePlus size={18} />
                   </Button>
                 </div>
               )}
@@ -141,9 +142,9 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
                   >
-                    <Plus size={16} />
+                    <CirclePlus size={18} />
                   </Button>
                 </div>
               )}
@@ -162,9 +163,9 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
               >
-                <Plus size={16} />
+                <CirclePlus size={18} />
               </Button>
             </div>
           )}
