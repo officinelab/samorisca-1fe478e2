@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 
@@ -61,15 +60,33 @@ const PrintPage: React.FC<PrintPageProps> = ({
   customLayout,
   children 
 }) => {
-  const margins = getPageMargins(customLayout, pageIndex);
-  
+  // Calcolo margini dinamici come negli altri container
+  let marginTop = 20, marginRight = 15, marginBottom = 20, marginLeft = 15;
+  if (customLayout && customLayout.page) {
+    if (customLayout.page.useDistinctMarginsForPages) {
+      const margins =
+        pageIndex % 2 === 0
+          ? customLayout.page.oddPages || customLayout.page
+          : customLayout.page.evenPages || customLayout.page;
+      marginTop = margins.marginTop;
+      marginRight = margins.marginRight;
+      marginBottom = margins.marginBottom;
+      marginLeft = margins.marginLeft;
+    } else {
+      marginTop = customLayout.page.marginTop;
+      marginRight = customLayout.page.marginRight;
+      marginBottom = customLayout.page.marginBottom;
+      marginLeft = customLayout.page.marginLeft;
+    }
+  }
+
   return (
     <div 
       className="page bg-white relative" 
       style={{
         width: `${A4_WIDTH_MM}mm`,
         height: `${A4_HEIGHT_MM}mm`,
-        padding: `${margins.marginTop} ${margins.marginRight} ${margins.marginBottom} ${margins.marginLeft}`,
+        padding: `${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm`,
         boxSizing: 'border-box',
         margin: '0 auto 60px auto',
         pageBreakAfter: 'always',
@@ -81,15 +98,14 @@ const PrintPage: React.FC<PrintPageProps> = ({
       <div className="print-content" style={{ position: 'relative' }}>
         {children}
       </div>
-      
       {showPageBoundaries && (
         <div 
           className="page-margin-indicator" 
           style={{
             position: 'absolute',
-            bottom: margins.marginBottom,
-            left: margins.marginLeft,
-            right: margins.marginRight,
+            bottom: `${marginBottom}mm`,
+            left: `${marginLeft}mm`,
+            right: `${marginRight}mm`,
             borderBottom: '2px dashed rgba(255, 0, 0, 0.5)',
             pointerEvents: 'none',
             zIndex: 1000

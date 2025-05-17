@@ -6,7 +6,9 @@ type PageContainerProps = {
   A4_HEIGHT_MM: number;
   showPageBoundaries: boolean;
   layoutType: 'classic' | 'modern' | 'allergens' | 'custom';
-  children: ReactNode;
+  children: React.ReactNode;
+  pageIndex?: number;
+  customLayout?: any;
 };
 
 const PageContainer: React.FC<PageContainerProps> = ({
@@ -14,12 +16,34 @@ const PageContainer: React.FC<PageContainerProps> = ({
   A4_HEIGHT_MM,
   showPageBoundaries,
   layoutType,
-  children
+  children,
+  pageIndex = 0,
+  customLayout,
 }) => {
+  // Calcolo dinamico margini
+  let marginTop = 20, marginRight = 15, marginBottom = 20, marginLeft = 15;
+  if (customLayout && customLayout.page) {
+    if (customLayout.page.useDistinctMarginsForPages) {
+      const margins =
+        pageIndex % 2 === 0
+          ? customLayout.page.oddPages || customLayout.page
+          : customLayout.page.evenPages || customLayout.page;
+      marginTop = margins.marginTop;
+      marginRight = margins.marginRight;
+      marginBottom = margins.marginBottom;
+      marginLeft = margins.marginLeft;
+    } else {
+      marginTop = customLayout.page.marginTop;
+      marginRight = customLayout.page.marginRight;
+      marginBottom = customLayout.page.marginBottom;
+      marginLeft = customLayout.page.marginLeft;
+    }
+  }
+
   const getStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
-    padding: '20mm 15mm 80mm 15mm',
+    padding: `${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm`,
     boxSizing: 'border-box' as const,
     margin: '0 auto',
     pageBreakAfter: 'avoid' as const,
