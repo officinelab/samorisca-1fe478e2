@@ -1,30 +1,64 @@
 
 import React from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
+import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
 
 /**
  * Usa i margini del layout attivo per il CSS print dinamico.
  */
 const PrintStylesheet: React.FC = () => {
   const { layouts, activeLayout } = useMenuLayouts();
-  // Scegli il layout attivo o uno qualunque come fallback
   const layout = activeLayout || (layouts && layouts[0]);
-  // Estrarre i margini
-  let marginTop = 20, marginRight = 15, marginBottom = 20, marginLeft = 15;
+
+  // Fallback ai margini costanti
+  const fallback = PRINT_CONSTANTS.DEFAULT_MARGINS;
+
+  // Default a margini standard
+  let marginTop = fallback.TOP, marginRight = fallback.RIGHT, marginBottom = fallback.BOTTOM, marginLeft = fallback.LEFT;
+
+  // margini dispari
+  let oddTop = fallback.TOP, oddRight = fallback.RIGHT, oddBottom = fallback.BOTTOM, oddLeft = fallback.LEFT;
+  // margini pari
+  let evenTop = fallback.TOP, evenRight = fallback.RIGHT, evenBottom = fallback.BOTTOM, evenLeft = fallback.LEFT;
+
   if (layout && layout.page) {
-    marginTop = layout.page.marginTop || 20;
-    marginRight = layout.page.marginRight || 15;
-    marginBottom = layout.page.marginBottom || 20;
-    marginLeft = layout.page.marginLeft || 15;
+    marginTop = layout.page.marginTop ?? fallback.TOP;
+    marginRight = layout.page.marginRight ?? fallback.RIGHT;
+    marginBottom = layout.page.marginBottom ?? fallback.BOTTOM;
+    marginLeft = layout.page.marginLeft ?? fallback.LEFT;
+
+    if (layout.page.useDistinctMarginsForPages) {
+      oddTop = layout.page.oddPages?.marginTop ?? marginTop;
+      oddRight = layout.page.oddPages?.marginRight ?? marginRight;
+      oddBottom = layout.page.oddPages?.marginBottom ?? marginBottom;
+      oddLeft = layout.page.oddPages?.marginLeft ?? marginLeft;
+      evenTop = layout.page.evenPages?.marginTop ?? marginTop;
+      evenRight = layout.page.evenPages?.marginRight ?? marginRight;
+      evenBottom = layout.page.evenPages?.marginBottom ?? marginBottom;
+      evenLeft = layout.page.evenPages?.marginLeft ?? marginLeft;
+    } else {
+      oddTop = evenTop = marginTop;
+      oddRight = evenRight = marginRight;
+      oddBottom = evenBottom = marginBottom;
+      oddLeft = evenLeft = marginLeft;
+    }
   }
 
+  // CSS paged media print con :right (dispari) e :left (pari)
   return (
     <style>
       {`
         @media print {
           @page {
             size: A4;
-            margin: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+          }
+          /* Pagine dispari (destra) */
+          @page :right {
+            margin: ${oddTop}mm ${oddRight}mm ${oddBottom}mm ${oddLeft}mm;
+          }
+          /* Pagine pari (sinistra) */
+          @page :left {
+            margin: ${evenTop}mm ${evenRight}mm ${evenBottom}mm ${evenLeft}mm;
           }
           html, body {
             width: 210mm;
@@ -50,7 +84,6 @@ const PrintStylesheet: React.FC = () => {
           .print-hidden {
             display: none !important;
           }
-          /* Supporto paginazione */
           .page {
             page-break-after: always;
             break-after: page;

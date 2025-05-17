@@ -15,7 +15,6 @@ export const calculateAvailableHeight = (
   A4_HEIGHT_MM: number, 
   customLayout?: PrintLayout | null
 ): number => {
-  // Utilizziamo la nuova utility
   return getAvailableHeight(customLayout, pageIndex);
 };
 
@@ -23,19 +22,13 @@ export const calculateAvailableHeight = (
  * Stima l'altezza di un titolo categoria in base al layout
  */
 export const estimateCategoryTitleHeight = (
-  customLayout?: PrintLayout | null
+  category: Category,
+  language: string,
+  customLayout?: PrintLayout | null,
+  pageIndex: number = 0
 ): number => {
-  // Valore di default se non abbiamo una categoria
   if (!customLayout) return 40;
-  
-  // Usiamo un "mock" di categoria per stimare l'altezza
-  const mockCategory = {
-    id: 'mock',
-    title: 'Categoria',
-    display_order: 0
-  } as Category;
-  
-  return calculateCategoryTitleHeight(mockCategory, 'it', customLayout);
+  return calculateCategoryTitleHeight(category, language, customLayout, pageIndex);
 };
 
 /**
@@ -45,10 +38,10 @@ export const estimateCategoryTitleHeight = (
 export const getProductHeight = (
   product: Product,
   language: string,
-  customLayout?: PrintLayout | null
+  customLayout?: PrintLayout | null,
+  pageIndex: number = 0
 ): number => {
-  // Utilizziamo direttamente la nuova utility più precisa
-  return calculateProductHeight(product, language, customLayout);
+  return calculateProductHeight(product, language, customLayout, pageIndex);
 };
 
 /**

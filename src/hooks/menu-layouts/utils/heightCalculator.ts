@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { Product, Category } from "@/types/database";
 import { PRINT_CONSTANTS } from "../constants";
@@ -7,7 +6,21 @@ import { PRINT_CONSTANTS } from "../constants";
  * Converte i millimetri in pixel per la visualizzazione su schermo
  */
 export const mmToPx = (mm: number): number => {
-  return mm * PRINT_CONSTANTS.MM_TO_PX;
+  try {
+    if (typeof window !== "undefined" && document.body) {
+      const div = document.createElement("div");
+      div.style.width = "1mm";
+      div.style.position = "absolute";
+      div.style.visibility = "hidden";
+      document.body.appendChild(div);
+      const pxPerMm = div.getBoundingClientRect().width;
+      document.body.removeChild(div);
+      return mm * pxPerMm;
+    }
+  } catch (e) {
+    // fallback
+  }
+  return mm * 3.543; // 3.543 px per mm @ 96dpi
 };
 
 /**
