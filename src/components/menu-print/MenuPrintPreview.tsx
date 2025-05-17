@@ -18,7 +18,6 @@ type MenuPrintPreviewProps = {
   allergens: Allergen[];
   printAllergens: boolean;
   restaurantLogo?: string | null;
-  pageCount: number;
 };
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
@@ -33,7 +32,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   allergens,
   printAllergens,
   restaurantLogo,
-  pageCount,
 }) => {
   const { layouts, activeLayout, isLoading: isLayoutsLoading } = useMenuLayouts();
   
@@ -59,7 +57,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     console.log("MenuPrintPreview - Props:", { 
       layoutId,
       selectedCategories, 
-      pageCount 
     });
     console.log("MenuPrintPreview - Selected layout:", selectedLayout);
     
@@ -67,7 +64,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
     if (!selectedLayout && !isLayoutsLoading && layouts.length > 0) {
       toast.warning("Layout non trovato. Utilizzando layout predefinito.");
     }
-  }, [layoutId, selectedCategories, pageCount, selectedLayout, isLayoutsLoading, layouts]);
+  }, [layoutId, selectedCategories, selectedLayout, isLayoutsLoading, layouts]);
 
   if (isLayoutsLoading || !selectedLayout) {
     return (
@@ -96,3 +93,4 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 };
 
 export default MenuPrintPreview;
+
