@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 import { 
@@ -22,6 +23,7 @@ export const calculateAvailableHeight = (
   let marginTopMm = 20, marginBottomMm = 20;
   if (customLayout && customLayout.page) {
     if (customLayout.page.useDistinctMarginsForPages) {
+      // Indice pari = pagina dispari (1, 3, 5...)
       if (pageIndex % 2 === 0) {
         marginTopMm = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop;
         marginBottomMm = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom;
@@ -35,9 +37,8 @@ export const calculateAvailableHeight = (
     }
   }
 
-  // FIX: headerHeight come opzionale
-  const headerMm = customLayout?.headerHeight ?? 0;
-
+  // Se è dichiarato un header, sottrai anche quello
+  const headerMm = customLayout?.headerHeight || 0;
   // Per padding: otteniamolo se passato il ref a pageContainer (in mm)
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
