@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -11,6 +10,7 @@ import {
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
 import type { ElementHeightsMap } from './hooks/useElementHeights';
+import { mmToPx } from "@/hooks/menu-print/printUnits";
 
 interface UsePaginationProps {
   categories: Category[];

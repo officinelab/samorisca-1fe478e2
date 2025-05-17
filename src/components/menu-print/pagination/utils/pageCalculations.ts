@@ -38,7 +38,7 @@ export const calculateAvailableHeight = (
   }
 
   // Se è dichiarato un header, sottrai anche quello
-  const headerMm = customLayout?.headerHeight || 0;
+  const headerMm = typeof customLayout?.headerHeight === "number" ? customLayout.headerHeight : 0;
   // Per padding: otteniamolo se passato il ref a pageContainer (in mm)
   let paddingTopPx = 0, paddingBottomPx = 0;
   if (pageContainerRef) {
