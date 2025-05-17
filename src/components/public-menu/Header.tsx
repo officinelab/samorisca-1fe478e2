@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+// Cambia ShoppingCart con HandPlatter
+import { HandPlatter } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
@@ -63,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
           </Select>
           
           <Button variant="outline" size="icon" className="relative" onClick={openCart}>
-            <ShoppingCart size={20} />
+            <HandPlatter size={20} />
             {cartItemsCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
                 {cartItemsCount}
@@ -75,3 +76,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

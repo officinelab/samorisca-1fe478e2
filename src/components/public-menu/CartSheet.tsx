@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, X, Plus, Minus } from "lucide-react";
+// Cambia ShoppingCart con HandPlatter
+import { HandPlatter, X, Plus, Minus } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Product } from "@/types/database";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
@@ -156,7 +157,7 @@ export const CartSheet: React.FC<CartSheetProps> = ({
           </div>
         ) : (
           <div className="h-40 flex flex-col items-center justify-center text-center mt-8">
-            <ShoppingCart className="h-12 w-12 text-gray-300 mb-2" />
+            <HandPlatter className="h-12 w-12 text-gray-300 mb-2" />
             <p className="text-gray-500">{t("empty_order")}</p>
           </div>
         )}
@@ -164,3 +165,4 @@ export const CartSheet: React.FC<CartSheetProps> = ({
     </Sheet>
   );
 };
+
