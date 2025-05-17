@@ -4,7 +4,7 @@ import { saveLayoutToSupabase } from "../services/supabaseLayoutService";
 import { ensureValidPageMargins } from "./layoutValidator";
 
 /**
- * Saves layouts to Supabase
+ * Salva tutti i layout su Supabase. NON solo l’ultimo!
  */
 export const saveLayouts = async (
   layouts: PrintLayout[]
@@ -21,21 +21,19 @@ export const saveLayouts = async (
     // Ensure all layouts have valid page margins
     const validatedLayouts = layouts.map(ensureValidPageMargins);
     
-    // Per ora salviamo solo l'ultimo layout modificato
-    // In futuro potremmo implementare una sincronizzazione completa se necessario
-    if (validatedLayouts.length > 0) {
-      const lastLayout = validatedLayouts[validatedLayouts.length - 1];
-      const { success, error } = await saveLayoutToSupabase(lastLayout);
-      
+    let allSucceeded = true;
+    let lastError: string | null = null;
+
+    // Salva TUTTI i layout (eseguendo batch in futuro)
+    for (const layout of validatedLayouts) {
+      const { success, error } = await saveLayoutToSupabase(layout);
       if (!success) {
-        return {
-          success: false,
-          error: error || "Si è verificato un errore durante il salvataggio del layout."
-        };
+        allSucceeded = false;
+        lastError = error || "Errore salvataggio layout.";
       }
     }
     
-    return { success: true, error: null };
+    return { success: allSucceeded, error: lastError };
   } catch (err) {
     console.error("Errore durante il salvataggio dei layout:", err);
     return { 
