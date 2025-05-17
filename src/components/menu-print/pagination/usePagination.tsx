@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -10,6 +9,7 @@ import {
 } from './utils/pageCalculations';
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
+import type { ElementHeightsMap } from './hooks/useElementHeights';
 
 interface UsePaginationProps {
   categories: Category[];
@@ -18,6 +18,8 @@ interface UsePaginationProps {
   language: string;
   A4_HEIGHT_MM: number;
   customLayout?: PrintLayout | null;
+  measuredHeights?: ElementHeightsMap; // <--- nuovo argomento opzionale
+  layoutId?: string;
 }
 
 // Funzione dinamica per mm→px
@@ -41,10 +43,17 @@ export const usePagination = ({
   selectedCategories,
   language,
   A4_HEIGHT_MM,
-  customLayout
+  customLayout,
+  measuredHeights,
+  layoutId = ""
 }: UsePaginationProps) => {
   const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
+
+  // Per creare la chiave uniforme come in useElementHeights
+  function buildHeightKey(type: "category-title" | "product-item", id: string, pageIndex: number) {
+    return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
+  }
 
   useEffect(() => {
     const generatePages = () => {
@@ -60,19 +69,16 @@ export const usePagination = ({
       let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
       let lastCategoryId: string | null = null;
       let currentCategoryProducts: ProductItem[] = [];
-      
       const MAX_PAGES = 100;
-      
+
       const addNewPage = () => {
         if (allPages.length >= MAX_PAGES) {
           console.error("Limite massimo di pagine raggiunto, possibile loop infinito");
           return false;
         }
-        
         if (currentPageContent.length > 0) {
           allPages.push([...currentPageContent]);
         }
-        
         currentPageContent = [];
         currentPageIndex++;
         currentHeight = 0;
@@ -82,92 +88,94 @@ export const usePagination = ({
 
       const addRemainingProducts = () => {
         if (currentCategoryProducts.length > 0) {
-          currentPageContent.push({ 
-            type: 'products-group', 
+          currentPageContent.push({
+            type: 'products-group',
             key: `cat-products-${lastCategoryId}-${currentPageIndex}`,
             products: [...currentCategoryProducts]
           });
           currentCategoryProducts = [];
         }
       };
-      
+
       let startingNewCategory = true;
-      
+
       filteredCategories.forEach((category, categoryIndex) => {
         const categoryProducts = products[category.id] || [];
         if (categoryProducts.length === 0) return;
-        
-        // Altezza stimata del titolo della categoria
-        const categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
-        
+
+        const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
+        let categoryTitleHeight =
+          measuredHeights?.[catKey] ??
+          estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
+
         if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
           addRemainingProducts();
           if (!addNewPage()) return;
           startingNewCategory = true;
         }
-        
-        // Aggiungi il titolo categoria (originale o ripetuto)
+
         const categoryTitleContent: CategoryTitleContent = {
           type: 'category-title',
           key: `cat-title-${category.id}-${currentPageIndex}${startingNewCategory ? '' : '-continued'}`,
           category,
           isRepeated: !startingNewCategory
         };
-        
+
         currentPageContent.push(categoryTitleContent);
         currentHeight += categoryTitleHeight;
-        
+
         categoryProducts.forEach((product, productIndex) => {
-          const productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
-          
+          const prodKey = buildHeightKey("product-item", product.id, currentPageIndex);
+          let productHeight =
+            measuredHeights?.[prodKey] ??
+            getProductHeight(product, language, customLayout, currentPageIndex);
+
           if (currentHeight + productHeight > availableHeight) {
             addRemainingProducts();
             if (!addNewPage()) return;
-            
+
             const repeatedCategoryTitle: CategoryTitleContent = {
               type: 'category-title',
               key: `cat-title-${category.id}-${currentPageIndex}-repeat`,
               category,
               isRepeated: true
             };
-            
+
             currentPageContent.push(repeatedCategoryTitle);
             currentHeight += categoryTitleHeight;
           }
-          
+
           currentCategoryProducts.push({
             type: 'product',
             key: `product-${product.id}-${currentPageIndex}-${productIndex}`,
             product
           });
-          
+
           currentHeight += productHeight;
         });
-        
+
         addRemainingProducts();
-        
-        // Usa sempre spacing centralizzato
+
         if (categoryIndex < filteredCategories.length - 1) {
           const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * getDynamicMmPx();
           currentHeight += spacingBetweenCategories;
         }
-        
+
         startingNewCategory = true;
         lastCategoryId = category.id;
       });
-      
+
       if (currentPageContent.length > 0) {
         allPages.push([...currentPageContent]);
       }
-      
+
       console.log(`Generato totale ${allPages.length} pagine`);
       setPages(allPages);
     };
 
     const timer = setTimeout(generatePages, 100);
     return () => clearTimeout(timer);
-    
-  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM]);
-  
+  }, [filteredCategories, products, language, customLayout, A4_HEIGHT_MM, measuredHeights, layoutId]);
+
   return { pages };
 };

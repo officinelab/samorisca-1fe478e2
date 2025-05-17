@@ -24,7 +24,7 @@ export const calculateAvailableHeight = (
 export const estimateCategoryTitleHeight = (
   category: Category,
   language: string,
-  customLayout?: PrintLayout | null,
+  customLayout: PrintLayout | null | undefined,
   pageIndex: number
 ): number => {
   if (!customLayout) return 40;
@@ -38,7 +38,7 @@ export const estimateCategoryTitleHeight = (
 export const getProductHeight = (
   product: Product,
   language: string,
-  customLayout?: PrintLayout | null,
+  customLayout: PrintLayout | null | undefined,
   pageIndex: number
 ): number => {
   return calculateProductHeight(product, language, customLayout, pageIndex);
