@@ -9,6 +9,7 @@ import {
   getFilteredCategories
 } from './utils/pageCalculations';
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
+import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
 
 interface UsePaginationProps {
   categories: Category[];
@@ -18,6 +19,21 @@ interface UsePaginationProps {
   A4_HEIGHT_MM: number;
   customLayout?: PrintLayout | null;
 }
+
+// Funzione dinamica per mm→px
+const getDynamicMmPx = (): number => {
+  if (typeof window !== "undefined" && document.body) {
+    const div = document.createElement("div");
+    div.style.width = "1mm";
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    document.body.appendChild(div);
+    const px = div.getBoundingClientRect().width;
+    document.body.removeChild(div);
+    return px;
+  }
+  return PRINT_CONSTANTS.MM_TO_PX; // fallback
+};
 
 export const usePagination = ({
   categories,
@@ -130,11 +146,9 @@ export const usePagination = ({
         
         addRemainingProducts();
         
-        // Usa solo fallback centralizzato PRINT_CONSTANTS
+        // Usa sempre spacing centralizzato
         if (categoryIndex < filteredCategories.length - 1) {
-          const spacingBetweenCategories = customLayout?.spacing?.betweenCategories 
-            ? customLayout.spacing.betweenCategories * getDynamicMmPx()
-            : getDefaultSpacingBetweenCategoriesPx();
+          const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * getDynamicMmPx();
           currentHeight += spacingBetweenCategories;
         }
         
@@ -149,27 +163,6 @@ export const usePagination = ({
       console.log(`Generato totale ${allPages.length} pagine`);
       setPages(allPages);
     };
-
-    function getDynamicMmPx(): number {
-      // usa la stessa funzione mmToPx ora dinamica di heightCalculator
-      if (typeof window !== "undefined" && document.body) {
-        const div = document.createElement("div");
-        div.style.width = "1mm";
-        div.style.position = "absolute";
-        div.style.visibility = "hidden";
-        document.body.appendChild(div);
-        const px = div.getBoundingClientRect().width;
-        document.body.removeChild(div);
-        return px;
-      }
-      return 3.543; // fallback reale 96dpi
-    }
-
-    function getDefaultSpacingBetweenCategoriesPx(): number {
-      // Usa il fallback di PRINT_CONSTANTS
-      const mm = customLayout?.spacing?.betweenCategories ?? 18;
-      return mm * getDynamicMmPx();
-    }
 
     const timer = setTimeout(generatePages, 100);
     return () => clearTimeout(timer);

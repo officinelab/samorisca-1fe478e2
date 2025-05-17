@@ -13,13 +13,19 @@ const PrintStylesheet: React.FC = () => {
   // Fallback ai margini costanti
   const fallback = PRINT_CONSTANTS.DEFAULT_MARGINS;
 
-  // Default a margini standard
-  let marginTop = fallback.TOP, marginRight = fallback.RIGHT, marginBottom = fallback.BOTTOM, marginLeft = fallback.LEFT;
+  let marginTop = fallback.TOP,
+    marginRight = fallback.RIGHT,
+    marginBottom = fallback.BOTTOM,
+    marginLeft = fallback.LEFT;
 
-  // margini dispari
-  let oddTop = fallback.TOP, oddRight = fallback.RIGHT, oddBottom = fallback.BOTTOM, oddLeft = fallback.LEFT;
-  // margini pari
-  let evenTop = fallback.TOP, evenRight = fallback.RIGHT, evenBottom = fallback.BOTTOM, evenLeft = fallback.LEFT;
+  let oddTop = fallback.TOP,
+    oddRight = fallback.RIGHT,
+    oddBottom = fallback.BOTTOM,
+    oddLeft = fallback.LEFT;
+  let evenTop = fallback.TOP,
+    evenRight = fallback.RIGHT,
+    evenBottom = fallback.BOTTOM,
+    evenLeft = fallback.LEFT;
 
   if (layout && layout.page) {
     marginTop = layout.page.marginTop ?? fallback.TOP;
@@ -27,6 +33,7 @@ const PrintStylesheet: React.FC = () => {
     marginBottom = layout.page.marginBottom ?? fallback.BOTTOM;
     marginLeft = layout.page.marginLeft ?? fallback.LEFT;
 
+    // Applico margini dispari/pario solo se previsti
     if (layout.page.useDistinctMarginsForPages) {
       oddTop = layout.page.oddPages?.marginTop ?? marginTop;
       oddRight = layout.page.oddPages?.marginRight ?? marginRight;
