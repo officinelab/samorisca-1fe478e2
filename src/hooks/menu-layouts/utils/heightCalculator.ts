@@ -24,6 +24,71 @@ export function mmToPx(mm: number): number {
 }
 
 /**
+ * Calcola l'altezza disponibile per il contenuto in una pagina
+ * @param layout layout attivo di stampa
+ * @param pageIndex indice corrente di pagina (0-based)
+ * @param pageContainerRef optional: nodo DOM della pagina, per leggere paddingTop/paddingBottom
+ */
+export const getAvailableHeight = (
+  layout: PrintLayout | null | undefined,
+  pageIndex: number = 0,
+  pageContainerRef?: HTMLElement | null
+): number => {
+  const A4_HEIGHT_MM = PRINT_CONSTANTS.A4_HEIGHT_MM;
+  let marginTop = PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+  let marginBottom = PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
+
+  if (layout?.page) {
+    if (layout.page.useDistinctMarginsForPages) {
+      // Pagine dispari (indice 0, 2, ...)
+      if (pageIndex % 2 === 0) {
+        marginTop = layout.page.oddPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+        marginBottom = layout.page.oddPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
+      } else {
+        marginTop = layout.page.evenPages?.marginTop ?? layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+        marginBottom = layout.page.evenPages?.marginBottom ?? layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
+      }
+    } else {
+      marginTop = layout.page.marginTop ?? PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
+      marginBottom = layout.page.marginBottom ?? PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
+    }
+  }
+
+  // Opzionale: headerHeight mm > px
+  let headerHeightPx = 0;
+  if (
+    layout &&
+    (typeof (layout as any).headerHeight === "number" || typeof (layout as any).headerHeight === "string")
+  ) {
+    const value = typeof (layout as any).headerHeight === "string"
+      ? parseFloat((layout as any).headerHeight)
+      : (layout as any).headerHeight;
+    headerHeightPx = mmToPx(Number(value) || 0);
+  }
+
+  // Padding top/bottom della pagina (se passato via ref)
+  let paddingTopPx = 0,
+    paddingBottomPx = 0;
+  if (pageContainerRef) {
+    const style = getComputedStyle(pageContainerRef);
+    paddingTopPx = Math.ceil(parseFloat(style.paddingTop));
+    paddingBottomPx = Math.ceil(parseFloat(style.paddingBottom));
+  }
+
+  // A4 in px
+  const A4_HEIGHT_PX = mmToPx(A4_HEIGHT_MM);
+
+  return (
+    A4_HEIGHT_PX -
+    mmToPx(marginTop) -
+    mmToPx(marginBottom) -
+    headerHeightPx -
+    paddingTopPx -
+    paddingBottomPx
+  );
+};
+
+/**
  * Calcola la larghezza disponibile per il testo considerando i margini laterali
  * @param layout Layout di stampa
  * @param pageIndex Indice della pagina (per margini diversi tra pagine pari/dispari)
@@ -346,34 +411,4 @@ export const canFitProduct = (
 ): boolean => {
   const productHeight = calculateProductHeight(product, language, layout, pageIndex);
   return productHeight <= remainingHeight;
-};
-
-/**
- * Calcola l'altezza disponibile per il contenuto in una pagina
- */
-export const getAvailableHeight = (
-  layout: PrintLayout | null | undefined,
-  pageIndex: number = 0
-): number => {
-  let topMargin, bottomMargin;
-  
-  if (!layout) {
-    topMargin = PRINT_CONSTANTS.DEFAULT_MARGINS.TOP;
-    bottomMargin = PRINT_CONSTANTS.DEFAULT_MARGINS.BOTTOM;
-  }
-  else if (layout.page.useDistinctMarginsForPages) {
-    if (pageIndex % 2 === 0) { // Pagina dispari (indice 0, 2, 4...)
-      topMargin = layout.page.oddPages?.marginTop || layout.page.marginTop;
-      bottomMargin = layout.page.oddPages?.marginBottom || layout.page.marginBottom;
-    } else { // Pagina pari (indice 1, 3, 5...)
-      topMargin = layout.page.evenPages?.marginTop || layout.page.marginTop;
-      bottomMargin = layout.page.evenPages?.marginBottom || layout.page.marginBottom;
-    }
-  } else {
-    topMargin = layout.page.marginTop;
-    bottomMargin = layout.page.marginBottom;
-  }
-  
-  return PRINT_CONSTANTS.A4_HEIGHT_MM * PRINT_CONSTANTS.MM_TO_PX - 
-         (topMargin + bottomMargin) * PRINT_CONSTANTS.MM_TO_PX;
 };

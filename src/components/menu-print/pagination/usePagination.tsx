@@ -1,8 +1,7 @@
-
-import { useState, useCallback, useLayoutEffect } from 'react';
+import { useMemo } from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
-import { 
+import {
   calculateAvailableHeight,
   estimateCategoryTitleHeight,
   getProductHeight,
@@ -61,7 +60,6 @@ export const usePagination = ({
   measuredHeights,
   layoutId = ""
 }: UsePaginationProps) => {
-  const [pages, setPages] = useState<PrintPageContent[]>([]);
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
 
   // Per creare la chiave uniforme come in useElementHeights
@@ -69,12 +67,11 @@ export const usePagination = ({
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
 
-  // MEMOIZZATO: genera pagine solo quando dipendenze cambiano
-  const generatePages = useCallback(() => {
+  // Memo version: calcola pages solo quanto serve, nessun rerender loop
+  const pages = useMemo(() => {
     if (filteredCategories.length === 0) {
       return [];
     }
-
     const allPages: PrintPageContent[] = [];
     let currentPageContent: PageContent[] = [];
     let currentPageIndex = 0;
@@ -170,7 +167,7 @@ export const usePagination = ({
       addRemainingProducts();
 
       if (categoryIndex < filteredCategories.length - 1) {
-        const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * getDynamicMmPx();
+        const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * ((window as any).PX_PER_MM || 3.78);
         currentHeight += spacingBetweenCategories;
       }
 
@@ -181,8 +178,7 @@ export const usePagination = ({
     if (currentPageContent.length > 0) {
       allPages.push([...currentPageContent]);
     }
-
-    console.log(`Generato totale ${allPages.length} pagine`);
+    //console.log(`Generato totale ${allPages.length} pagine`);
     return allPages;
   }, [
     filteredCategories,
@@ -193,12 +189,6 @@ export const usePagination = ({
     measuredHeights,
     layoutId
   ]);
-
-  // Solo aggiorna setPages quando davvero serve!
-  useLayoutEffect(() => {
-    const newPages = generatePages();
-    setPages(prev => (arePagesEqual(prev, newPages) ? prev : newPages));
-  }, [generatePages]);
 
   return { pages };
 };

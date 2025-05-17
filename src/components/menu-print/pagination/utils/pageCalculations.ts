@@ -9,32 +9,21 @@ import {
 } from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
- * Calcola l'altezza disponibile per il contenuto (rispettando i margini e padding)
+ * Calcola l'altezza disponibile per il contenuto (rispettando margini, header e padding se info disponibili)
+ *
+ * @param pageIndex indice della pagina (0-based)
+ * @param A4_HEIGHT_MM altezza foglio in mm
+ * @param customLayout layout selezionato
+ * @param pageContainerRef (opzionale) nodo DOM per lettura padding
  */
 export const calculateAvailableHeight = (
   pageIndex: number, 
   A4_HEIGHT_MM: number, 
-  customLayout?: PrintLayout | null
+  customLayout?: PrintLayout | null,
+  pageContainerRef?: HTMLElement | null
 ): number => {
-  // Margini (mm)
-  let marginTop = 20, marginBottom = 20;
-  if (customLayout?.page) {
-    if (customLayout.page.useDistinctMarginsForPages) {
-      if (pageIndex % 2 === 0) { // dispari
-        marginTop = customLayout.page.oddPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottom = customLayout.page.oddPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      } else { // pari
-        marginTop = customLayout.page.evenPages?.marginTop ?? customLayout.page.marginTop ?? 20;
-        marginBottom = customLayout.page.evenPages?.marginBottom ?? customLayout.page.marginBottom ?? 20;
-      }
-    } else {
-      marginTop = customLayout.page.marginTop ?? 20;
-      marginBottom = customLayout.page.marginBottom ?? 20;
-    }
-  }
-
-  // Utilizza sempre la conversione precisa mm→px
-  return mmToPx(A4_HEIGHT_MM - marginTop - marginBottom);
+  // Usa sempre lo stesso mmToPx
+  return getAvailableHeight(customLayout, pageIndex, pageContainerRef);
 };
 
 /**

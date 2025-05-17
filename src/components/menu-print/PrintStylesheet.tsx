@@ -58,9 +58,11 @@ const PrintStylesheet: React.FC = () => {
           @page {
             size: A4;
           }
+          /* Margini dispari (destra) */
           @page :right {
             margin: ${oddTop}mm ${oddRight}mm ${oddBottom}mm ${oddLeft}mm;
           }
+          /* Margini pari (sinistra) */
           @page :left {
             margin: ${evenTop}mm ${evenRight}mm ${evenBottom}mm ${evenLeft}mm;
           }
@@ -74,24 +76,6 @@ const PrintStylesheet: React.FC = () => {
           .product-item, .category-block {
             page-break-inside: avoid;
             break-inside: avoid;
-          }
-          body * {
-            visibility: hidden;
-          }
-          #print-content, #print-content * {
-            visibility: visible;
-          }
-          .print\\:p-0, .print\\:p-0 * {
-            visibility: visible;
-          }
-          .print\\:p-0 {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .print-hidden {
-            display: none !important;
           }
           .page {
             page-break-after: always;
