@@ -3,8 +3,6 @@ import { Product, Category } from "@/types/database";
 import { PRINT_CONSTANTS } from "../constants";
 import { PX_PER_MM, mmToPx } from "@/hooks/menu-print/printUnits";
 
-// Rimuovi la vecchia definizione di PX_PER_MM e mmToPx (usa quelli importati)
-
 /**
  * Calcola l'altezza disponibile per il contenuto in una pagina A4
  * - Sottrae margini (top+bottom), headerHeight (se presente), e padding top/bottom del container (se passato)

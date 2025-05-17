@@ -1,3 +1,5 @@
+
+import { PX_PER_MM } from "@/hooks/menu-print/printUnits";
 // Chiave per il localStorage
 export const LAYOUTS_STORAGE_KEY = "menu_print_layouts";
 

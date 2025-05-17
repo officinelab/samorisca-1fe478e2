@@ -3,10 +3,9 @@ import { Category, Product } from "@/types/database";
 import { 
   getAvailableHeight, 
   calculateCategoryTitleHeight, 
-  calculateProductHeight,
-  PX_PER_MM,
-  mmToPx,
+  calculateProductHeight
 } from "@/hooks/menu-layouts/utils/heightCalculator";
+import { PX_PER_MM, mmToPx } from "@/hooks/menu-print/printUnits";
 
 /**
  * Calcola l'altezza disponibile per il contenuto (rispettando margini, header e padding se info disponibili)
