@@ -10,47 +10,53 @@ import { usePageSettingsTab } from "./usePageSettingsTab";
 
 // Utilities per default e validazioni (miglior fallback oggetto cover)
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
-  // Fallback completo e sicuro per cover
-  const updatedCover = {
-    logo: {
-      visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : false,
-      maxWidth: layout.cover?.logo?.maxWidth ?? 80,
-      maxHeight: layout.cover?.logo?.maxHeight ?? 50,
-      alignment: layout.cover?.logo?.alignment ?? "center",
-      marginTop: layout.cover?.logo?.marginTop ?? 20,
-      marginBottom: layout.cover?.logo?.marginBottom ?? 20
-    },
-    title: {
-      visible: layout.cover?.title?.visible ?? true,
-      fontFamily: layout.cover?.title?.fontFamily ?? "Arial",
-      fontSize: layout.cover?.title?.fontSize ?? 24,
-      fontColor: layout.cover?.title?.fontColor ?? "#000000",
-      fontStyle: layout.cover?.title?.fontStyle ?? "bold",
-      alignment: layout.cover?.title?.alignment ?? "center",
-      margin: {
-        top: layout.cover?.title?.margin?.top ?? 20,
-        right: layout.cover?.title?.margin?.right ?? 0,
-        bottom: layout.cover?.title?.margin?.bottom ?? 10,
-        left: layout.cover?.title?.margin?.left ?? 0
-      }
-    },
-    subtitle: {
-      visible: layout.cover?.subtitle?.visible ?? true,
-      fontFamily: layout.cover?.subtitle?.fontFamily ?? "Arial",
-      fontSize: layout.cover?.subtitle?.fontSize ?? 14,
-      fontColor: layout.cover?.subtitle?.fontColor ?? "#666666",
-      fontStyle: layout.cover?.subtitle?.fontStyle ?? "italic",
-      alignment: layout.cover?.subtitle?.alignment ?? "center",
-      margin: {
-        top: layout.cover?.subtitle?.margin?.top ?? 5,
-        right: layout.cover?.subtitle?.margin?.right ?? 0,
-        bottom: layout.cover?.subtitle?.margin?.bottom ?? 0,
-        left: layout.cover?.subtitle?.margin?.left ?? 0
-      }
-    },
-    ...(layout.cover || {}) // eventuali proprietà "custom" già definite
+  // Default configs for cover
+  const coverLogoDefaults = {
+    visible: false,
+    maxWidth: 80,
+    maxHeight: 50,
+    alignment: "center" as const,
+    marginTop: 20,
+    marginBottom: 20,
+  };
+  const coverTitleDefaults: PrintLayoutElementConfig = {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 24,
+    fontColor: "#000000",
+    fontStyle: "bold",
+    alignment: "center",
+    margin: { top: 20, right: 0, bottom: 10, left: 0 }
+  };
+  const coverSubtitleDefaults: PrintLayoutElementConfig = {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 14,
+    fontColor: "#666666",
+    fontStyle: "italic",
+    alignment: "center",
+    margin: { top: 5, right: 0, bottom: 0, left: 0 }
   };
 
+  // Safe-merge all fields (logo, title, subtitle) for .cover
+  const updatedCover = {
+    logo: {
+      ...coverLogoDefaults,
+      ...(layout.cover && typeof layout.cover.logo === "object" ? layout.cover.logo : {}),
+      visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : false,
+    },
+    title: {
+      ...coverTitleDefaults,
+      ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {})
+    },
+    subtitle: {
+      ...coverSubtitleDefaults,
+      ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {})
+    }
+  };
+  // If there are extra non-standard .cover keys, you could merge here, but only after base fields
+  // e.g. { ...updatedCover, ...(layout.cover ?? {}) }, but only if safe!
+  
   // Restanti default invariati sui campi allergeni e page margin...
   const pageWithDefaults = {
     ...layout.page,
