@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogDescription, // <-- AGGIUNTO L'IMPORT
 } from "@/components/ui/alert-dialog";
 
 interface PrintLayoutsListProps {

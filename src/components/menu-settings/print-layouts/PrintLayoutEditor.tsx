@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -187,7 +186,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               <Button
                 onClick={handleSaveWithValidation}
                 className="w-full md:w-auto mt-3 md:mt-0"
-                variant="primary"
+                variant="default"
               >
                 <Save size={18} className="mr-2" />
                 Salva modifiche
