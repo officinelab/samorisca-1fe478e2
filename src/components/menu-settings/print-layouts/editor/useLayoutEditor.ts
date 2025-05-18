@@ -21,17 +21,20 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     }
   };
 
-  // Assicurati che le impostazioni di copertina esistano
-  const coverWithDefaults = layout.cover || {
+  // Assicurati che le impostazioni di copertina esistano e forziamo sempre logo.visible
+  const coverFromLayout = layout.cover || {};
+  const logoFromLayout = (coverFromLayout.logo || {}) as any;
+  const coverWithDefaults = {
+    ...coverFromLayout,
     logo: {
-      maxWidth: 80,
-      maxHeight: 50,
-      alignment: 'center',
-      marginTop: 20,
-      marginBottom: 20,
-      visible: true  // Aggiunto il campo visible
+      maxWidth: typeof logoFromLayout.maxWidth === 'number' ? logoFromLayout.maxWidth : 80,
+      maxHeight: typeof logoFromLayout.maxHeight === 'number' ? logoFromLayout.maxHeight : 50,
+      alignment: logoFromLayout.alignment || 'center',
+      marginTop: typeof logoFromLayout.marginTop === 'number' ? logoFromLayout.marginTop : 20,
+      marginBottom: typeof logoFromLayout.marginBottom === 'number' ? logoFromLayout.marginBottom : 20,
+      visible: typeof logoFromLayout.visible === "boolean" ? logoFromLayout.visible : true,
     },
-    title: {
+    title: (coverFromLayout.title || {
       visible: true,
       fontFamily: "Arial",
       fontSize: 24,
@@ -39,8 +42,8 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       fontStyle: "bold",
       alignment: "center",
       margin: { top: 20, right: 0, bottom: 10, left: 0 }
-    },
-    subtitle: {
+    }),
+    subtitle: (coverFromLayout.subtitle || {
       visible: true,
       fontFamily: "Arial",
       fontSize: 14,
@@ -48,9 +51,9 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       fontStyle: "italic",
       alignment: "center",
       margin: { top: 5, right: 0, bottom: 0, left: 0 }
-    }
+    }),
   };
-  
+
   // Assicurati che le impostazioni per allergeni esistano
   const allergensWithDefaults = layout.allergens || {
     title: {
