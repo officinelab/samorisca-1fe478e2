@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PrintLayout } from "@/types/printLayout";
-import { Save, layoutList, image, text, settings, folder, fileText } from "lucide-react";
+import { Save, LayoutList, Image, Text, Settings, Folder, FileText } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayoutEditor } from "./editor/useLayoutEditor";
@@ -29,12 +28,12 @@ type TabKey =
   | "pagina";
 
 const SECTIONS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "generale", label: "Impostazioni generali", icon: <settings size={18} /> },
-  { key: "elementi", label: "Elementi Menu", icon: <layoutList size={18} /> },
-  { key: "copertina", label: "Copertina", icon: <image size={18} /> },
-  { key: "allergeni", label: "Allergeni", icon: <folder size={18} /> },
-  { key: "spaziatura", label: "Spaziatura", icon: <fileText size={18} /> },
-  { key: "pagina", label: "Impostazioni Pagina", icon: <text size={18} /> },
+  { key: "generale", label: "Impostazioni generali", icon: <Settings size={18} /> },
+  { key: "elementi", label: "Elementi Menu", icon: <LayoutList size={18} /> },
+  { key: "copertina", label: "Copertina", icon: <Image size={18} /> },
+  { key: "allergeni", label: "Allergeni", icon: <Folder size={18} /> },
+  { key: "spaziatura", label: "Spaziatura", icon: <FileText size={18} /> },
+  { key: "pagina", label: "Impostazioni Pagina", icon: <Text size={18} /> },
 ];
 
 const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
@@ -264,4 +263,3 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 };
 
 export default PrintLayoutEditor;
-
