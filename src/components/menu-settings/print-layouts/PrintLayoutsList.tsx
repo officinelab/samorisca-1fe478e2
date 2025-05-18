@@ -1,6 +1,6 @@
 
 import { PrintLayout } from "@/types/printLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Copy,
@@ -26,7 +26,7 @@ interface PrintLayoutsListProps {
   onCloneLayout: (layoutId: string) => void;
   onDeleteLayout: (layoutId: string) => void;
   onSetDefaultLayout: (layoutId: string) => void;
-  defaultFirst?: boolean; // <-- Add this prop
+  defaultFirst?: boolean;
 }
 
 const PrintLayoutsList = ({
@@ -47,17 +47,15 @@ const PrintLayoutsList = ({
       {sortedLayouts.map((layout) => (
         <Card
           key={layout.id}
-          className={`relative flex flex-col gap-1 p-3 border transition-shadow ${layout.isDefault ? "border-primary shadow-md" : ""}`}
+          className={`relative flex flex-col gap-1 p-3 border transition-shadow ${
+            layout.isDefault ? "border-primary shadow-md" : ""
+          }`}
         >
-          {/* Badge predefinito */}
-          {layout.isDefault && (
-            <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-semibold shadow">
-              Predefinito
-            </span>
-          )}
-          {/* NOME / tipo layout -- con stella a SINISTRA */}
+          {/* Nessun badge "Predefinito" più */}
+
+          {/* NOME / tipo layout -- stella a sinistra, font più piccolo, testo a capo */}
           <div className="flex flex-row items-center gap-2 justify-between w-full">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 w-4/5">
               {/* Stella predefinito */}
               {!layout.isDefault && (
                 <Button
@@ -67,19 +65,30 @@ const PrintLayoutsList = ({
                   aria-label="Imposta predefinito"
                   className="p-0 mr-1"
                 >
-                  <Star size={18} />
+                  <Star size={16} className="text-muted-foreground" />
                 </Button>
               )}
               {layout.isDefault && (
                 <Star
-                  size={18}
-                  className="text-primary"
+                  size={16}
+                  className="text-primary fill-primary"
                   aria-label="Predefinito"
+                  // fill rende la stella "piena"
+                  style={{ fill: "currentColor" }}
                 />
               )}
-              <span className="text-base font-bold leading-5 truncate">{layout.name}</span>
+              <span
+                className="text-sm font-semibold leading-5 break-words whitespace-pre-line"
+                style={{
+                  maxWidth: "145px", // per andare più facilmente a capo se troppo lungo
+                  wordBreak: "break-word",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {layout.name}
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground capitalize">
+            <span className="text-xs text-muted-foreground capitalize truncate max-w-[60px] text-right">
               {layout.type === "custom" ? "Personalizzato" : layout.type}
             </span>
           </div>

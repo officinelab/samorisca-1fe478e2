@@ -114,8 +114,8 @@ const PrintLayoutsManager = () => {
       </Card>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Lista layouts (ridotta a metà larghezza) */}
-        <div className="w-full lg:w-[215px] flex-shrink-0">
+        {/* Lista layouts (allargata del 20%) */}
+        <div className="w-full lg:w-[260px] flex-shrink-0">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
