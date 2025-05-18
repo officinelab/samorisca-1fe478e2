@@ -114,8 +114,8 @@ const PrintLayoutsManager = () => {
       </Card>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Lista layouts (ora a righe singole, mai colonne) */}
-        <div className="w-full lg:w-[430px] flex-shrink-0">
+        {/* Lista layouts (ridotta a metà larghezza) */}
+        <div className="w-full lg:w-[215px] flex-shrink-0">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -133,11 +133,12 @@ const PrintLayoutsManager = () => {
                 onCloneLayout={handleCloneLayout}
                 onDeleteLayout={handleDeleteLayout}
                 onSetDefaultLayout={handleSetDefaultLayout}
+                defaultFirst={true}
               />
             </CardContent>
           </Card>
         </div>
-        {/* Modifica layout e anteprima */}
+        {/* Modifica layout e anteprima: spazio extra */}
         <div className="flex-1 flex flex-col gap-6 min-w-0">
           {/* Tab mobile: SWITCH modifica / anteprima */}
           <div className="flex gap-2 mb-2 lg:hidden">

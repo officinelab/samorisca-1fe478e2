@@ -26,6 +26,7 @@ interface PrintLayoutsListProps {
   onCloneLayout: (layoutId: string) => void;
   onDeleteLayout: (layoutId: string) => void;
   onSetDefaultLayout: (layoutId: string) => void;
+  defaultFirst?: boolean; // <-- Add this prop
 }
 
 const PrintLayoutsList = ({
@@ -34,10 +35,16 @@ const PrintLayoutsList = ({
   onCloneLayout,
   onDeleteLayout,
   onSetDefaultLayout,
+  defaultFirst = false,
 }: PrintLayoutsListProps) => {
+  // Ordina: layout predefinito sempre primo se richiesto
+  const sortedLayouts = defaultFirst
+    ? [...layouts].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0))
+    : layouts;
+
   return (
     <div className="flex flex-col gap-4">
-      {layouts.map((layout) => (
+      {sortedLayouts.map((layout) => (
         <Card
           key={layout.id}
           className={`relative flex flex-col gap-1 p-3 border transition-shadow ${layout.isDefault ? "border-primary shadow-md" : ""}`}
@@ -48,9 +55,30 @@ const PrintLayoutsList = ({
               Predefinito
             </span>
           )}
-          {/* NOME / tipo layout */}
-          <div className="flex flex-col gap-0.5 justify-center">
-            <span className="text-base font-bold leading-5 truncate">{layout.name}</span>
+          {/* NOME / tipo layout -- con stella a SINISTRA */}
+          <div className="flex flex-row items-center gap-2 justify-between w-full">
+            <div className="flex items-center gap-1">
+              {/* Stella predefinito */}
+              {!layout.isDefault && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onSetDefaultLayout(layout.id)}
+                  aria-label="Imposta predefinito"
+                  className="p-0 mr-1"
+                >
+                  <Star size={18} />
+                </Button>
+              )}
+              {layout.isDefault && (
+                <Star
+                  size={18}
+                  className="text-primary"
+                  aria-label="Predefinito"
+                />
+              )}
+              <span className="text-base font-bold leading-5 truncate">{layout.name}</span>
+            </div>
             <span className="text-xs text-muted-foreground capitalize">
               {layout.type === "custom" ? "Personalizzato" : layout.type}
             </span>
@@ -66,17 +94,6 @@ const PrintLayoutsList = ({
             >
               <Edit size={18} />
             </Button>
-            {!layout.isDefault && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onSetDefaultLayout(layout.id)}
-                aria-label="Imposta predefinito"
-                className="flex-1"
-              >
-                <Star size={18} />
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="icon"
