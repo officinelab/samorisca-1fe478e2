@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     }
   };
 
+  // Migliora separazione gruppi con padding e divider
   return (
     <Card className="max-w-full">
       <CardHeader className="border-b bg-muted/30 rounded-t-lg">
@@ -102,17 +104,16 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
           Gestisci visibilità, stili o testo di ogni elemento del layout <span className="font-semibold">{editedLayout.name}</span>.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Sezione tabs verticale su desktop/tablet, orizzontale su mobile: ogni tab ben separato */}
+      <CardContent className="p-0">
         <div className="flex flex-col md:flex-row gap-8 md:gap-6">
-          {/* Tabs verticali */}
+          {/* Tabs verticali chiari e bene divisi */}
           <Tabs
             orientation="vertical"
             value={activeTab}
             onValueChange={setActiveTab}
             className="md:w-52 md:min-w-52"
           >
-            <TabsList className="flex md:flex-col md:gap-2 overflow-auto">
+            <TabsList className="flex md:flex-col md:gap-2 overflow-auto bg-card">
               {Object.keys(LABEL_MAP).map((tabKey) => (
                 <TabsTrigger key={tabKey} value={tabKey} className="justify-start text-left py-2 px-2">
                   {LABEL_MAP[tabKey]}
@@ -120,23 +121,22 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               ))}
             </TabsList>
           </Tabs>
-          {/* CONTENUTO: campo editor vero e proprio */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsContent value="generale">
+              <TabsContent value="generale" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <GeneralTab
                   layout={editedLayout}
                   onGeneralChange={handleGeneralChange}
                 />
               </TabsContent>
-              <TabsContent value="elementi">
+              <TabsContent value="elementi" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <ElementsTab
                   layout={editedLayout}
                   onElementChange={handleElementChange}
                   onElementMarginChange={handleElementMarginChange}
                 />
               </TabsContent>
-              <TabsContent value="copertina">
+              <TabsContent value="copertina" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <CoverLayoutTab
                   layout={editedLayout}
                   onCoverLogoChange={handleCoverLogoChange}
@@ -146,7 +146,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
                   onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
                 />
               </TabsContent>
-              <TabsContent value="allergeni">
+              <TabsContent value="allergeni" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <AllergensLayoutTab
                   layout={editedLayout}
                   onAllergensTitleChange={handleAllergensTitleChange}
@@ -160,13 +160,13 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
                   onAllergensItemChange={handleAllergensItemChange}
                 />
               </TabsContent>
-              <TabsContent value="spaziatura">
+              <TabsContent value="spaziatura" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <SpacingTab
                   layout={editedLayout}
                   onSpacingChange={handleSpacingChange}
                 />
               </TabsContent>
-              <TabsContent value="pagina">
+              <TabsContent value="pagina" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
                 <PageSettingsTab
                   layout={editedLayout}
                   onPageMarginChange={handlePageMarginChange}
@@ -176,8 +176,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
                 />
               </TabsContent>
             </Tabs>
-            <Separator className="my-6" />
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <Separator className="my-2" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 px-2">
               <div>
                 {validationError && (
                   <span className="text-sm text-red-500">{validationError}</span>
@@ -200,3 +200,4 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 };
 
 export default PrintLayoutEditor;
+

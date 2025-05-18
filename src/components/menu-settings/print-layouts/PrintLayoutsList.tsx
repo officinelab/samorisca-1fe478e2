@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import {
   Copy,
-  Trash,
+  Trash2,
   Star,
   Edit,
 } from "lucide-react";
@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertDialogDescription, // <-- AGGIUNTO L'IMPORT
+  AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
 
 interface PrintLayoutsListProps {
@@ -40,7 +40,7 @@ const PrintLayoutsList = ({
       {layouts.map((layout) => (
         <Card
           key={layout.id}
-          className={`relative flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3 border transition-shadow ${layout.isDefault ? "border-primary shadow-md" : ""}`}
+          className={`relative flex flex-col gap-1 p-3 border transition-shadow ${layout.isDefault ? "border-primary shadow-md" : ""}`}
         >
           {/* Badge predefinito */}
           {layout.isDefault && (
@@ -48,52 +48,54 @@ const PrintLayoutsList = ({
               Predefinito
             </span>
           )}
-          {/* NOME layout / tipo */}
-          <div className="flex-1 flex flex-col gap-1 justify-center">
+          {/* NOME / tipo layout */}
+          <div className="flex flex-col gap-0.5 justify-center">
             <span className="text-base font-bold leading-5 truncate">{layout.name}</span>
-            <span className="text-xs text-muted-foreground capitalize">{layout.type === "custom" ? "Personalizzato" : layout.type}</span>
+            <span className="text-xs text-muted-foreground capitalize">
+              {layout.type === "custom" ? "Personalizzato" : layout.type}
+            </span>
           </div>
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 md:ml-4 flex-none w-full md:w-auto">
+          {/* Bottoni solo icone, ora su una riga sotto */}
+          <div className="flex flex-row gap-2 mt-2 w-full">
             <Button
-              variant="secondary"
-              size="sm"
-              className="flex-1 whitespace-nowrap"
+              variant="ghost"
+              size="icon"
               onClick={() => onSelectLayout(layout)}
+              aria-label="Modifica"
+              className="flex-1"
             >
-              <Edit className="mr-2 h-4 w-4" />
-              Modifica
+              <Edit size={18} />
             </Button>
             {!layout.isDefault && (
               <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 whitespace-nowrap"
+                variant="ghost"
+                size="icon"
                 onClick={() => onSetDefaultLayout(layout.id)}
+                aria-label="Imposta predefinito"
+                className="flex-1"
               >
-                <Star className="mr-2 h-4 w-4" />
-                Predefinito
+                <Star size={18} />
               </Button>
             )}
             <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 whitespace-nowrap"
+              variant="ghost"
+              size="icon"
               onClick={() => onCloneLayout(layout.id)}
+              aria-label="Clona"
+              className="flex-1"
             >
-              <Copy className="mr-2 h-4 w-4" />
-              Clona
+              <Copy size={18} />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 whitespace-nowrap"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Elimina"
+                  className="flex-1"
                   disabled={layouts.length <= 1}
                 >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Elimina
+                  <Trash2 size={18} />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
