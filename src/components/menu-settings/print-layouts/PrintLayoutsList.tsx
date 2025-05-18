@@ -2,19 +2,17 @@
 import { PrintLayout } from "@/types/printLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Copy, 
-  Trash, 
-  Star, 
+import {
+  Copy,
+  Trash,
+  Star,
   Edit,
-  StarOff
 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -37,87 +35,92 @@ const PrintLayoutsList = ({
   onSetDefaultLayout,
 }: PrintLayoutsListProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="flex flex-col gap-4">
       {layouts.map((layout) => (
-        <Card key={layout.id} className="relative overflow-hidden">
+        <Card
+          key={layout.id}
+          className={`relative flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3 border transition-shadow ${layout.isDefault ? "border-primary shadow-md" : ""}`}
+        >
+          {/* Badge predefinito */}
           {layout.isDefault && (
-            <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-2 py-1 text-xs">
+            <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-semibold shadow">
               Predefinito
-            </div>
+            </span>
           )}
-          <CardHeader>
-            <CardTitle>{layout.name}</CardTitle>
-            <CardDescription>
-              {layout.type === "custom" ? "Personalizzato" : "Predefinito"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => onSelectLayout(layout)}
+          {/* NOME layout / tipo */}
+          <div className="flex-1 flex flex-col gap-1 justify-center">
+            <span className="text-base font-bold leading-5 truncate">{layout.name}</span>
+            <span className="text-xs text-muted-foreground capitalize">{layout.type === "custom" ? "Personalizzato" : layout.type}</span>
+          </div>
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 md:ml-4 flex-none w-full md:w-auto">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1 whitespace-nowrap"
+              onClick={() => onSelectLayout(layout)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Modifica
+            </Button>
+            {!layout.isDefault && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 whitespace-nowrap"
+                onClick={() => onSetDefaultLayout(layout.id)}
               >
-                <Edit className="mr-2 h-4 w-4" />
-                Modifica
+                <Star className="mr-2 h-4 w-4" />
+                Predefinito
               </Button>
-              
-              <div className="flex space-x-2">
-                {!layout.isDefault && (
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => onSetDefaultLayout(layout.id)}
-                  >
-                    <Star className="mr-2 h-4 w-4" />
-                    Predefinito
-                  </Button>
-                )}
-                
-                <Button 
-                  variant="outline" 
-                  className="flex-1"
-                  onClick={() => onCloneLayout(layout.id)}
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 whitespace-nowrap"
+              onClick={() => onCloneLayout(layout.id)}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Clona
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 whitespace-nowrap"
+                  disabled={layouts.length <= 1}
                 >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Clona
+                  <Trash className="mr-2 h-4 w-4" />
+                  Elimina
                 </Button>
-                
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1" 
-                      disabled={layouts.length <= 1}
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Elimina
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Stai per eliminare il layout "{layout.name}". 
-                        Questa azione non può essere annullata.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annulla</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => onDeleteLayout(layout.id)}
-                        className="bg-red-500 hover:bg-red-600"
-                      >
-                        Elimina
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          </CardContent>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Stai per eliminare il layout "{layout.name}". Questa azione non può essere annullata.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDeleteLayout(layout.id)}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    Elimina
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </Card>
       ))}
+      {layouts.length === 0 && (
+        <div className="text-center text-muted-foreground text-sm py-6">
+          Nessun layout disponibile.
+        </div>
+      )}
     </div>
   );
 };
