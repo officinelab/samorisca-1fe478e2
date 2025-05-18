@@ -21,29 +21,17 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     }
   };
 
-  // Assicurati che le impostazioni di copertina esistano e forziamo sempre logo.visible
-  const coverFromLayout = layout.cover || {};
-  const logoFromLayout = (coverFromLayout && typeof coverFromLayout === "object" && "logo" in coverFromLayout && coverFromLayout.logo)
-    ? coverFromLayout.logo
-    : undefined;
-  const titleFromLayout = (coverFromLayout && typeof coverFromLayout === "object" && "title" in coverFromLayout && coverFromLayout.title)
-    ? coverFromLayout.title
-    : undefined;
-  const subtitleFromLayout = (coverFromLayout && typeof coverFromLayout === "object" && "subtitle" in coverFromLayout && coverFromLayout.subtitle)
-    ? coverFromLayout.subtitle
-    : undefined;
-
-  const coverWithDefaults = {
-    ...coverFromLayout,
+  // Assicurati che le impostazioni di copertina esistano
+  const coverWithDefaults = layout.cover || {
     logo: {
-      maxWidth: typeof (logoFromLayout && logoFromLayout.maxWidth) === 'number' ? logoFromLayout.maxWidth : 80,
-      maxHeight: typeof (logoFromLayout && logoFromLayout.maxHeight) === 'number' ? logoFromLayout.maxHeight : 50,
-      alignment: (logoFromLayout && logoFromLayout.alignment) || 'center',
-      marginTop: typeof (logoFromLayout && logoFromLayout.marginTop) === 'number' ? logoFromLayout.marginTop : 20,
-      marginBottom: typeof (logoFromLayout && logoFromLayout.marginBottom) === 'number' ? logoFromLayout.marginBottom : 20,
-      visible: typeof (logoFromLayout && logoFromLayout.visible) === "boolean" ? logoFromLayout.visible : true,
+      maxWidth: 80,
+      maxHeight: 50,
+      alignment: 'center',
+      marginTop: 20,
+      marginBottom: 20,
+      visible: true  // Aggiunto il campo visible
     },
-    title: titleFromLayout ?? {
+    title: {
       visible: true,
       fontFamily: "Arial",
       fontSize: 24,
@@ -52,7 +40,7 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       alignment: "center",
       margin: { top: 20, right: 0, bottom: 10, left: 0 }
     },
-    subtitle: subtitleFromLayout ?? {
+    subtitle: {
       visible: true,
       fontFamily: "Arial",
       fontSize: 14,
@@ -60,9 +48,9 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       fontStyle: "italic",
       alignment: "center",
       margin: { top: 5, right: 0, bottom: 0, left: 0 }
-    },
+    }
   };
-
+  
   // Assicurati che le impostazioni per allergeni esistano
   const allergensWithDefaults = layout.allergens || {
     title: {
