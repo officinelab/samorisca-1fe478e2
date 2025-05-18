@@ -4,6 +4,9 @@ import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 
 // Assicura che i margini della pagina siano correttamente inizializzati
 const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
+  // Migliore protezione contro cover mancante/interamente vuota
+  const baseCover = layout.cover && typeof layout.cover === "object" ? layout.cover : {};
+
   // Valori default per logo cover
   const defaultLogo = {
     maxWidth: 80,
@@ -36,26 +39,20 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     margin: { top: 5, right: 0, bottom: 0, left: 0 },
   };
 
-  // Normalizza cover.logo
   const mergedLogo = {
     ...defaultLogo,
-    ...(layout.cover && typeof layout.cover.logo === "object" ? layout.cover.logo : {}),
-    visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : true,
+    ...(baseCover.logo && typeof baseCover.logo === "object" ? baseCover.logo : {}),
+    visible: typeof baseCover.logo?.visible === "boolean" ? baseCover.logo.visible : true,
   };
-
-  // Normalizza titolo cover
   const mergedTitle = {
     ...defaultTitle,
-    ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {}),
+    ...(baseCover.title && typeof baseCover.title === "object" ? baseCover.title : {}),
   };
-
-  // Normalizza sottotitolo cover
   const mergedSubtitle = {
     ...defaultSubtitle,
-    ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {}),
+    ...(baseCover.subtitle && typeof baseCover.subtitle === "object" ? baseCover.subtitle : {}),
   };
 
-  // Costruzione cover definitiva
   const coverWithDefaults = {
     logo: mergedLogo,
     title: mergedTitle,
