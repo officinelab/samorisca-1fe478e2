@@ -59,7 +59,6 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleSave
   } = useLayoutEditor(layout, onSave);
 
-  // Validazione margini e fontSize (user-friendly!)
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const validate = () => {
@@ -89,9 +88,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     }
   };
 
-  // Migliora separazione gruppi con padding e divider
   return (
-    <Card className="max-w-full">
+    <Card className="max-w-full h-full rounded-lg overflow-visible">
       <CardHeader className="border-b bg-muted/30 rounded-t-lg">
         <CardTitle className="flex items-center gap-2">
           <Save size={22} className="text-primary" />
@@ -106,14 +104,14 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
       </CardHeader>
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row gap-8 md:gap-6">
-          {/* Tabs verticali chiari e bene divisi */}
+          {/* Tabs verticali */}
           <Tabs
             orientation="vertical"
             value={activeTab}
             onValueChange={setActiveTab}
-            className="md:w-52 md:min-w-52"
+            className="md:w-56 md:min-w-56"
           >
-            <TabsList className="flex md:flex-col md:gap-2 overflow-auto bg-card">
+            <TabsList className="flex md:flex-col md:gap-2 overflow-auto bg-card md:sticky md:top-2">
               {Object.keys(LABEL_MAP).map((tabKey) => (
                 <TabsTrigger key={tabKey} value={tabKey} className="justify-start text-left py-2 px-2">
                   {LABEL_MAP[tabKey]}
@@ -121,61 +119,87 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               ))}
             </TabsList>
           </Tabs>
-          <div className="flex-1 min-w-0 space-y-8">
+          {/* CONTENUTO TABS - con spaziatura, max-h scrollabile */}
+          <div className="flex-1 min-w-0 max-h-[82vh] overflow-auto pr-2" style={{scrollbarGutter: 'stable'}}>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsContent value="generale" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <GeneralTab
-                  layout={editedLayout}
-                  onGeneralChange={handleGeneralChange}
-                />
+              <TabsContent value="generale" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-4 py-6">
+                    <GeneralTab
+                      layout={editedLayout}
+                      onGeneralChange={handleGeneralChange}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
-              <TabsContent value="elementi" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <ElementsTab
-                  layout={editedLayout}
-                  onElementChange={handleElementChange}
-                  onElementMarginChange={handleElementMarginChange}
-                />
+              <TabsContent value="elementi" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-4 py-6">
+                    <ElementsTab
+                      layout={editedLayout}
+                      onElementChange={handleElementChange}
+                      onElementMarginChange={handleElementMarginChange}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
-              <TabsContent value="copertina" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <CoverLayoutTab
-                  layout={editedLayout}
-                  onCoverLogoChange={handleCoverLogoChange}
-                  onCoverTitleChange={handleCoverTitleChange}
-                  onCoverTitleMarginChange={handleCoverTitleMarginChange}
-                  onCoverSubtitleChange={handleCoverSubtitleChange}
-                  onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
-                />
+              <TabsContent value="copertina" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-2 sm:px-4 py-6">
+                    <CoverLayoutTab
+                      layout={editedLayout}
+                      onCoverLogoChange={handleCoverLogoChange}
+                      onCoverTitleChange={handleCoverTitleChange}
+                      onCoverTitleMarginChange={handleCoverTitleMarginChange}
+                      onCoverSubtitleChange={handleCoverSubtitleChange}
+                      onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
-              <TabsContent value="allergeni" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <AllergensLayoutTab
-                  layout={editedLayout}
-                  onAllergensTitleChange={handleAllergensTitleChange}
-                  onAllergensTitleMarginChange={handleAllergensTitleMarginChange}
-                  onAllergensDescriptionChange={handleAllergensDescriptionChange}
-                  onAllergensDescriptionMarginChange={handleAllergensDescriptionMarginChange}
-                  onAllergensItemNumberChange={handleAllergensItemNumberChange}
-                  onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
-                  onAllergensItemTitleChange={handleAllergensItemTitleChange}
-                  onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
-                  onAllergensItemChange={handleAllergensItemChange}
-                />
+              <TabsContent value="allergeni" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-4 py-6">
+                    <AllergensLayoutTab
+                      layout={editedLayout}
+                      onAllergensTitleChange={handleAllergensTitleChange}
+                      onAllergensTitleMarginChange={handleAllergensTitleMarginChange}
+                      onAllergensDescriptionChange={handleAllergensDescriptionChange}
+                      onAllergensDescriptionMarginChange={handleAllergensDescriptionMarginChange}
+                      onAllergensItemNumberChange={handleAllergensItemNumberChange}
+                      onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
+                      onAllergensItemTitleChange={handleAllergensItemTitleChange}
+                      onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
+                      onAllergensItemChange={handleAllergensItemChange}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
-              <TabsContent value="spaziatura" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <SpacingTab
-                  layout={editedLayout}
-                  onSpacingChange={handleSpacingChange}
-                />
+              <TabsContent value="spaziatura" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-4 py-6">
+                    <SpacingTab
+                      layout={editedLayout}
+                      onSpacingChange={handleSpacingChange}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
-              <TabsContent value="pagina" className="bg-muted/30 rounded-lg px-4 py-6 shadow-sm">
-                <PageSettingsTab
-                  layout={editedLayout}
-                  onPageMarginChange={handlePageMarginChange}
-                  onOddPageMarginChange={handleOddPageMarginChange}
-                  onEvenPageMarginChange={handleEvenPageMarginChange}
-                  onToggleDistinctMargins={handleToggleDistinctMargins}
-                />
+              <TabsContent value="pagina" className="mb-8">
+                <Card className="shadow-sm border bg-white/70">
+                  <CardContent className="px-4 py-6">
+                    <PageSettingsTab
+                      layout={editedLayout}
+                      onPageMarginChange={handlePageMarginChange}
+                      onOddPageMarginChange={handleOddPageMarginChange}
+                      onEvenPageMarginChange={handleEvenPageMarginChange}
+                      onToggleDistinctMargins={handleToggleDistinctMargins}
+                    />
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
+            {/* Azioni finali */}
             <Separator className="my-2" />
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 px-2">
               <div>
@@ -200,4 +224,3 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 };
 
 export default PrintLayoutEditor;
-
