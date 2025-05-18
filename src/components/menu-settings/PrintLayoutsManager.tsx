@@ -1,8 +1,7 @@
 
 import { useState } from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/sonner";
@@ -11,6 +10,7 @@ import PrintLayoutEditor from "./print-layouts/PrintLayoutEditor";
 import PrintLayoutPreview from "./print-layouts/PrintLayoutPreview";
 import { PrintLayout } from "@/types/printLayout";
 import CreateLayoutDialog from "./print-layouts/CreateLayoutDialog";
+import { Save, Printer, LayoutList, LayoutGrid } from "lucide-react";
 
 const PrintLayoutsManager = () => {
   const {
@@ -29,7 +29,7 @@ const PrintLayoutsManager = () => {
   const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
   const [editorTab, setEditorTab] = useState("lista");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
+
   // Gestisci gli errori
   if (error) {
     toast.error(error);
@@ -94,70 +94,95 @@ const PrintLayoutsManager = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Layout di Stampa</h3>
-          <p className="text-sm text-muted-foreground">
-            Personalizza l'aspetto dei tuoi menu per la stampa.
-          </p>
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <Card>
+        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <LayoutGrid size={22} className="text-primary" />
+              Gestione Layout di Stampa
+            </CardTitle>
+            <CardDescription>
+              Crea e personalizza i layout per la stampa dei tuoi menu.
+            </CardDescription>
+          </div>
+          <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+            + Nuovo Layout
+          </Button>
+        </CardHeader>
+      </Card>
+      
+      {/* Main content: lista/modifica/anteprima */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Lista layouts (sempre visibile su schermi larghi) */}
+        <div className="lg:w-1/3 flex-shrink-0">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <LayoutList size={18} /> Tutti i Layout
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Gestisci, attiva, dupplica o elimina i layout disponibili.
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="py-4">
+              <PrintLayoutsList
+                layouts={layouts}
+                onSelectLayout={handleSelectLayout}
+                onCloneLayout={handleCloneLayout}
+                onDeleteLayout={handleDeleteLayout}
+                onSetDefaultLayout={handleSetDefaultLayout}
+              />
+            </CardContent>
+          </Card>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          Crea Nuovo Layout
-        </Button>
+        {/* Tabs con modifica + anteprima */}
+        <div className="flex-1 flex flex-col gap-6">
+          {/* Switch tabs per mobile/device più piccoli */}
+          <div className="flex gap-2 mb-2 lg:hidden">
+            <Button variant={editorTab === "modifica" ? "secondary" : "ghost"} onClick={() => setEditorTab("modifica")} size="sm">
+              <Save size={16} className="mr-1" /> Modifica Layout
+            </Button>
+            <Button variant={editorTab === "anteprima" ? "secondary" : "ghost"} onClick={() => setEditorTab("anteprima")} size="sm">
+              <Printer size={16} className="mr-1" /> Anteprima
+            </Button>
+          </div>
+          {/* Modifica Layout */}
+          {editorTab === "modifica" && (
+            <div>
+              {selectedLayout ? (
+                <PrintLayoutEditor
+                  layout={selectedLayout}
+                  onSave={handleUpdateLayout}
+                />
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground">Seleziona un layout dalla lista per modificarlo.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+          {/* Anteprima */}
+          {editorTab === "anteprima" && (
+            <div>
+              {selectedLayout ? (
+                <PrintLayoutPreview layout={selectedLayout} />
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground">Seleziona un layout dalla lista per visualizzare l'anteprima.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-
-      <Separator />
-
-      <Tabs value={editorTab} onValueChange={setEditorTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="lista">Lista Layout</TabsTrigger>
-          <TabsTrigger value="modifica" disabled={!selectedLayout}>
-            Modifica Layout
-          </TabsTrigger>
-          <TabsTrigger value="anteprima" disabled={!selectedLayout}>
-            Anteprima
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="lista" className="space-y-4 mt-4">
-          <PrintLayoutsList
-            layouts={layouts}
-            onSelectLayout={handleSelectLayout}
-            onCloneLayout={handleCloneLayout}
-            onDeleteLayout={handleDeleteLayout}
-            onSetDefaultLayout={handleSetDefaultLayout}
-          />
-        </TabsContent>
-
-        <TabsContent value="modifica" className="space-y-4 mt-4">
-          {selectedLayout ? (
-            <PrintLayoutEditor
-              layout={selectedLayout}
-              onSave={handleUpdateLayout}
-            />
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <p>Seleziona un layout dalla lista per modificarlo.</p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="anteprima" className="space-y-4 mt-4">
-          {selectedLayout ? (
-            <PrintLayoutPreview layout={selectedLayout} />
-          ) : (
-            <Card>
-              <CardContent className="pt-6">
-                <p>Seleziona un layout dalla lista per visualizzare l'anteprima.</p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
-
+      {/* Dialog per nuovo layout */}
       <CreateLayoutDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
