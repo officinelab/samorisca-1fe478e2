@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -147,9 +146,34 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
   };
 };
 
+// Utility: garantisci che cover.logo abbia sempre visible booleano
+function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
+  const cover = layout.cover ?? {};
+  const logo = cover.logo ?? {};
+  let visibleField = logo.visible;
+  // Se manca o non è booleano, lo forziamo a false (meglio che sia sempre boolean)
+  if (typeof visibleField !== "boolean") {
+    visibleField = false;
+  }
+  return {
+    ...layout,
+    cover: {
+      ...cover,
+      logo: {
+        ...logo,
+        visible: visibleField,
+      },
+      title: cover.title,
+      subtitle: cover.subtitle,
+    },
+  };
+}
+
 export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) => {
-  // Assicurati che il layout iniziale abbia tutte le proprietà di margine richieste
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins({ ...initialLayout }));
+  // Assicura anche in fase di editing che visible sia sempre presente (di default: false)
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>(
+    ensureCoverLogoVisible(ensurePageMargins({ ...initialLayout }))
+  );
   const [activeTab, setActiveTab] = useState("generale");
 
   const handleGeneralChange = (field: keyof PrintLayout, value: any) => {
@@ -535,8 +559,8 @@ export const useLayoutEditor = (initialLayout: PrintLayout, onSave: (layout: Pri
   };
 
   const handleSave = () => {
-    // Assicurati che il layout abbia tutti i margini sincronizzati correttamente prima di salvare
-    const finalLayout = syncPageMargins(editedLayout);
+    // Assicura la presenza di cover.logo.visible PRIMA di salvare
+    const finalLayout = ensureCoverLogoVisible(syncPageMargins(editedLayout));
     onSave(finalLayout);
   };
 
