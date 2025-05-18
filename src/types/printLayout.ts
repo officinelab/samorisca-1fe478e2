@@ -25,6 +25,11 @@ export type PageMargins = {
 
 export type ProductSchema = 'schema1' | 'schema2' | 'schema3';
 
+// AGGIUNTA: struttura per header opzionale
+export type PrintLayoutHeader = {
+  height?: number; // Altezza riservata in mm solo nelle pagine MENU, NON copertina
+};
+
 export type PrintLayout = {
   id: string;
   name: string;
@@ -46,7 +51,7 @@ export type PrintLayout = {
       alignment: 'left' | 'center' | 'right';
       marginTop: number;
       marginBottom: number;
-      visible: boolean; // Aggiunta questa proprietà mancante
+      visible: boolean;
     };
     title: PrintLayoutElementConfig;
     subtitle: PrintLayoutElementConfig;
@@ -73,6 +78,5 @@ export type PrintLayout = {
     oddPages: PageMargins;
     evenPages: PageMargins;
   };
-  headerHeight?: number; // Spostato in radice PrintLayout (NON in page)
+  header?: PrintLayoutHeader; // <-- header ora è un oggetto opzionale
 };
-

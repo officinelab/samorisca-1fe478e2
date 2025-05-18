@@ -38,9 +38,9 @@ export const calculateAvailableHeight = (
     marginRightMm = margins.marginRight ?? 15;
   }
 
-  // HEADER height va preso ora da customLayout.headerHeight
-  const headerMm = typeof customLayout?.headerHeight === "number"
-    ? customLayout.headerHeight
+  // HEADER height va preso da customLayout.header.height
+  const headerMm = typeof customLayout?.header?.height === "number"
+    ? customLayout.header.height
     : 0;
 
   // STEP 2: Calcolo del padding letto via DOM, fallback se assente
