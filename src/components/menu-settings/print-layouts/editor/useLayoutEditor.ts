@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, PageMargins } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -5,7 +6,14 @@ import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 // Assicura che i margini della pagina siano correttamente inizializzati
 const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
   // Migliore protezione contro cover mancante/interamente vuota
-  const baseCover = layout.cover && typeof layout.cover === "object" ? layout.cover : {};
+  // Refactor: baseCover ora ha sempre tutte le proprietà che ci servono, default a undefined
+  const baseCover: {
+    logo?: any;
+    title?: any;
+    subtitle?: any;
+  } = typeof layout.cover === "object" && layout.cover !== null
+    ? layout.cover
+    : { logo: undefined, title: undefined, subtitle: undefined };
 
   // Valori default per logo cover
   const defaultLogo = {
@@ -39,18 +47,28 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     margin: { top: 5, right: 0, bottom: 0, left: 0 },
   };
 
+  // Refactor: nessun accesso a proprietà potenzialmente assenti su {}
   const mergedLogo = {
     ...defaultLogo,
-    ...(baseCover.logo && typeof baseCover.logo === "object" ? baseCover.logo : {}),
-    visible: typeof baseCover.logo?.visible === "boolean" ? baseCover.logo.visible : true,
+    ...(typeof baseCover.logo === "object" && baseCover.logo !== null
+      ? baseCover.logo
+      : {}),
+    visible:
+      typeof baseCover.logo?.visible === "boolean"
+        ? baseCover.logo.visible
+        : true,
   };
   const mergedTitle = {
     ...defaultTitle,
-    ...(baseCover.title && typeof baseCover.title === "object" ? baseCover.title : {}),
+    ...(typeof baseCover.title === "object" && baseCover.title !== null
+      ? baseCover.title
+      : {}),
   };
   const mergedSubtitle = {
     ...defaultSubtitle,
-    ...(baseCover.subtitle && typeof baseCover.subtitle === "object" ? baseCover.subtitle : {}),
+    ...(typeof baseCover.subtitle === "object" && baseCover.subtitle !== null
+      ? baseCover.subtitle
+      : {}),
   };
 
   const coverWithDefaults = {
