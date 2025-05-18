@@ -4,7 +4,66 @@ import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 
 // Assicura che i margini della pagina siano correttamente inizializzati
 const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
-  // Imposta valori predefiniti se non presenti
+  // Valori default per logo cover
+  const defaultLogo = {
+    maxWidth: 80,
+    maxHeight: 50,
+    alignment: "center" as const,
+    marginTop: 20,
+    marginBottom: 20,
+    visible: true,
+  };
+
+  // Valori default per titolo cover
+  const defaultTitle: PrintLayoutElementConfig = {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 24,
+    fontColor: "#000000",
+    fontStyle: "bold",
+    alignment: "center",
+    margin: { top: 20, right: 0, bottom: 10, left: 0 },
+  };
+
+  // Valori default per sottotitolo cover
+  const defaultSubtitle: PrintLayoutElementConfig = {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 14,
+    fontColor: "#666666",
+    fontStyle: "italic",
+    alignment: "center",
+    margin: { top: 5, right: 0, bottom: 0, left: 0 },
+  };
+
+  // Normalizza cover.logo
+  const mergedLogo = {
+    ...defaultLogo,
+    ...(layout.cover && typeof layout.cover.logo === "object" ? layout.cover.logo : {}),
+    visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : true,
+  };
+
+  // Normalizza titolo cover
+  const mergedTitle = {
+    ...defaultTitle,
+    ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {}),
+  };
+
+  // Normalizza sottotitolo cover
+  const mergedSubtitle = {
+    ...defaultSubtitle,
+    ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {}),
+  };
+
+  // Costruzione cover definitiva
+  const coverWithDefaults = {
+    logo: mergedLogo,
+    title: mergedTitle,
+    subtitle: mergedSubtitle,
+  };
+
+  // Restanti default invariati sui campi allergeni e page margin...
+  // ... keep existing code (allergensWithDefaults, pageWithDefaults and return) the same ...
   const pageWithDefaults = {
     ...layout.page,
     oddPages: layout.page.oddPages || {
@@ -20,38 +79,6 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
       marginLeft: layout.page.marginLeft
     }
   };
-
-  // Assicurati che le impostazioni di copertina esistano
-  const coverWithDefaults = layout.cover || {
-    logo: {
-      maxWidth: 80,
-      maxHeight: 50,
-      alignment: 'center',
-      marginTop: 20,
-      marginBottom: 20,
-      visible: true  // Aggiunto il campo visible
-    },
-    title: {
-      visible: true,
-      fontFamily: "Arial",
-      fontSize: 24,
-      fontColor: "#000000",
-      fontStyle: "bold",
-      alignment: "center",
-      margin: { top: 20, right: 0, bottom: 10, left: 0 }
-    },
-    subtitle: {
-      visible: true,
-      fontFamily: "Arial",
-      fontSize: 14,
-      fontColor: "#666666",
-      fontStyle: "italic",
-      alignment: "center",
-      margin: { top: 5, right: 0, bottom: 0, left: 0 }
-    }
-  };
-  
-  // Assicurati che le impostazioni per allergeni esistano
   const allergensWithDefaults = layout.allergens || {
     title: {
       visible: true,
@@ -101,7 +128,7 @@ const ensurePageMargins = (layout: PrintLayout): PrintLayout => {
     ...layout,
     page: pageWithDefaults,
     cover: coverWithDefaults,
-    allergens: allergensWithDefaults
+    allergens: allergensWithDefaults,
   };
 };
 
