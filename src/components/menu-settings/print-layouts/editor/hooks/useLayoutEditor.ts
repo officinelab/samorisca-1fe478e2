@@ -8,78 +8,47 @@ import { useAllergensTab } from "./useAllergensTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 
-// Utilities per default e validazioni (possiamo estrarle)
+// Utilities per default e validazioni (miglior fallback oggetto cover)
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
-  // Migliore protezione contro cover mancante/interamente vuota
-  // Refactor: baseCover ora ha sempre tutte le proprietà che ci servono, default a undefined
-  const baseCover: {
-    logo?: any;
-    title?: any;
-    subtitle?: any;
-  } = typeof layout.cover === "object" && layout.cover !== null
-    ? layout.cover
-    : { logo: undefined, title: undefined, subtitle: undefined };
-
-  // Valori default per logo cover
-  const defaultLogo = {
-    maxWidth: 80,
-    maxHeight: 50,
-    alignment: "center" as const,
-    marginTop: 20,
-    marginBottom: 20,
-    visible: true,
-  };
-
-  // Valori default per titolo cover
-  const defaultTitle: PrintLayoutElementConfig = {
-    visible: true,
-    fontFamily: "Arial",
-    fontSize: 24,
-    fontColor: "#000000",
-    fontStyle: "bold",
-    alignment: "center",
-    margin: { top: 20, right: 0, bottom: 10, left: 0 },
-  };
-
-  // Valori default per sottotitolo cover
-  const defaultSubtitle: PrintLayoutElementConfig = {
-    visible: true,
-    fontFamily: "Arial",
-    fontSize: 14,
-    fontColor: "#666666",
-    fontStyle: "italic",
-    alignment: "center",
-    margin: { top: 5, right: 0, bottom: 0, left: 0 },
-  };
-
-  // Refactor: nessun accesso a proprietà potenzialmente assenti su {}
-  const mergedLogo = {
-    ...defaultLogo,
-    ...(typeof baseCover.logo === "object" && baseCover.logo !== null
-      ? baseCover.logo
-      : {}),
-    visible:
-      typeof baseCover.logo?.visible === "boolean"
-        ? baseCover.logo.visible
-        : true,
-  };
-  const mergedTitle = {
-    ...defaultTitle,
-    ...(typeof baseCover.title === "object" && baseCover.title !== null
-      ? baseCover.title
-      : {}),
-  };
-  const mergedSubtitle = {
-    ...defaultSubtitle,
-    ...(typeof baseCover.subtitle === "object" && baseCover.subtitle !== null
-      ? baseCover.subtitle
-      : {}),
-  };
-
-  const coverWithDefaults = {
-    logo: mergedLogo,
-    title: mergedTitle,
-    subtitle: mergedSubtitle,
+  // Fallback completo e sicuro per cover
+  const updatedCover = {
+    logo: {
+      visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : false,
+      maxWidth: layout.cover?.logo?.maxWidth ?? 80,
+      maxHeight: layout.cover?.logo?.maxHeight ?? 50,
+      alignment: layout.cover?.logo?.alignment ?? "center",
+      marginTop: layout.cover?.logo?.marginTop ?? 20,
+      marginBottom: layout.cover?.logo?.marginBottom ?? 20
+    },
+    title: {
+      visible: layout.cover?.title?.visible ?? true,
+      fontFamily: layout.cover?.title?.fontFamily ?? "Arial",
+      fontSize: layout.cover?.title?.fontSize ?? 24,
+      fontColor: layout.cover?.title?.fontColor ?? "#000000",
+      fontStyle: layout.cover?.title?.fontStyle ?? "bold",
+      alignment: layout.cover?.title?.alignment ?? "center",
+      margin: {
+        top: layout.cover?.title?.margin?.top ?? 20,
+        right: layout.cover?.title?.margin?.right ?? 0,
+        bottom: layout.cover?.title?.margin?.bottom ?? 10,
+        left: layout.cover?.title?.margin?.left ?? 0
+      }
+    },
+    subtitle: {
+      visible: layout.cover?.subtitle?.visible ?? true,
+      fontFamily: layout.cover?.subtitle?.fontFamily ?? "Arial",
+      fontSize: layout.cover?.subtitle?.fontSize ?? 14,
+      fontColor: layout.cover?.subtitle?.fontColor ?? "#666666",
+      fontStyle: layout.cover?.subtitle?.fontStyle ?? "italic",
+      alignment: layout.cover?.subtitle?.alignment ?? "center",
+      margin: {
+        top: layout.cover?.subtitle?.margin?.top ?? 5,
+        right: layout.cover?.subtitle?.margin?.right ?? 0,
+        bottom: layout.cover?.subtitle?.margin?.bottom ?? 0,
+        left: layout.cover?.subtitle?.margin?.left ?? 0
+      }
+    },
+    ...(layout.cover || {}) // eventuali proprietà "custom" già definite
   };
 
   // Restanti default invariati sui campi allergeni e page margin...
@@ -146,7 +115,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
   return {
     ...layout,
     page: pageWithDefaults,
-    cover: coverWithDefaults,
+    cover: updatedCover,
     allergens: allergensWithDefaults,
   };
 }
