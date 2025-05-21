@@ -9,8 +9,8 @@ import PrintLayoutsList from "./print-layouts/PrintLayoutsList";
 import PrintLayoutEditor from "./print-layouts/PrintLayoutEditor";
 import PrintLayoutPreview from "./print-layouts/PrintLayoutPreview";
 import { PrintLayout } from "@/types/printLayout";
-import CreateLayoutDialog from "./print-layouts/CreateLayoutDialog";
 import { Save, Printer, LayoutList, LayoutGrid } from "lucide-react";
+// Eliminiamo import CreateLayoutDialog
 
 const PrintLayoutsManager = () => {
   const {
@@ -22,13 +22,13 @@ const PrintLayoutsManager = () => {
     deleteLayout,
     setDefaultLayout,
     cloneLayout,
-    createNewLayout,
+    // createNewLayout, // Rimosso
     changeActiveLayout
   } = useMenuLayouts();
 
   const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
   const [editorTab, setEditorTab] = useState("lista");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false); // Rimosso
 
   // Gestisci gli errori
   if (error) {
@@ -74,20 +74,7 @@ const PrintLayoutsManager = () => {
     toast.success("Layout impostato come predefinito");
   };
 
-  const handleCreateLayout = async (name: string) => {
-    try {
-      const newLayout = await createNewLayout(name);
-      if (newLayout) {
-        setSelectedLayout(newLayout);
-        setIsCreateDialogOpen(false);
-        setEditorTab("modifica");
-        toast.success("Layout creato con successo");
-      }
-    } catch (error) {
-      console.error("Errore durante la creazione del layout:", error);
-      toast.error("Errore durante la creazione del layout");
-    }
-  };
+  // Eliminato handleCreateLayout
 
   if (isLoading) {
     return <div className="flex justify-center p-6">Caricamento layouts...</div>;
@@ -107,9 +94,10 @@ const PrintLayoutsManager = () => {
               Crea e personalizza i layout per la stampa dei tuoi menu. Tutti i layout disponibili appaiono ordinati qui sotto.
             </CardDescription>
           </div>
-          <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+          {/* <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
             + Nuovo Layout
-          </Button>
+          </Button> */}
+          {/* Rimosso pulsante per la creazione */}
         </CardHeader>
       </Card>
 
@@ -193,14 +181,10 @@ const PrintLayoutsManager = () => {
           )}
         </div>
       </div>
-      {/* Dialog nuovo layout */}
-      <CreateLayoutDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onCreate={handleCreateLayout}
-      />
+      {/* Dialog nuovo layout: Rimosso */}
     </div>
   );
 };
 
 export default PrintLayoutsManager;
+
