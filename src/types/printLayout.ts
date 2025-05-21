@@ -43,6 +43,7 @@ export type MenuElementsConfig = {
   category: PrintLayoutElementConfig;          // Categoria (sempre visibile)
   title: PrintLayoutElementConfig;             // Titolo prodotto (sempre visibile)
   description: PrintLayoutElementConfig;       // Descrizione prodotto (sempre visibile)
+  descriptionEng: PrintLayoutElementConfig;    // Descrizione prodotto ENG (stessi campi di description)
   allergensList: PrintLayoutElementConfig;     // Allergeni prodotto (sempre visibile)
   price: PrintLayoutElementConfig;             // Prezzo (sempre visibile)
   suffix: Omit<PrintLayoutElementConfig, 'margin'> & {

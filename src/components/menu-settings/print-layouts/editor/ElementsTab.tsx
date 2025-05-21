@@ -54,6 +54,17 @@ const ElementsTab = ({ layout, onElementChange, onElementMarginChange }: Element
           </AccordionContent>
         </AccordionItem>
 
+        <AccordionItem value="descriptionEng">
+          <AccordionTrigger>Descrizione Prodotto ENG</AccordionTrigger>
+          <AccordionContent>
+            <ElementEditor
+              element={layout.elements.descriptionEng}
+              onChange={(field, value) => onElementChange("descriptionEng", field, value)}
+              onMarginChange={(field, value) => onElementMarginChange("descriptionEng", field, value)}
+            />
+          </AccordionContent>
+        </AccordionItem>
+
         <AccordionItem value="price">
           <AccordionTrigger>Prezzo</AccordionTrigger>
           <AccordionContent>

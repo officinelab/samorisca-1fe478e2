@@ -66,6 +66,24 @@ function ensureAllFields(layout: PrintLayout): PrintLayout {
         },
         visible: typeof layout.elements?.description?.visible === "boolean" ? layout.elements?.description?.visible : true,
       },
+
+      // NEW: descriptionEng
+      descriptionEng: {
+        ...layout.elements?.descriptionEng,
+        fontFamily: layout.elements?.descriptionEng?.fontFamily ?? "Arial",
+        fontSize: layout.elements?.descriptionEng?.fontSize ?? 12,
+        fontColor: layout.elements?.descriptionEng?.fontColor ?? "#444444",
+        fontStyle: layout.elements?.descriptionEng?.fontStyle ?? "normal",
+        alignment: layout.elements?.descriptionEng?.alignment ?? "left",
+        margin: {
+          top: layout.elements?.descriptionEng?.margin?.top ?? 0,
+          right: layout.elements?.descriptionEng?.margin?.right ?? 0,
+          bottom: layout.elements?.descriptionEng?.margin?.bottom ?? 0,
+          left: layout.elements?.descriptionEng?.margin?.left ?? 0,
+        },
+        visible: typeof layout.elements?.descriptionEng?.visible === "boolean" ? layout.elements?.descriptionEng?.visible : true,
+      },
+
       allergensList: {
         ...layout.elements?.allergensList,
         fontFamily: layout.elements?.allergensList?.fontFamily ?? "Arial",
