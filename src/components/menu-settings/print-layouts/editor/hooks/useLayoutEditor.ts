@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -11,6 +10,7 @@ import { usePageSettingsTab } from "./usePageSettingsTab";
 
 // Util per valori safe
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
+  // Logo
   const logo: CoverLogoConfig = {
     imageUrl: layout.cover?.logo?.imageUrl ?? "",
     maxWidth: layout.cover?.logo?.maxWidth ?? 80,
@@ -21,7 +21,9 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : true,
   };
 
+  // Title
   const title: CoverTitleConfig = {
+    visible: typeof layout.cover?.title?.visible === "boolean" ? layout.cover.title.visible : true,
     fontFamily: layout.cover?.title?.fontFamily ?? "Arial",
     fontSize: layout.cover?.title?.fontSize ?? 24,
     fontColor: layout.cover?.title?.fontColor ?? "#000000",
@@ -29,10 +31,11 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: layout.cover?.title?.alignment ?? "center",
     margin: layout.cover?.title?.margin ?? { top: 20, right: 0, bottom: 10, left: 0 },
     menuTitle: layout.cover?.title?.menuTitle ?? "",
-    visible: typeof layout.cover?.title?.visible === "boolean" ? layout.cover.title.visible : true,
   };
 
+  // Subtitle
   const subtitle: CoverSubtitleConfig = {
+    visible: typeof layout.cover?.subtitle?.visible === "boolean" ? layout.cover.subtitle.visible : true,
     fontFamily: layout.cover?.subtitle?.fontFamily ?? "Arial",
     fontSize: layout.cover?.subtitle?.fontSize ?? 14,
     fontColor: layout.cover?.subtitle?.fontColor ?? "#666666",
@@ -40,19 +43,18 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: layout.cover?.subtitle?.alignment ?? "center",
     margin: layout.cover?.subtitle?.margin ?? { top: 5, right: 0, bottom: 0, left: 0 },
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? "",
-    visible: typeof layout.cover?.subtitle?.visible === "boolean" ? layout.cover.subtitle.visible : true,
   };
 
-  // Allergen item.description safe fallback
+  // Allergens item.description safe fallback
   const allergensItem = layout.allergens?.item ?? {};
   const itemDescription: PrintLayoutElementConfig = {
-    fontFamily: allergensItem?.description?.fontFamily ?? "Arial",
-    fontSize: allergensItem?.description?.fontSize ?? 12,
-    fontColor: allergensItem?.description?.fontColor ?? "#444444",
-    fontStyle: allergensItem?.description?.fontStyle ?? "normal",
-    alignment: allergensItem?.description?.alignment ?? "left",
-    margin: allergensItem?.description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 },
-    visible: typeof allergensItem?.description?.visible === "boolean" ? allergensItem.description.visible : true,
+    visible: typeof allergensItem.description?.visible === "boolean" ? allergensItem.description.visible : true,
+    fontFamily: allergensItem.description?.fontFamily ?? "Arial",
+    fontSize: allergensItem.description?.fontSize ?? 12,
+    fontColor: allergensItem.description?.fontColor ?? "#444444",
+    fontStyle: allergensItem.description?.fontStyle ?? "normal",
+    alignment: allergensItem.description?.alignment ?? "left",
+    margin: allergensItem.description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 }
   };
 
   return {

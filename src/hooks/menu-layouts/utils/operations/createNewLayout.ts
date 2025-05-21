@@ -102,7 +102,6 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         marginLeft: 15
       }
     },
-    // Sezioni per copertina e allergeni
     cover: {
       logo: {
         imageUrl: "",

@@ -80,7 +80,7 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
     };
   } else {
     // Ensure all fields present (fallback)
-    const logo = syncedLayout.cover.logo || {};
+    const logo = { ...(syncedLayout.cover.logo || {}) };
     syncedLayout.cover.logo = {
       imageUrl: logo.imageUrl ?? "",
       maxWidth: logo.maxWidth ?? 80,
@@ -90,7 +90,7 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
       marginBottom: logo.marginBottom ?? 20,
       visible: typeof logo.visible === "boolean" ? logo.visible : true,
     };
-    const title = syncedLayout.cover.title || {};
+    const title = { ...(syncedLayout.cover.title || {}) };
     syncedLayout.cover.title = {
       fontFamily: title.fontFamily ?? "Arial",
       fontSize: title.fontSize ?? 24,
@@ -101,7 +101,7 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
       menuTitle: title.menuTitle ?? "",
       visible: typeof title.visible === "boolean" ? title.visible : true,
     };
-    const subtitle = syncedLayout.cover.subtitle || {};
+    const subtitle = { ...(syncedLayout.cover.subtitle || {}) };
     syncedLayout.cover.subtitle = {
       fontFamily: subtitle.fontFamily ?? "Arial",
       fontSize: subtitle.fontSize ?? 14,

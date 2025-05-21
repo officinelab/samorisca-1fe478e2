@@ -1,4 +1,3 @@
-
 // Struttura aggiornata e commentata secondo la nuova specifica
 
 export type FontStyle = 'normal' | 'italic' | 'bold';
@@ -60,7 +59,7 @@ export type CoverLogoConfig = {
   alignment: TextAlign;
   marginTop: number;
   marginBottom: number;
-  visible?: boolean;        // <--- ora supportato e opzionale
+  visible: boolean; // <--- obbligatorio ora!
 };
 
 export type CoverTitleConfig = PrintLayoutElementConfig & {
@@ -124,4 +123,3 @@ export type PrintLayout = {
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;
 };
-
