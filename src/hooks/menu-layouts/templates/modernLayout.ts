@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 
 export const modernLayout: PrintLayout = {
@@ -54,6 +55,13 @@ export const modernLayout: PrintLayout = {
       fontStyle: "normal",
       alignment: "right",
       margin: { top: 3, right: 0, bottom: 0, left: 0 }
+    },
+    suffix: {
+      fontFamily: "Helvetica",
+      fontSize: 9,
+      fontColor: "#888888",
+      fontStyle: "normal",
+      alignment: "left"
     }
   },
   spacing: {
@@ -82,13 +90,17 @@ export const modernLayout: PrintLayout = {
   },
   cover: {
     logo: {
+      imageUrl: null,
       maxWidth: 85,
       maxHeight: 60,
       alignment: 'center',
       marginTop: 30,
-      marginBottom: 30
+      marginBottom: 30,
+      visible: true
     },
     title: {
+      menuTitle: undefined,
+      visible: true,
       fontFamily: "Helvetica",
       fontSize: 32,
       fontColor: "#1A1F2C",
@@ -97,6 +109,8 @@ export const modernLayout: PrintLayout = {
       margin: { top: 30, right: 0, bottom: 15, left: 0 }
     },
     subtitle: {
+      menuSubtitle: undefined,
+      visible: true,
       fontFamily: "Helvetica",
       fontSize: 18,
       fontColor: "#555555",

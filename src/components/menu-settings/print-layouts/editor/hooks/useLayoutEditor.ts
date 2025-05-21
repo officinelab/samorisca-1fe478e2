@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
+import { PrintLayout } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
@@ -18,6 +19,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: "center" as const,
     marginTop: 20,
     marginBottom: 20,
+    visible: true,
   };
   const coverTitleDefaults = {
     fontFamily: "Arial",
@@ -27,6 +29,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: "center" as const,
     margin: { top: 20, right: 0, bottom: 10, left: 0 },
     menuTitle: layout.cover?.title?.menuTitle ?? undefined,
+    visible: true,
   };
   const coverSubtitleDefaults = {
     fontFamily: "Arial",
@@ -36,6 +39,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: "center" as const,
     margin: { top: 5, right: 0, bottom: 0, left: 0 },
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? undefined,
+    visible: true,
   };
 
   // Safe-merge all fields (logo, title, subtitle) for .cover
@@ -142,9 +146,16 @@ function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
         marginTop: logo.marginTop ?? 20,
         marginBottom: logo.marginBottom ?? 20,
         imageUrl: logo.imageUrl ?? null,
+        visible: typeof logo.visible === "boolean" ? logo.visible : true,
       },
-      title: cover.title,
-      subtitle: cover.subtitle,
+      title: {
+        ...cover.title,
+        visible: typeof (cover.title as any).visible === "boolean" ? (cover.title as any).visible : true,
+      },
+      subtitle: {
+        ...cover.subtitle,
+        visible: typeof (cover.subtitle as any).visible === "boolean" ? (cover.subtitle as any).visible : true,
+      },
     },
   };
 }
