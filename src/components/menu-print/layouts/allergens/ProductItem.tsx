@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product, Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -47,31 +46,26 @@ const ProductItem: React.FC<ProductItemProps> = ({
         paddingBottom: '5px',
         marginBottom: '5px',
       }} className="item-header">
-        {(!customLayout || customLayout.elements.title.visible) && (
-          <div style={getElementStyle(customLayout?.elements.title, {
-            fontWeight: 'bold',
-            fontSize: '14pt',
-            width: 'auto',
-            maxWidth: '70%'
-          })} className="item-title">
-            {product[`title_${language}`] || product.title}
-          </div>
-        )}
+        <div style={getElementStyle(customLayout?.elements.title, {
+          fontWeight: 'bold',
+          fontSize: '14pt',
+          width: 'auto',
+          maxWidth: '70%'
+        })} className="item-title">
+          {product[`title_${language}`] || product.title}
+        </div>
         
-        {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            textAlign: 'right',
-            fontWeight: 'bold',
-            width: 'auto',
-            whiteSpace: 'nowrap',
-          })} className="item-price">
-            € {product.price_standard}
-          </div>
-        )}
+        <div style={getElementStyle(customLayout?.elements.price, {
+          textAlign: 'right',
+          fontWeight: 'bold',
+          width: 'auto',
+          whiteSpace: 'nowrap',
+        })} className="item-price">
+          € {product.price_standard}
+        </div>
       </div>
       
-      {(!customLayout || customLayout.elements.description.visible) && 
-        (product[`description_${language}`] || product.description) && (
+      {(product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
           fontSize: '10pt',
           marginBottom: '5px',
@@ -81,8 +75,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         </div>
       )}
       
-      {(!customLayout || customLayout.elements.priceVariants.visible) && 
-        product.has_multiple_prices && (
+      {product.has_multiple_prices && (
         <div style={getElementStyle(customLayout?.elements.priceVariants, {
           fontSize: '10pt',
           display: 'flex',
@@ -99,9 +92,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
         </div>
       )}
       
-      {/* Visualizzazione allergeni più prominente */}
-      {(!customLayout || customLayout.elements.allergensList.visible) && 
-        product.allergens && product.allergens.length > 0 && (
+      {product.allergens && product.allergens.length > 0 && (
         <div style={getElementStyle(customLayout?.elements.allergensList, {
           marginTop: '5px',
           padding: '5px',

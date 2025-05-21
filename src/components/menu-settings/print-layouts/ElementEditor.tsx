@@ -1,4 +1,3 @@
-
 import { PrintLayoutElementConfig, FontStyle } from "@/types/printLayout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +27,6 @@ const ElementEditor = ({ element, onChange, onMarginChange }: ElementEditorProps
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="element-visible"
-          checked={element.visible}
-          onCheckedChange={(checked) => onChange("visible", Boolean(checked))}
-        />
-        <Label htmlFor="element-visible">Visibile</Label>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="font-family">Tipo carattere</Label>

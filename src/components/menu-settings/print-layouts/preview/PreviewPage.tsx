@@ -1,4 +1,3 @@
-
 import React from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,22 +40,20 @@ const PreviewPage: React.FC<PreviewPageProps> = ({
                 marginBottom: `${layout.spacing.betweenCategories}mm`
               }}
             >
-              {layout.elements.category.visible && (
-                <h2 style={{
-                  fontFamily: layout.elements.category.fontFamily,
-                  fontSize: `${layout.elements.category.fontSize}pt`,
-                  color: layout.elements.category.fontColor,
-                  fontWeight: layout.elements.category.fontStyle === 'bold' ? 'bold' : 'normal',
-                  fontStyle: layout.elements.category.fontStyle === 'italic' ? 'italic' : 'normal',
-                  textAlign: layout.elements.category.alignment,
-                  marginTop: `${layout.elements.category.margin.top}mm`,
-                  marginRight: `${layout.elements.category.margin.right}mm`,
-                  marginBottom: `${layout.spacing.categoryTitleBottomMargin}mm`,
-                  marginLeft: `${layout.elements.category.margin.left}mm`,
-                }}>
-                  {category.title}
-                </h2>
-              )}
+              <h2 style={{
+                fontFamily: layout.elements.category.fontFamily,
+                fontSize: `${layout.elements.category.fontSize}pt`,
+                color: layout.elements.category.fontColor,
+                fontWeight: layout.elements.category.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: layout.elements.category.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: layout.elements.category.alignment,
+                marginTop: `${layout.elements.category.margin.top}mm`,
+                marginRight: `${layout.elements.category.margin.right}mm`,
+                marginBottom: `${layout.spacing.categoryTitleBottomMargin}mm`,
+                marginLeft: `${layout.elements.category.margin.left}mm`,
+              }}>
+                {category.title}
+              </h2>
               
               {sampleProducts[category.id].slice(pageIndex % 2, pageIndex % 2 + 1).map((product) => (
                 <PreviewProduct

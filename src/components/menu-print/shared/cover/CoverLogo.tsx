@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { getLogoStyle, getLogoContainerStyle } from './coverStyleUtils';
@@ -12,19 +11,12 @@ interface CoverLogoProps {
 const CoverLogo: React.FC<CoverLogoProps> = ({ restaurantLogo, customLayout }) => {
   const [imageError, setImageError] = useState(false);
 
-  // La visibilità viene sempre gestita dal layout
-  const isLogoVisible = customLayout?.cover?.logo?.visible !== false;
-
+  // Logo sempre visibile
   const logoUrl = getCoverLogoUrl(!imageError ? restaurantLogo : undefined);
 
   const handleImageError = () => {
-    // Se fallisce anche il placeholder, non mostrare nulla
     setImageError(true);
   };
-
-  if (!isLogoVisible) {
-    return null;
-  }
 
   return (
     <div style={getLogoContainerStyle(customLayout)}>

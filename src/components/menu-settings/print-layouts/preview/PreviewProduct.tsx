@@ -1,4 +1,3 @@
-
 import React from "react";
 import { PrintLayout } from "@/types/printLayout";
 import { getElementStyle } from "./ElementStyles";
@@ -21,18 +20,16 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
         alignItems: 'baseline',
         width: '100%'
       }}>
-        {layout.elements.title.visible && (
-          <div style={{
-            ...getElementStyle(layout.elements.title),
-            width: 'auto',
-            marginRight: '10px',
-            maxWidth: '60%'
-          }}>
-            {product.title}
-          </div>
-        )}
+        <div style={{
+          ...getElementStyle(layout.elements.title),
+          width: 'auto',
+          marginRight: '10px',
+          maxWidth: '60%'
+        }}>
+          {product.title}
+        </div>
         
-        {layout.elements.allergensList.visible && product.allergens && product.allergens.length > 0 && (
+        {product.allergens && product.allergens.length > 0 && (
           <div style={{
             ...getElementStyle(layout.elements.allergensList),
             width: 'auto',
@@ -50,19 +47,17 @@ const PreviewProduct: React.FC<ProductProps> = ({ product, layout }) => {
           borderBottom: '1px dotted #000'
         }}></div>
         
-        {layout.elements.price.visible && (
-          <div style={{
-            ...getElementStyle(layout.elements.price),
-            width: 'auto',
-            whiteSpace: 'nowrap',
-            marginLeft: '10px'
-          }}>
-            € {product.price_standard}
-          </div>
-        )}
+        <div style={{
+          ...getElementStyle(layout.elements.price),
+          width: 'auto',
+          whiteSpace: 'nowrap',
+          marginLeft: '10px'
+        }}>
+          € {product.price_standard}
+        </div>
       </div>
       
-      {layout.elements.description.visible && product.description && (
+      {product.description && (
         <div style={{
           ...getElementStyle(layout.elements.description),
           maxWidth: '95%',

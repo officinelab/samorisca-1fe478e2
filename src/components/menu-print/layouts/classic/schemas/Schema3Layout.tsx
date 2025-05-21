@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -15,21 +14,18 @@ const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, custom
   return (
     <>
       {/* Titolo principale in evidenza */}
-      {(!customLayout || customLayout.elements.title.visible) && (
-        <div style={getElementStyle(customLayout?.elements.title, {
-          fontWeight: 'bold',
-          fontSize: '14pt',
-          marginBottom: '2mm',
-          borderBottom: '1px solid #ccc',
-          paddingBottom: '1mm'
-        })}>
-          {product[`title_${language}`] || product.title}
-        </div>
-      )}
+      <div style={getElementStyle(customLayout?.elements.title, {
+        fontWeight: 'bold',
+        fontSize: '14pt',
+        marginBottom: '2mm',
+        borderBottom: '1px solid #ccc',
+        paddingBottom: '1mm'
+      })}>
+        {product[`title_${language}`] || product.title}
+      </div>
       
       {/* Descrizione se disponibile */}
-      {(!customLayout || customLayout.elements.description.visible) && 
-        (product[`description_${language}`] || product.description) && (
+      {(product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
           fontSize: '11pt',
           marginBottom: '2mm',
@@ -50,18 +46,15 @@ const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, custom
         borderRadius: '2mm'
       }}>
         {/* Prezzo principale */}
-        {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            fontWeight: 'bold',
-            fontSize: '13pt'
-          })}>
-            € {product.price_standard}
-          </div>
-        )}
+        <div style={getElementStyle(customLayout?.elements.price, {
+          fontWeight: 'bold',
+          fontSize: '13pt'
+        })}>
+          € {product.price_standard}
+        </div>
         
         {/* Allergeni */}
-        {(!customLayout || customLayout.elements.allergensList.visible) && 
-          product.allergens && product.allergens.length > 0 && (
+        {product.allergens && product.allergens.length > 0 && (
           <div style={getElementStyle(customLayout?.elements.allergensList, {
             fontSize: '10pt',
             fontStyle: 'italic'
@@ -71,8 +64,7 @@ const Schema3Layout: React.FC<Schema3LayoutProps> = ({ product, language, custom
         )}
         
         {/* Varianti di prezzo in fondo */}
-        {(!customLayout || customLayout.elements.priceVariants.visible) && 
-          product.has_multiple_prices && (
+        {product.has_multiple_prices && (
           <div style={{
             ...getElementStyle(customLayout?.elements.priceVariants, {
               fontSize: '10pt'

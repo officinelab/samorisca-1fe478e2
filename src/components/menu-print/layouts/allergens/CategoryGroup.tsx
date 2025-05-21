@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Product, Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -34,21 +33,18 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
       }} 
       className="category"
     >
-      {(!customLayout || customLayout.elements.category.visible) && (
-        <h2 style={getElementStyle(customLayout?.elements.category, {
-          fontSize: '18pt',
-          fontWeight: 'bold',
-          marginBottom: customLayout ? 
-            `${customLayout.spacing.categoryTitleBottomMargin}mm` : 
-            '8mm',
-          textAlign: 'center',
-          borderBottom: '2px solid #555',
-          paddingBottom: '5px',
-        })} className="category-title">
-          {category[`title_${language}`] || category.title}
-        </h2>
-      )}
-      
+      <h2 style={getElementStyle(customLayout?.elements.category, {
+        fontSize: '18pt',
+        fontWeight: 'bold',
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.categoryTitleBottomMargin}mm` : 
+          '8mm',
+        textAlign: 'center',
+        borderBottom: '2px solid #555',
+        paddingBottom: '5px',
+      })} className="category-title">
+        {category[`title_${language}`] || category.title}
+      </h2>
       <div>
         {products?.map((product) => (
           <ProductItem 
@@ -63,5 +59,4 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
     </div>
   );
 };
-
 export default CategoryGroup;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -30,34 +29,29 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         width: '100%',
         marginBottom: '3mm',
       }} className="item-header">
-        {(!customLayout || customLayout.elements.title.visible) && (
-          <div style={getElementStyle(customLayout?.elements.title, {
-            fontWeight: 'bold',
-            fontSize: '14pt',
-            width: 'auto',
-            maxWidth: '75%'
-          })} className="item-title">
-            {product[`title_${language}`] || product.title}
-          </div>
-        )}
+        <div style={getElementStyle(customLayout?.elements.title, {
+          fontWeight: 'bold',
+          fontSize: '14pt',
+          width: 'auto',
+          maxWidth: '75%'
+        })} className="item-title">
+          {product[`title_${language}`] || product.title}
+        </div>
         
-        {(!customLayout || customLayout.elements.price.visible) && (
-          <div style={getElementStyle(customLayout?.elements.price, {
-            textAlign: 'right',
-            fontWeight: 'bold',
-            fontSize: '13pt',
-            width: 'auto',
-            backgroundColor: '#f5f5f5',
-            padding: '2px 8px',
-            borderRadius: '4px',
-          })} className="item-price">
-            € {product.price_standard}
-          </div>
-        )}
+        <div style={getElementStyle(customLayout?.elements.price, {
+          textAlign: 'right',
+          fontWeight: 'bold',
+          fontSize: '13pt',
+          width: 'auto',
+          backgroundColor: '#f5f5f5',
+          padding: '2px 8px',
+          borderRadius: '4px',
+        })} className="item-price">
+          € {product.price_standard}
+        </div>
       </div>
       
-      {(!customLayout || customLayout.elements.description.visible) && 
-        (product[`description_${language}`] || product.description) && (
+      {(product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
           fontSize: '11pt',
           marginBottom: '2mm',
@@ -74,8 +68,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        {(!customLayout || customLayout.elements.allergensList.visible) && 
-          product.allergens && product.allergens.length > 0 && (
+        {product.allergens && product.allergens.length > 0 && (
           <div style={getElementStyle(customLayout?.elements.allergensList, {
             fontSize: '10pt',
             color: '#666',
@@ -84,8 +77,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           </div>
         )}
         
-        {(!customLayout || customLayout.elements.priceVariants.visible) && 
-          product.has_multiple_prices && (
+        {product.has_multiple_prices && (
           <div style={getElementStyle(customLayout?.elements.priceVariants, {
             fontSize: '10pt',
             display: 'flex',

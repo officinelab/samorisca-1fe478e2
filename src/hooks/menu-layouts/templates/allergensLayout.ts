@@ -8,7 +8,6 @@ export const allergensLayout: PrintLayout = {
   productSchema: 'schema1',
   elements: {
     category: {
-      visible: false,
       fontFamily: "Arial",
       fontSize: 16,
       fontColor: "#000000",
@@ -17,7 +16,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 0, right: 0, bottom: 5, left: 0 }
     },
     title: {
-      visible: false,
       fontFamily: "Arial",
       fontSize: 12,
       fontColor: "#000000", 
@@ -26,7 +24,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 0, right: 0, bottom: 2, left: 0 }
     },
     description: {
-      visible: false,
       fontFamily: "Arial",
       fontSize: 10,
       fontColor: "#333333",
@@ -35,7 +32,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 2, right: 0, bottom: 0, left: 0 }
     },
     price: {
-      visible: false,
       fontFamily: "Arial",
       fontSize: 12,
       fontColor: "#000000",
@@ -44,7 +40,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
     allergensList: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 12,
       fontColor: "#000000",
@@ -53,7 +48,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 3, right: 0, bottom: 3, left: 0 }
     },
     priceVariants: {
-      visible: false,
       fontFamily: "Arial",
       fontSize: 10,
       fontColor: "#000000",
@@ -86,38 +80,35 @@ export const allergensLayout: PrintLayout = {
       marginLeft: 15
     }
   },
-  // Sezioni per copertina e allergeni
   cover: {
     logo: {
       maxWidth: 80,
       maxHeight: 50,
       alignment: 'center',
       marginTop: 20,
-      marginBottom: 20,
-      visible: true
+      marginBottom: 20
     },
     title: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 28,
       fontColor: "#ea384c",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+      margin: { top: 20, right: 0, bottom: 10, left: 0 },
+      menuTitle: undefined
     },
     subtitle: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 16,
       fontColor: "#666666",
       fontStyle: "italic",
       alignment: "center",
-      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+      margin: { top: 5, right: 0, bottom: 0, left: 0 },
+      menuSubtitle: undefined
     }
   },
   allergens: {
     title: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 28,
       fontColor: "#ea384c",
@@ -126,7 +117,6 @@ export const allergensLayout: PrintLayout = {
       margin: { top: 0, right: 0, bottom: 20, left: 0 }
     },
     description: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 14,
       fontColor: "#333333",
@@ -136,7 +126,6 @@ export const allergensLayout: PrintLayout = {
     },
     item: {
       number: {
-        visible: true,
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#FFFFFF",
@@ -145,11 +134,18 @@ export const allergensLayout: PrintLayout = {
         margin: { top: 0, right: 10, bottom: 0, left: 0 }
       },
       title: {
-        visible: true,
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#333333",
         fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      description: {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#444444",
+        fontStyle: "normal",
         alignment: "left",
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },

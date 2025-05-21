@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -30,25 +29,21 @@ const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, custom
           alignItems: 'center',
           width: '100%',
         }}>
-          {(!customLayout || customLayout.elements.title.visible) && (
-            <div style={getElementStyle(customLayout?.elements.title, {
-              fontWeight: 'bold',
-              fontSize: '12pt',
-              maxWidth: '70%'
-            })}>
-              {product[`title_${language}`] || product.title}
-            </div>
-          )}
+          <div style={getElementStyle(customLayout?.elements.title, {
+            fontWeight: 'bold',
+            fontSize: '12pt',
+            maxWidth: '70%'
+          })}>
+            {product[`title_${language}`] || product.title}
+          </div>
           
-          {(!customLayout || customLayout.elements.price.visible) && (
-            <div style={getElementStyle(customLayout?.elements.price, {
-              textAlign: 'right',
-              fontWeight: 'bold',
-              fontSize: '12pt'
-            })}>
-              € {product.price_standard}
-            </div>
-          )}
+          <div style={getElementStyle(customLayout?.elements.price, {
+            textAlign: 'right',
+            fontWeight: 'bold',
+            fontSize: '12pt'
+          })}>
+            € {product.price_standard}
+          </div>
         </div>
         
         {/* Allergeni e varianti di prezzo sotto */}
@@ -59,8 +54,7 @@ const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, custom
           width: '100%',
           marginTop: '1mm',
         }}>
-          {(!customLayout || customLayout.elements.allergensList.visible) && 
-            product.allergens && product.allergens.length > 0 && (
+          {product.allergens && product.allergens.length > 0 && (
             <div style={getElementStyle(customLayout?.elements.allergensList, {
               fontSize: '9pt',
               fontStyle: 'italic',
@@ -69,8 +63,7 @@ const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, custom
             </div>
           )}
           
-          {(!customLayout || customLayout.elements.priceVariants.visible) && 
-            product.has_multiple_prices && (
+          {product.has_multiple_prices && (
             <div style={getElementStyle(customLayout?.elements.priceVariants, {
               fontSize: '9pt',
               display: 'flex',
@@ -89,8 +82,7 @@ const Schema2Layout: React.FC<Schema2LayoutProps> = ({ product, language, custom
       </div>
       
       {/* Descrizione sotto */}
-      {(!customLayout || customLayout.elements.description.visible) && 
-        (product[`description_${language}`] || product.description) && (
+      {(product[`description_${language}`] || product.description) && (
         <div style={getElementStyle(customLayout?.elements.description, {
           fontSize: '10pt',
           fontStyle: 'italic',
