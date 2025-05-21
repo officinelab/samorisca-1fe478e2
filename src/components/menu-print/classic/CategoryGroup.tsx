@@ -28,21 +28,19 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
         pageBreakInside: 'avoid',
       }} 
       className="category">
-      {(!customLayout || customLayout.elements.category.visible) && (
-        <h2 style={getElementStyle(customLayout?.elements.category, {
-          fontSize: '18pt',
-          fontWeight: 'bold',
-          marginBottom: customLayout ? 
-            `${customLayout.spacing.categoryTitleBottomMargin}mm` : 
-            '5mm',
-          textTransform: 'uppercase',
-          borderBottom: '1px solid #000',
-          paddingBottom: '2mm'
-        })} className="category-title">
-          {category[`title_${language}`] || category.title}
-        </h2>
-      )}
-      
+      {/* Il titolo categoria è sempre visibile ora */}
+      <h2 style={getElementStyle(customLayout?.elements.category, {
+        fontSize: '18pt',
+        fontWeight: 'bold',
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.categoryTitleBottomMargin}mm` : 
+          '5mm',
+        textTransform: 'uppercase',
+        borderBottom: '1px solid #000',
+        paddingBottom: '2mm'
+      })} className="category-title">
+        {category[`title_${language}`] || category.title}
+      </h2>
       <div>
         {products?.map((product) => (
           <ProductItem 
