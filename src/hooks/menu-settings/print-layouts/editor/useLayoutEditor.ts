@@ -65,7 +65,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     }));
   }, []);
 
-  // Gestione delle modifiche ai margini degli elementi
+  // Corretto: controlla l'esistenza di margin nella configurazione corrente
   const handleElementMarginChange = useCallback((elementKey: keyof PrintLayout['elements'], marginKey: keyof PrintLayoutElementConfig['margin'], value: number) => {
     setEditedLayout(prev => ({
       ...prev,
@@ -74,7 +74,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
         [elementKey]: {
           ...prev.elements[elementKey],
           margin: {
-            ...(prev.elements[elementKey].margin ?? {}),
+            ...(prev.elements[elementKey] && 'margin' in prev.elements[elementKey] ? (prev.elements[elementKey] as any).margin : {}),
             [marginKey]: value
           }
         }

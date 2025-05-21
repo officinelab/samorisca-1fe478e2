@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -13,10 +13,66 @@ import ElementEditor from "./ElementEditor";
 interface CoverLayoutTabProps {
   layout: PrintLayout;
   onCoverLogoChange: (field: keyof PrintLayout['cover']['logo'], value: any) => void;
-  onCoverTitleChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
-  onCoverTitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
-  onCoverSubtitleChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
-  onCoverSubtitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
+  onCoverTitleChange: (field: keyof PrintLayout['cover']['title'], value: any) => void;
+  onCoverTitleMarginChange: (field: keyof PrintLayout['cover']['title']['margin'], value: number) => void;
+  onCoverSubtitleChange: (field: keyof PrintLayout['cover']['subtitle'], value: any) => void;
+  onCoverSubtitleMarginChange: (field: keyof PrintLayout['cover']['subtitle']['margin'], value: number) => void;
+}
+
+// Semplice componente locale per upload logo copertina
+function CoverLogoUploader({
+  imageUrl,
+  onUrlChange,
+  onUpload
+}: {
+  imageUrl: string;
+  onUrlChange: (url: string) => void;
+  onUpload?: (url: string) => void;
+}) {
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Usa URL temporaneo (potresti aggiungere upload su storage/Supabase se necessario)
+      const ObjectUrl = URL.createObjectURL(file);
+      onUrlChange(ObjectUrl);
+      if (onUpload) onUpload(ObjectUrl);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>Logo Copertina (upload oppure URL)</Label>
+      <div className="flex gap-2 items-center">
+        <Input
+          type="url"
+          placeholder="https://..."
+          value={imageUrl}
+          onChange={e => onUrlChange(e.target.value)}
+        />
+        <input
+          ref={inputFileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <button
+          type="button"
+          onClick={() => inputFileRef.current?.click()}
+          className="bg-muted text-xs px-3 py-2 rounded border ml-2"
+        >
+          Carica
+        </button>
+      </div>
+      {imageUrl && (
+        <div className="mt-2">
+          <img src={imageUrl} alt="Anteprima Logo Copertina" className="max-w-[180px] max-h-[90px] border rounded shadow" />
+        </div>
+      )}
+    </div>
+  );
 }
 
 const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
@@ -75,19 +131,10 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                 Mostra logo copertina
               </Label>
             </div>
-            {/* Campo URL e anteprima logo copertina */}
-            <div className="space-y-2">
-              <Label>URL Logo Copertina</Label>
-              <Input
-                type="url"
-                placeholder="https://..."
-                value={coverLogo.imageUrl || ""}
-                onChange={e => onCoverLogoChange("imageUrl", e.target.value)}
-              />
-              {coverLogo.imageUrl && (
-                <img src={coverLogo.imageUrl} alt="Anteprima Logo" className="max-w-[180px] max-h-[90px] mt-2 border rounded shadow" />
-              )}
-            </div>
+            <CoverLogoUploader
+              imageUrl={coverLogo.imageUrl || ""}
+              onUrlChange={url => onCoverLogoChange("imageUrl", url)}
+            />
             <div className="space-y-2">
               <Label>Larghezza massima (%)</Label>
               <div className="flex items-center space-x-4">
@@ -170,7 +217,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
                 <Switch
-                  checked={coverTitle.visible !== false} // default true
+                  checked={coverTitle.visible !== false}
                   onCheckedChange={(val) => onCoverTitleChange("visible", !!val)}
                   id="switch-visibility-title"
                 />
@@ -185,7 +232,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                   type="text"
                   value={coverTitle.menuTitle || ""}
                   onChange={e =>
-                    onCoverTitleChange("menuTitle" as keyof PrintLayout['elements']['category'], e.target.value)
+                    onCoverTitleChange("menuTitle", e.target.value)
                   }
                   placeholder="Titolo della copertina (es. Il nostro Menu)"
                   className="mb-2"
@@ -204,7 +251,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
             <CardContent className="pt-6">
               <div className="flex items-center gap-3 mb-4">
                 <Switch
-                  checked={coverSubtitle.visible !== false} // default true
+                  checked={coverSubtitle.visible !== false}
                   onCheckedChange={(val) => onCoverSubtitleChange("visible", !!val)}
                   id="switch-visibility-subtitle"
                 />
@@ -219,7 +266,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                   type="text"
                   value={coverSubtitle.menuSubtitle || ""}
                   onChange={e =>
-                    onCoverSubtitleChange("menuSubtitle" as keyof PrintLayout['elements']['category'], e.target.value)
+                    onCoverSubtitleChange("menuSubtitle", e.target.value)
                   }
                   placeholder="Sottotitolo della copertina (es. Benvenuti!)"
                   className="mb-2"
@@ -239,4 +286,3 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 };
 
 export default CoverLayoutTab;
-
