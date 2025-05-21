@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
 import PrintPage from './PrintPage';
@@ -6,7 +6,6 @@ import RepeatedCategoryTitle from './RepeatedCategoryTitle';
 import ProductItem from './ProductItem';
 import { usePagination } from './usePagination';
 import { CategoryTitleContent, PageContent, ProductsGroupContent } from './types/paginationTypes';
-import { useElementHeights } from "./hooks/useElementHeights";
 
 interface PaginatedContentProps {
   A4_WIDTH_MM: number;
@@ -29,18 +28,9 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
   selectedCategories,
   language,
   customLayout,
-  startPageIndex = 1 // Default: in questa gestione partirà dalla 3
+  startPageIndex = 1 // Default: dalla 3
 }) => {
-  const layoutId = customLayout?.id || "";
-  // Hook per misurare le altezze reali
-  const {
-    heights: measuredHeights,
-    requestMeasure,
-    ShadowContainer,
-    buildKey,
-  } = useElementHeights();
-
-  // Passa le altezze misurate a usePagination
+  // Solo paginazione semplice, senza misurazioni DOM
   const { pages } = usePagination({
     categories,
     products,
@@ -48,79 +38,23 @@ const PaginatedContent: React.FC<PaginatedContentProps> = ({
     language,
     A4_HEIGHT_MM,
     customLayout,
-    measuredHeights,
-    layoutId
   });
 
   // Salviamo il numero delle pagine menu (serve per assegnare il numero a Allergeni in ClassicLayout)
   React.useEffect(() => {
     if (typeof document !== "undefined") {
-      // Il primo pageIndex passato è startPageIndex (tip. 3), e pages.length è il numero di pagine menu
       const allergensPageNumber = startPageIndex + (pages.length || 0);
       const target = document.getElementById("allergens-page-number-label");
       if (target) target.textContent = String(allergensPageNumber);
     }
   }, [pages.length, startPageIndex]);
 
-  // Sposta la logica di richiesta misura in un effetto, per NON causare rerender ogni volta.
-  useEffect(() => {
-    const uniqueTitles: Record<string, boolean> = {};
-    const uniqueProducts: Record<string, boolean> = {};
-
-    // Monta solo se non già presente/misurato
-    categories.forEach((cat) => {
-      const catKeyObj: import("./hooks/useElementHeights").ElementHeightKey = {
-        type: "category-title",
-        id: cat.id,
-        language,
-        layoutId,
-        pageIndex: 0,
-      };
-      const catKey = buildKey(catKeyObj);
-      if (!uniqueTitles[catKey] && !measuredHeights[catKey]) {
-        uniqueTitles[catKey] = true;
-        requestMeasure(
-          <RepeatedCategoryTitle
-            category={cat}
-            language={language}
-            customLayout={customLayout}
-          />,
-          catKeyObj
-        );
-      }
-      (products[cat.id] ?? []).forEach((product) => {
-        const prodKeyObj: import("./hooks/useElementHeights").ElementHeightKey = {
-          type: "product-item",
-          id: product.id,
-          language,
-          layoutId,
-          pageIndex: 0,
-        };
-        const prodKey = buildKey(prodKeyObj);
-        if (!uniqueProducts[prodKey] && !measuredHeights[prodKey]) {
-          uniqueProducts[prodKey] = true;
-          requestMeasure(
-            <ProductItem
-              product={product}
-              language={language}
-              customLayout={customLayout}
-            />,
-            prodKeyObj
-          );
-        }
-      });
-    });
-    // Dipendenze: cambio categorie, prodotti, lingua, layout, measuredHeights (così aggiorna solo quando cambia qualcosa di rilevante)
-  }, [categories, products, language, customLayout, layoutId, measuredHeights, requestMeasure, buildKey]);
-
-  // Renderizza ShadowContainer solo una volta per tutti i titoli/prodotti (invisibile)
   return (
     <div>
-      {ShadowContainer}
       {pages.map((pageContent, pageIndex) => (
         <PrintPage
           key={`page-${pageIndex}`}
-          pageIndex={startPageIndex + pageIndex}    // Pass numero umano (3, 4, 5, ...)
+          pageIndex={startPageIndex + pageIndex}
           A4_WIDTH_MM={A4_WIDTH_MM}
           A4_HEIGHT_MM={A4_HEIGHT_MM}
           showPageBoundaries={showPageBoundaries}

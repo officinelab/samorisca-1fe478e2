@@ -9,8 +9,6 @@ import {
 } from './utils/pageCalculations';
 import { CategoryTitleContent, PageContent, PrintPageContent, ProductItem } from './types/paginationTypes';
 import { PRINT_CONSTANTS } from "@/hooks/menu-layouts/constants";
-import type { ElementHeightsMap } from './hooks/useElementHeights';
-import { mmToPx } from "@/hooks/menu-print/printUnits";
 
 interface UsePaginationProps {
   categories: Category[];
@@ -19,7 +17,6 @@ interface UsePaginationProps {
   language: string;
   A4_HEIGHT_MM: number;
   customLayout?: PrintLayout | null;
-  measuredHeights?: ElementHeightsMap;
   layoutId?: string;
 }
 
@@ -30,7 +27,6 @@ export const usePagination = ({
   language,
   A4_HEIGHT_MM,
   customLayout,
-  measuredHeights,
   layoutId = ""
 }: UsePaginationProps) => {
   const filteredCategories = getFilteredCategories(categories, selectedCategories);
@@ -39,7 +35,7 @@ export const usePagination = ({
     return `${type}_${id}_${language}_${layoutId}_${pageIndex}`;
   }
 
-  // Valore di fallback di spacing (mm) se non definito
+  // Fallback spacing diretto
   const fallbackSpacing = customLayout?.spacing?.betweenProducts ?? 5;
 
   const pages = useMemo(() => {
@@ -51,7 +47,7 @@ export const usePagination = ({
     let currentPageIndex = 0;
     let currentHeight = 0;
 
-    // STEP 1: calcolo availableHeight sempre aggiornato a pari/dispari tramite pageCalculations (già corretto)
+    // calcolo availableHeight, ignorando padding dinamico
     let availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
 
     let lastCategoryId: string | null = null;
@@ -68,7 +64,6 @@ export const usePagination = ({
       }
       currentPageContent = [];
       currentPageIndex++;
-      // STEP 1: aggiorna availableHeight con pari/dispari e padding dinamici
       availableHeight = calculateAvailableHeight(currentPageIndex, A4_HEIGHT_MM, customLayout);
       currentHeight = 0;
       return true;
@@ -91,17 +86,12 @@ export const usePagination = ({
       const categoryProducts = products[category.id] || [];
       if (categoryProducts.length === 0) return;
 
-      const catKey = buildHeightKey("category-title", category.id, currentPageIndex);
-      let categoryTitleHeight = measuredHeights?.[catKey];
-      if (categoryTitleHeight == null) {
-        categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
-      }
+      // Usare il fallback stimato (nessuna misura reale)
+      const categoryTitleHeight = estimateCategoryTitleHeight(category, language, customLayout, currentPageIndex);
 
-      // STEP 3 – migliora il calcolo: la category-title va "caricata" su una nuova pagina SOLO se è visibile lì
       if (currentHeight + categoryTitleHeight > availableHeight && currentPageContent.length > 0) {
         addRemainingProducts();
         if (!addNewPage()) return;
-        // Se nuova pagina, serve ripetere il titolo solo se previsto dai dati
       }
 
       const categoryTitleContent: CategoryTitleContent = {
@@ -115,15 +105,10 @@ export const usePagination = ({
       currentHeight += categoryTitleHeight;
 
       categoryProducts.forEach((product, productIndex) => {
-        const prodKey = buildHeightKey("product-item", product.id, currentPageIndex);
-        let productHeight = measuredHeights?.[prodKey];
-        // forziamo l'aggiunta del margin-bottom del prodotto corrente (in px)
-        const menuSpacingPx = mmToPx(customLayout?.spacing?.betweenProducts ?? fallbackSpacing);
-
-        if (productHeight == null) {
-          productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
-        }
-
+        // Idem, nessun calcolo DOM
+        const productHeight = getProductHeight(product, language, customLayout, currentPageIndex);
+        // Spacing tra prodotti
+        const menuSpacingPx = 20; // fallback semplificato
         const totalProductHeight = productHeight + menuSpacingPx;
 
         if (currentHeight + totalProductHeight > availableHeight) {
@@ -153,7 +138,7 @@ export const usePagination = ({
       addRemainingProducts();
 
       if (categoryIndex < filteredCategories.length - 1) {
-        const spacingBetweenCategories = (customLayout?.spacing?.betweenCategories ?? PRINT_CONSTANTS.SPACING.BETWEEN_CATEGORIES) * ((window as any).PX_PER_MM || 3.78);
+        const spacingBetweenCategories = 40; // fallback semplificato senza mmToPx
         currentHeight += spacingBetweenCategories;
       }
 
@@ -171,7 +156,6 @@ export const usePagination = ({
     language,
     customLayout,
     A4_HEIGHT_MM,
-    measuredHeights,
     layoutId
   ]);
 
