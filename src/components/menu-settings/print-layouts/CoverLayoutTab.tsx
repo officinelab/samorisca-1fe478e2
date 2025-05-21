@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintLayout } from "@/types/printLayout";
 import ElementEditor from "./ElementEditor";
@@ -27,12 +28,13 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
   onCoverSubtitleMarginChange
 }) => {
   const coverLogo = layout.cover?.logo || {
-    imageUrl: '',
+    imageUrl: "",
     maxWidth: 80,
     maxHeight: 50,
-    alignment: 'center' as const,
+    alignment: 'center',
     marginTop: 20,
-    marginBottom: 20
+    marginBottom: 20,
+    visible: true,
   };
 
   const coverTitle = layout.cover?.title || {
@@ -42,7 +44,8 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
     fontColor: "#000000",
     fontStyle: "bold",
     alignment: "center",
-    margin: { top: 20, right: 0, bottom: 10, left: 0 }
+    margin: { top: 20, right: 0, bottom: 10, left: 0 },
+    visible: true,
   };
 
   const coverSubtitle = layout.cover?.subtitle || {
@@ -52,7 +55,8 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
     fontColor: "#666666",
     fontStyle: "italic",
     alignment: "center",
-    margin: { top: 5, right: 0, bottom: 0, left: 0 }
+    margin: { top: 5, right: 0, bottom: 0, left: 0 },
+    visible: true,
   };
 
   return (
@@ -61,6 +65,16 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         <CardContent className="pt-6">
           <h4 className="text-lg font-medium mb-4">Logo della copertina</h4>
           <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-1">
+              <Switch
+                checked={coverLogo.visible !== false}
+                onCheckedChange={(val) => onCoverLogoChange("visible", !!val)}
+                id="switch-visibility-logo"
+              />
+              <Label htmlFor="switch-visibility-logo">
+                Mostra logo copertina
+              </Label>
+            </div>
             {/* Campo URL e anteprima logo copertina */}
             <div className="space-y-2">
               <Label>URL Logo Copertina</Label>
@@ -154,6 +168,16 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         <TabsContent value="titolo" className="space-y-4 pt-4">
           <Card>
             <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Switch
+                  checked={coverTitle.visible !== false} // default true
+                  onCheckedChange={(val) => onCoverTitleChange("visible", !!val)}
+                  id="switch-visibility-title"
+                />
+                <Label htmlFor="switch-visibility-title">
+                  Mostra titolo in copertina
+                </Label>
+              </div>
               <h4 className="text-lg font-medium mb-4">Titolo Menu</h4>
               <div className="mb-2">
                 <Label>Titolo personalizzato</Label>
@@ -178,6 +202,16 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         <TabsContent value="sottotitolo" className="space-y-4 pt-4">
           <Card>
             <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Switch
+                  checked={coverSubtitle.visible !== false} // default true
+                  onCheckedChange={(val) => onCoverSubtitleChange("visible", !!val)}
+                  id="switch-visibility-subtitle"
+                />
+                <Label htmlFor="switch-visibility-subtitle">
+                  Mostra sottotitolo in copertina
+                </Label>
+              </div>
               <h4 className="text-lg font-medium mb-4">Sottotitolo Menu</h4>
               <div className="mb-2">
                 <Label>Sottotitolo personalizzato</Label>
