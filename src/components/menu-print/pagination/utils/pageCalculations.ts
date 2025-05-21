@@ -1,10 +1,5 @@
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
-import { 
-  getAvailableHeight as legacyGetAvailableHeight, 
-  calculateCategoryTitleHeight, 
-  calculateProductHeight
-} from "@/hooks/menu-layouts/utils/heightCalculator";
 
 /**
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
@@ -14,23 +9,10 @@ export const calculateAvailableHeight = (
   pageIndex: number,
   A4_HEIGHT_MM: number,
   customLayout?: PrintLayout | null,
-  pageContainerRef?: HTMLElement | null // passato solo se vuoi il padding attuale
+  pageContainerRef?: HTMLElement | null
 ): number => {
-  const baseHeightPx = 1123;
-
-  // STEP 2: Calcolo del padding letto via DOM, fallback se assente
-  // ora sostituito con un valore fisso
-  let paddingTopPx = 0, paddingBottomPx = 0;
-
-  // fallback coerente con margini di default
-  paddingTopPx = 0;
-  paddingBottomPx = 0;
-
-  // Disponibile = altezza base - margini - header (semplificato)
-  let availablePx;
-  availablePx = 1123; // fallback fisso
-
-  return availablePx;
+  // Restituisce un valore fisso placeholder
+  return 1123;
 };
 
 /**

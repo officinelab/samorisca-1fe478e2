@@ -74,7 +74,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
         [elementKey]: {
           ...prev.elements[elementKey],
           margin: {
-            ...prev.elements[elementKey].margin,
+            ...(prev.elements[elementKey].margin ?? {}),
             [marginKey]: value
           }
         }
