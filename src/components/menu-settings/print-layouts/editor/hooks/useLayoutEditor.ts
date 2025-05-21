@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -12,30 +13,32 @@ import { usePageSettingsTab } from "./usePageSettingsTab";
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
   // Default configs for cover
   const coverLogoDefaults = {
-    visible: false,
+    imageUrl: layout.cover?.logo?.imageUrl ?? null,
     maxWidth: 80,
     maxHeight: 50,
     alignment: "center" as const,
     marginTop: 20,
     marginBottom: 20,
   };
-  const coverTitleDefaults: PrintLayoutElementConfig = {
-    visible: true,
+  const coverTitleDefaults = {
     fontFamily: "Arial",
     fontSize: 24,
     fontColor: "#000000",
     fontStyle: "bold",
-    alignment: "center",
-    margin: { top: 20, right: 0, bottom: 10, left: 0 }
+    alignment: "center" as const,
+    margin: { top: 20, right: 0, bottom: 10, left: 0 },
+    menuTitle: layout.cover?.title?.menuTitle ?? undefined,
+    visible: layout.cover?.title?.visible ?? true,
   };
-  const coverSubtitleDefaults: PrintLayoutElementConfig = {
-    visible: true,
+  const coverSubtitleDefaults = {
     fontFamily: "Arial",
     fontSize: 14,
     fontColor: "#666666",
     fontStyle: "italic",
-    alignment: "center",
-    margin: { top: 5, right: 0, bottom: 0, left: 0 }
+    alignment: "center" as const,
+    margin: { top: 5, right: 0, bottom: 0, left: 0 },
+    menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? undefined,
+    visible: layout.cover?.subtitle?.visible ?? true,
   };
 
   // Safe-merge all fields (logo, title, subtitle) for .cover
@@ -43,20 +46,17 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     logo: {
       ...coverLogoDefaults,
       ...(layout.cover && typeof layout.cover.logo === "object" ? layout.cover.logo : {}),
-      visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : false,
     },
     title: {
       ...coverTitleDefaults,
-      ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {})
+      ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {}),
     },
     subtitle: {
       ...coverSubtitleDefaults,
-      ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {})
+      ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {}),
     }
   };
-  // If there are extra non-standard .cover keys, you could merge here, but only after base fields
-  // e.g. { ...updatedCover, ...(layout.cover ?? {}) }, but only if safe!
-  
+
   // Restanti default invariati sui campi allergeni e page margin...
   const pageWithDefaults = {
     ...layout.page,
@@ -73,42 +73,47 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
       marginLeft: layout.page.marginLeft
     }
   };
+
   const allergensWithDefaults = layout.allergens || {
     title: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 22,
       fontColor: "#000000",
       fontStyle: "bold",
-      alignment: "center",
+      alignment: "center" as const,
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
     },
     description: {
-      visible: true,
       fontFamily: "Arial",
       fontSize: 14,
       fontColor: "#333333",
       fontStyle: "normal",
-      alignment: "left",
+      alignment: "left" as const,
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
     },
     item: {
       number: {
-        visible: true,
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#000000",
         fontStyle: "bold",
-        alignment: "left",
+        alignment: "left" as const,
         margin: { top: 0, right: 8, bottom: 0, left: 0 }
       },
       title: {
-        visible: true,
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#333333",
         fontStyle: "normal",
-        alignment: "left",
+        alignment: "left" as const,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      description: {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#444444",
+        fontStyle: "normal",
+        alignment: "left" as const,
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
       spacing: 10,
@@ -127,24 +132,21 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
 }
 
 function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
-  // Forza sempre un valore booleano per visible anche su logo mancante
+  // Ora non serve forzare visible, quindi tolto.
   const cover = layout.cover ?? {};
-  let logo = cover.logo;
-  if (!logo || typeof logo !== "object") logo = {};
-  let visibleField = (logo as any).visible;
-  if (typeof visibleField !== "boolean") visibleField = false;
+  let logo = cover.logo || {};
   return {
     ...layout,
     cover: {
       ...cover,
       logo: {
         ...logo,
-        visible: visibleField,
         maxWidth: logo.maxWidth ?? 80,
         maxHeight: logo.maxHeight ?? 50,
         alignment: logo.alignment ?? "center",
         marginTop: logo.marginTop ?? 20,
-        marginBottom: logo.marginBottom ?? 20
+        marginBottom: logo.marginBottom ?? 20,
+        imageUrl: logo.imageUrl ?? null,
       },
       title: cover.title,
       subtitle: cover.subtitle,
