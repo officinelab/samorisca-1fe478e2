@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const classicLayout: PrintLayout = {
@@ -31,6 +30,15 @@ export const classicLayout: PrintLayout = {
       fontStyle: "italic",
       alignment: "left",
       margin: { top: 2, right: 0, bottom: 0, left: 0 }
+    },
+    descriptionEng: {
+      fontFamily: "Arial",
+      fontSize: 10,
+      fontColor: "#333333",
+      fontStyle: "italic",
+      alignment: "left",
+      margin: { top: 2, right: 0, bottom: 0, left: 0 },
+      visible: true
     },
     price: {
       fontFamily: "Arial",

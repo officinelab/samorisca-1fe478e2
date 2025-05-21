@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const modernLayout: PrintLayout = {
@@ -31,6 +30,15 @@ export const modernLayout: PrintLayout = {
       fontStyle: "normal",
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 8, left: 0 }
+    },
+    descriptionEng: {
+      fontFamily: "Helvetica",
+      fontSize: 12,
+      fontColor: "#555555",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 8, left: 0 },
+      visible: true
     },
     price: {
       fontFamily: "Helvetica",

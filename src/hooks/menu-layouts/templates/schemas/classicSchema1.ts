@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 // Classic layout - Schema 1 (layout originale)
@@ -28,6 +27,15 @@ export const classicLayoutSchema1: PrintLayout = {
       margin: { top: 0, right: 0, bottom: 2, left: 0 },
     },
     description: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 12,
+      fontColor: "#666666",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
+    },
+    descriptionEng: {
       visible: true,
       fontFamily: "Times New Roman",
       fontSize: 12,
