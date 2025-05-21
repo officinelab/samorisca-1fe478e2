@@ -63,6 +63,14 @@ export const classicLayoutSchema1: PrintLayout = {
       alignment: "right",
       margin: { top: 2, right: 0, bottom: 0, left: 0 },
     },
+    suffix: {
+      visible: true,
+      fontFamily: "Times New Roman",
+      fontSize: 12,
+      fontColor: "#000000",
+      fontStyle: "normal",
+      alignment: "right"
+    }
   },
   spacing: {
     betweenCategories: 15,
@@ -90,6 +98,7 @@ export const classicLayoutSchema1: PrintLayout = {
   },
   cover: {
     logo: {
+      imageUrl: "",
       maxWidth: 80,
       maxHeight: 50,
       alignment: 'center',
@@ -104,7 +113,8 @@ export const classicLayoutSchema1: PrintLayout = {
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+      margin: { top: 20, right: 0, bottom: 10, left: 0 },
+      menuTitle: "Il Nostro Menu"
     },
     subtitle: {
       visible: true,
@@ -113,7 +123,8 @@ export const classicLayoutSchema1: PrintLayout = {
       fontColor: "#666666",
       fontStyle: "italic",
       alignment: "center",
-      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+      margin: { top: 5, right: 0, bottom: 0, left: 0 },
+      menuSubtitle: "Estate 2025"
     }
   },
   allergens: {
@@ -153,6 +164,15 @@ export const classicLayoutSchema1: PrintLayout = {
         fontStyle: "normal",
         alignment: "left",
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      description: {
+        visible: true,
+        fontFamily: "Times New Roman",
+        fontSize: 12,
+        fontColor: "#444444",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 5, left: 0 }
       },
       spacing: 10,
       backgroundColor: "#f5f5f5",

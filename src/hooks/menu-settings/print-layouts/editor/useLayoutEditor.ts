@@ -1,9 +1,46 @@
-
 import { useState, useCallback } from 'react';
 import { PrintLayout, PrintLayoutElementConfig, ProductSchema } from '@/types/printLayout';
 
+const defaultCoverLogo = {
+  imageUrl: "",
+  maxWidth: 80,
+  maxHeight: 50,
+  alignment: 'center' as const,
+  marginTop: 20,
+  marginBottom: 20,
+  visible: true
+};
+const defaultCoverTitle = {
+  visible: true,
+  fontFamily: "Arial",
+  fontSize: 24,
+  fontColor: "#000000",
+  fontStyle: "bold" as const,
+  alignment: "center" as const,
+  margin: { top: 20, right: 0, bottom: 10, left: 0 },
+  menuTitle: ""
+};
+const defaultCoverSubtitle = {
+  visible: true,
+  fontFamily: "Arial",
+  fontSize: 14,
+  fontColor: "#666666",
+  fontStyle: "italic" as const,
+  alignment: "center" as const,
+  margin: { top: 5, right: 0, bottom: 0, left: 0 },
+  menuSubtitle: ""
+};
+
 export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>({...initialLayout, productSchema: initialLayout.productSchema || 'schema1'});
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>({
+    ...initialLayout,
+    productSchema: initialLayout.productSchema || 'schema1',
+    cover: {
+      logo: { ...defaultCoverLogo, ...initialLayout.cover?.logo },
+      title: { ...defaultCoverTitle, ...initialLayout.cover?.title },
+      subtitle: { ...defaultCoverSubtitle, ...initialLayout.cover?.subtitle }
+    }
+  });
   const [activeTab, setActiveTab] = useState('generale');
 
   // Gestione delle modifiche alle proprietà generali del layout
