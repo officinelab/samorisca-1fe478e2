@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { uploadImageToStorage } from './uploadUtils';
+import { uploadImageToStorage, deleteImageFromStorage } from './uploadUtils';
 import ImagePreview from './ImagePreview';
 import UploadPlaceholder from './UploadPlaceholder';
 
@@ -34,6 +33,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const previousImage = useRef<string | null>(null);
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // Convert MB to bytes
   
   // Carica l'immagine corrente all'inizializzazione del componente
@@ -44,6 +44,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     } else {
       setImageUrl(null);
     }
+    // Ricordati il vecchio url per la cancellazione su upload nuovo
+    previousImage.current = currentImage;
   }, [currentImage]);
   
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +59,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     const objectUrl = URL.createObjectURL(file);
     setImageUrl(objectUrl);
     
+    // Carica la nuova immagine
     const uploadResult = await uploadImageToStorage(file, {
       bucketName,
       folderPath,
@@ -68,6 +71,15 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       setImageUrl(uploadResult);
       onImageUploaded(uploadResult);
       toast.success("Immagine caricata con successo!");
+      // Cancella la precedente solo se diversa e su menu-images
+      if (
+        previousImage.current &&
+        previousImage.current !== uploadResult &&
+        previousImage.current.includes("menu-images/")
+      ) {
+        await deleteImageFromStorage(previousImage.current, bucketName);
+      }
+      previousImage.current = uploadResult;
     }
     
     setIsUploading(false);

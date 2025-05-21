@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/sonner";
 import { supabase } from '@/integrations/supabase/client';
 
@@ -60,5 +59,26 @@ export const uploadImageToStorage = async (
     console.error("Errore durante il caricamento dell'immagine:", error);
     toast.error("Errore durante il caricamento dell'immagine. Riprova più tardi.");
     return null;
+  }
+};
+
+// Helper per eliminare una immagine dal bucket (dato un publicUrl Supabase)
+export const deleteImageFromStorage = async (publicUrl: string, bucketName = 'menu-images') => {
+  if (!publicUrl) return;
+  try {
+    // Trova il percorso relativo a partire dalla pubblica URL
+    const match = publicUrl.match(/menu-images\/(.+)$/);
+    if (!match) return;
+
+    const filePath = match[1];
+    const { error } = await supabase.storage.from(bucketName).remove([filePath]);
+    if (error) {
+      console.warn("Non sono riuscito a cancellare la vecchia immagine:", error);
+      toast.warning("Attenzione: la vecchia immagine non è stata rimossa.");
+    } else {
+      console.log("Vecchia immagine rimossa correttamente", filePath);
+    }
+  } catch (e) {
+    console.error("Errore rimozione immagine:", e);
   }
 };

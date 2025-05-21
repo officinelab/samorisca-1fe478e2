@@ -1,8 +1,8 @@
-
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { LabelsTable } from "./product-labels/LabelsTable";
 import { LabelFormDialog } from "./product-labels/LabelFormDialog";
 import { useProductLabels } from "@/hooks/menu-settings/useProductLabels";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogAction, AlertDialogCancel, AlertDialogDescription } from "@/components/ui/alert-dialog";
 
 const ProductLabelsManager = () => {
   const {
@@ -19,6 +19,8 @@ const ProductLabelsManager = () => {
     handleDeleteLabel,
     reorderLabels
   } = useProductLabels();
+
+  const [labelToDelete, setLabelToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLabels();
@@ -40,6 +42,17 @@ const ProductLabelsManager = () => {
     }
   };
 
+  const handleDeleteClicked = (id: string) => {
+    setLabelToDelete(id);
+  };
+
+  const confirmDeleteLabel = async () => {
+    if (labelToDelete) {
+      await handleDeleteLabel(labelToDelete);
+      setLabelToDelete(null);
+    }
+  };
+
   return (
     <div>
       <LabelsTable 
@@ -47,7 +60,7 @@ const ProductLabelsManager = () => {
         isLoading={isLoading}
         onAddLabel={() => handleOpenDialog()}
         onEditLabel={handleOpenDialog}
-        onDeleteLabel={handleDeleteLabel}
+        onDeleteLabel={handleDeleteClicked}
         onRefresh={fetchLabels}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
@@ -62,6 +75,20 @@ const ProductLabelsManager = () => {
         isEditing={isEditing}
         onSave={handleSaveLabel}
       />
+
+      {/* Conferma eliminazione */}
+      <AlertDialog open={!!labelToDelete} onOpenChange={open => !open && setLabelToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler rimuovere questa etichetta?</AlertDialogTitle>
+            <AlertDialogDescription>L'etichetta verrà rimossa definitivamente.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteLabel}>Elimina</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

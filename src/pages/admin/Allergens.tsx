@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +8,7 @@ import AllergenForm from "@/components/allergens/AllergenForm";
 import AllergenCard from "@/components/allergens/AllergenCard";
 import ReorderingItem from "@/components/allergens/ReorderingItem";
 import EmptyState from "@/components/allergens/EmptyState";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogDescription } from "@/components/ui/alert-dialog";
 
 const Allergens = () => {
   const {
@@ -27,6 +28,19 @@ const Allergens = () => {
     cancelReordering,
     moveAllergen
   } = useAllergensManager();
+
+  const [allergenToDelete, setAllergenToDelete] = useState<string | null>(null);
+
+  const handleDeleteClicked = (id: string) => {
+    setAllergenToDelete(id);
+  };
+
+  const confirmDeleteAllergen = async () => {
+    if (allergenToDelete) {
+      await handleDeleteAllergen(allergenToDelete);
+      setAllergenToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -72,7 +86,7 @@ const Allergens = () => {
               key={allergen.id}
               allergen={allergen}
               onEdit={setEditingAllergen}
-              onDelete={handleDeleteAllergen}
+              onDelete={handleDeleteClicked}
             />
           ))
         )}
@@ -128,6 +142,20 @@ const Allergens = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Conferma eliminazione allergene */}
+      <AlertDialog open={!!allergenToDelete} onOpenChange={open => !open && setAllergenToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler rimuovere questo allergene?</AlertDialogTitle>
+            <AlertDialogDescription>Questa operazione è irreversibile.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteAllergen}>Elimina</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

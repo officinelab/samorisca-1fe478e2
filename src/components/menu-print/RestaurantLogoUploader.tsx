@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -7,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import ImagePreview from "./logo-uploader/ImagePreview";
 import LogoActions from "./logo-uploader/LogoActions";
 import { supabase } from "@/integrations/supabase/client";
+import { deleteImageFromStorage } from "@/components/image-uploader/uploadUtils";
 
 interface RestaurantLogoUploaderProps {
   currentLogo?: string | null;
@@ -28,6 +28,7 @@ export const RestaurantLogoUploader = ({
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const previousLogo = useRef<string | null>(null);
 
   // Carica l'immagine corrente all'avvio
   useEffect(() => {
@@ -37,6 +38,7 @@ export const RestaurantLogoUploader = ({
     } else {
       setPreviewUrl(null);
     }
+    previousLogo.current = currentLogo;
   }, [currentLogo]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +63,15 @@ export const RestaurantLogoUploader = ({
       if (publicUrl) {
         onLogoUploaded(publicUrl);
         toast.success("Logo caricato con successo");
+        // Cancella la precedente solo se diversa e su menu-images
+        if (
+          previousLogo.current &&
+          previousLogo.current !== publicUrl &&
+          previousLogo.current.includes("menu-images/")
+        ) {
+          await deleteImageFromStorage(previousLogo.current, "menu-images");
+        }
+        previousLogo.current = publicUrl;
       }
     } catch (error) {
       console.error("Errore nel caricamento:", error);
