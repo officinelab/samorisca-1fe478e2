@@ -61,6 +61,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
         <CardContent className="pt-6">
           <h4 className="text-lg font-medium mb-4">Logo della copertina</h4>
           <div className="space-y-4">
+            {/* Campo URL e anteprima logo copertina */}
             <div className="space-y-2">
               <Label>URL Logo Copertina</Label>
               <Input
