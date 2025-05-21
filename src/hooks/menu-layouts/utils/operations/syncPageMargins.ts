@@ -170,9 +170,43 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
       }
     };
   } else {
-    const item = syncedLayout.allergens.item || {};
+    const item = syncedLayout.allergens.item || {
+      number: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#000000",
+        fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 8, bottom: 0, left: 0 }
+      },
+      title: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#333333",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      },
+      description: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#444444",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 5, left: 0 }
+      },
+      spacing: 10,
+      backgroundColor: "#f9f9f9",
+      borderRadius: 4,
+      padding: 8
+    };
     syncedLayout.allergens.item = {
       ...item,
+      number: item.number,
+      title: item.title,
       description: {
         fontFamily: item.description?.fontFamily ?? "Arial",
         fontSize: item.description?.fontSize ?? 12,
@@ -181,9 +215,11 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
         alignment: item.description?.alignment ?? "left",
         margin: item.description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 },
         visible: typeof item.description?.visible === "boolean" ? item.description.visible : true,
-      }
+      },
+      spacing: item.spacing ?? 10,
+      backgroundColor: item.backgroundColor ?? "#f9f9f9",
+      borderRadius: item.borderRadius ?? 4,
+      padding: item.padding ?? 8
     };
   }
-  
   return syncedLayout;
-};

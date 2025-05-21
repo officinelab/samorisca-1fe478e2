@@ -45,16 +45,18 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? "",
   };
 
-  // Allergens item.description safe fallback
+  // Allergens item.description safe fallback (fix: cast e nullish checks)
   const allergensItem = layout.allergens?.item ?? {};
   const itemDescription: PrintLayoutElementConfig = {
-    visible: typeof allergensItem.description?.visible === "boolean" ? allergensItem.description.visible : true,
-    fontFamily: allergensItem.description?.fontFamily ?? "Arial",
-    fontSize: allergensItem.description?.fontSize ?? 12,
-    fontColor: allergensItem.description?.fontColor ?? "#444444",
-    fontStyle: allergensItem.description?.fontStyle ?? "normal",
-    alignment: allergensItem.description?.alignment ?? "left",
-    margin: allergensItem.description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 }
+    visible: typeof (allergensItem as any).description?.visible === "boolean" 
+      ? (allergensItem as any).description.visible 
+      : true,
+    fontFamily: (allergensItem as any).description?.fontFamily ?? "Arial",
+    fontSize: (allergensItem as any).description?.fontSize ?? 12,
+    fontColor: (allergensItem as any).description?.fontColor ?? "#444444",
+    fontStyle: (allergensItem as any).description?.fontStyle ?? "normal",
+    alignment: (allergensItem as any).description?.alignment ?? "left",
+    margin: (allergensItem as any).description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 }
   };
 
   return {
