@@ -1,5 +1,7 @@
+
 import React from "react";
 import { PrintLayoutElementConfig, Margin } from "@/types/printLayout";
+import ColorPickerInput from "./ColorPickerInput";
 
 interface ElementEditorProps {
   element: PrintLayoutElementConfig;
@@ -36,12 +38,10 @@ const ElementEditor = ({
       </div>
       {/* Colore carattere */}
       <div>
-        <label className="block text-sm">Colore carattere</label>
-        <input
-          type="color"
+        <label className="block text-sm mb-1">Colore carattere</label>
+        <ColorPickerInput
           value={element.fontColor}
-          onChange={e => onChange("fontColor", e.target.value)}
-          className="input"
+          onChange={color => onChange("fontColor", color)}
         />
       </div>
       {/* Stile carattere */}
