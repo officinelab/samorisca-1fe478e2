@@ -223,3 +223,4 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
     };
   }
   return syncedLayout;
+}
