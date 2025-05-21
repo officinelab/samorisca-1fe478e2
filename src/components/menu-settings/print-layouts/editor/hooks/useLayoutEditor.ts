@@ -24,21 +24,21 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     fontFamily: "Arial",
     fontSize: 24,
     fontColor: "#000000",
-    fontStyle: "bold",
+    fontStyle: "bold" as const,
     alignment: "center" as const,
     margin: { top: 20, right: 0, bottom: 10, left: 0 },
     menuTitle: layout.cover?.title?.menuTitle ?? undefined,
-    visible: layout.cover?.title?.visible ?? true,
+    // removed: visible
   };
   const coverSubtitleDefaults = {
     fontFamily: "Arial",
     fontSize: 14,
     fontColor: "#666666",
-    fontStyle: "italic",
+    fontStyle: "italic" as const,
     alignment: "center" as const,
     margin: { top: 5, right: 0, bottom: 0, left: 0 },
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? undefined,
-    visible: layout.cover?.subtitle?.visible ?? true,
+    // removed: visible
   };
 
   // Safe-merge all fields (logo, title, subtitle) for .cover
@@ -79,7 +79,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
       fontFamily: "Arial",
       fontSize: 22,
       fontColor: "#000000",
-      fontStyle: "bold",
+      fontStyle: "bold" as const,
       alignment: "center" as const,
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
     },
@@ -87,7 +87,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
       fontFamily: "Arial",
       fontSize: 14,
       fontColor: "#333333",
-      fontStyle: "normal",
+      fontStyle: "normal" as const,
       alignment: "left" as const,
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
     },
@@ -96,7 +96,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#000000",
-        fontStyle: "bold",
+        fontStyle: "bold" as const,
         alignment: "left" as const,
         margin: { top: 0, right: 8, bottom: 0, left: 0 }
       },
@@ -104,7 +104,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#333333",
-        fontStyle: "normal",
+        fontStyle: "normal" as const,
         alignment: "left" as const,
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
@@ -112,7 +112,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
         fontFamily: "Arial",
         fontSize: 12,
         fontColor: "#444444",
-        fontStyle: "normal",
+        fontStyle: "normal" as const,
         alignment: "left" as const,
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
@@ -132,7 +132,6 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
 }
 
 function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
-  // Ora non serve forzare visible, quindi tolto.
   const cover = layout.cover ?? {};
   let logo = cover.logo || {};
   return {
@@ -140,7 +139,6 @@ function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
     cover: {
       ...cover,
       logo: {
-        ...logo,
         maxWidth: logo.maxWidth ?? 80,
         maxHeight: logo.maxHeight ?? 50,
         alignment: logo.alignment ?? "center",
@@ -148,6 +146,7 @@ function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
         marginBottom: logo.marginBottom ?? 20,
         imageUrl: logo.imageUrl ?? null,
       },
+      // mantenere esattamente i riferimenti preesistenti a title e subtitle
       title: cover.title,
       subtitle: cover.subtitle,
     },
