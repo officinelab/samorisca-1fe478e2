@@ -1,31 +1,21 @@
 
 import { useState, useEffect } from "react";
-import { useMenuLayouts } from "@/hooks/useMenuLayouts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/sonner";
-import PrintLayoutsList from "./print-layouts/PrintLayoutsList";
 import PrintLayoutEditor from "./print-layouts/PrintLayoutEditor";
 import PrintLayoutPreview from "./print-layouts/PrintLayoutPreview";
 import { PrintLayout } from "@/types/printLayout";
-import { Save, Printer, LayoutList, LayoutGrid } from "lucide-react";
+import { Save, Printer, LayoutGrid } from "lucide-react";
+import { useMenuLayouts } from "@/hooks/useMenuLayouts";
+import DefaultPrintLayoutCard from "./print-layouts/DefaultPrintLayoutCard";
 
 const PrintLayoutsManager = () => {
   const {
     layouts,
-    activeLayout,
     isLoading,
     error,
     updateLayout,
-    // deleteLayout,
-    // setDefaultLayout,
-    // cloneLayout,
-    // createNewLayout,
-    // changeActiveLayout
   } = useMenuLayouts();
 
-  // Mostra solo il layout predefinito (o il primo se non marcato come default)
   const [defaultLayout, setDefaultLayout] = useState<PrintLayout | null>(null);
   const [editorTab, setEditorTab] = useState("modifica");
 
@@ -36,14 +26,13 @@ const PrintLayoutsManager = () => {
     }
   }, [layouts]);
 
-  // Gestisci eventuali errori
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
 
-  // Unico handler rimasto: aggiorna il layout predefinito
+  // Unico handler: aggiorna il layout predefinito
   const handleUpdateLayout = (updatedLayout: PrintLayout) => {
     updateLayout(updatedLayout);
     toast.success("Layout aggiornato con successo");
@@ -56,70 +45,39 @@ const PrintLayoutsManager = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <LayoutGrid size={22} className="text-primary" />
-              Gestione Layout di Stampa
-            </CardTitle>
-            <CardDescription>
-              È disponibile un solo layout di stampa che puoi personalizzare secondo le tue esigenze.
-            </CardDescription>
+      <div className="bg-card rounded-lg shadow px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-xl font-semibold">
+            <LayoutGrid size={22} className="text-primary" />
+            Gestione Layout di Stampa
           </div>
-        </CardHeader>
-      </Card>
+          <div className="text-sm text-muted-foreground mt-2">
+            È disponibile un solo layout di stampa che puoi personalizzare secondo le tue esigenze.
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-[260px] flex-shrink-0">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <LayoutList size={18} /> Layout Predefinito
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Questo è l'unico layout disponibile per la stampa.
-              </CardDescription>
-            </CardHeader>
-            <Separator />
-            <CardContent className="py-4">
-              {defaultLayout ? (
-                <PrintLayoutsList
-                  layouts={[defaultLayout]}
-                  onSelectLayout={undefined}
-                  onCloneLayout={undefined}
-                  onDeleteLayout={undefined}
-                  onSetDefaultLayout={undefined}
-                  defaultFirst={true}
-                  single
-                />
-              ) : (
-                <div className="text-center text-muted-foreground text-sm py-6">
-                  Nessun layout disponibile.
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <DefaultPrintLayoutCard layout={defaultLayout} />
         </div>
 
         <div className="flex-1 flex flex-col gap-6 min-w-0">
           <div className="flex gap-2 mb-2 lg:hidden">
-            <Button
-              variant={editorTab === "modifica" ? "secondary" : "ghost"}
+            <button
+              className={`flex-1 px-4 py-2 rounded ${editorTab === "modifica" ? "bg-primary/80 text-white" : "bg-muted"}`}
               onClick={() => setEditorTab("modifica")}
-              size="sm"
-              className="flex-1"
+              type="button"
             >
               <Save size={16} className="mr-1" /> Modifica Layout
-            </Button>
-            <Button
-              variant={editorTab === "anteprima" ? "secondary" : "ghost"}
+            </button>
+            <button
+              className={`flex-1 px-4 py-2 rounded ${editorTab === "anteprima" ? "bg-primary/80 text-white" : "bg-muted"}`}
               onClick={() => setEditorTab("anteprima")}
-              size="sm"
-              className="flex-1"
+              type="button"
             >
               <Printer size={16} className="mr-1" /> Anteprima
-            </Button>
+            </button>
           </div>
           {/* MODIFICA */}
           {editorTab === "modifica" && (
@@ -127,13 +85,9 @@ const PrintLayoutsManager = () => {
               {defaultLayout ? (
                 <PrintLayoutEditor layout={defaultLayout} onSave={handleUpdateLayout} />
               ) : (
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-muted-foreground">
-                      Nessun layout selezionato.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="bg-card border rounded-lg shadow p-6 text-muted-foreground text-center">
+                  Nessun layout selezionato.
+                </div>
               )}
             </div>
           )}
@@ -143,13 +97,9 @@ const PrintLayoutsManager = () => {
               {defaultLayout ? (
                 <PrintLayoutPreview layout={defaultLayout} />
               ) : (
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-muted-foreground">
-                      Nessun layout da visualizzare.
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="bg-card border rounded-lg shadow p-6 text-muted-foreground text-center">
+                  Nessun layout da visualizzare.
+                </div>
               )}
             </div>
           )}
