@@ -1,5 +1,6 @@
+
 import { useCallback } from "react";
-import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, Margin } from "@/types/printLayout";
 
 export function useElementsTab(setEditedLayout: React.Dispatch<React.SetStateAction<PrintLayout>>) {
   const handleElementChange = useCallback(
@@ -34,15 +35,10 @@ export function useElementsTab(setEditedLayout: React.Dispatch<React.SetStateAct
           ...prev.elements,
           [elementKey]: {
             ...prev.elements[elementKey],
-            ...(prev.elements[elementKey].margin
-              ? {
-                  margin: {
-                    ...prev.elements[elementKey].margin,
-                    [marginKey]: value,
-                  }
-                }
-              : {}
-            ),
+            margin: {
+              ...prev.elements[elementKey].margin,
+              [marginKey]: value,
+            },
           },
         },
       }));
@@ -52,3 +48,4 @@ export function useElementsTab(setEditedLayout: React.Dispatch<React.SetStateAct
 
   return { handleElementChange, handleElementMarginChange };
 }
+

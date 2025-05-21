@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
@@ -28,7 +27,6 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: "center" as const,
     margin: { top: 20, right: 0, bottom: 10, left: 0 },
     menuTitle: layout.cover?.title?.menuTitle ?? undefined,
-    // removed: visible
   };
   const coverSubtitleDefaults = {
     fontFamily: "Arial",
@@ -38,7 +36,6 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: "center" as const,
     margin: { top: 5, right: 0, bottom: 0, left: 0 },
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? undefined,
-    // removed: visible
   };
 
   // Safe-merge all fields (logo, title, subtitle) for .cover
@@ -132,7 +129,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
 }
 
 function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
-  const cover = layout.cover ?? {};
+  const cover = layout.cover ?? { logo: {}, title: {}, subtitle: {} };
   let logo = cover.logo || {};
   return {
     ...layout,
@@ -146,7 +143,6 @@ function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
         marginBottom: logo.marginBottom ?? 20,
         imageUrl: logo.imageUrl ?? null,
       },
-      // mantenere esattamente i riferimenti preesistenti a title e subtitle
       title: cover.title,
       subtitle: cover.subtitle,
     },
