@@ -92,7 +92,6 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
   const handleSaveWithValidation = () => {
     if (validate()) {
       handleSave();
-      toast.success("Modifiche salvate!");
     }
   };
 
