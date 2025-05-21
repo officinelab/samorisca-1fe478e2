@@ -1,20 +1,24 @@
 
+// Struttura aggiornata e commentata secondo la nuova specifica
+
 export type FontStyle = 'normal' | 'italic' | 'bold';
+export type TextAlign = 'left' | 'center' | 'right';
+
+export type Margin = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
 
 export type PrintLayoutElementConfig = {
-  visible: boolean;
   fontFamily: string;
   fontSize: number;
   fontColor: string;
   fontStyle: FontStyle;
-  alignment: 'left' | 'center' | 'right';
-  margin: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
-}
+  alignment: TextAlign;
+  margin: Margin;
+};
 
 export type PageMargins = {
   marginTop: number;
@@ -25,58 +29,92 @@ export type PageMargins = {
 
 export type ProductSchema = 'schema1' | 'schema2' | 'schema3';
 
-// AGGIUNTA: struttura per header opzionale
+// HEADER: rimane opzionale
 export type PrintLayoutHeader = {
-  height?: number; // Altezza riservata in mm solo nelle pagine MENU, NON copertina
+  height?: number; // mm
 };
 
+/** -- ELEMENTI DEL MENU -- */
+export type MenuElementsConfig = {
+  category: PrintLayoutElementConfig;          // Categoria (sempre visibile)
+  title: PrintLayoutElementConfig;             // Titolo prodotto (sempre visibile)
+  description: PrintLayoutElementConfig;       // Descrizione prodotto (sempre visibile)
+  allergensList: PrintLayoutElementConfig;     // Allergeni prodotto (sempre visibile)
+  price: PrintLayoutElementConfig;             // Prezzo (sempre visibile)
+  suffix: Omit<PrintLayoutElementConfig, 'margin'> & {
+    // Il suffisso del prezzo eredita i margini dal prezzo: niente margin qui
+  };
+  priceVariants: PrintLayoutElementConfig;     // Varianti prezzo (sempre visibile)
+};
+
+/** -- COPERTINA -- */
+export type CoverLogoConfig = {
+  imageUrl?: string | null; // nuova proprietà, url del logo su storage
+  maxWidth: number;         // %
+  maxHeight: number;        // %
+  alignment: TextAlign;
+  marginTop: number;
+  marginBottom: number;
+};
+
+export type CoverTitleConfig = PrintLayoutElementConfig & {
+  menuTitle?: string;    // campo testo inseribile per il titolo del menu
+  visible: boolean;      // qui rimane per coerenza con design
+};
+
+export type CoverSubtitleConfig = PrintLayoutElementConfig & {
+  menuSubtitle?: string; // campo testo inseribile per il sottotitolo menu
+  visible: boolean;
+};
+
+export type PrintLayoutCover = {
+  logo: CoverLogoConfig;
+  title: CoverTitleConfig;
+  subtitle: CoverSubtitleConfig;
+};
+
+/** -- PAGINA ALLERGENI -- */
+export type AllergensItemElementConfig = {
+  number: PrintLayoutElementConfig;
+  title: PrintLayoutElementConfig;
+  description: PrintLayoutElementConfig;   // NUOVO: descrizione voce allergene
+  spacing: number;
+  backgroundColor: string;
+  borderRadius: number;
+  padding: number;
+};
+
+export type AllergensConfig = {
+  title: PrintLayoutElementConfig;
+  description: PrintLayoutElementConfig;
+  item: AllergensItemElementConfig;
+};
+
+/** -- SPACING -- */
+export type MenuSpacing = {
+  betweenCategories: number;
+  betweenProducts: number;
+  categoryTitleBottomMargin: number;
+};
+
+export type PrintLayoutPageConfig = PageMargins & {
+  useDistinctMarginsForPages: boolean;
+  oddPages: PageMargins;
+  evenPages: PageMargins;
+};
+
+/** -- STRUTTURA PRINCIPALE LAYOUT -- */
 export type PrintLayout = {
   id: string;
   name: string;
   type: 'classic' | 'custom' | 'modern' | 'allergens';
   isDefault: boolean;
   productSchema: ProductSchema;
-  elements: {
-    category: PrintLayoutElementConfig;
-    title: PrintLayoutElementConfig;
-    description: PrintLayoutElementConfig;
-    price: PrintLayoutElementConfig;
-    allergensList: PrintLayoutElementConfig;
-    priceVariants: PrintLayoutElementConfig;
-  };
-  cover: {
-    logo: {
-      maxWidth: number; // percentuale della larghezza del foglio
-      maxHeight: number; // percentuale dell'altezza del foglio
-      alignment: 'left' | 'center' | 'right';
-      marginTop: number;
-      marginBottom: number;
-      visible: boolean;
-    };
-    title: PrintLayoutElementConfig;
-    subtitle: PrintLayoutElementConfig;
-  };
-  allergens: {
-    title: PrintLayoutElementConfig;
-    description: PrintLayoutElementConfig;
-    item: {
-      number: PrintLayoutElementConfig;
-      title: PrintLayoutElementConfig;
-      spacing: number;
-      backgroundColor: string;
-      borderRadius: number;
-      padding: number;
-    };
-  };
-  spacing: {
-    betweenCategories: number;
-    betweenProducts: number;
-    categoryTitleBottomMargin: number;
-  };
-  page: PageMargins & {
-    useDistinctMarginsForPages: boolean;
-    oddPages: PageMargins;
-    evenPages: PageMargins;
-  };
-  header?: PrintLayoutHeader; // <-- header ora è un oggetto opzionale
+  elements: MenuElementsConfig;
+  cover: PrintLayoutCover;
+  allergens: AllergensConfig;
+  spacing: MenuSpacing;
+  page: PrintLayoutPageConfig;
+  header?: PrintLayoutHeader;
 };
+
