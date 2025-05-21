@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
@@ -47,15 +46,13 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
 
   return (
     <div style={containerStyle} className="category">
-      {(!customLayout || customLayout.elements.category.visible) && (
-        <RepeatedCategoryTitle 
-          category={category}
-          language={language}
-          customLayout={customLayout}
-          isRepeated={isRepeatedTitle}
-        />
-      )}
-      
+      {/* Titolo categoria sempre visibile (nessun check su .visible) */}
+      <RepeatedCategoryTitle 
+        category={category}
+        language={language}
+        customLayout={customLayout}
+        isRepeated={isRepeatedTitle}
+      />
       <div>
         {products?.map((product) => (
           <ProductItem 

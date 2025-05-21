@@ -11,6 +11,10 @@ export type Margin = {
   left: number;
 };
 
+/**
+ * Configurazione di un elemento di layout. Rimuoviamo la proprietà "visible"
+ * e lasciamo solo i campi effettivamente selezionabili.
+ */
 export type PrintLayoutElementConfig = {
   fontFamily: string;
   fontSize: number;

@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 
 export const allergensLayout: PrintLayout = {
@@ -54,6 +55,13 @@ export const allergensLayout: PrintLayout = {
       fontStyle: "normal",
       alignment: "right",
       margin: { top: 1, right: 0, bottom: 0, left: 0 }
+    },
+    suffix: {
+      fontFamily: "Arial",
+      fontSize: 9,
+      fontColor: "#888888",
+      fontStyle: "normal",
+      alignment: "left"
     }
   },
   spacing: {
@@ -95,7 +103,8 @@ export const allergensLayout: PrintLayout = {
       fontStyle: "bold",
       alignment: "center",
       margin: { top: 20, right: 0, bottom: 10, left: 0 },
-      menuTitle: undefined
+      menuTitle: undefined,
+      visible: true
     },
     subtitle: {
       fontFamily: "Arial",
@@ -104,7 +113,8 @@ export const allergensLayout: PrintLayout = {
       fontStyle: "italic",
       alignment: "center",
       margin: { top: 5, right: 0, bottom: 0, left: 0 },
-      menuSubtitle: undefined
+      menuSubtitle: undefined,
+      visible: true
     }
   },
   allergens: {
