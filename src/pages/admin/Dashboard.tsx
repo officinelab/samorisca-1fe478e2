@@ -62,6 +62,16 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Category, Product, Allergen, ProductLabel, ProductFeature } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -79,6 +89,9 @@ const Dashboard = () => {
   
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
   
   const isMobile = useIsMobile();
 
@@ -410,15 +423,16 @@ const Dashboard = () => {
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questa categoria? Verranno eliminati anche tutti i prodotti associati.")) {
-      return;
-    }
-    
+    setCategoryToDelete(categoryId);
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!categoryToDelete) return;
     try {
       const { error } = await supabase
         .from('categories')
         .delete()
-        .eq('id', categoryId);
+        .eq('id', categoryToDelete);
       
       if (error) throw error;
       
@@ -429,6 +443,7 @@ const Dashboard = () => {
       console.error('Errore nell\'eliminazione della categoria:', error);
       toast.error("Errore nell'eliminazione della categoria. Riprova più tardi.");
     }
+    setCategoryToDelete(null);
   };
 
   const handleAddProduct = async (productData: Partial<Product>) => {
@@ -594,16 +609,17 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm("Sei sicuro di voler eliminare questo prodotto?")) {
-      return;
-    }
-    
+  const handleDeleteProduct = (productId: string) => {
+    setProductToDelete(productId);
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
     try {
       const { error } = await supabase
         .from('products')
         .delete()
-        .eq('id', productId);
+        .eq('id', productToDelete);
       
       if (error) throw error;
       
@@ -624,6 +640,7 @@ const Dashboard = () => {
       console.error('Errore nell\'eliminazione del prodotto:', error);
       toast.error("Errore nell'eliminazione del prodotto. Riprova più tardi.");
     }
+    setProductToDelete(null);
   };
 
   const ImageUploader = ({ 
@@ -1303,7 +1320,6 @@ const Dashboard = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {/* Quadrato grigio e Package icon rimossi */}
                           <span className="truncate max-w-[140px]">{category.title}</span>
                         </div>
                         {!category.is_active && (
@@ -1545,7 +1561,6 @@ const Dashboard = () => {
                           e.stopPropagation();
                           setSelectedProduct(product.id);
                           setIsEditing(true);
-                          
                           if (isMobile) {
                             setShowMobileProducts(false);
                             setShowMobileDetail(true);
@@ -1858,6 +1873,54 @@ const Dashboard = () => {
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
       
       <CategoryFormPanel />
+
+      {/* Dialog Conferma Eliminazione Categoria */}
+      <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questa categoria?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Verranno eliminati anche tutti i prodotti associati a questa categoria.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setCategoryToDelete(null)}
+            >
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCategory}
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog Conferma Eliminazione Voce di Menu/Prodotto */}
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questa voce del menu?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setProductToDelete(null)}
+            >
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteProduct}
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
