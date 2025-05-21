@@ -11,12 +11,12 @@ type TabKey =
   | "pagina";
 
 const SECTIONS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "generale", label: "Impostazioni generali", icon: <Settings size={18} /> },
-  { key: "elementi", label: "Elementi Menu", icon: <LayoutList size={18} /> },
-  { key: "copertina", label: "Copertina", icon: <Image size={18} /> },
-  { key: "allergeni", label: "Allergeni", icon: <Folder size={18} /> },
-  { key: "spaziatura", label: "Spaziatura", icon: <FileText size={18} /> },
-  { key: "pagina", label: "Impostazioni Pagina", icon: <Text size={18} /> },
+  { key: "generale", label: "Impostazioni generali", icon: <Settings size={20} /> },
+  { key: "elementi", label: "Elementi Menu", icon: <LayoutList size={20} /> },
+  { key: "copertina", label: "Copertina", icon: <Image size={20} /> },
+  { key: "allergeni", label: "Allergeni", icon: <Folder size={20} /> },
+  { key: "spaziatura", label: "Spaziatura", icon: <FileText size={20} /> },
+  { key: "pagina", label: "Impostazioni Pagina", icon: <Text size={20} /> },
 ];
 
 interface SidebarProps {
@@ -25,10 +25,10 @@ interface SidebarProps {
 }
 
 const PrintLayoutEditorSidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => (
-  <aside className="w-full md:w-60 flex-shrink-0 bg-card/80 rounded-lg shadow-xs p-3 border md:sticky md:top-28 self-start h-fit">
-    <div className="mb-3">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
-        Menu di modifica
+  <aside className="w-full md:w-64 flex-shrink-0 bg-gradient-to-b from-[#f9f7fc] via-white to-[#edeafd] rounded-2xl shadow-lg p-4 border border-card/80 md:sticky md:top-28 self-start h-fit">
+    <div className="mb-2">
+      <div className="text-[0.72rem] font-bold text-muted-foreground uppercase tracking-wider pl-2 pb-1">
+        Menu Layout
       </div>
     </div>
     <nav>
@@ -36,17 +36,20 @@ const PrintLayoutEditorSidebar: React.FC<SidebarProps> = ({ activeTab, setActive
         {SECTIONS.map(section => (
           <li key={section.key}>
             <button
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded transition
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-semibold
+                transition group shadow-sm
                 ${activeTab === section.key
-                  ? "bg-primary/90 text-primary-foreground font-bold shadow"
-                  : "hover:bg-muted text-muted-foreground"}
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "hover:bg-muted/70 hover:text-primary"}
               `}
               onClick={() => setActiveTab(section.key)}
               aria-current={activeTab === section.key ? "page" : undefined}
               type="button"
             >
-              {section.icon}
-              <span>{section.label}</span>
+              <span className={`${activeTab === section.key ? "text-white" : "text-primary"} transition`}>
+                {section.icon}
+              </span>
+              <span className="truncate">{section.label}</span>
             </button>
           </li>
         ))}
