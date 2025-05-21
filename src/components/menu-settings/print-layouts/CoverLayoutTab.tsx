@@ -19,7 +19,7 @@ interface CoverLayoutTabProps {
   onCoverSubtitleMarginChange: (field: keyof PrintLayout['cover']['subtitle']['margin'], value: number) => void;
 }
 
-// Semplice componente locale per upload logo copertina
+// Uploader logo copertina locale (input url + upload file + preview)
 function CoverLogoUploader({
   imageUrl,
   onUrlChange,
@@ -34,7 +34,7 @@ function CoverLogoUploader({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Usa URL temporaneo (potresti aggiungere upload su storage/Supabase se necessario)
+      // Usa URL temporaneo direttamente, salvalo come imageUrl
       const ObjectUrl = URL.createObjectURL(file);
       onUrlChange(ObjectUrl);
       if (onUpload) onUpload(ObjectUrl);
@@ -43,7 +43,7 @@ function CoverLogoUploader({
 
   return (
     <div className="space-y-2">
-      <Label>Logo Copertina (upload oppure URL)</Label>
+      <Label>Logo copertina</Label>
       <div className="flex gap-2 items-center">
         <Input
           type="url"
@@ -68,7 +68,7 @@ function CoverLogoUploader({
       </div>
       {imageUrl && (
         <div className="mt-2">
-          <img src={imageUrl} alt="Anteprima Logo Copertina" className="max-w-[180px] max-h-[90px] border rounded shadow" />
+          <img src={imageUrl} alt="Anteprima logo copertina" className="max-w-[180px] max-h-[90px] border rounded shadow" />
         </div>
       )}
     </div>
@@ -127,9 +127,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                 onCheckedChange={(val) => onCoverLogoChange("visible", !!val)}
                 id="switch-visibility-logo"
               />
-              <Label htmlFor="switch-visibility-logo">
-                Mostra logo copertina
-              </Label>
+              <Label htmlFor="switch-visibility-logo">Mostra logo copertina</Label>
             </div>
             <CoverLogoUploader
               imageUrl={coverLogo.imageUrl || ""}
@@ -221,19 +219,15 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                   onCheckedChange={(val) => onCoverTitleChange("visible", !!val)}
                   id="switch-visibility-title"
                 />
-                <Label htmlFor="switch-visibility-title">
-                  Mostra titolo in copertina
-                </Label>
+                <Label htmlFor="switch-visibility-title">Mostra titolo in copertina</Label>
               </div>
               <h4 className="text-lg font-medium mb-4">Titolo Menu</h4>
-              <div className="mb-2">
+              <div className="space-y-2 mb-2">
                 <Label>Titolo personalizzato</Label>
                 <Input
                   type="text"
                   value={coverTitle.menuTitle || ""}
-                  onChange={e =>
-                    onCoverTitleChange("menuTitle", e.target.value)
-                  }
+                  onChange={e => onCoverTitleChange("menuTitle", e.target.value)}
                   placeholder="Titolo della copertina (es. Il nostro Menu)"
                   className="mb-2"
                 />
@@ -255,19 +249,15 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
                   onCheckedChange={(val) => onCoverSubtitleChange("visible", !!val)}
                   id="switch-visibility-subtitle"
                 />
-                <Label htmlFor="switch-visibility-subtitle">
-                  Mostra sottotitolo in copertina
-                </Label>
+                <Label htmlFor="switch-visibility-subtitle">Mostra sottotitolo in copertina</Label>
               </div>
               <h4 className="text-lg font-medium mb-4">Sottotitolo Menu</h4>
-              <div className="mb-2">
+              <div className="space-y-2 mb-2">
                 <Label>Sottotitolo personalizzato</Label>
                 <Input
                   type="text"
                   value={coverSubtitle.menuSubtitle || ""}
-                  onChange={e =>
-                    onCoverSubtitleChange("menuSubtitle", e.target.value)
-                  }
+                  onChange={e => onCoverSubtitleChange("menuSubtitle", e.target.value)}
                   placeholder="Sottotitolo della copertina (es. Benvenuti!)"
                   className="mb-2"
                 />
