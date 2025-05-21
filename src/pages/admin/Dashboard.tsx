@@ -363,7 +363,6 @@ const Dashboard = () => {
       const categoryToInsert = {
         title: categoryData.title,
         description: categoryData.description || null,
-        image_url: categoryData.image_url || null,
         is_active: categoryData.is_active !== undefined ? categoryData.is_active : true,
         display_order: nextOrder
       };
@@ -713,7 +712,8 @@ const Dashboard = () => {
     title: z.string().min(1, "Il nome è obbligatorio"),
     description: z.string().optional(),
     is_active: z.boolean().default(true),
-    image_url: z.string().optional().nullable(),
+    // image_url rimosso
+    // image_url: z.string().optional().nullable(),
   });
 
   const productFormSchema = z.object({
@@ -741,7 +741,7 @@ const Dashboard = () => {
         title: editingCategory?.title || "",
         description: editingCategory?.description || "",
         is_active: editingCategory?.is_active ?? true,
-        image_url: editingCategory?.image_url || null,
+        // image_url: editingCategory?.image_url || null,
       },
     });
     
@@ -793,20 +793,7 @@ const Dashboard = () => {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <ImageUploader
-                      currentImage={field.value || null}
-                      onImageUploaded={(url) => field.onChange(url)}
-                      label="Immagine Categoria"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Rimosso field immagine categoria */}
               
               <FormField
                 control={form.control}
@@ -1316,19 +1303,11 @@ const Dashboard = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {category.image_url ? (
-                            <div className="w-8 h-8 rounded-md overflow-hidden">
-                              <img
-                                src={category.image_url}
-                                alt={category.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
-                              <Package className="h-4 w-4" />
-                            </div>
-                          )}
+                          {/* IMMAGINE CATEGORIA RIMOSSA */}
+                          {/* Mantieni solo icona di default */}
+                          <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
+                            <Package className="h-4 w-4" />
+                          </div>
                           <span className="truncate max-w-[120px]">{category.title}</span>
                         </div>
                         
