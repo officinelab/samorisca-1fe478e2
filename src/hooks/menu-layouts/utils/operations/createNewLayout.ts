@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from "uuid";
 
@@ -67,6 +68,14 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         fontStyle: "normal",
         alignment: "right",
         margin: { top: 2, right: 0, bottom: 0, left: 0 }
+      },
+      suffix: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#000000",
+        fontStyle: "normal",
+        alignment: "right"
       }
     },
     spacing: {
@@ -93,9 +102,10 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         marginLeft: 15
       }
     },
-    // Nuove sezioni per copertina e allergeni
+    // Sezioni per copertina e allergeni
     cover: {
       logo: {
+        imageUrl: "",
         maxWidth: 80,
         maxHeight: 50,
         alignment: 'center',
@@ -110,7 +120,8 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         fontColor: "#000000",
         fontStyle: "bold",
         alignment: "center",
-        margin: { top: 20, right: 0, bottom: 10, left: 0 }
+        margin: { top: 20, right: 0, bottom: 10, left: 0 },
+        menuTitle: ""
       },
       subtitle: {
         visible: true,
@@ -119,7 +130,8 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         fontColor: "#666666",
         fontStyle: "italic",
         alignment: "center",
-        margin: { top: 5, right: 0, bottom: 0, left: 0 }
+        margin: { top: 5, right: 0, bottom: 0, left: 0 },
+        menuSubtitle: ""
       }
     },
     allergens: {
@@ -159,6 +171,15 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
           fontStyle: "normal",
           alignment: "left",
           margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        },
+        description: {
+          visible: true,
+          fontFamily: "Arial",
+          fontSize: 12,
+          fontColor: "#444444",
+          fontStyle: "normal",
+          alignment: "left",
+          margin: { top: 0, right: 0, bottom: 5, left: 0 }
         },
         spacing: 10,
         backgroundColor: "#f9f9f9",

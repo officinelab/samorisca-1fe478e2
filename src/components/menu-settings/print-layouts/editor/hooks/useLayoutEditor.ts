@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { PrintLayout } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
@@ -9,168 +9,79 @@ import { useAllergensTab } from "./useAllergensTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 
-// Utilities per default e validazioni (miglior fallback oggetto cover)
+// Util per valori safe
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
-  // Default configs for cover
-  const coverLogoDefaults = {
-    imageUrl: layout.cover?.logo?.imageUrl ?? null,
-    maxWidth: 80,
-    maxHeight: 50,
-    alignment: "center" as const,
-    marginTop: 20,
-    marginBottom: 20,
-    visible: true,
-  };
-  const coverTitleDefaults = {
-    fontFamily: "Arial",
-    fontSize: 24,
-    fontColor: "#000000",
-    fontStyle: "bold" as const,
-    alignment: "center" as const,
-    margin: { top: 20, right: 0, bottom: 10, left: 0 },
-    menuTitle: layout.cover?.title?.menuTitle ?? undefined,
-    visible: true,
-  };
-  const coverSubtitleDefaults = {
-    fontFamily: "Arial",
-    fontSize: 14,
-    fontColor: "#666666",
-    fontStyle: "italic" as const,
-    alignment: "center" as const,
-    margin: { top: 5, right: 0, bottom: 0, left: 0 },
-    menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? undefined,
-    visible: true,
+  const logo: CoverLogoConfig = {
+    imageUrl: layout.cover?.logo?.imageUrl ?? "",
+    maxWidth: layout.cover?.logo?.maxWidth ?? 80,
+    maxHeight: layout.cover?.logo?.maxHeight ?? 50,
+    alignment: layout.cover?.logo?.alignment ?? "center",
+    marginTop: layout.cover?.logo?.marginTop ?? 20,
+    marginBottom: layout.cover?.logo?.marginBottom ?? 20,
+    visible: typeof layout.cover?.logo?.visible === "boolean" ? layout.cover.logo.visible : true,
   };
 
-  // Safe-merge all fields (logo, title, subtitle) for .cover
-  const updatedCover = {
-    logo: {
-      ...coverLogoDefaults,
-      ...(layout.cover && typeof layout.cover.logo === "object" ? layout.cover.logo : {}),
-    },
-    title: {
-      ...coverTitleDefaults,
-      ...(layout.cover && typeof layout.cover.title === "object" ? layout.cover.title : {}),
-    },
-    subtitle: {
-      ...coverSubtitleDefaults,
-      ...(layout.cover && typeof layout.cover.subtitle === "object" ? layout.cover.subtitle : {}),
-    }
+  const title: CoverTitleConfig = {
+    fontFamily: layout.cover?.title?.fontFamily ?? "Arial",
+    fontSize: layout.cover?.title?.fontSize ?? 24,
+    fontColor: layout.cover?.title?.fontColor ?? "#000000",
+    fontStyle: layout.cover?.title?.fontStyle ?? "bold",
+    alignment: layout.cover?.title?.alignment ?? "center",
+    margin: layout.cover?.title?.margin ?? { top: 20, right: 0, bottom: 10, left: 0 },
+    menuTitle: layout.cover?.title?.menuTitle ?? "",
+    visible: typeof layout.cover?.title?.visible === "boolean" ? layout.cover.title.visible : true,
   };
 
-  // Restanti default invariati sui campi allergeni e page margin...
-  const pageWithDefaults = {
-    ...layout.page,
-    oddPages: layout.page.oddPages || {
-      marginTop: layout.page.marginTop,
-      marginRight: layout.page.marginRight,
-      marginBottom: layout.page.marginBottom,
-      marginLeft: layout.page.marginLeft
-    },
-    evenPages: layout.page.evenPages || {
-      marginTop: layout.page.marginTop,
-      marginRight: layout.page.marginRight,
-      marginBottom: layout.page.marginBottom,
-      marginLeft: layout.page.marginLeft
-    }
+  const subtitle: CoverSubtitleConfig = {
+    fontFamily: layout.cover?.subtitle?.fontFamily ?? "Arial",
+    fontSize: layout.cover?.subtitle?.fontSize ?? 14,
+    fontColor: layout.cover?.subtitle?.fontColor ?? "#666666",
+    fontStyle: layout.cover?.subtitle?.fontStyle ?? "italic",
+    alignment: layout.cover?.subtitle?.alignment ?? "center",
+    margin: layout.cover?.subtitle?.margin ?? { top: 5, right: 0, bottom: 0, left: 0 },
+    menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? "",
+    visible: typeof layout.cover?.subtitle?.visible === "boolean" ? layout.cover.subtitle.visible : true,
   };
 
-  const allergensWithDefaults = layout.allergens || {
-    title: {
-      fontFamily: "Arial",
-      fontSize: 22,
-      fontColor: "#000000",
-      fontStyle: "bold" as const,
-      alignment: "center" as const,
-      margin: { top: 0, right: 0, bottom: 15, left: 0 }
-    },
-    description: {
-      fontFamily: "Arial",
-      fontSize: 14,
-      fontColor: "#333333",
-      fontStyle: "normal" as const,
-      alignment: "left" as const,
-      margin: { top: 0, right: 0, bottom: 15, left: 0 }
-    },
-    item: {
-      number: {
-        fontFamily: "Arial",
-        fontSize: 14,
-        fontColor: "#000000",
-        fontStyle: "bold" as const,
-        alignment: "left" as const,
-        margin: { top: 0, right: 8, bottom: 0, left: 0 }
-      },
-      title: {
-        fontFamily: "Arial",
-        fontSize: 14,
-        fontColor: "#333333",
-        fontStyle: "normal" as const,
-        alignment: "left" as const,
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
-      },
-      description: {
-        fontFamily: "Arial",
-        fontSize: 12,
-        fontColor: "#444444",
-        fontStyle: "normal" as const,
-        alignment: "left" as const,
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
-      },
-      spacing: 10,
-      backgroundColor: "#f9f9f9",
-      borderRadius: 4,
-      padding: 8
-    }
+  // Allergen item.description safe fallback
+  const allergensItem = layout.allergens?.item ?? {};
+  const itemDescription: PrintLayoutElementConfig = {
+    fontFamily: allergensItem?.description?.fontFamily ?? "Arial",
+    fontSize: allergensItem?.description?.fontSize ?? 12,
+    fontColor: allergensItem?.description?.fontColor ?? "#444444",
+    fontStyle: allergensItem?.description?.fontStyle ?? "normal",
+    alignment: allergensItem?.description?.alignment ?? "left",
+    margin: allergensItem?.description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 },
+    visible: typeof allergensItem?.description?.visible === "boolean" ? allergensItem.description.visible : true,
   };
 
   return {
     ...layout,
-    page: pageWithDefaults,
-    cover: updatedCover,
-    allergens: allergensWithDefaults,
-  };
-}
-
-function ensureCoverLogoVisible(layout: PrintLayout): PrintLayout {
-  const cover = layout.cover ?? { logo: {}, title: {}, subtitle: {} };
-  let logo = cover.logo || {};
-  return {
-    ...layout,
-    cover: {
-      ...cover,
-      logo: {
-        maxWidth: logo.maxWidth ?? 80,
-        maxHeight: logo.maxHeight ?? 50,
-        alignment: logo.alignment ?? "center",
-        marginTop: logo.marginTop ?? 20,
-        marginBottom: logo.marginBottom ?? 20,
-        imageUrl: logo.imageUrl ?? null,
-        visible: typeof logo.visible === "boolean" ? logo.visible : true,
-      },
-      title: {
-        ...cover.title,
-        visible: typeof (cover.title as any).visible === "boolean" ? (cover.title as any).visible : true,
-      },
-      subtitle: {
-        ...cover.subtitle,
-        visible: typeof (cover.subtitle as any).visible === "boolean" ? (cover.subtitle as any).visible : true,
+    cover: { logo, title, subtitle },
+    allergens: {
+      ...layout.allergens,
+      item: {
+        ...layout.allergens?.item,
+        description: itemDescription,
       },
     },
   };
 }
 
 export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>(
-    ensureCoverLogoVisible(ensurePageMargins({ ...initialLayout }))
-  );
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins(initialLayout));
   const [activeTab, setActiveTab] = useState("generale");
 
   // General
   const { handleGeneralChange } = useGeneralTab(setEditedLayout);
 
-  // Elements
-  const { handleElementChange, handleElementMarginChange } = useElementsTab(setEditedLayout);
+  // Elements - non usare margin su suffix
+  const { handleElementChange, handleElementMarginChange: origHandleElementMarginChange } = useElementsTab(setEditedLayout);
+  // migliora la margin change: ignora se elementKey === "suffix"
+  const handleElementMarginChange = (elementKey: keyof PrintLayout["elements"], marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
+    if (elementKey === "suffix") return; // suffix non gestisce margin
+    origHandleElementMarginChange(elementKey, marginKey, value);
+  };
 
   // Cover tab
   const {
@@ -206,7 +117,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
   } = usePageSettingsTab(setEditedLayout);
 
   const handleSave = () => {
-    const finalLayout = ensureCoverLogoVisible(syncPageMargins(editedLayout));
+    const finalLayout = ensurePageMargins(syncPageMargins(editedLayout));
     onSave(finalLayout);
   };
 
