@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import PrintLayoutEditor from "./print-layouts/PrintLayoutEditor";
 import PrintLayoutPreview from "./print-layouts/PrintLayoutPreview";
 import { PrintLayout } from "@/types/printLayout";
 import { Save, Printer, LayoutList, LayoutGrid } from "lucide-react";
-// Eliminiamo import CreateLayoutDialog
 
 const PrintLayoutsManager = () => {
   const {
@@ -19,62 +18,37 @@ const PrintLayoutsManager = () => {
     isLoading,
     error,
     updateLayout,
-    deleteLayout,
-    setDefaultLayout,
-    cloneLayout,
-    // createNewLayout, // Rimosso
-    changeActiveLayout
+    // deleteLayout,
+    // setDefaultLayout,
+    // cloneLayout,
+    // createNewLayout,
+    // changeActiveLayout
   } = useMenuLayouts();
 
-  const [selectedLayout, setSelectedLayout] = useState<PrintLayout | null>(null);
-  const [editorTab, setEditorTab] = useState("lista");
-  // const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false); // Rimosso
+  // Mostra solo il layout predefinito (o il primo se non marcato come default)
+  const [defaultLayout, setDefaultLayout] = useState<PrintLayout | null>(null);
+  const [editorTab, setEditorTab] = useState("modifica");
 
-  // Gestisci gli errori
-  if (error) {
-    toast.error(error);
-  }
+  useEffect(() => {
+    if (layouts && layouts.length > 0) {
+      const foundDefault = layouts.find(l => l.isDefault) || layouts[0];
+      setDefaultLayout(foundDefault ?? null);
+    }
+  }, [layouts]);
 
-  const handleSelectLayout = (layout: PrintLayout) => {
-    setSelectedLayout(layout);
-    setEditorTab("modifica");
-  };
+  // Gestisci eventuali errori
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
+  // Unico handler rimasto: aggiorna il layout predefinito
   const handleUpdateLayout = (updatedLayout: PrintLayout) => {
     updateLayout(updatedLayout);
     toast.success("Layout aggiornato con successo");
-    setSelectedLayout(updatedLayout);
+    setDefaultLayout(updatedLayout);
   };
-
-  const handleCloneLayout = async (layoutId: string) => {
-    try {
-      const clonedLayout = await cloneLayout(layoutId);
-      if (clonedLayout) {
-        toast.success("Layout clonato con successo");
-        setSelectedLayout(clonedLayout);
-        setEditorTab("modifica");
-      }
-    } catch (error) {
-      console.error("Errore durante la clonazione del layout:", error);
-      toast.error("Errore durante la clonazione del layout");
-    }
-  };
-
-  const handleDeleteLayout = (layoutId: string) => {
-    const success = deleteLayout(layoutId);
-    if (success) {
-      toast.success("Layout eliminato con successo");
-      setSelectedLayout(null);
-      setEditorTab("lista");
-    }
-  };
-
-  const handleSetDefaultLayout = (layoutId: string) => {
-    setDefaultLayout(layoutId);
-    toast.success("Layout impostato come predefinito");
-  };
-
-  // Eliminato handleCreateLayout
 
   if (isLoading) {
     return <div className="flex justify-center p-6">Caricamento layouts...</div>;
@@ -82,7 +56,6 @@ const PrintLayoutsManager = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* HEADER */}
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
@@ -91,44 +64,45 @@ const PrintLayoutsManager = () => {
               Gestione Layout di Stampa
             </CardTitle>
             <CardDescription>
-              Crea e personalizza i layout per la stampa dei tuoi menu. Tutti i layout disponibili appaiono ordinati qui sotto.
+              È disponibile un solo layout di stampa che puoi personalizzare secondo le tue esigenze.
             </CardDescription>
           </div>
-          {/* <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
-            + Nuovo Layout
-          </Button> */}
-          {/* Rimosso pulsante per la creazione */}
         </CardHeader>
       </Card>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Lista layouts (allargata del 20%) */}
         <div className="w-full lg:w-[260px] flex-shrink-0">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
-                <LayoutList size={18} /> Tutti i Layout
+                <LayoutList size={18} /> Layout Predefinito
               </CardTitle>
               <CardDescription className="text-xs">
-                Modifica, duplica, elimina o imposta come predefinito uno dei tuoi layout.
+                Questo è l'unico layout disponibile per la stampa.
               </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent className="py-4">
-              <PrintLayoutsList
-                layouts={layouts}
-                onSelectLayout={handleSelectLayout}
-                onCloneLayout={handleCloneLayout}
-                onDeleteLayout={handleDeleteLayout}
-                onSetDefaultLayout={handleSetDefaultLayout}
-                defaultFirst={true}
-              />
+              {defaultLayout ? (
+                <PrintLayoutsList
+                  layouts={[defaultLayout]}
+                  onSelectLayout={undefined}
+                  onCloneLayout={undefined}
+                  onDeleteLayout={undefined}
+                  onSetDefaultLayout={undefined}
+                  defaultFirst={true}
+                  single
+                />
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-6">
+                  Nessun layout disponibile.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-        {/* Modifica layout e anteprima: spazio extra */}
+
         <div className="flex-1 flex flex-col gap-6 min-w-0">
-          {/* Tab mobile: SWITCH modifica / anteprima */}
           <div className="flex gap-2 mb-2 lg:hidden">
             <Button
               variant={editorTab === "modifica" ? "secondary" : "ghost"}
@@ -150,13 +124,13 @@ const PrintLayoutsManager = () => {
           {/* MODIFICA */}
           {editorTab === "modifica" && (
             <div className="w-full">
-              {selectedLayout ? (
-                <PrintLayoutEditor layout={selectedLayout} onSave={handleUpdateLayout} />
+              {defaultLayout ? (
+                <PrintLayoutEditor layout={defaultLayout} onSave={handleUpdateLayout} />
               ) : (
                 <Card>
                   <CardContent className="pt-6">
                     <p className="text-muted-foreground">
-                      Seleziona un layout dalla lista per modificarlo.
+                      Nessun layout selezionato.
                     </p>
                   </CardContent>
                 </Card>
@@ -166,13 +140,13 @@ const PrintLayoutsManager = () => {
           {/* ANTEPRIMA */}
           {editorTab === "anteprima" && (
             <div className="w-full">
-              {selectedLayout ? (
-                <PrintLayoutPreview layout={selectedLayout} />
+              {defaultLayout ? (
+                <PrintLayoutPreview layout={defaultLayout} />
               ) : (
                 <Card>
                   <CardContent className="pt-6">
                     <p className="text-muted-foreground">
-                      Seleziona un layout dalla lista per visualizzare l'anteprima.
+                      Nessun layout da visualizzare.
                     </p>
                   </CardContent>
                 </Card>
@@ -181,10 +155,8 @@ const PrintLayoutsManager = () => {
           )}
         </div>
       </div>
-      {/* Dialog nuovo layout: Rimosso */}
     </div>
   );
 };
 
 export default PrintLayoutsManager;
-
