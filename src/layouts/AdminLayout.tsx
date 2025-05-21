@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
   Eye, 
-  Printer, 
   Menu as MenuIcon, 
   LogOut,
   X,
@@ -30,7 +29,6 @@ const AdminLayout = () => {
     { to: "/admin/settings", icon: <Settings className="mr-2 h-5 w-5" />, label: "Impostazioni Menu" },
     { to: "/admin/multilingual", icon: <Languages className="mr-2 h-5 w-5" />, label: "Multilingua" },
     { to: "/admin/preview", icon: <Eye className="mr-2 h-5 w-5" />, label: "Anteprima Menu" },
-    { to: "/admin/print", icon: <Printer className="mr-2 h-5 w-5" />, label: "Stampa Menu" },
   ];
 
   return (
