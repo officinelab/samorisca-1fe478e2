@@ -12,8 +12,8 @@ export type Margin = {
 };
 
 /**
- * Configurazione di un elemento di layout. Rimuoviamo la proprietà "visible"
- * e lasciamo solo i campi effettivamente selezionabili.
+ * Configurazione di un elemento di layout. 
+ * Aggiunta la proprietà opzionale "visible" per supportare la visibilità.
  */
 export type PrintLayoutElementConfig = {
   fontFamily: string;
@@ -22,6 +22,7 @@ export type PrintLayoutElementConfig = {
   fontStyle: FontStyle;
   alignment: TextAlign;
   margin: Margin;
+  visible?: boolean; // opzionale
 };
 
 export type PageMargins = {
@@ -59,18 +60,20 @@ export type CoverLogoConfig = {
   alignment: TextAlign;
   marginTop: number;
   marginBottom: number;
+  visible?: boolean;        // <--- ora supportato e opzionale
 };
 
 export type CoverTitleConfig = PrintLayoutElementConfig & {
   menuTitle?: string;    // campo testo inseribile per il titolo del menu
-  visible: boolean;      // qui rimane per coerenza con design
 };
 
 export type CoverSubtitleConfig = PrintLayoutElementConfig & {
   menuSubtitle?: string; // campo testo inseribile per il sottotitolo menu
-  visible: boolean;
 };
 
+/**
+ * Unifica il blocco copertina con proprietà 'visible' eventualmente su title/subtitle/logo
+ */
 export type PrintLayoutCover = {
   logo: CoverLogoConfig;
   title: CoverTitleConfig;
