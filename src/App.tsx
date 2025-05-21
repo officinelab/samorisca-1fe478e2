@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +10,6 @@ import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import MenuSettings from "./pages/admin/MenuSettings";
 import MenuPreview from "./pages/admin/MenuPreview";
-import MenuPrint from "./pages/admin/MenuPrint";
 import PublicMenu from "./pages/public/PublicMenu";
 import NotFound from "./pages/NotFound";
 import MultilingualPage from "./pages/admin/MultilingualPage";
@@ -41,7 +39,6 @@ const App = () => (
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<MenuSettings />} />
               <Route path="preview" element={<MenuPreview />} />
-              <Route path="print" element={<MenuPrint />} />
               <Route path="multilingual" element={<MultilingualPage />} />
               
               {/* Redirect old allergens route to settings */}
