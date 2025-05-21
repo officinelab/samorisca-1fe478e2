@@ -1303,21 +1303,15 @@ const Dashboard = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {/* IMMAGINE CATEGORIA RIMOSSA */}
-                          {/* Mantieni solo icona di default */}
-                          <div className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-md">
-                            <Package className="h-4 w-4" />
-                          </div>
-                          <span className="truncate max-w-[120px]">{category.title}</span>
+                          {/* Quadrato grigio e Package icon rimossi */}
+                          <span className="truncate max-w-[140px]">{category.title}</span>
                         </div>
-                        
                         {!category.is_active && (
                           <span className="text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
                             Disattivata
                           </span>
                         )}
                       </div>
-                      
                       <div className="flex justify-end mt-2">
                         <div className="flex mr-1">
                           <Button 
@@ -1345,7 +1339,6 @@ const Dashboard = () => {
                             <ChevronDown className="h-4 w-4" />
                           </Button>
                         </div>
-                        
                         <Button 
                           variant="ghost" 
                           size="sm"
