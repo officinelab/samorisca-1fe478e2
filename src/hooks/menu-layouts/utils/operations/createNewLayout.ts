@@ -42,6 +42,15 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         alignment: "left",
         margin: { top: 0, right: 0, bottom: 5, left: 0 }
       },
+      descriptionEng: {
+        visible: true,
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#666666",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 5, left: 0 }
+      },
       price: {
         visible: true,
         fontFamily: "Arial",
