@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintLayout } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
+import { useCoverLogoUpload } from "./hooks/useCoverLogoUpload";
 
 interface CoverLayoutTabProps {
   layout: PrintLayout;
@@ -18,37 +19,31 @@ interface CoverLayoutTabProps {
   onCoverSubtitleMarginChange: (field: keyof PrintLayout['cover']['subtitle']['margin'], value: number) => void;
 }
 
-// Uploader locale per logo copertina (file o URL + preview)
+// Uploader aggiornato: solo pulsante upload + anteprima, senza campo URL
 function CoverLogoUploader({
   imageUrl,
-  onUrlChange,
-  onUpload
+  onUrlChange
 }: {
   imageUrl: string;
   onUrlChange: (url: string) => void;
-  onUpload?: (url: string) => void;
 }) {
   const inputFileRef = useRef<HTMLInputElement>(null);
+  const { uploadLogo, isUploading } = useCoverLogoUpload();
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const ObjectUrl = URL.createObjectURL(file);
-      onUrlChange(ObjectUrl);
-      if (onUpload) onUpload(ObjectUrl);
-    }
+    if (!file) return;
+    setUploading(true);
+    const publicUrl = await uploadLogo(file, imageUrl);
+    setUploading(false);
+    if (publicUrl) onUrlChange(publicUrl);
   };
 
   return (
     <div className="space-y-2">
       <Label>Logo copertina</Label>
       <div className="flex gap-2 items-center">
-        <Input
-          type="url"
-          placeholder="https://..."
-          value={imageUrl}
-          onChange={e => onUrlChange(e.target.value)}
-        />
         <input
           ref={inputFileRef}
           type="file"
@@ -59,9 +54,10 @@ function CoverLogoUploader({
         <button
           type="button"
           onClick={() => inputFileRef.current?.click()}
-          className="bg-muted text-xs px-3 py-2 rounded border ml-2"
+          className="bg-muted text-xs px-3 py-2 rounded border"
+          disabled={isUploading || uploading}
         >
-          Carica
+          {isUploading || uploading ? "Caricamento..." : "Carica immagine"}
         </button>
       </div>
       {imageUrl && (
@@ -260,3 +256,4 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 };
 
 export default CoverLayoutTab;
+
