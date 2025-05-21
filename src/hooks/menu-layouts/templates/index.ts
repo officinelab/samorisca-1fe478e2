@@ -4,7 +4,5 @@ export { classicLayout } from './classicLayout';
 export { modernLayout } from './modernLayout';
 export { allergensLayout } from './allergensLayout';
 
-// Export all schemas
+// Export only classicSchema1 (rimuovo classicSchema2 e classicSchema3)
 export { classicLayoutSchema1 } from './schemas/classicSchema1';
-export { classicLayoutSchema2 } from './schemas/classicSchema2';
-export { classicLayoutSchema3 } from './schemas/classicSchema3';
