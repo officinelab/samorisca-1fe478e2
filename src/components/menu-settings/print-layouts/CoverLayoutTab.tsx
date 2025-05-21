@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintLayout } from "@/types/printLayout";
-import ElementEditor from "../ElementEditor";
+import ElementEditor from "./ElementEditor";
 
 interface CoverLayoutTabProps {
   layout: PrintLayout;
@@ -204,3 +204,4 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 };
 
 export default CoverLayoutTab;
+

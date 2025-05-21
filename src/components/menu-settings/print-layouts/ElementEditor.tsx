@@ -9,6 +9,18 @@ interface ElementEditorProps {
   onMarginChange: (field: keyof Margin, value: number) => void;
 }
 
+const FONT_FAMILIES = [
+  { name: "Arial", value: "Arial, sans-serif" },
+  { name: "Times New Roman", value: "'Times New Roman', serif" },
+  { name: "Georgia", value: "Georgia, serif" },
+  { name: "Verdana", value: "Verdana, sans-serif" },
+  { name: "Tahoma", value: "Tahoma, sans-serif" },
+  { name: "Courier New", value: "'Courier New', monospace" },
+  { name: "Playfair Display", value: "'Playfair Display', serif" },
+  { name: "Montserrat", value: "Montserrat, sans-serif" },
+  { name: "Roboto", value: "Roboto, sans-serif" },
+];
+
 const ElementEditor = ({
   element,
   onChange,
@@ -16,15 +28,21 @@ const ElementEditor = ({
 }: ElementEditorProps) => {
   return (
     <div className="space-y-4">
-      {/* Tipo carattere */}
+      {/* Tipo carattere - nuovo dropdown */}
       <div>
         <label className="block text-sm">Tipo carattere</label>
-        <input
-          type="text"
+        <select
           value={element.fontFamily}
           onChange={e => onChange("fontFamily", e.target.value)}
-          className="input"
-        />
+          className="select"
+        >
+          {FONT_FAMILIES.map(f => (
+            <option key={f.value} value={f.value}>{f.name}</option>
+          ))}
+          <option value={element.fontFamily} hidden>
+            {element.fontFamily}
+          </option>
+        </select>
       </div>
       {/* Dimensione carattere */}
       <div>
@@ -117,3 +135,4 @@ const ElementEditor = ({
 };
 
 export default ElementEditor;
+
