@@ -50,12 +50,13 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     onTranslationSaved,
   });
 
+  // Se il campo è multilinea (description), usiamo una textarea più grande/larga
   const InputComponent = multiline ? (
     <Textarea 
       value={translatedText} 
       onChange={handleInputChange}
-      className={`w-full ${error ? 'border-red-300' : ''}`}
-      rows={3}
+      className={`w-[32rem] min-w-[20rem] max-w-full min-h-[120px] ${error ? 'border-red-300' : ''}`}
+      rows={6}
       placeholder={`Traduzione in ${language}...`}
     />
   ) : (
