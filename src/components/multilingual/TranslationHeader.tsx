@@ -30,6 +30,17 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
     setTranslationService(serviceType);
   };
 
+  // Calcola la classe della barra
+  const getProgressBarColor = () => {
+    if (stats.percentage === 100) {
+      return "bg-green-500";
+    } else if (stats.percentage > 50) {
+      return "bg-yellow-400";
+    } else {
+      return "bg-red-500";
+    }
+  };
+
   // Debug dell'attuale servizio selezionato
   useEffect(() => {
     console.log(`TranslationHeader: Servizio di traduzione attuale: ${currentService}`);
@@ -78,7 +89,8 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
           </div>
           <Progress 
             value={statsLoading ? 0 : stats.percentage} 
-            className="h-2" 
+            className="h-2"
+            indicatorClassName={getProgressBarColor()}
           />
           <p className="text-xs text-muted-foreground mt-1">
             {statsLoading ? 'Caricamento statistiche...' : `${stats.percentage}% completato`}
