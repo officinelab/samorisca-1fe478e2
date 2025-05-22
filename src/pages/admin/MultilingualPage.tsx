@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TranslationHeader } from "@/components/multilingual/TranslationHeader";
@@ -12,6 +11,7 @@ import { toast } from "@/components/ui/sonner";
 
 const MultilingualPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>("en");
+  const [activeTab, setActiveTab] = useState("general");
   const { currentService, isLoading } = useTranslationService();
   
   // Verifica la disponibilità dell'API key di OpenAI
@@ -66,10 +66,11 @@ const MultilingualPage = () => {
         />
         
         <div className="flex-1 py-4">
-          <Tabs defaultValue="general" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="general">Generale</TabsTrigger>
               <TabsTrigger value="products">Voci di menu</TabsTrigger>
+              <TabsTrigger value="missing">Voci da tradurre</TabsTrigger>
             </TabsList>
             <TabsContent value="general">
               <GeneralTranslationsTab language={selectedLanguage} />
@@ -77,11 +78,17 @@ const MultilingualPage = () => {
             <TabsContent value="products">
               <ProductTranslationsTab language={selectedLanguage} />
             </TabsContent>
+            <TabsContent value="missing">
+              {/* Import e utilizzo nuovo componente */}
+              <MissingTranslationsTab language={selectedLanguage} />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
     </div>
   );
 };
+
+import { MissingTranslationsTab } from "@/components/multilingual/MissingTranslationsTab";
 
 export default MultilingualPage;
