@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Allergen } from "@/types/database";
@@ -19,7 +18,7 @@ const AllergenCard = ({ allergen, onEdit, onDelete }: AllergenCardProps) => {
             {/* Colonna 1a - Informazioni allergene */}
             <div className="flex-grow space-y-2">
               {/* Prima riga con 3 colonne */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-start gap-1">
                 {/* Colonna 1b - Numero */}
                 <div>
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-800 font-bold">
