@@ -19,7 +19,7 @@ export const useTranslationStats = (language: SupportedLanguage) => {
     untranslated: 0,
     percentage: 0
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -27,12 +27,13 @@ export const useTranslationStats = (language: SupportedLanguage) => {
       setIsLoading(true);
       try {
         let totalFields = 0;
-        const missedFields: { entityType: string; id: string; field: string; value: string }[] = [];
+        // Lista di tutti i campi "valorizzati" (pronti da tradurre)
+        const fieldsToCheck: { entityType: string; id: string; field: string; value: string; updated_at: string }[] = [];
 
         // Per tutti i tipi entità
         for (const entityType of Object.keys(translatableFieldsMap) as Array<keyof typeof translatableFieldsMap>) {
           // Recupera tutti i record originari
-          let selectFields = ["id", ...translatableFieldsMap[entityType]];
+          let selectFields = ["id", "updated_at", ...translatableFieldsMap[entityType]];
           const { data: entities, error } = await supabase
             .from(entityType)
             .select(selectFields.join(", "));
@@ -41,24 +42,24 @@ export const useTranslationStats = (language: SupportedLanguage) => {
           // Per ogni entity conta SOLO i campi con valore non vuoto
           for (const entity of entities as any[]) {
             translatableFieldsMap[entityType].forEach(field => {
-              // Campo valido solo se non vuoto/null (come in tab “Voci da tradurre”)
               const value = entity[field];
+              // Campo valido solo se non vuoto/null (come in tab “Voci da tradurre”)
               if (
                 value !== undefined &&
                 value !== null &&
                 (typeof value !== "string" || value.trim() !== "")
               ) {
                 totalFields++;
-                missedFields.push({ entityType, id: entity.id, field, value: String(value) });
+                fieldsToCheck.push({ entityType, id: entity.id, field, value: String(value), updated_at: entity.updated_at });
               }
             });
           }
         }
 
-        // Recupera tutte le traduzioni per questa lingua (entità+campo+id+campo deve combaciare)
+        // Recupera tutte le traduzioni per questa lingua (entity_type+entity_id+field)
         const { data: allTranslations, error: translationsError } = await supabase
           .from('translations')
-          .select('entity_type, entity_id, field')
+          .select('entity_type, entity_id, field, last_updated')
           .eq('language', language);
 
         if (translationsError) {
@@ -73,27 +74,47 @@ export const useTranslationStats = (language: SupportedLanguage) => {
           return;
         }
 
-        // Mappa per lookup rapidissimo
-        const translationsSet = new Set(
-          (allTranslations || []).map(
-            t => `${t.entity_type}:${t.entity_id}:${t.field}`
-          )
-        );
+        // Mappa per lookup veloce delle traduzioni
+        const translationsMap: Record<
+          string, // lookupKey: entityType:entity_id:field
+          { last_updated: string }
+        > = {};
+        (allTranslations || []).forEach(t => {
+          const lookupKey = `${t.entity_type}:${t.entity_id}:${t.field}`;
+          translationsMap[lookupKey] = {
+            last_updated: t.last_updated,
+          };
+        });
 
-        // Quanti dei campi che ci servono davvero hanno già una traduzione?
+        // Conta traduzioni aggiornate (badge verde), obsolete (arancione), mancanti (rosso)
         let translatedCount = 0;
-        const untranslatedDebug: { entityType: string; id: string; field: string; value: string }[] = [];
+        let outdatedCount = 0; // badge arancione
+        let missingCount = 0; // badge rosso
+        const debugUntranslated: Array<{ entityType: string; id: string; field: string; status: "missing" | "outdated"; value: string }> = [];
 
-        for (const f of missedFields) {
+        for (const f of fieldsToCheck) {
           const lookupKey = `${f.entityType}:${f.id}:${f.field}`;
-          if (translationsSet.has(lookupKey)) {
-            translatedCount++;
+          const translation = translationsMap[lookupKey];
+          if (!translation) {
+            // Manca del tutto (badge rosso)
+            missingCount++;
+            debugUntranslated.push({ ...f, status: "missing" });
+            continue;
+          }
+          // Check outdated: se la traduzione esiste ma è più vecchia dell'originale
+          const originalUpdated = f.updated_at ? new Date(f.updated_at).getTime() : 0;
+          const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
+          if (translationUpdated < originalUpdated) {
+            // Traduzione obsoleta (badge arancione)
+            outdatedCount++;
+            debugUntranslated.push({ ...f, status: "outdated" });
           } else {
-            untranslatedDebug.push(f);
+            // Traduzione aggiornata (badge verde)
+            translatedCount++;
           }
         }
 
-        const untranslatedCount = totalFields - translatedCount;
+        const untranslatedCount = missingCount + outdatedCount;
         const percentage = totalFields > 0 ? Math.round((translatedCount / totalFields) * 100) : 0;
 
         setStats({
@@ -103,16 +124,15 @@ export const useTranslationStats = (language: SupportedLanguage) => {
           percentage
         });
 
-        // DEBUG: Mostra in console la lista dei campi che mancano secondo la progress bar:
-        if (untranslatedDebug.length > 0) {
+        // DEBUG: Mostra in console i campi non ancora tradotti secondo la nuova definizione (badge arancione/rosso)
+        if (debugUntranslated.length > 0) {
           console.log(
-            "[STATISTICHE MULTILINGUA][DEBUG] Campi ancora ritenuti da tradurre nella progress bar:",
-            untranslatedDebug
+            "[STATISTICHE MULTILINGUA][DEBUG] Campi ancora da tradurre/aggiornare (badge rosso+arancione) secondo progress bar:",
+            debugUntranslated
           );
         } else {
-          console.log("[STATISTICHE MULTILINGUA][DEBUG] Tutti i campi sono tradotti secondo la progress bar.");
+          console.log("[STATISTICHE MULTILINGUA][DEBUG] Tutti i campi sono tradotti ed aggiornati (nessun badge arancione/rosso nella progress bar).");
         }
-
       } catch (error) {
         console.error('Error calculating translation stats:', error);
       } finally {
