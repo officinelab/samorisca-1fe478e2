@@ -3,6 +3,15 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage, TranslationStats } from '@/types/translation';
 
+// Nuovo helper che replica la logica della MissingTranslationsTab
+const translatableFieldsMap = {
+  categories: ["title", "description"],
+  products: ["title", "description", "price_suffix", "price_variant_1_name", "price_variant_2_name"],
+  allergens: ["title", "description"],
+  product_features: ["title"],
+  product_labels: ["title"],
+};
+
 export const useTranslationStats = (language: SupportedLanguage) => {
   const [stats, setStats] = useState<TranslationStats>({
     total: 0,
@@ -17,53 +26,73 @@ export const useTranslationStats = (language: SupportedLanguage) => {
     const fetchStats = async () => {
       setIsLoading(true);
       try {
-        // Get all translatable entities
-        const [
-          { data: categories, error: categoriesError },
-          { data: products, error: productsError },
-          { data: allergens, error: allergensError },
-          { data: features, error: featuresError },
-          { data: labels, error: labelsError }
-        ] = await Promise.all([
-          supabase.from('categories').select('id'),
-          supabase.from('products').select('id'),
-          supabase.from('allergens').select('id'),
-          supabase.from('product_features').select('id'),
-          supabase.from('product_labels').select('id')
-        ]);
+        let totalFields = 0;
+        const missedFields: { entityType: string; id: string; field: string; value: string }[] = [];
 
-        if (categoriesError || productsError || allergensError || featuresError || labelsError) {
-          console.error('Error fetching entities:', {
-            categoriesError,
-            productsError,
-            allergensError,
-            featuresError,
-            labelsError
-          });
-          return;
+        // Per tutti i tipi entità
+        for (const entityType of Object.keys(translatableFieldsMap) as Array<keyof typeof translatableFieldsMap>) {
+          // Recupera tutti i record originari
+          let selectFields = ["id", ...translatableFieldsMap[entityType]];
+          const { data: entities, error } = await supabase
+            .from(entityType)
+            .select(selectFields.join(", "));
+
+          if (error || !entities) continue;
+          // Per ogni entity conta SOLO i campi con valore non vuoto
+          for (const entity of entities as any[]) {
+            translatableFieldsMap[entityType].forEach(field => {
+              // Campo valido solo se non vuoto/null (come in tab “Voci da tradurre”)
+              const value = entity[field];
+              if (
+                value !== undefined &&
+                value !== null &&
+                (typeof value !== "string" || value.trim() !== "")
+              ) {
+                totalFields++;
+                missedFields.push({ entityType, id: entity.id, field, value: String(value) });
+              }
+            });
+          }
         }
 
-        // Calculate total number of translatable fields
-        const categoryFields = categories.length; // title only
-        const productFields = products.length * 2; // title and description
-        const allergenFields = allergens.length * 2; // title and description
-        const featureFields = features.length; // title only
-        const labelFields = labels.length; // title only
-
-        const totalFields = categoryFields + productFields + allergenFields + featureFields + labelFields;
-
-        // Get translated fields count for this language
-        const { data: translations, error: translationsError } = await supabase
+        // Recupera tutte le traduzioni per questa lingua (entità+campo+id+campo deve combaciare)
+        const { data: allTranslations, error: translationsError } = await supabase
           .from('translations')
-          .select('*')
+          .select('entity_type, entity_id, field')
           .eq('language', language);
 
         if (translationsError) {
           console.error('Error fetching translations:', translationsError);
+          setStats({
+            total: totalFields,
+            translated: 0,
+            untranslated: totalFields,
+            percentage: 0,
+          });
+          setIsLoading(false);
           return;
         }
 
-        const translatedCount = translations ? translations.length : 0;
+        // Mappa per lookup rapidissimo
+        const translationsSet = new Set(
+          (allTranslations || []).map(
+            t => `${t.entity_type}:${t.entity_id}:${t.field}`
+          )
+        );
+
+        // Quanti dei campi che ci servono davvero hanno già una traduzione?
+        let translatedCount = 0;
+        const untranslatedDebug: { entityType: string; id: string; field: string; value: string }[] = [];
+
+        for (const f of missedFields) {
+          const lookupKey = `${f.entityType}:${f.id}:${f.field}`;
+          if (translationsSet.has(lookupKey)) {
+            translatedCount++;
+          } else {
+            untranslatedDebug.push(f);
+          }
+        }
+
         const untranslatedCount = totalFields - translatedCount;
         const percentage = totalFields > 0 ? Math.round((translatedCount / totalFields) * 100) : 0;
 
@@ -73,6 +102,17 @@ export const useTranslationStats = (language: SupportedLanguage) => {
           untranslated: untranslatedCount,
           percentage
         });
+
+        // DEBUG: Mostra in console la lista dei campi che mancano secondo la progress bar:
+        if (untranslatedDebug.length > 0) {
+          console.log(
+            "[STATISTICHE MULTILINGUA][DEBUG] Campi ancora ritenuti da tradurre nella progress bar:",
+            untranslatedDebug
+          );
+        } else {
+          console.log("[STATISTICHE MULTILINGUA][DEBUG] Tutti i campi sono tradotti secondo la progress bar.");
+        }
+
       } catch (error) {
         console.error('Error calculating translation stats:', error);
       } finally {
