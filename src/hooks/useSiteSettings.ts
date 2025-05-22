@@ -9,7 +9,8 @@ import {
   updateRestaurantName,
   updateFooterText,
   updateDefaultProductImage,
-  updateAdminTitle
+  updateAdminTitle,
+  updateShowRestaurantNameInMenuBar, // aggiunto!
 } from "./site-settings/updateFunctions";
 
 /**
@@ -63,8 +64,10 @@ export const useSiteSettings = () => {
     updateRestaurantName,
     updateFooterText,
     updateDefaultProductImage,
-    updateAdminTitle
+    updateAdminTitle,
+    updateShowRestaurantNameInMenuBar, // aggiunto qui!
   };
 };
 
 export default useSiteSettings;
+
