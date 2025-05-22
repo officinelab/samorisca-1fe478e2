@@ -67,7 +67,9 @@ export const translateText = async (
         targetLanguage
       );
 
-      toast.success(`Traduzione completata con successo usando ${getServiceName(currentService)}`);
+      toast.success(`Traduzione completata con successo usando ${getServiceName(currentService)}`, {
+        duration: 2000 // Mostra il toast solo per 2 secondi
+      });
 
       // Prova a forzare il refresh dei token (se disponibile in contesto globale)
       if (typeof window !== "undefined" && window.dispatchEvent) {
