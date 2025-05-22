@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { HandPlatter } from "lucide-react";
@@ -38,6 +39,8 @@ export const Header: React.FC<HeaderProps> = ({
   }} onError={handleLogoError} data-testid="header-logo" /> : <div className="h-12 w-24 max-w-[160px] bg-gray-200 rounded flex items-center justify-center">
         <span className="text-base font-bold">{(siteSettings?.restaurantName || "SM").substring(0, 2)}</span>
       </div>;
+  const showName = siteSettings?.showRestaurantNameInMenuBar !== false;
+
   return <>
       {/* Prima riga: barra menu con logo "rettangolare", selettore lingua e carrello */}
       <header className="sticky top-0 bg-white shadow-sm z-30">
@@ -71,9 +74,11 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         {/* Seconda riga: nome del locale centrato */}
         <div className="container max-w-5xl mx-auto px-4 pb-2">
-          <h1 className="text-xl font-bold mt-2 my-0 text-center">
-            {siteSettings?.restaurantName || "Sa Morisca"}
-          </h1>
+          {showName && (
+            <h1 className="text-xl font-bold mt-2 my-0 text-center">
+              {siteSettings?.restaurantName || "Sa Morisca"}
+            </h1>
+          )}
         </div>
       </header>
     </>;

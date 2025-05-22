@@ -1,4 +1,3 @@
-
 /**
  * Type definition for site settings
  */
@@ -24,6 +23,7 @@ export interface SiteSettings {
   footerText?: string;
   adminTitle?: string;
   defaultProductImage?: string;
+  showRestaurantNameInMenuBar?: boolean; // <---- AGGIUNTA QUI!
   [key: string]: any;
 }
 

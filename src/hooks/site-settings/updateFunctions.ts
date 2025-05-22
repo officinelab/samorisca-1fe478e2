@@ -122,3 +122,19 @@ export const updateShowPricesInOrder = (value: boolean): boolean => {
   }
   return false;
 };
+
+/**
+ * Update the visibility of restaurant name in menu bar
+ */
+export const updateShowRestaurantNameInMenuBar = (value: boolean): boolean => {
+  if (saveSetting("showRestaurantNameInMenuBar", value)) {
+    window.dispatchEvent(
+      new CustomEvent("siteSettingsUpdated", {
+        detail: { key: "showRestaurantNameInMenuBar", value },
+      })
+    );
+    toast.success("Visibilità nome locale aggiornata");
+    return true;
+  }
+  return false;
+};
