@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useTranslationService } from "@/hooks/translation";
 import { SupportedLanguage } from "@/types/translation";
@@ -58,6 +57,10 @@ export function useTranslationField({
         setError(null);
         setRetryCount(0);
         setRefreshKey((k) => k + 1);
+        // 🔴 EMETTI EVENTO DOPO TRADUZIONE AUTOMATICA
+        if (typeof window !== "undefined" && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent("refresh-translation-status"));
+        }
       } else {
         setError(result.message || "Errore sconosciuto durante la traduzione");
       }
@@ -88,6 +91,10 @@ export function useTranslationField({
     setIsEdited(false);
     if (onTranslationSaved) onTranslationSaved(translatedText);
     setRefreshKey((k) => k + 1);
+    // 🔴 EMETTI EVENTO DOPO SALVATAGGIO MANUALE
+    if (typeof window !== "undefined" && window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent("refresh-translation-status"));
+    }
   };
 
   const getTooltipText = useCallback(() => `Traduci con ${getServiceName()}`, [getServiceName]);

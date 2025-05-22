@@ -128,8 +128,19 @@ export const useMissingTranslations = (language: SupportedLanguage) => {
     }
 
     fetchAll();
-    return () => { cancelled = true; };
+
+    // 👂 Listen to refresh-translation-status
+    const onRefresh = () => {
+      if (!cancelled) fetchAll();
+    };
+    window.addEventListener("refresh-translation-status", onRefresh);
+
+    return () => { 
+      cancelled = true;
+      window.removeEventListener("refresh-translation-status", onRefresh);
+    };
   }, [language]);
 
   return { fieldsToTranslate, isLoading, entitiesMap };
 };
+

@@ -23,6 +23,8 @@ export const useTranslationStats = (language: SupportedLanguage) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchStats = async () => {
       setIsLoading(true);
       try {
@@ -141,6 +143,17 @@ export const useTranslationStats = (language: SupportedLanguage) => {
     };
 
     fetchStats();
+
+    // 👂 Listen to refresh-translation-status
+    const onRefresh = () => {
+      if (isMounted) fetchStats();
+    };
+    window.addEventListener("refresh-translation-status", onRefresh);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("refresh-translation-status", onRefresh);
+    };
   }, [language]);
 
   return { stats, isLoading };
