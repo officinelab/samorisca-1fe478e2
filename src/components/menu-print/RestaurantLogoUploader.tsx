@@ -145,6 +145,9 @@ export const RestaurantLogoUploader = ({
     document.getElementById(inputId)?.click();
   };
 
+  // Usato per riconoscere se dobbiamo mostrare solo background grigio (per Logo Sidebar)
+  const shouldShowGrayBg = !defaultPreview;
+
   const hasLogo = previewUrl !== null && !imageError;
   const inputId = `logo-upload-${uploadPath.replace(/\//g, '-')}`;
 
@@ -177,18 +180,33 @@ export const RestaurantLogoUploader = ({
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <div 
-            className="cursor-pointer border border-dashed border-gray-300 rounded-md p-10 w-full text-center hover:bg-gray-50" 
-            onClick={triggerFileInput}
-          >
-            <ImagePreview 
-              previewUrl={imageError ? null : previewUrl} 
-              isUploading={isUploading} 
-              onError={handleImageError} 
-              defaultPreview={defaultPreview} 
-              altText="Logo Preview" 
-            />
-          </div>
+          {/* SE siamo nello specifico uploader "Logo Sidebar", mostro solo sfondo grigio chiaro senza immagine */}
+          {shouldShowGrayBg ? (
+            <div 
+              className="cursor-pointer border border-dashed border-gray-300 rounded-md p-10 w-full text-center hover:bg-gray-50"
+              style={{ backgroundColor: "#f3f4f6", minHeight: 160 }}
+              onClick={triggerFileInput}
+            >
+              {isUploading && (
+                <div className="flex items-center justify-center" style={{ minHeight: 72 }}>
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div 
+              className="cursor-pointer border border-dashed border-gray-300 rounded-md p-10 w-full text-center hover:bg-gray-50" 
+              onClick={triggerFileInput}
+            >
+              <ImagePreview 
+                previewUrl={imageError ? null : previewUrl} 
+                isUploading={isUploading} 
+                onError={handleImageError} 
+                defaultPreview={defaultPreview} 
+                altText="Logo Preview" 
+              />
+            </div>
+          )}
         </div>
       )}
       <Input 

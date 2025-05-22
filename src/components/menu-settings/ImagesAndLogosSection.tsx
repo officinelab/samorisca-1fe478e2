@@ -31,7 +31,7 @@ const ImagesAndLogosSection = () => {
               onLogoUploaded={updateSidebarLogo}
               title="Logo Sidebar"
               description="Carica il logo che apparirà nella sidebar amministrativa"
-              defaultPreview="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png"
+              // NON passare defaultPreview qui: ora apparirà solo sfondo grigio!
               uploadPath="restaurant/sidebar-logo"
             />
           </div>
@@ -82,3 +82,4 @@ const ImagesAndLogosSection = () => {
 };
 
 export default ImagesAndLogosSection;
+
