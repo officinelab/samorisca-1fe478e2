@@ -1,4 +1,3 @@
-
 import { LanguageSelector } from "./LanguageSelector";
 import { TokenStatus } from "./TokenStatus";
 import { SupportedLanguage, TranslationServiceType, translationServiceOptions } from "@/types/translation";
@@ -93,7 +92,14 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
             indicatorClassName={getProgressBarColor()}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            {statsLoading ? 'Caricamento statistiche...' : `${stats.percentage}% completato`}
+            {statsLoading
+              ? 'Caricamento statistiche...'
+              : (
+                  stats.translated === stats.total
+                    ? '100% completato'
+                    : `${stats.percentage}% completato`
+                )
+            }
           </p>
         </div>
       </div>

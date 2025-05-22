@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage, TranslationStats } from '@/types/translation';
@@ -117,7 +116,8 @@ export const useTranslationStats = (language: SupportedLanguage) => {
         }
 
         const untranslatedCount = missingCount + outdatedCount;
-        const percentage = totalFields > 0 ? Math.round((translatedCount / totalFields) * 100) : 0;
+        // 🔽 CAMBIO: con Math.floor
+        const percentage = totalFields > 0 ? Math.floor((translatedCount / totalFields) * 100) : 0;
 
         setStats({
           total: totalFields,
