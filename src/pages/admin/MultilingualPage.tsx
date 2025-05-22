@@ -9,6 +9,7 @@ import { useTranslationService } from "@/hooks/translation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client"; 
 import { toast } from "@/components/ui/sonner";
+import { MissingTranslationsTab } from "@/components/multilingual/MissingTranslationsTab"; // <-- IMPORT
 
 const MultilingualPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>("en");
@@ -58,24 +59,26 @@ const MultilingualPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tight">Multilingua</h1>
       </div>
-
       <div className="flex-1 flex flex-col">
         <TranslationHeader 
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}
         />
-        
         <div className="flex-1 py-4">
           <Tabs defaultValue="general" className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="general">Generale</TabsTrigger>
               <TabsTrigger value="products">Voci di menu</TabsTrigger>
+              <TabsTrigger value="missing">Voci da tradurre</TabsTrigger>
             </TabsList>
             <TabsContent value="general">
               <GeneralTranslationsTab language={selectedLanguage} />
             </TabsContent>
             <TabsContent value="products">
               <ProductTranslationsTab language={selectedLanguage} />
+            </TabsContent>
+            <TabsContent value="missing">
+              <MissingTranslationsTab language={selectedLanguage} />
             </TabsContent>
           </Tabs>
         </div>
