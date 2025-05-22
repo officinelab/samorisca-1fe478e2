@@ -40,7 +40,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   }
 
   // MOBILE: barra orizzontale scrollabile, con top maggiore per non sovrapporsi all'header
-  return <div className="w-full overflow-hidden mb-6 sticky top-16 z-30 pt-4 py-px bg-white">
+  return <div className="w-full overflow-hidden mb-6 sticky top-16 z-20 pt-4 py-px bg-white">
       <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
         {categories.map(category => {
         const displayTitle = category.displayTitle || category.title;
