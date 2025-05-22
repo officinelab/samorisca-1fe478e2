@@ -50,12 +50,13 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     onTranslationSaved,
   });
 
+  // Regola speciale: per il campo "description" (tipicamente multiline), la textarea è molto più larga e alta.
   const InputComponent = multiline ? (
     <Textarea 
       value={translatedText} 
       onChange={handleInputChange}
-      className={`w-full ${error ? 'border-red-300' : ''}`}
-      rows={3}
+      className={`w-full ${fieldName === "description" ? "min-h-[120px] w-[32rem] max-w-full" : ""} ${error ? 'border-red-300' : ''}`}
+      rows={fieldName === "description" ? 6 : 3}
       placeholder={`Traduzione in ${language}...`}
     />
   ) : (
