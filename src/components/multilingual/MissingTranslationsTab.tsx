@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -110,7 +109,14 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
 
         for (const entity of entities as any[]) {
           for (const field of translatableFields[entityType]) {
-            if (!entity[field] || typeof entity[field] !== "string" || entity[field].trim() === "") continue;
+            // FILTRO: considera solo i campi con stringa valorizzata
+            if (
+              !entity[field] ||
+              typeof entity[field] !== "string" ||
+              entity[field].trim() === ""
+            ) {
+              continue; // Skip - non conteggiare e non mostrare
+            }
             let status: "missing" | "outdated" | null = null;
 
             const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
@@ -176,16 +182,24 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
               // Preparo config righe
               const toBeTranslatedFields = fields.map(f => f.field);
               const badgeMap = Object.fromEntries(fields.map(f => [f.field, f.badge]));
-              // Genera righe per tutti i campi principali/chiave (anche se non va tradotto)
-              const rows = principalFields[entityType].map(fieldName => ({
-                label: fieldLabels[fieldName] ?? fieldName,
-                fieldName,
-                original: entity[fieldName] !== undefined && entity[fieldName] !== null ? String(entity[fieldName]) : "",
-                translationField: translatableFields[entityType].includes(fieldName),
-                multiline: fieldName === "description",
-                isMissing: toBeTranslatedFields.includes(fieldName),
-                badgeType: badgeMap[fieldName],
-              }));
+              // Mostra solo i campi originali che hanno valore non vuoto
+              const rows = principalFields[entityType]
+                .filter(fieldName =>
+                  entity[fieldName] !== undefined &&
+                  entity[fieldName] !== null &&
+                  (typeof entity[fieldName] !== "string" || entity[fieldName].trim() !== "")
+                )
+                .map(fieldName => ({
+                  label: fieldLabels[fieldName] ?? fieldName,
+                  fieldName,
+                  original: entity[fieldName] !== undefined && entity[fieldName] !== null ? String(entity[fieldName]) : "",
+                  translationField: translatableFields[entityType].includes(fieldName),
+                  multiline: fieldName === "description",
+                  isMissing: toBeTranslatedFields.includes(fieldName),
+                  badgeType: badgeMap[fieldName],
+                }));
+              // Se non ci sono campi da mostrare salta
+              if (rows.length === 0) return null;
               return (
                 <TableTranslationLayout
                   key={entityKey}
