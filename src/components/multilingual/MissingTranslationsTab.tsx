@@ -1,10 +1,10 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { SupportedLanguage } from "@/types/translation";
+import { TranslationField } from "./TranslationField";
 
 // Definizione tipi
 type EntityType = "categories" | "products" | "allergens" | "product_features" | "product_labels";
@@ -38,6 +38,7 @@ const entityFriendlyLabels: Record<EntityType, string> = {
 export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps) => {
   const [fieldsToTranslate, setFieldsToTranslate] = useState<MissingOrOutdatedField[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [entitiesMap, setEntitiesMap] = useState<Record<string, any>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -45,9 +46,9 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
 
     async function fetchAll() {
       let results: MissingOrOutdatedField[] = [];
+      let entitiesById: Record<string, any> = {};
 
       for (const entityType of Object.keys(translatableFields) as EntityType[]) {
-        // 1. Carica tutte le entità (+ id, titolo, updated_at, fields)
         let selectFields = ["id", "updated_at"];
         if (
           entityType === "products" ||
@@ -66,7 +67,12 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
 
         if (entitiesError || !entities) continue;
 
-        // 2. Carica tutte le traduzioni di queste entities in UNA SOLA QUERY
+        // Index entities by id for quick lookup later
+        for (const e of entities as any[]) {
+          entitiesById[`${entityType}:${e.id}`] = e;
+        }
+
+        // Carica tutte le traduzioni per questi entity records in batch
         const idsArray = (entities as any[]).map(e => e.id);
         if (!idsArray.length) continue;
 
@@ -85,10 +91,8 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
           }
         }
 
-        // 3. Individua i campi mancanti o da aggiornare (rosso/arancione)
         for (const entity of entities as any[]) {
           for (const field of translatableFields[entityType]) {
-            // Calcola solo dove il campo di origine ha valore
             if (!entity[field] || typeof entity[field] !== "string" || entity[field].trim() === "") continue;
             let status: "missing" | "outdated" | null = null;
 
@@ -96,12 +100,11 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
             const trans = translationsMap[entity.id]?.[field];
 
             if (!trans) {
-              status = "missing"; // badge rosso
+              status = "missing";
             } else {
               const translationDate = trans.last_updated ? new Date(trans.last_updated).getTime() : 0;
-              if (translationDate < entityUpdatedAt) status = "outdated"; // badge arancione
+              if (translationDate < entityUpdatedAt) status = "outdated";
             }
-            // mostra solo rosso/arancione
             if (status) {
               results.push({
                 id: entity.id,
@@ -116,6 +119,7 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
       }
 
       if (!cancelled) {
+        setEntitiesMap(entitiesById);
         setFieldsToTranslate(results);
         setIsLoading(false);
       }
@@ -152,31 +156,36 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
                   {entityFriendlyLabels[entityType as EntityType]}
                 </h3>
                 <div className="divide-y border rounded bg-muted">
-                  {list.map(entry => (
-                    <div
-                      key={entry.id + "_" + entry.field}
-                      className="flex items-center px-4 py-2 justify-between"
-                    >
-                      <div>
-                        <span className="font-medium">{entry.name}</span>
-                        <span className="text-xs text-gray-500 ml-2">
-                          ({entry.id})
-                        </span>
+                  {list.map(entry => {
+                    const entityKey = `${entry.entityType}:${entry.id}`;
+                    const entity = entitiesMap[entityKey];
+
+                    return (
+                      <div key={entry.id + "_" + entry.field} className="flex flex-col px-4 py-3 gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="max-w-sm flex-1 pr-4 min-w-0">
+                          <div className="truncate font-medium">{entry.name}</div>
+                          <div className="text-xs text-gray-500 truncate">({entry.id})</div>
+                          <div className="mt-1 text-xs text-gray-600">
+                            Campo: <span className="font-mono">{entry.field}</span>
+                          </div>
+                        </div>
+                        <div className="sm:w-[55%] mt-2 sm:mt-0">
+                          {entity && (
+                            <TranslationField
+                              id={entry.id}
+                              entityType={entry.entityType}
+                              fieldName={entry.field}
+                              originalText={entity[entry.field] || ""}
+                              language={language}
+                              multiline={["description"].includes(entry.field)}
+                              // mostriamo la notifica anche dopo salvataggio
+                              onTranslationSaved={() => {}}
+                            />
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{entry.field}</Badge>
-                        {entry.badge === "missing" ? (
-                          <span title="Traduzione mancante" className="ml-2 text-red-600">
-                            ●
-                          </span>
-                        ) : (
-                          <span title="Traduzione da aggiornare" className="ml-2 text-amber-500">
-                            ●
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))
