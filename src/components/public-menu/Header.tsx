@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-// Cambia ShoppingCart con HandPlatter
 import { HandPlatter } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -30,50 +29,72 @@ export const Header: React.FC<HeaderProps> = ({
     target.src = "/placeholder.svg";
   };
 
-  return (
-    <header className="sticky top-0 bg-white shadow-sm z-30">
-      <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center">
-          {siteSettings?.menuLogo && !logoError ? (
-            <img 
-              src={siteSettings.menuLogo} 
-              alt={siteSettings?.restaurantName || "Sa Morisca"} 
-              className="h-10 w-auto object-contain"
-              onError={handleLogoError}
-            />
-          ) : (
-            <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
-              <span className="text-sm font-bold">{(siteSettings?.restaurantName || "SM").substring(0, 2)}</span>
-            </div>
-          )}
-          <h1 className="text-xl font-bold ml-2">{siteSettings?.restaurantName || "Sa Morisca"}</h1>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-[110px]">
-              <SelectValue placeholder="Lingua" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="it">Italiano</SelectItem>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="fr">Français</SelectItem>
-              <SelectItem value="de">Deutsch</SelectItem>
-              <SelectItem value="es">Español</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Button variant="outline" size="icon" className="relative" onClick={openCart}>
-            <HandPlatter size={20} />
-            {cartItemsCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                {cartItemsCount}
-              </span>
-            )}
-          </Button>
-        </div>
+  // Logo height/bar height
+  const LOGO_HEIGHT = 48; // px, e.g. 3rem (h-12)
+  const LOGO_WIDTH = 160; // px, e.g. max-w-[160px]
+  const logo = (
+    siteSettings?.menuLogo && !logoError ? (
+      <img
+        src={siteSettings.menuLogo}
+        alt={siteSettings?.restaurantName || "Sa Morisca"}
+        className={`h-[${LOGO_HEIGHT}px] max-h-16 w-auto max-w-[${LOGO_WIDTH}px] object-contain rounded-md bg-white shadow-sm`}
+        style={{
+          height: LOGO_HEIGHT,
+          maxHeight: 64,
+          maxWidth: LOGO_WIDTH,
+          background: 'white'
+        }}
+        onError={handleLogoError}
+        data-testid="header-logo"
+      />
+    ) : (
+      <div className="h-12 w-24 max-w-[160px] bg-gray-200 rounded flex items-center justify-center">
+        <span className="text-base font-bold">{(siteSettings?.restaurantName || "SM").substring(0, 2)}</span>
       </div>
-    </header>
+    )
+  );
+
+  return (
+    <>
+      {/* Prima riga: barra menu con logo "rettangolare", selettore lingua e carrello */}
+      <header className="sticky top-0 bg-white shadow-sm z-30">
+        <div className="container max-w-5xl mx-auto px-4 pt-4 flex items-center justify-between">
+          {/* Logo più largo e ben visibile */}
+          <div className="flex items-center">
+            {logo}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-[110px]">
+                <SelectValue placeholder="Lingua" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="it">Italiano</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="es">Español</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" size="icon" className="relative" onClick={openCart}>
+              <HandPlatter size={20} />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Button>
+          </div>
+        </div>
+        {/* Seconda riga: nome del locale centrato */}
+        <div className="container max-w-5xl mx-auto px-4 pb-2">
+          <h1 className="text-xl font-bold text-center mt-2">
+            {siteSettings?.restaurantName || "Sa Morisca"}
+          </h1>
+        </div>
+      </header>
+    </>
   );
 };
-
