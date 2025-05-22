@@ -27,10 +27,12 @@ const translatableFields: Record<EntityType, string[]> = {
   product_features: ["title"],
   product_labels: ["title"],
 };
+// In questa tab NON mostriamo campi prezzo!
 const principalFields: Record<EntityType, string[]> = {
   products: [
-    "title", "description", "price_standard", "price_suffix",
-    "price_variant_1_name", "price_variant_1_value", "price_variant_2_name", "price_variant_2_value"
+    "title", "description", "price_suffix",
+    "price_variant_1_name", "price_variant_2_name"
+    // NIENTE campi prezzo qui
   ],
   categories: ["title", "description"],
   allergens: ["title", "description"],
@@ -40,12 +42,10 @@ const principalFields: Record<EntityType, string[]> = {
 const fieldLabels: Record<string, string> = {
   title: "Nome",
   description: "Descrizione",
-  price_standard: "Prezzo standard",
   price_suffix: "Suffisso prezzo",
   price_variant_1_name: "Variante 1 nome",
-  price_variant_1_value: "Variante 1 prezzo",
-  price_variant_2_name: "Variante 2 nome",
-  price_variant_2_value: "Variante 2 prezzo"
+  price_variant_2_name: "Variante 2 nome"
+  // Nessun label per campi prezzo qui!
 };
 
 export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps) => {
@@ -72,6 +72,7 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
         ) {
           selectFields.push("title");
         }
+        // Solo i campi traducibili (escludiamo ogni campo prezzo da select)
         selectFields.push(...Array.from(new Set([
           ...(principalFields[entityType] || []),
           ...translatableFields[entityType]
@@ -83,12 +84,10 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
 
         if (entitiesError || !entities) continue;
 
-        // Index entities by id for quick lookup later
         for (const e of entities as any[]) {
           entitiesById[`${entityType}:${e.id}`] = e;
         }
 
-        // Carica tutte le traduzioni per questi entity records in batch
         const idsArray = (entities as any[]).map(e => e.id);
         if (!idsArray.length) continue;
 
@@ -109,13 +108,13 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
 
         for (const entity of entities as any[]) {
           for (const field of translatableFields[entityType]) {
-            // FILTRO: considera solo i campi con stringa valorizzata
+            // Manteniamo SOLO i campi traducibili CON valore! (Mai i prezzi)
             if (
               !entity[field] ||
               typeof entity[field] !== "string" ||
               entity[field].trim() === ""
             ) {
-              continue; // Skip - non conteggiare e non mostrare
+              continue;
             }
             let status: "missing" | "outdated" | null = null;
 
@@ -184,7 +183,9 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
               const badgeMap = Object.fromEntries(fields.map(f => [f.field, f.badge]));
               // Mostra solo i campi originali che hanno valore non vuoto
               const rows = principalFields[entityType]
+                // FILTRO: solo campi traducibili con valore (mai campi prezzo)
                 .filter(fieldName =>
+                  translatableFields[entityType].includes(fieldName) && // Solo campi traducibili
                   entity[fieldName] !== undefined &&
                   entity[fieldName] !== null &&
                   (typeof entity[fieldName] !== "string" || entity[fieldName].trim() !== "")
@@ -193,7 +194,7 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
                   label: fieldLabels[fieldName] ?? fieldName,
                   fieldName,
                   original: entity[fieldName] !== undefined && entity[fieldName] !== null ? String(entity[fieldName]) : "",
-                  translationField: translatableFields[entityType].includes(fieldName),
+                  translationField: true, // sono sempre traducibili in questa tab
                   multiline: fieldName === "description",
                   isMissing: toBeTranslatedFields.includes(fieldName),
                   badgeType: badgeMap[fieldName],
