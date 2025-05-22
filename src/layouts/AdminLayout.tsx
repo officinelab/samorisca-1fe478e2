@@ -122,10 +122,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
             key={sidebarLogo} // Add key to force re-render when logo changes
           />
         ) : (
-          <img 
-            src="/lovable-uploads/4654da5d-f366-4919-a856-fe75c63e1c64.png" 
-            alt="Default Logo" 
-            className="h-21 w-auto" 
+          // Mostra solo uno sfondo grigio chiaro, NESSUN logo di default
+          <div 
+            className="h-21 w-40 rounded bg-gray-100 border flex items-center justify-center"
+            style={{ minHeight: 84, minWidth: 160 }} 
+            aria-label="Logo Sidebar Placeholder"
           />
         )}
       </div>
