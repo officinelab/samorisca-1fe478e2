@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -6,6 +7,7 @@ import ProductLabelsManager from "@/components/menu-settings/ProductLabelsManage
 import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesManager";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import SiteSettingsManager from "@/components/menu-settings/SiteSettingsManager";
+import SupervisorSettingsManager from "@/components/menu-settings/SupervisorSettingsManager";
 import Allergens from "./Allergens";
 import OnlineMenuLayoutSection from "@/components/menu-settings/OnlineMenuLayoutSection";
 
@@ -34,6 +36,7 @@ const MenuSettings = () => {
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
           <TabsTrigger value="layouts">Layouts di Stampa</TabsTrigger>
           <TabsTrigger value="settings">Settaggi</TabsTrigger>
+          <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
           <TabsTrigger value="publicmenulayout">Layout menu online</TabsTrigger>
         </TabsList>
         
@@ -82,6 +85,15 @@ const MenuSettings = () => {
           <SiteSettingsManager />
         </TabsContent>
 
+        <TabsContent value="supervisor" className="space-y-4">
+          <h2 className="text-xl font-semibold">Supervisor</h2>
+          <p className="text-muted-foreground">
+            Gestisci le impostazioni dei testi mostrati nel sito pubblico.
+          </p>
+          <Separator className="my-4" />
+          <SupervisorSettingsManager />
+        </TabsContent>
+
         <TabsContent value="publicmenulayout" className="space-y-4">
           <OnlineMenuLayoutSection />
         </TabsContent>
@@ -89,3 +101,4 @@ const MenuSettings = () => {
     </div>;
 };
 export default MenuSettings;
+

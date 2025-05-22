@@ -2,7 +2,7 @@
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ImagesAndLogosSection from "./ImagesAndLogosSection";
 import MenuSettingsSection from "./MenuSettingsSection";
-import TextSettingsSection from "./TextSettingsSection";
+// RIMUOVI import TextSettingsSection
 
 const SiteSettingsManager = () => {
   const { isLoading } = useSiteSettings();
@@ -19,7 +19,7 @@ const SiteSettingsManager = () => {
     <div className="space-y-8 max-w-4xl mx-auto">
       <ImagesAndLogosSection />
       <MenuSettingsSection />
-      <TextSettingsSection />
+      {/* RIMUOVI <TextSettingsSection /> */}
     </div>
   );
 };
