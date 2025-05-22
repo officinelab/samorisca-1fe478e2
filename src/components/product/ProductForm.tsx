@@ -37,6 +37,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Pulsanti azione (SPOSATI IN ALTO) */}
+        <ProductActionButtons
+          isSubmitting={isSubmitting}
+          onCancel={onCancel}
+        />
+
         {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
         <ProductBasicInfo form={form} />
         
@@ -61,15 +67,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
           selectedAllergenIds={selectedAllergens}
           onChange={setSelectedAllergens}
         />
-
-        {/* Pulsanti azione */}
-        <ProductActionButtons
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-        />
       </form>
     </Form>
   );
 };
 
 export default ProductForm;
+
