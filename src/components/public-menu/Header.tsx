@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   // Logo height/bar height
   const LOGO_HEIGHT = 48; // px, e.g. 3rem (h-12)
   const LOGO_WIDTH = 160; // px, e.g. max-w-[160px]
-  const logo = siteSettings?.menuLogo && !logoError ? <img src={siteSettings.menuLogo} alt={siteSettings?.restaurantName || "Sa Morisca"} className={`h-[${LOGO_HEIGHT}px] max-h-16 w-auto max-w-[${LOGO_WIDTH}px] object-contain rounded-md bg-white shadow-sm`} style={{
+  const logo = siteSettings?.menuLogo && !logoError ? <img src={siteSettings.menuLogo} alt={siteSettings?.restaurantName || "Sa Morisca"} className={`h-[${LOGO_HEIGHT}px] max-h-16 w-auto max-w-[${LOGO_WIDTH}px] object-contain rounded-md bg-white`} style={{
     height: LOGO_HEIGHT,
     maxHeight: 64,
     maxWidth: LOGO_WIDTH,
