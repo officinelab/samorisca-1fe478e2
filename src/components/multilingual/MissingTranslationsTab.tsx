@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -5,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { SupportedLanguage } from "@/types/translation";
 import { TranslationField } from "./TranslationField";
+import { cn } from "@/lib/utils";
 
 // Definizione tipi
 type EntityType = "categories" | "products" | "allergens" | "product_features" | "product_labels";
@@ -27,13 +29,58 @@ const translatableFields: Record<EntityType, string[]> = {
   product_labels: ["title"],
 };
 
-const entityFriendlyLabels: Record<EntityType, string> = {
-  categories: "Categorie",
-  products: "Prodotti",
-  allergens: "Allergeni",
-  product_features: "Caratteristiche",
-  product_labels: "Etichette",
+const principalFields: Record<EntityType, string[]> = {
+  products: [
+    "title", "description", "price_standard", "price_suffix",
+    "price_variant_1_name", "price_variant_1_value", "price_variant_2_name", "price_variant_2_value"
+  ],
+  categories: ["title", "description"],
+  allergens: ["title", "description"],
+  product_features: ["title"],
+  product_labels: ["title"],
 };
+
+const entityFriendlyLabels: Record<EntityType, string> = {
+  categories: "Categoria",
+  products: "Prodotto",
+  allergens: "Allergene",
+  product_features: "Caratteristica",
+  product_labels: "Etichetta",
+};
+
+// Visualizza i campi principali in italiano (sinistra)
+function EntityOriginalFields({ entityType, entity }:{
+  entityType: EntityType,
+  entity: any
+}) {
+  const fieldLabels:Record<string,string> = {
+    title: "Nome",
+    description: "Descrizione",
+    price_standard: "Prezzo standard",
+    price_suffix: "Suffisso prezzo",
+    price_variant_1_name: "Variante 1 nome",
+    price_variant_1_value: "Variante 1 prezzo",
+    price_variant_2_name: "Variante 2 nome",
+    price_variant_2_value: "Variante 2 prezzo"
+  };
+  const fields = principalFields[entityType];
+  return (
+    <div className="space-y-1">
+      <div className="text-xs text-muted-foreground font-semibold mb-1">Originale (Italiano)</div>
+      {fields.map(field => (
+        <div key={field} className="text-xs px-1 py-0.5 break-all">
+          <span className="font-medium">{fieldLabels[field] ?? field}: </span>
+          <span className="text-gray-900">
+            {entity && entity[field] !== undefined && entity[field] !== null && String(entity[field]).trim() !== ""
+              ? String(entity[field])
+              : <span className="italic text-gray-400">--</span>
+            }
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps) => {
   const [fieldsToTranslate, setFieldsToTranslate] = useState<MissingOrOutdatedField[]>([]);
@@ -59,7 +106,10 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
         ) {
           selectFields.push("title");
         }
-        selectFields.push(...translatableFields[entityType]);
+        selectFields.push(...Array.from(new Set([
+          ...(principalFields[entityType] || []),
+          ...translatableFields[entityType]
+        ])));
 
         const { data: entities, error: entitiesError } = await supabase
           .from(entityType)
@@ -76,7 +126,7 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
         const idsArray = (entities as any[]).map(e => e.id);
         if (!idsArray.length) continue;
 
-        const { data: translationRows, error: translationsError } = await supabase
+        const { data: translationRows } = await supabase
           .from("translations")
           .select("entity_id,field,last_updated")
           .eq("entity_type", entityType)
@@ -129,11 +179,13 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
     return () => { cancelled = true; };
   }, [language]);
 
-  // Raggruppa per entityType per la visualizzazione
-  const grouped: Record<string, MissingOrOutdatedField[]> = {};
+  // Raggruppa i fields da tradurre per record (id+entityType)
+  type GroupedEntries = { [entityKey:string]: { entityType: EntityType, id: string, fields: MissingOrOutdatedField[] } };
+  const grouped: GroupedEntries = {};
   for (const entry of fieldsToTranslate) {
-    if (!grouped[entry.entityType]) grouped[entry.entityType] = [];
-    grouped[entry.entityType].push(entry);
+    const k = `${entry.entityType}:${entry.id}`;
+    if (!grouped[k]) grouped[k] = { entityType: entry.entityType, id: entry.id, fields: [] };
+    grouped[k].fields.push(entry);
   }
 
   return (
@@ -150,45 +202,76 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
               Complimenti! Tutte le voci sono tradotte e aggiornate in questa lingua.
             </div>
           ) : (
-            Object.entries(grouped).map(([entityType, list]) => (
-              <div key={entityType} className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  {entityFriendlyLabels[entityType as EntityType]}
-                </h3>
-                <div className="divide-y border rounded bg-muted">
-                  {list.map(entry => {
-                    const entityKey = `${entry.entityType}:${entry.id}`;
-                    const entity = entitiesMap[entityKey];
-
-                    return (
-                      <div key={entry.id + "_" + entry.field} className="flex flex-col px-4 py-3 gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="max-w-sm flex-1 pr-4 min-w-0">
-                          <div className="truncate font-medium">{entry.name}</div>
-                          <div className="text-xs text-gray-500 truncate">({entry.id})</div>
-                          <div className="mt-1 text-xs text-gray-600">
-                            Campo: <span className="font-mono">{entry.field}</span>
+            Object.entries(grouped).map(([entityKey, group]) => {
+              const entity = entitiesMap[entityKey];
+              if (!entity) return null;
+              const { entityType, fields } = group;
+              return (
+                <div
+                  key={entityKey}
+                  className="border rounded-lg bg-white/90 dark:bg-muted/60 p-3 my-2 shadow-sm flex flex-col sm:flex-row gap-4"
+                >
+                  <div className="flex-1 min-w-[220px] max-w-xs">
+                    {/* Header: tipo + nome */}
+                    <div className="font-medium text-sm text-gray-700 flex items-center gap-1 mb-2">
+                      <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-800 mr-1 text-xs">{entityFriendlyLabels[entityType]}</span>
+                      <span className="truncate">{entity.title || "(senza titolo)"}</span>
+                      <span className="text-gray-400 text-xs ml-2">({entity.id})</span>
+                    </div>
+                    <EntityOriginalFields entityType={entityType} entity={entity} />
+                  </div>
+                  <div className="sm:flex-1 flex flex-col gap-2">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">
+                      Traduzione in {language}
+                    </div>
+                    {/* Lista campi */}
+                    <div className="flex flex-col gap-2">
+                      {translatableFields[entityType].map(fieldName => {
+                        // Cerchiamo se per questo campo serve la traduzione o solo riferimento:
+                        const missingEntry = fields.find(f => f.field === fieldName);
+                        if (missingEntry) {
+                          // Serve traduzione (manca o da aggiornare)
+                          return (
+                            <div key={fieldName} className={cn(
+                              "flex flex-col gap-1 border rounded px-2 py-1 bg-orange-50/40",
+                              "shadow-inner border-orange-300"
+                            )}>
+                              <div className="flex items-center justify-between">
+                                <div className="text-xs font-medium">{fieldName}</div>
+                                <Badge variant={missingEntry.badge === "missing" ? "destructive" : "secondary"}>
+                                  {missingEntry.badge === "missing" ? "Manca traduzione" : "Da aggiornare"}
+                                </Badge>
+                              </div>
+                              <TranslationField
+                                id={entity.id}
+                                entityType={entityType}
+                                fieldName={fieldName}
+                                originalText={entity[fieldName] || ""}
+                                language={language}
+                                multiline={["description"].includes(fieldName)}
+                                onTranslationSaved={() => {}}
+                              />
+                            </div>
+                          );
+                        }
+                        // Solo riferimento (presentiamo il campo ma non c’è bisogno di traduzione)
+                        return (
+                          <div key={fieldName} className="flex items-center text-xs px-2 py-1 text-muted-foreground">
+                            <span className="font-medium">{fieldName}: </span>
+                            <span className="ml-2 italic">
+                              {entity[fieldName] && String(entity[fieldName]).trim() !== ""
+                                ? String(entity[fieldName])
+                                : "--"
+                              }
+                            </span>
                           </div>
-                        </div>
-                        <div className="sm:w-[55%] mt-2 sm:mt-0">
-                          {entity && (
-                            <TranslationField
-                              id={entry.id}
-                              entityType={entry.entityType}
-                              fieldName={entry.field}
-                              originalText={entity[entry.field] || ""}
-                              language={language}
-                              multiline={["description"].includes(entry.field)}
-                              // mostriamo la notifica anche dopo salvataggio
-                              onTranslationSaved={() => {}}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </CardContent>
