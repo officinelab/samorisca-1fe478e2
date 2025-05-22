@@ -76,6 +76,7 @@ export const TableTranslationLayout: React.FC<TableTranslationLayoutProps> = ({
                         originalText={row.original || ""}
                         language={language}
                         multiline={row.multiline}
+                        wide={true}
                         onTranslationSaved={onTranslationSaved}
                       />
                       {row.isMissing && row.badgeType && (

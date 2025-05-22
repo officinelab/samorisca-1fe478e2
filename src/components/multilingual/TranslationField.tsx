@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ interface TranslationFieldProps {
   originalText: string;
   language: SupportedLanguage;
   multiline?: boolean;
+  wide?: boolean; // <-- aggiunto per larghezza forzata
   onTranslationSaved?: (translated: string) => void;
 }
 
@@ -25,6 +27,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   originalText,
   language,
   multiline = false,
+  wide = false,
   onTranslationSaved
 }) => {
   const {
@@ -50,12 +53,14 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     onTranslationSaved,
   });
 
+  // Costruisco classi larghezza
+  const baseWidthClass = wide ? "w-[32rem] max-w-full" : "w-full";
   // Regola speciale: per il campo "description" (tipicamente multiline), la textarea è molto più larga e alta.
   const InputComponent = multiline ? (
     <Textarea 
       value={translatedText} 
       onChange={handleInputChange}
-      className={`w-full ${fieldName === "description" ? "min-h-[120px] w-[32rem] max-w-full" : ""} ${error ? 'border-red-300' : ''}`}
+      className={`${baseWidthClass} ${fieldName === "description" ? "min-h-[120px]" : ""} ${error ? 'border-red-300' : ''}`}
       rows={fieldName === "description" ? 6 : 3}
       placeholder={`Traduzione in ${language}...`}
     />
@@ -63,7 +68,7 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
     <Input 
       value={translatedText} 
       onChange={handleInputChange}
-      className={`w-full ${error ? 'border-red-300' : ''}`}
+      className={`${baseWidthClass} ${error ? 'border-red-300' : ''}`}
       placeholder={`Traduzione in ${language}...`}
     />
   );
