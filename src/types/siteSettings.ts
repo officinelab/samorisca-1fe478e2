@@ -23,7 +23,10 @@ export interface SiteSettings {
   footerText?: string;
   adminTitle?: string;
   defaultProductImage?: string;
-  showRestaurantNameInMenuBar?: boolean; // <---- AGGIUNTA QUI!
+  showRestaurantNameInMenuBar?: boolean;
+  browserTitle?: string;
+  tokenPackagePrice?: string;
+  tokenPackageAmount?: string;
   [key: string]: any;
 }
 

@@ -9,6 +9,15 @@ import { Switch } from "@/components/ui/switch";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState, useEffect } from "react";
 
+// Aggiunto hook per sincronizzare il titolo della barra del browser
+function usePageTitle(title: string) {
+  useEffect(() => {
+    if (title && typeof document !== "undefined") {
+      document.title = title;
+    }
+  }, [title]);
+}
+
 const TextSettingsSection = () => {
   const {
     siteSettings,
@@ -16,6 +25,7 @@ const TextSettingsSection = () => {
     updateFooterText,
     updateAdminTitle,
     updateShowRestaurantNameInMenuBar,
+    saveSetting,
   } = useSiteSettings();
 
   const [restaurantName, setRestaurantName] = useState(siteSettings?.restaurantName || "Sa Morisca");
@@ -25,24 +35,34 @@ const TextSettingsSection = () => {
     siteSettings?.showRestaurantNameInMenuBar !== false // default true
   );
 
+  // Nuovi campi: Titolo barra titolo
+  const [browserTitle, setBrowserTitle] = useState(siteSettings?.browserTitle || "");
+  // Nuovi campi: prezzo e numero token pacchetto
+  const [tokenPackagePrice, setTokenPackagePrice] = useState(siteSettings?.tokenPackagePrice || "");
+  const [tokenPackageAmount, setTokenPackageAmount] = useState(siteSettings?.tokenPackageAmount || "");
+
+  // Sincronizzo i valori del sito e il titolo della pagina browser
   useEffect(() => {
+    if (siteSettings?.browserTitle) setBrowserTitle(siteSettings.browserTitle);
     if (siteSettings?.restaurantName) setRestaurantName(siteSettings.restaurantName);
     if (siteSettings?.footerText) setFooterText(siteSettings.footerText);
     if (siteSettings?.adminTitle) setAdminTitle(siteSettings.adminTitle);
     if (typeof siteSettings?.showRestaurantNameInMenuBar === "boolean") {
       setShowRestaurantNameInMenuBar(siteSettings.showRestaurantNameInMenuBar);
     }
+    if (siteSettings?.tokenPackagePrice) setTokenPackagePrice(siteSettings.tokenPackagePrice);
+    if (siteSettings?.tokenPackageAmount) setTokenPackageAmount(siteSettings.tokenPackageAmount);
   }, [siteSettings]);
 
-  const handleRestaurantNameSave = () => {
-    updateRestaurantName(restaurantName);
-  };
-  const handleFooterTextSave = () => {
-    updateFooterText(footerText);
-  };
-  const handleAdminTitleSave = () => {
-    updateAdminTitle(adminTitle);
-  };
+  // Effetto per aggiornare <title>
+  usePageTitle(browserTitle);
+
+  const handleRestaurantNameSave = () => { updateRestaurantName(restaurantName); };
+  const handleFooterTextSave = () => { updateFooterText(footerText); };
+  const handleAdminTitleSave = () => { updateAdminTitle(adminTitle); };
+  const handleBrowserTitleSave = () => { saveSetting("browserTitle", browserTitle); };
+  const handleTokenPackagePriceSave = () => { saveSetting("tokenPackagePrice", tokenPackagePrice); };
+  const handleTokenPackageAmountSave = () => { saveSetting("tokenPackageAmount", tokenPackageAmount); };
 
   // Toggle per visualizzazione nome locale nella barra menu pubblica
   const handleToggleShowRestaurantName = (checked: boolean) => {
@@ -57,6 +77,7 @@ const TextSettingsSection = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-8">
+          
           <div>
             <div className="flex items-center justify-between mb-1">
               <Label htmlFor="restaurant-name" className="font-semibold">
@@ -123,6 +144,70 @@ const TextSettingsSection = () => {
               <Button onClick={handleFooterTextSave}>Salva</Button>
             </div>
           </div>
+
+          <Separator className="my-8" />
+
+          {/* Nuova sezione: Titolo Barra del titolo */}
+          <div>
+            <Label htmlFor="browser-title" className="font-semibold">Titolo Barra del titolo</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Titolo visualizzato nella barra del titolo del browser
+            </p>
+            <div className="flex items-center gap-2 max-w-md">
+              <Input
+                id="browser-title"
+                value={browserTitle}
+                onChange={e => setBrowserTitle(e.target.value)}
+                placeholder="Esempio: Sa Morisca Gestionale"
+              />
+              <Button onClick={handleBrowserTitleSave}>Salva</Button>
+            </div>
+          </div>
+
+          <Separator className="my-8" />
+
+          {/* Nuova sezione: Token Package */}
+          <div>
+            <div className="mb-4">
+              <Label className="font-semibold text-lg">Pacchetto Token - Impostazioni</Label>
+              <p className="text-sm text-muted-foreground">
+                Definisci il prezzo del pacchetto token e il numero di token inclusi.
+              </p>
+            </div>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col gap-2 md:w-1/2">
+                <Label htmlFor="token-package-price">Prezzo Pacchetto token</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="token-package-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={tokenPackagePrice}
+                    onChange={e => setTokenPackagePrice(e.target.value)}
+                    placeholder="Esempio: 29.90"
+                  />
+                  <Button variant="secondary" onClick={handleTokenPackagePriceSave}>Salva</Button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 md:w-1/2">
+                <Label htmlFor="token-package-amount">Numero token pacchetto</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="token-package-amount"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={tokenPackageAmount}
+                    onChange={e => setTokenPackageAmount(e.target.value)}
+                    placeholder="Esempio: 5000"
+                  />
+                  <Button variant="secondary" onClick={handleTokenPackageAmountSave}>Salva</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </CardContent>
     </Card>
@@ -130,4 +215,3 @@ const TextSettingsSection = () => {
 };
 
 export default TextSettingsSection;
-
