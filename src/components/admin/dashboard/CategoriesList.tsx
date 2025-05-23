@@ -2,7 +2,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { 
   PlusCircle, 
   Edit, 
@@ -11,7 +10,9 @@ import {
   ChevronDown,
   Settings,
   Save,
-  X
+  X,
+  Folder,
+  FolderOpen
 } from "lucide-react";
 import { dashboardStyles } from "@/pages/admin/Dashboard.styles";
 import { Category } from "@/types/database";
@@ -74,24 +75,29 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
     <>
       <div className="h-full flex flex-col">
         <div className={dashboardStyles.categoriesHeader}>
-          <h2 className={dashboardStyles.categoriesTitle}>Categorie</h2>
-          <div className="flex space-x-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <Folder className="h-5 w-5 text-primary-600" />
+            </div>
+            <h2 className={dashboardStyles.categoriesTitle}>Categorie</h2>
+          </div>
+          <div className="flex gap-2">
             {!isReorderingCategories ? (
               <>
-                <Button onClick={onStartReordering} size="sm" variant="outline">
+                <Button onClick={onStartReordering} size="sm" variant="outline" className="h-9">
                   <Settings className="h-4 w-4" />
                 </Button>
-                <Button onClick={onAddCategory} size="sm">
+                <Button onClick={onAddCategory} size="sm" className="h-9">
                   <PlusCircle className="h-4 w-4 mr-2" /> Nuova
                 </Button>
               </>
             ) : (
               <>
-                <Button onClick={onCancelReordering} size="sm" variant="outline">
+                <Button onClick={onCancelReordering} size="sm" variant="outline" className="h-9">
                   <X className="h-4 w-4" />
                 </Button>
-                <Button onClick={onSaveReorder} size="sm">
-                  <Save className="h-4 w-4" />
+                <Button onClick={onSaveReorder} size="sm" className="h-9">
+                  <Save className="h-4 w-4 mr-2" /> Salva
                 </Button>
               </>
             )}
@@ -99,33 +105,58 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
         </div>
         
         <ScrollArea className="flex-grow">
-          <div className="p-2">
+          <div className="p-4">
             {categories.length === 0 ? (
               <div className={dashboardStyles.emptyState}>
-                Nessuna categoria trovata.<br />
-                Crea una nuova categoria per iniziare.
+                <FolderOpen className={dashboardStyles.emptyStateIcon} />
+                <h3 className={dashboardStyles.emptyStateTitle}>Nessuna categoria</h3>
+                <p className={dashboardStyles.emptyStateDescription}>
+                  Crea la tua prima categoria per iniziare ad organizzare il menu
+                </p>
+                <Button onClick={onAddCategory} className={dashboardStyles.emptyStateAction}>
+                  <PlusCircle className="h-4 w-4 mr-2" /> Crea categoria
+                </Button>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {displayCategories.map((category, index) => (
                   <div
                     key={category.id}
                     className={`${dashboardStyles.categoryItem} ${
                       selectedCategoryId === category.id
                         ? dashboardStyles.categoryItemSelected
-                        : dashboardStyles.categoryItemHover
-                    } ${!category.is_active ? dashboardStyles.categoryItemInactive : ""}`}
+                        : category.is_active 
+                          ? dashboardStyles.categoryItemHover 
+                          : dashboardStyles.categoryItemInactive
+                    }`}
                     onClick={() => !isReorderingCategories && onCategorySelect(category.id)}
                   >
                     <div className={dashboardStyles.categoryContent}>
-                      <div className="flex items-center space-x-2">
-                        <span className="truncate max-w-[140px]">{category.title}</span>
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          selectedCategoryId === category.id 
+                            ? 'bg-primary-200' 
+                            : 'bg-gray-100'
+                        }`}>
+                          <Folder className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className={dashboardStyles.categoryTitle}>{category.title}</h3>
+                          {category.description && (
+                            <p className={dashboardStyles.categoryDescription}>{category.description}</p>
+                          )}
+                        </div>
                       </div>
-                      {!category.is_active && (
-                        <span className={dashboardStyles.categoryInactiveLabel}>
-                          Disattivata
+                      <div className="flex items-center gap-2">
+                        {!category.is_active && (
+                          <span className={dashboardStyles.categoryInactiveLabel}>
+                            Disattivata
+                          </span>
+                        )}
+                        <span className={category.is_active ? dashboardStyles.statusActive : dashboardStyles.statusInactive}>
+                          {category.is_active ? 'Attiva' : 'Disattiva'}
                         </span>
-                      )}
+                      </div>
                     </div>
                     
                     <div className={dashboardStyles.categoryActions}>
@@ -161,6 +192,7 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
                           <Button 
                             variant="ghost" 
                             size="sm"
+                            className={dashboardStyles.buttonSm}
                             onClick={(e) => {
                               e.stopPropagation();
                               onEditCategory(category);
@@ -171,6 +203,7 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
                           <Button 
                             variant="ghost" 
                             size="sm"
+                            className={`${dashboardStyles.buttonSm} hover:bg-error-100 hover:text-error-600`}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteClick(category.id);
@@ -191,19 +224,28 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
 
       {/* Dialog Conferma Eliminazione Categoria */}
       <AlertDialog open={!!categoryToDelete} onOpenChange={(open) => !open && setCategoryToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Sei sicuro di voler eliminare questa categoria?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Verranno eliminati anche tutti i prodotti associati a questa categoria.
+            <AlertDialogTitle className="text-xl font-semibold text-gray-900">
+              Eliminare questa categoria?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              Questa azione eliminerà definitivamente la categoria e tutti i prodotti associati. 
+              Non sarà possibile annullare questa operazione.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setCategoryToDelete(null)}>
+            <AlertDialogCancel 
+              onClick={() => setCategoryToDelete(null)}
+              className="border-gray-300"
+            >
               Annulla
             </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              Elimina
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-error-600 hover:bg-error-700"
+            >
+              Elimina categoria
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
