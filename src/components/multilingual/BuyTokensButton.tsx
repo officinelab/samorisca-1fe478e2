@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
@@ -10,7 +11,7 @@ declare global {
   }
 }
 
-// Presa della variabile ambientale dal prefisso VITE_
+// Prende la variabile ambientale dal prefisso VITE_
 const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
 export const BuyTokensButton = () => {
@@ -55,7 +56,6 @@ export const BuyTokensButton = () => {
     if (!window.paypal || !paypalRef.current || loading) return;
 
     const BUTTON_ID = "buytokens-pp-btn";
-
     if (paypalRef.current.querySelector(`#${BUTTON_ID}`)) return;
 
     window.paypal.Buttons({
@@ -83,12 +83,11 @@ export const BuyTokensButton = () => {
         }
         // Chiamata edge function per aggiunta token
         try {
-          // Proviamo a prendere il token JWT utente dalla sessione Supabase
+          // Usa direttamente il client Supabase per ottenere il JWT
           let token = null;
-          if (window?.supabase) {
-            const user = await window.supabase.auth.getSession?.();
-            token = user?.data?.session?.access_token || null;
-          }
+          const { data: sessionData } = await supabase.auth.getSession();
+          token = sessionData.session?.access_token || null;
+
           await fetch("/functions/v1/buy_tokens", {
             method: "POST",
             headers: { 
