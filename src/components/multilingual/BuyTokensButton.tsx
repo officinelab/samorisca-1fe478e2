@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Button } from "@/components/ui/button";
@@ -23,24 +22,40 @@ export const BuyTokensButton = () => {
   const price = siteSettings?.tokenPackagePrice || "9.90";
   const tokenAmount = siteSettings?.tokenPackageAmount || "1000";
 
-  // Carica il ClientID PayPal da Supabase (tramite il backend/supabase)
+  // Carica il ClientID PayPal tramite Edge Function autenticata
   useEffect(() => {
     async function fetchPaypalClientId() {
       setFetchingClientId(true);
-      // Usiamo Supabase RPC o edge function per leggere i settings
-      // Chiamiamo un endpoint pubblico di Supabase (site_settings)
-      const { data, error } = await supabase
-        .from("site_settings")
-        .select("key,value")
-        .eq("key", "VITE_PAYPAL_CLIENT_ID")
-        .single();
+      try {
+        // Ottieni il token dell'utente autenticato
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token || null;
 
-      if (data && data.value) {
-        setPaypalClientId(data.value);
-        console.log("[BuyTokensButton] Paypal ClientID ottenuto da Supabase:", data.value);
-      } else {
+        if (!token) {
+          setPaypalClientId(null);
+          setFetchingClientId(false);
+          console.error("[BuyTokensButton] Utente non autenticato.");
+          return;
+        }
+
+        // Chiama la Edge Function protetta
+        const response = await fetch("https://dqkrmewgeeuxhbxrwpjp.supabase.co/functions/v1/get_paypal_client_id", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+        if (response.ok && result.clientId) {
+          setPaypalClientId(result.clientId);
+          console.log("[BuyTokensButton] Paypal ClientID ottenuto da edge function:", result.clientId);
+        } else {
+          setPaypalClientId(null);
+          console.error("[BuyTokensButton] Errore edge function:", result.error || response.statusText);
+        }
+      } catch (err) {
         setPaypalClientId(null);
-        console.error("[BuyTokensButton] Paypal ClientID NON trovato nei settings.");
+        console.error("[BuyTokensButton] Errore fetch ClientID:", err);
       }
       setFetchingClientId(false);
     }
@@ -150,7 +165,7 @@ export const BuyTokensButton = () => {
         PAYPAL_CLIENT_ID non configurato.<br />
         Controlla i secrets su Supabase.<br />
         <span className="text-xs text-gray-500">
-          Assicurati di avere impostato <strong>VITE_PAYPAL_CLIENT_ID</strong> tra i secrets.<br />
+          Assicurati di avere impostato <strong>VITE_PAYPAL_CLIENT_ID</strong> tra i secrets Edge Functions.<br />
           Effettua un <strong>rebuild</strong> dopo ogni modifica.<br />
         </span>
       </div>
