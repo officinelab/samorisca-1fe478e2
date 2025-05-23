@@ -1,11 +1,8 @@
 
 import React from "react";
-import { BadgeTranslationStatus } from "./BadgeTranslationStatus";
-import { useTranslationField } from "./hooks/useTranslationField";
 import { SupportedLanguage } from "@/types/translation";
-import { TranslationFieldInput } from "./translation-field/TranslationFieldInput";
-import { TranslationFieldActions } from "./translation-field/TranslationFieldActions";
-import { TranslationFieldError } from "./translation-field/TranslationFieldError";
+import { useTranslationField } from "./hooks/useTranslationField";
+import { TranslationFieldContainer } from "./translation-field/TranslationFieldContainer";
 
 interface TranslationFieldProps {
   id: string;
@@ -30,10 +27,8 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
 }) => {
   const {
     translatedText,
-    setTranslatedText,
     isEdited,
     error,
-    retryCount,
     refreshKey,
     handleTranslate,
     handleRetryWithFallback,
@@ -52,41 +47,25 @@ export const TranslationField: React.FC<TranslationFieldProps> = ({
   });
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        {/* Wrapper che mostra la traduzione + stato badge */}
-        <div className="flex items-start gap-1 w-full">
-          <TranslationFieldInput
-            value={translatedText}
-            onChange={handleInputChange}
-            multiline={multiline}
-            fieldName={fieldName}
-            language={language}
-            wide={wide}
-            error={error}
-          />
-          <BadgeTranslationStatus
-            entityId={id}
-            entityType={entityType}
-            fieldName={fieldName}
-            language={language}
-            refreshKey={refreshKey}
-          />
-        </div>
-        <TranslationFieldActions
-          isTranslating={isTranslating}
-          error={error}
-          disabled={!originalText.trim()}
-          onTranslate={handleTranslate}
-          onRetry={handleRetryWithFallback}
-          tooltip={getTooltipText()}
-          buttonLabel={getButtonLabel()}
-          isEdited={isEdited}
-          onSaveManual={handleSaveManual}
-          translatedText={translatedText}
-        />
-      </div>
-      <TranslationFieldError error={error} />
-    </div>
+    <TranslationFieldContainer
+      translatedText={translatedText}
+      onInputChange={handleInputChange}
+      multiline={multiline}
+      wide={wide}
+      fieldName={fieldName}
+      language={language}
+      error={error}
+      entityId={id}
+      entityType={entityType}
+      refreshKey={refreshKey}
+      isTranslating={isTranslating}
+      disabled={!originalText.trim()}
+      onTranslate={handleTranslate}
+      onRetry={handleRetryWithFallback}
+      tooltip={getTooltipText()}
+      buttonLabel={getButtonLabel()}
+      isEdited={isEdited}
+      onSaveManual={handleSaveManual}
+    />
   );
 };
