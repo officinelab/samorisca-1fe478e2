@@ -419,6 +419,8 @@ export type Database = {
           id: string
           last_updated: string | null
           month: string
+          purchased_tokens_total: number
+          purchased_tokens_used: number
           tokens_limit: number | null
           tokens_used: number | null
         }
@@ -427,6 +429,8 @@ export type Database = {
           id?: string
           last_updated?: string | null
           month: string
+          purchased_tokens_total?: number
+          purchased_tokens_used?: number
           tokens_limit?: number | null
           tokens_used?: number | null
         }
@@ -435,6 +439,8 @@ export type Database = {
           id?: string
           last_updated?: string | null
           month?: string
+          purchased_tokens_total?: number
+          purchased_tokens_used?: number
           tokens_limit?: number | null
           tokens_used?: number | null
         }

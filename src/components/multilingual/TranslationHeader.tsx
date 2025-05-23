@@ -13,6 +13,7 @@ import {
 import { useTranslationService } from "@/hooks/translation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BuyTokensButton } from "./BuyTokensButton";
 
 interface TranslationHeaderProps {
   selectedLanguage: SupportedLanguage;
@@ -75,7 +76,8 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
               </Select>
             )}
           </div>
-          
+          {/* Bottone per acquistare Token */}
+          <BuyTokensButton />
           <TokenStatus />
         </div>
         

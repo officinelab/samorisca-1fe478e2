@@ -37,21 +37,28 @@ export const useTokenManager = () => {
         throw new Error(`Errore nel recupero dei dati sui token: ${tokensDataError.message}`);
       }
 
-      // If no data found, it means this is the first time using the system this month
+      // If no data found, default values
       if (!tokensData) {
-        // Default values
         setTokenUsage({
           tokensUsed: 0,
           tokensRemaining: 300,
           tokensLimit: 300,
+          purchasedTokensTotal: 0,
+          purchasedTokensUsed: 0,
           lastUpdated: new Date().toISOString(),
           month: monthData
         });
       } else {
+        const tokensRemaining = tokensData.tokens_limit - tokensData.tokens_used;
+        const purchasedTokensTotal = tokensData.purchased_tokens_total ?? 0;
+        const purchasedTokensUsed = tokensData.purchased_tokens_used ?? 0;
+        const allTokensRemaining = tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed);
         setTokenUsage({
-          tokensUsed: tokensData.tokens_used || 0,
-          tokensRemaining: tokensData.tokens_limit - tokensData.tokens_used,
+          tokensUsed: tokensData.tokens_used || 0, // solo mensili
+          tokensRemaining: allTokensRemaining,
           tokensLimit: tokensData.tokens_limit,
+          purchasedTokensTotal,
+          purchasedTokensUsed,
           lastUpdated: tokensData.last_updated,
           month: tokensData.month
         });
