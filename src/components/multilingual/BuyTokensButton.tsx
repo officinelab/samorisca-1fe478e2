@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+// Fix per TypeScript: dichiariamo window.paypal per evitare errori TS2339
+declare global {
+  interface Window {
+    paypal?: any;
+  }
+}
+
 // Prende la variabile ambientale (deve essere editata solo su Supabase dashboard)
 const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
