@@ -1,6 +1,4 @@
-
-// Edge Function per aggiornare i token acquistati dopo un pagamento PayPal
-import { serve } from "std/server";
+import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js";
 
 const corsHeaders = {
