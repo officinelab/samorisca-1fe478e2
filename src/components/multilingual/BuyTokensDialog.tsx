@@ -1,5 +1,3 @@
-
-
 // Add this declaration at the top of the file
 declare global {
   interface Window {
@@ -138,23 +136,31 @@ export const BuyTokensDialog = ({
           // Gestione migliorata degli errori
           if (error) {
             console.error("[BuyTokensDialog] Supabase functions.invoke error:", error);
-            // Anche se c'è un errore, il pagamento PayPal è andato a buon fine
-            // Mostriamo un messaggio che informa l'utente e chiudiamo il dialog
             toast.error("Pagamento completato ma errore nella registrazione token. Controlla il saldo o contatta il supporto.");
-            // Forziamo comunque il refresh dei token per vedere se sono stati accreditati
             window.dispatchEvent(new CustomEvent("refresh-tokens"));
-            // Timeout di sicurezza per chiudere il dialog
             setTimeout(() => {
               onOpenChange(false);
             }, 2000);
             return;
           }
 
-          console.log("[BuyTokensDialog] Edge function result:", result);
+          // Parse della risposta se è una stringa JSON
+          let parsedResult = result;
+          if (typeof result === 'string') {
+            try {
+              parsedResult = JSON.parse(result);
+              console.log("[BuyTokensDialog] Parsed JSON result:", parsedResult);
+            } catch (parseError) {
+              console.error("[BuyTokensDialog] Failed to parse JSON result:", parseError);
+              parsedResult = null;
+            }
+          }
+
+          console.log("[BuyTokensDialog] Final parsed result:", parsedResult);
 
           // Verifica se la risposta contiene success
-          if (result && typeof result === 'object' && result.success === true) {
-            const tokensCredited = result.tokensCredited || tokenAmount;
+          if (parsedResult && typeof parsedResult === 'object' && parsedResult.success === true) {
+            const tokensCredited = parsedResult.tokensCredited || tokenAmount;
             console.log("[BuyTokensDialog] Purchase successful, tokens credited:", tokensCredited);
             toast.success(`Hai acquistato ${tokensCredited} token con successo!`);
             
@@ -166,10 +172,8 @@ export const BuyTokensDialog = ({
               onOpenChange(false);
             }, 1000);
           } else {
-            console.error("[BuyTokensDialog] Purchase failed or invalid response:", result);
-            // Anche qui, il pagamento è avvenuto, quindi informiamo l'utente
+            console.error("[BuyTokensDialog] Purchase failed or invalid response:", parsedResult);
             toast.error("Pagamento completato ma risposta del server non chiara. Controlla il saldo token.");
-            // Forziamo il refresh dei token
             window.dispatchEvent(new CustomEvent("refresh-tokens"));
             setTimeout(() => {
               onOpenChange(false);
@@ -179,14 +183,12 @@ export const BuyTokensDialog = ({
           console.error("[BuyTokensDialog][onApprove] Unexpected error:", error);
           
           if (paymentSuccessful) {
-            // Se il pagamento PayPal è andato a buon fine ma c'è stato un errore dopo
             toast.error("Pagamento completato ma errore nella verifica. Controlla il saldo token o contatta il supporto.");
             window.dispatchEvent(new CustomEvent("refresh-tokens"));
             setTimeout(() => {
               onOpenChange(false);
             }, 2000);
           } else {
-            // Se il pagamento PayPal non è andato a buon fine
             toast.error("Errore durante il pagamento. Riprova.");
           }
         }
@@ -264,4 +266,3 @@ export const BuyTokensDialog = ({
     </Dialog>
   );
 };
-
