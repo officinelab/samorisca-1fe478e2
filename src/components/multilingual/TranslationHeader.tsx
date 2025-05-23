@@ -76,11 +76,14 @@ export const TranslationHeader = ({ selectedLanguage, onLanguageChange }: Transl
               </Select>
             )}
           </div>
-          {/* Bottone per acquistare Token */}
-          <BuyTokensButton />
-          <TokenStatus />
         </div>
-        
+        {/* RIGA TOKEN & ACQUISTO: progress + bottone */}
+        <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+          <div>
+            <TokenStatus />
+          </div>
+          <BuyTokensButton />
+        </div>
         <div className="w-full md:w-64">
           <div className="flex justify-between mb-1">
             <span className="text-sm font-medium">Progresso traduzione:</span>
