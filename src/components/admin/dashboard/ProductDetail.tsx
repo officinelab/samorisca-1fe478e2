@@ -4,6 +4,7 @@ import { Product, Category, ProductLabel } from "@/types/database";
 import { dashboardStyles } from "@/pages/admin/Dashboard.styles";
 import { Button } from "@/components/ui/button";
 import { Edit, ImageIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ProductDetailProps {
   selectedProduct: Product | null;
