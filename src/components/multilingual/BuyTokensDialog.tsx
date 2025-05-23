@@ -1,15 +1,10 @@
-// Add this declaration at the top of the file
-declare global {
-  interface Window {
-    paypal: any;
-  }
-}
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { PayPalSDKLoader } from "./PayPalSDKLoader";
+import { BuyTokensDialogContent } from "./BuyTokensDialogContent";
+import { usePayPalOperations } from "./hooks/usePayPalOperations";
 
 interface BuyTokensDialogProps {
   open: boolean;
@@ -26,215 +21,20 @@ export const BuyTokensDialog = ({
   tokenAmount,
   disabled,
 }: BuyTokensDialogProps) => {
-  const paypalRef = useRef<HTMLDivElement | null>(null);
   const [paypalReady, setPaypalReady] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
-  const [fetchingClientId, setFetchingClientId] = useState(true);
+  
+  const { paypalClientId, fetchingClientId, handlePayPalApprove } = usePayPalOperations(
+    open,
+    price,
+    tokenAmount,
+    () => onOpenChange(false)
+  );
 
-  // Fetch Paypal ClientId
-  useEffect(() => {
-    if (!open) return;
-    async function fetchPaypalClientId() {
-      setFetchingClientId(true);
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token || null;
-        if (!token) {
-          setPaypalClientId(null);
-          setFetchingClientId(false);
-          console.error("[BuyTokensDialog] Utente non autenticato.");
-          return;
-        }
-        const response = await fetch("https://dqkrmewgeeuxhbxrwpjp.supabase.co/functions/v1/get_paypal_client_id", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        const result = await response.json();
-        if (response.ok && result.clientId) {
-          setPaypalClientId(result.clientId);
-        } else {
-          setPaypalClientId(null);
-        }
-      } catch (_) {
-        setPaypalClientId(null);
-      }
-      setFetchingClientId(false);
-    }
-    fetchPaypalClientId();
-  }, [open]);
-
-  // Carica SDK Paypal
-  useEffect(() => {
-    if (!open || !paypalClientId) {
-      setPaypalReady(false);
-      return;
-    }
-    if (window.paypal) {
-      setPaypalReady(true);
-      return;
-    }
-    if (document.getElementById("paypal-sdk")) {
-      return;
-    }
-    setLoading(true);
-    const script = document.createElement("script");
-    script.id = "paypal-sdk";
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=EUR`;
-    script.async = true;
-    script.onload = () => {
-      setLoading(false);
-      setPaypalReady(true);
-    };
-    script.onerror = () => {
-      setLoading(false);
-      toast.error("Errore caricamento PayPal SDK");
-    };
-    document.body.appendChild(script);
-    // Cleanup solo su chiusura completa del dialog
-    return () => {
-      if (script.parentNode) script.parentNode.removeChild(script);
-    };
-  }, [paypalClientId, open]);
-
-  // Render Paypal quando SDK è pronto e ref è montato
-  useEffect(() => {
-    if (!open || !paypalReady || !paypalRef.current) return;
-    paypalRef.current.innerHTML = "";
-    window.paypal.Buttons({
-      style: {
-        shape: "rect",
-        color: "gold",
-        layout: "vertical",
-        label: "paypal",
-      },
-      createOrder: (data: any, actions: any) => {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: String(price) } }]
-        });
-      },
-      onApprove: async (data: any, actions: any) => {
-        console.log("[BuyTokensDialog] PayPal onApprove called with order ID:", data.orderID);
-        toast("Processo di acquisto in corso...", { duration: 800 });
-        
-        let paymentSuccessful = false;
-        
-        try {
-          const details = await actions.order.capture();
-          console.log("[BuyTokensDialog] PayPal payment captured successfully:", details);
-          paymentSuccessful = true;
-
-          // Usa il client Supabase per chiamare la funzione edge
-          console.log("[BuyTokensDialog] Calling buy_tokens edge function...");
-          const { data: result, error } = await supabase.functions.invoke('buy_tokens', {
-            body: { orderId: details.id }
-          });
-
-          console.log("[BuyTokensDialog] Edge function raw response:", { result, error });
-
-          // Gestione migliorata degli errori
-          if (error) {
-            console.error("[BuyTokensDialog] Supabase functions.invoke error:", error);
-            toast.error("Pagamento completato ma errore nella registrazione token. Controlla il saldo o contatta il supporto.");
-            window.dispatchEvent(new CustomEvent("refresh-tokens"));
-            setTimeout(() => {
-              onOpenChange(false);
-            }, 2000);
-            return;
-          }
-
-          // Parse della risposta se è una stringa JSON
-          let parsedResult = result;
-          if (typeof result === 'string') {
-            try {
-              parsedResult = JSON.parse(result);
-              console.log("[BuyTokensDialog] Parsed JSON result:", parsedResult);
-            } catch (parseError) {
-              console.error("[BuyTokensDialog] Failed to parse JSON result:", parseError);
-              parsedResult = null;
-            }
-          }
-
-          console.log("[BuyTokensDialog] Final parsed result:", parsedResult);
-
-          // Verifica se la risposta contiene success
-          if (parsedResult && typeof parsedResult === 'object' && parsedResult.success === true) {
-            const tokensCredited = parsedResult.tokensCredited || tokenAmount;
-            console.log("[BuyTokensDialog] Purchase successful, tokens credited:", tokensCredited);
-            toast.success(`Hai acquistato ${tokensCredited} token con successo!`);
-            
-            // Refresh dei token
-            window.dispatchEvent(new CustomEvent("refresh-tokens"));
-            
-            // Chiudi il dialog dopo un breve delay per permettere al refresh di completarsi
-            setTimeout(() => {
-              onOpenChange(false);
-            }, 1000);
-          } else {
-            console.error("[BuyTokensDialog] Purchase failed or invalid response:", parsedResult);
-            toast.error("Pagamento completato ma risposta del server non chiara. Controlla il saldo token.");
-            window.dispatchEvent(new CustomEvent("refresh-tokens"));
-            setTimeout(() => {
-              onOpenChange(false);
-            }, 2000);
-          }
-        } catch (error: any) {
-          console.error("[BuyTokensDialog][onApprove] Unexpected error:", error);
-          
-          if (paymentSuccessful) {
-            toast.error("Pagamento completato ma errore nella verifica. Controlla il saldo token o contatta il supporto.");
-            window.dispatchEvent(new CustomEvent("refresh-tokens"));
-            setTimeout(() => {
-              onOpenChange(false);
-            }, 2000);
-          } else {
-            toast.error("Errore durante il pagamento. Riprova.");
-          }
-        }
-      },
-      onError: (err: any) => {
-        console.error("[BuyTokensDialog] PayPal error:", err);
-        toast.error("Problema PayPal: " + (err?.message || err));
-      },
-      onCancel: (data: any) => {
-        console.log("[BuyTokensDialog] PayPal payment cancelled:", data);
-        toast("Pagamento annullato", { duration: 2000 });
-      }
-    }).render(paypalRef.current);
-  // eslint-disable-next-line
-  }, [paypalReady, price, tokenAmount, open]);
-
-  // UI Fallbacks per caricamento/errori
-  let content;
-  if (fetchingClientId) {
-    content = (
-      <div className="text-center py-6 text-muted-foreground text-xs">
-        Caricamento PayPal...
-      </div>
-    );
-  } else if (!paypalClientId) {
-    content = (
-      <div className="text-xs text-red-500 my-2 text-center max-w-[240px] mx-auto">
-        PAYPAL_CLIENT_ID non configurato.<br />
-        Controlla i secrets su Supabase.<br />
-        <span className="text-xs text-gray-500">
-          Assicurati di avere impostato <strong>VITE_PAYPAL_CLIENT_ID</strong> tra i secrets Edge Functions.
-        </span>
-      </div>
-    );
-  } else {
-    content = (
-      <div>
-        <div ref={paypalRef} className="w-full flex justify-center" />
-        {loading && (
-          <Button disabled={true} className="mt-2">
-            Caricamento PayPal…
-          </Button>
-        )}
-      </div>
-    );
-  }
+  const loading = PayPalSDKLoader({ 
+    paypalClientId, 
+    open, 
+    onSDKReady: setPaypalReady 
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -253,7 +53,15 @@ export const BuyTokensDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="my-4">
-          {content}
+          <BuyTokensDialogContent
+            fetchingClientId={fetchingClientId}
+            paypalClientId={paypalClientId}
+            paypalReady={paypalReady}
+            price={price}
+            open={open}
+            loading={loading}
+            onApprove={handlePayPalApprove}
+          />
         </div>
         <DialogFooter>
           <DialogClose asChild>
