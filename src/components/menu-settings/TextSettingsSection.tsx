@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useState, useEffect } from "react";
 
-// Aggiunto hook per sincronizzare il titolo della barra del browser
-function usePageTitle(title: string) {
+// Modifica l'hook per sincronizzare <title>: ora accetta direttamente il valore aggiornato
+function useSyncPageTitle(title: string) {
   useEffect(() => {
     if (title && typeof document !== "undefined") {
       document.title = title;
@@ -54,8 +53,8 @@ const TextSettingsSection = () => {
     if (siteSettings?.tokenPackageAmount) setTokenPackageAmount(siteSettings.tokenPackageAmount);
   }, [siteSettings]);
 
-  // Effetto per aggiornare <title>
-  usePageTitle(browserTitle);
+  // Effetto per aggiornare <title> ogni volta che siteSettings.browserTitle cambia
+  useSyncPageTitle(siteSettings?.browserTitle || "");
 
   const handleRestaurantNameSave = () => { updateRestaurantName(restaurantName); };
   const handleFooterTextSave = () => { updateFooterText(footerText); };
