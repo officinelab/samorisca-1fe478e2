@@ -25,9 +25,11 @@ const categoryFormSchema = z.object({
   is_active: z.boolean().default(true),
 });
 
+type CategoryFormData = z.infer<typeof categoryFormSchema>;
+
 interface CategoryFormProps {
   category?: Category | null;
-  onSave: (data: z.infer<typeof categoryFormSchema>) => Promise<void>;
+  onSave: (data: CategoryFormData) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -38,7 +40,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 }) => {
   const isEditing = Boolean(category);
   
-  const form = useForm<z.infer<typeof categoryFormSchema>>({
+  const form = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       title: category?.title || "",
@@ -47,7 +49,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     },
   });
   
-  const onSubmit = async (values: z.infer<typeof categoryFormSchema>) => {
+  const onSubmit = async (values: CategoryFormData) => {
     await onSave(values);
   };
 

@@ -16,11 +16,17 @@ import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
+  categoryId?: string;
   onSave?: () => void;
   onCancel?: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ 
+  product, 
+  categoryId,
+  onSave, 
+  onCancel 
+}) => {
   const {
     form,
     isSubmitting,
@@ -32,7 +38,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     selectedFeatures,
     setSelectedFeatures,
     handleSubmit
-  } = useProductForm(product, onSave);
+  } = useProductForm(product, categoryId, onSave);
 
   return (
     <Form {...form}>

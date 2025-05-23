@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ArrowLeft, Menu } from "lucide-react";
 import { dashboardStyles } from "./Dashboard.styles";
 import { useDashboardOperations } from "@/hooks/admin/dashboard/useDashboardOperations";
+import { Category, Product } from "@/types/database";
 
 // Imported components
 import CategoriesList from "@/components/admin/dashboard/CategoriesList";
@@ -21,9 +22,9 @@ const Dashboard = () => {
   
   // Dialog states
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showAddProduct, setShowAddProduct] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const {
     categories,
@@ -69,11 +70,11 @@ const Dashboard = () => {
     }
   };
 
-  const handleEditCategory = (category) => {
+  const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
   };
 
-  const handleEditProduct = (product) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
   };
 
@@ -182,7 +183,7 @@ const Dashboard = () => {
             <ProductDetail
               product={selectedProduct}
               selectedCategory={selectedCategory}
-              onEditProduct={() => handleEditProduct(selectedProduct)}
+              onEditProduct={() => handleEditProduct(selectedProduct!)}
             />
           </div>
         )}
@@ -223,8 +224,8 @@ const Dashboard = () => {
             <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
               <ProductForm
                 product={editingProduct}
-                categoryId={selectedCategoryId}
-                onSuccess={handleProductFormSave}
+                categoryId={selectedCategoryId || undefined}
+                onSave={handleProductFormSave}
                 onCancel={() => {
                   setShowAddProduct(false);
                   setEditingProduct(null);
@@ -280,7 +281,7 @@ const Dashboard = () => {
           <ProductDetail
             product={selectedProduct}
             selectedCategory={selectedCategory}
-            onEditProduct={() => handleEditProduct(selectedProduct)}
+            onEditProduct={() => handleEditProduct(selectedProduct!)}
           />
         </div>
       </div>
@@ -323,8 +324,8 @@ const Dashboard = () => {
           <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
             <ProductForm
               product={editingProduct}
-              categoryId={selectedCategoryId}
-              onSuccess={handleProductFormSave}
+              categoryId={selectedCategoryId || undefined}
+              onSave={handleProductFormSave}
               onCancel={() => {
                 setShowAddProduct(false);
                 setEditingProduct(null);
