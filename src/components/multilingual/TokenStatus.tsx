@@ -1,4 +1,3 @@
-
 import { useTokenManager } from "@/hooks/useTokenManager";
 import { Progress } from "@/components/ui/progress";
 
@@ -19,9 +18,9 @@ export const TokenStatus = () => {
 
   // Calcola token rimanenti: mensili + acquistati rimanenti
   const monthlyRemaining = Math.max(0, tokenUsage.tokensLimit - (tokenUsage.tokensUsed || 0));
-  const purchasedRemaining = Math.max(0, (tokenUsage.purchasedTokensTotal || 0) - (tokenUsage.purchasedTokensUsed || 0));
+  const purchasedRemaining = Math.max(0, (tokenUsage.purchasedTokensTotal ?? 0) - (tokenUsage.purchasedTokensUsed ?? 0));
   const totalRemaining = monthlyRemaining + purchasedRemaining;
-  const totalLimit = tokenUsage.tokensLimit + (tokenUsage.purchasedTokensTotal || 0);
+  const totalLimit = tokenUsage.tokensLimit + (tokenUsage.purchasedTokensTotal ?? 0);
   const percentage = totalLimit > 0 ? (totalRemaining / totalLimit) * 100 : 0;
 
   return (

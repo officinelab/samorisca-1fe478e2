@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/components/ui/sonner";
@@ -97,7 +96,7 @@ export const BuyTokensButton = () => {
     <div>
       <div ref={paypalRef} />
       {loading && (
-        <Button disabled>
+        <Button disabled={true}>
           Caricamento PayPal…
           {/* You can show a spinner here if you want */}
         </Button>
