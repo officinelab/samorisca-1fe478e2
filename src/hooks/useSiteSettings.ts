@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SiteSettings } from "./site-settings/types";
 import { loadSettings, saveSetting } from "./site-settings/settingsStorage";
 import { defaultSettings } from "./site-settings/defaultSettings";
@@ -20,23 +20,23 @@ export const useSiteSettings = () => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Funzione per ricaricare i settings da Supabase
+  const refetchSettings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const loadedSettings = await loadSettings();
+      setSiteSettings({
+        ...defaultSettings,
+        ...(loadedSettings || {})
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Load settings on component mount
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        setIsLoading(true);
-        const loadedSettings = await loadSettings();
-        
-        setSiteSettings({
-          ...defaultSettings,
-          ...(loadedSettings || {})
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSettings();
+    refetchSettings();
     
     // Listen for settings updates from other components
     const handleSettingsUpdate = (event: CustomEvent) => {
@@ -53,12 +53,13 @@ export const useSiteSettings = () => {
     return () => {
       window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate as EventListener);
     };
-  }, []);
+  }, [refetchSettings]);
 
   return {
     siteSettings,
     isLoading,
     saveSetting,
+    refetchSettings,
     updateSidebarLogo,
     updateMenuLogo,
     updateRestaurantName,
@@ -70,4 +71,3 @@ export const useSiteSettings = () => {
 };
 
 export default useSiteSettings;
-

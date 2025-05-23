@@ -1,27 +1,29 @@
+
 import { useEffect, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-
-// Hook per sincronizzare <title>
-function useSyncPageTitle(title: string) {
-  useEffect(() => {
-    if (title && typeof document !== "undefined") {
-      document.title = title;
-    }
-  }, [title]);
-}
+import { toast } from "@/components/ui/sonner";
 
 const BrowserTitleSection = () => {
-  const { siteSettings, saveSetting } = useSiteSettings();
+  const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [browserTitle, setBrowserTitle] = useState(siteSettings?.browserTitle || "");
 
   useEffect(() => {
     if (siteSettings?.browserTitle) setBrowserTitle(siteSettings.browserTitle);
   }, [siteSettings]);
 
-  const handleSave = () => saveSetting("browserTitle", browserTitle);
+  // Salvataggio asincrono e refetch locale
+  const handleSave = async () => {
+    const ok = await saveSetting("browserTitle", browserTitle);
+    if (ok) {
+      await refetchSettings();
+      toast.success("Titolo della barra del browser aggiornato");
+    } else {
+      toast.error("Errore durante il salvataggio");
+    }
+  };
 
   return (
     <div>
