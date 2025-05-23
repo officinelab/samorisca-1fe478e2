@@ -6,7 +6,7 @@ import { useProductAllergens } from "./useProductAllergens";
 import { useProductFeatures } from "./useProductFeatures";
 import { useProductFormSubmit } from "./useProductFormSubmit";
 
-export const useProductForm = (product?: Product, onSave?: () => void) => {
+export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
   // Hook per il form e lo stato
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   
@@ -24,6 +24,10 @@ export const useProductForm = (product?: Product, onSave?: () => void) => {
 
   // Gestore per l'invio del form
   const handleSubmit = async (values: any) => {
+    // Se categoryId è fornito e non c'è category_id nei valori, lo impostiamo
+    if (categoryId && !values.category_id) {
+      values.category_id = categoryId;
+    }
     return await submitForm(values, selectedAllergens, selectedFeatures, product?.id);
   };
 
