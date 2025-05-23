@@ -96,7 +96,12 @@ export const BuyTokensButton = () => {
   return (
     <div>
       <div ref={paypalRef} />
-      {loading && <Button disabled loading>Caricamento PayPal…</Button>}
+      {loading && (
+        <Button disabled>
+          Caricamento PayPal…
+          {/* You can show a spinner here if you want */}
+        </Button>
+      )}
     </div>
   );
 };

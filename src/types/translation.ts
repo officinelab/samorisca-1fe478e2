@@ -1,4 +1,3 @@
-
 export type SupportedLanguage = 'en' | 'fr' | 'de' | 'es';
 
 export type TranslationServiceType = 'perplexity' | 'deepl' | 'openai';
@@ -15,6 +14,8 @@ export interface TokenUsage {
   tokensLimit: number;
   lastUpdated: string;
   month: string;
+  purchasedTokensTotal: number; // Added for purchased tokens support
+  purchasedTokensUsed: number;  // Added for purchased tokens support
 }
 
 export interface TranslationStats {

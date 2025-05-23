@@ -52,10 +52,10 @@ export const useTokenManager = () => {
         const tokensRemaining = tokensData.tokens_limit - tokensData.tokens_used;
         const purchasedTokensTotal = tokensData.purchased_tokens_total ?? 0;
         const purchasedTokensUsed = tokensData.purchased_tokens_used ?? 0;
-        const allTokensRemaining = tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed);
+        // const allTokensRemaining = tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed);
         setTokenUsage({
           tokensUsed: tokensData.tokens_used || 0, // solo mensili
-          tokensRemaining: allTokensRemaining,
+          tokensRemaining: tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed),
           tokensLimit: tokensData.tokens_limit,
           purchasedTokensTotal,
           purchasedTokensUsed,
