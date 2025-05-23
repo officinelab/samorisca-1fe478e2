@@ -39,4 +39,4 @@ if (typeof Deno !== "undefined") {
       );
     }
   });
-}
+
