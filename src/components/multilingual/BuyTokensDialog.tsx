@@ -1,3 +1,4 @@
+
 // Add this declaration at the top of the file
 declare global {
   interface Window {
@@ -118,25 +119,29 @@ export const BuyTokensDialog = ({
         toast("Processo di acquisto in corso...", { duration: 800 });
         try {
           const details = await actions.order.capture();
-          const { data: sessionData } = await supabase.auth.getSession();
-          const token = sessionData.session?.access_token || null;
+          console.log("[BuyTokensDialog] PayPal payment captured:", details);
 
-          const response = await fetch("/functions/v1/buy_tokens", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { "Authorization": `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({ orderId: details.id }),
+          // Usa il client Supabase per chiamare la funzione edge
+          const { data: result, error } = await supabase.functions.invoke('buy_tokens', {
+            body: { orderId: details.id }
           });
 
-          const result = await response.json();
-          if (result.success) {
-            toast.success(`Hai acquistato ${tokenAmount} token con successo!`);
+          console.log("[BuyTokensDialog] Edge function response:", { result, error });
+
+          if (error) {
+            console.error("[BuyTokensDialog] Edge function error:", error);
+            toast.error(`Errore durante l'acquisto: ${error.message}`);
+            return;
+          }
+
+          if (result?.success) {
+            const tokensCredited = result.tokensCredited || tokenAmount;
+            toast.success(`Hai acquistato ${tokensCredited} token con successo!`);
             window.dispatchEvent(new CustomEvent("refresh-tokens"));
             onOpenChange(false);
           } else {
-            toast.error(result.error ?? "Errore durante l'acquisto token.");
+            console.error("[BuyTokensDialog] Purchase failed:", result);
+            toast.error(result?.error ?? "Errore durante l'acquisto token.");
           }
         } catch (error: any) {
           console.error("[BuyTokensDialog][onApprove][error]", error);
@@ -144,6 +149,7 @@ export const BuyTokensDialog = ({
         }
       },
       onError: (err: any) => {
+        console.error("[BuyTokensDialog] PayPal error:", err);
         toast.error("Problema PayPal: " + (err?.message || err));
       }
     }).render(paypalRef.current);
