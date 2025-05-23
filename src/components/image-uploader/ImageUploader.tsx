@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,6 +37,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const previousImage = useRef<string | null>(null);
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // Convert MB to bytes
   
+  console.log("ImageUploader props:", { bucketName, folderPath, currentImage });
+  
   // Carica l'immagine corrente all'inizializzazione del componente
   useEffect(() => {
     if (currentImage) {
@@ -51,6 +54,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    console.log("Starting image upload for file:", file.name, "to bucket:", bucketName);
     
     setIsUploading(true);
     setImageError(false);
@@ -68,6 +73,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     });
     
     if (uploadResult) {
+      console.log("Upload successful:", uploadResult);
       setImageUrl(uploadResult);
       onImageUploaded(uploadResult);
       toast.success("Immagine caricata con successo!");
@@ -80,6 +86,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         await deleteImageFromStorage(previousImage.current, bucketName);
       }
       previousImage.current = uploadResult;
+    } else {
+      console.error("Upload failed");
+      setImageError(true);
+      setImageUrl(null);
     }
     
     setIsUploading(false);
