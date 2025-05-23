@@ -1,3 +1,9 @@
+// Add this declaration at the top of the file
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
 
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -205,4 +211,3 @@ export const BuyTokensDialog = ({
     </Dialog>
   );
 };
-
