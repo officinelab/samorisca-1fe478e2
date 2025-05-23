@@ -37,22 +37,7 @@ export const uploadImageToStorage = async (
   try {
     console.log(`Uploading to bucket: ${bucketName}, folder: ${folderPath}`);
     
-    // Check if bucket exists first
-    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-    console.log("Available buckets:", buckets?.map(b => b.name));
-    
-    if (bucketsError) {
-      console.error("Error listing buckets:", bucketsError);
-    }
-    
-    const bucketExists = buckets?.some(bucket => bucket.name === bucketName);
-    if (!bucketExists) {
-      console.error(`Bucket '${bucketName}' does not exist. Available buckets:`, buckets?.map(b => b.name));
-      toast.error(`Errore: bucket '${bucketName}' non trovato. Controlla la configurazione.`);
-      return null;
-    }
-    
-    // Upload file to Supabase Storage
+    // Upload file to Supabase Storage directly without checking bucket existence
     const fileName = `${Date.now()}-${file.name}`;
     const filePath = `${folderPath}/${fileName}`;
     
@@ -67,7 +52,14 @@ export const uploadImageToStorage = async (
     
     if (error) {
       console.error("Upload error details:", error);
-      throw error;
+      
+      // Se l'errore è relativo al bucket non trovato, diamo un messaggio più specifico
+      if (error.message.includes('The resource was not found') || error.message.includes('bucket')) {
+        toast.error(`Errore: bucket '${bucketName}' non accessibile. Verifica le policy di sicurezza.`);
+      } else {
+        toast.error(`Errore durante il caricamento: ${error.message}`);
+      }
+      return null;
     }
     
     console.log("Upload successful:", data);
