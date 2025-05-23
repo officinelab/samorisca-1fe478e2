@@ -41,40 +41,42 @@ const ProductForm: React.FC<ProductFormProps> = ({
   } = useProductForm(product, categoryId, onSave);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
-        <ProductBasicInfo form={form} />
-        
-        {/* Selezione etichetta */}
-        <ProductLabelSelect form={form} labels={labels} />
-        
-        {/* Selezione caratteristiche - espandibile */}
-        <FeaturesSelector
-          selectedFeatureIds={selectedFeatures}
-          onChange={setSelectedFeatures}
-        />
+    <div className="px-6 py-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
+          <ProductBasicInfo form={form} />
+          
+          {/* Selezione etichetta */}
+          <ProductLabelSelect form={form} labels={labels} />
+          
+          {/* Informazioni prezzo */}
+          <ProductPriceInfo 
+            form={form} 
+            hasPriceSuffix={hasPriceSuffix}
+            hasMultiplePrices={hasMultiplePrices}
+          />
 
-        {/* Informazioni prezzo */}
-        <ProductPriceInfo 
-          form={form} 
-          hasPriceSuffix={hasPriceSuffix}
-          hasMultiplePrices={hasMultiplePrices}
-        />
+          {/* Selezione caratteristiche - spostato in penultima posizione */}
+          <FeaturesSelector
+            selectedFeatureIds={selectedFeatures}
+            onChange={setSelectedFeatures}
+          />
 
-        {/* Selezione allergeni - espandibile */}
-        <AllergenSelector
-          selectedAllergenIds={selectedAllergens}
-          onChange={setSelectedAllergens}
-        />
+          {/* Selezione allergeni - ultima posizione */}
+          <AllergenSelector
+            selectedAllergenIds={selectedAllergens}
+            onChange={setSelectedAllergens}
+          />
 
-        {/* Pulsanti azione */}
-        <ProductActionButtons
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-        />
-      </form>
-    </Form>
+          {/* Pulsanti azione */}
+          <ProductActionButtons
+            isSubmitting={isSubmitting}
+            onCancel={onCancel}
+          />
+        </form>
+      </Form>
+    </div>
   );
 };
 
