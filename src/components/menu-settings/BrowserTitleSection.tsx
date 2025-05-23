@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Input } from "@/components/ui/input";
@@ -21,9 +20,6 @@ const BrowserTitleSection = () => {
   useEffect(() => {
     if (siteSettings?.browserTitle) setBrowserTitle(siteSettings.browserTitle);
   }, [siteSettings]);
-
-  // Sincronizza sempre il titolo della pagina
-  useSyncPageTitle(browserTitle);
 
   const handleSave = () => saveSetting("browserTitle", browserTitle);
 

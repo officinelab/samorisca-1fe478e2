@@ -2,10 +2,13 @@
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ImagesAndLogosSection from "./ImagesAndLogosSection";
 import MenuSettingsSection from "./MenuSettingsSection";
-// RIMUOVI import TextSettingsSection
+import { useGlobalBrowserTitle } from "@/hooks/useGlobalBrowserTitle";
 
 const SiteSettingsManager = () => {
-  const { isLoading } = useSiteSettings();
+  const { isLoading, siteSettings } = useSiteSettings();
+
+  // Sincronizza il titolo in TUTTA la pagina settings/supervisor
+  useGlobalBrowserTitle(siteSettings?.browserTitle);
 
   if (isLoading) {
     return (
