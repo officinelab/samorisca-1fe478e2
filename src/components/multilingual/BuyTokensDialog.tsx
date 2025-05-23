@@ -1,0 +1,208 @@
+
+import { useState, useEffect, useRef } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface BuyTokensDialogProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  price: string;
+  tokenAmount: string;
+  disabled: boolean;
+}
+
+export const BuyTokensDialog = ({
+  open,
+  onOpenChange,
+  price,
+  tokenAmount,
+  disabled,
+}: BuyTokensDialogProps) => {
+  const paypalRef = useRef<HTMLDivElement | null>(null);
+  const [paypalReady, setPaypalReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
+  const [fetchingClientId, setFetchingClientId] = useState(true);
+
+  // Fetch Paypal ClientId
+  useEffect(() => {
+    if (!open) return;
+    async function fetchPaypalClientId() {
+      setFetchingClientId(true);
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token || null;
+        if (!token) {
+          setPaypalClientId(null);
+          setFetchingClientId(false);
+          console.error("[BuyTokensDialog] Utente non autenticato.");
+          return;
+        }
+        const response = await fetch("https://dqkrmewgeeuxhbxrwpjp.supabase.co/functions/v1/get_paypal_client_id", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        if (response.ok && result.clientId) {
+          setPaypalClientId(result.clientId);
+        } else {
+          setPaypalClientId(null);
+        }
+      } catch (_) {
+        setPaypalClientId(null);
+      }
+      setFetchingClientId(false);
+    }
+    fetchPaypalClientId();
+  }, [open]);
+
+  // Carica SDK Paypal
+  useEffect(() => {
+    if (!open || !paypalClientId) {
+      setPaypalReady(false);
+      return;
+    }
+    if (window.paypal) {
+      setPaypalReady(true);
+      return;
+    }
+    if (document.getElementById("paypal-sdk")) {
+      return;
+    }
+    setLoading(true);
+    const script = document.createElement("script");
+    script.id = "paypal-sdk";
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=EUR`;
+    script.async = true;
+    script.onload = () => {
+      setLoading(false);
+      setPaypalReady(true);
+    };
+    script.onerror = () => {
+      setLoading(false);
+      toast.error("Errore caricamento PayPal SDK");
+    };
+    document.body.appendChild(script);
+    // Cleanup solo su chiusura completa del dialog
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+  }, [paypalClientId, open]);
+
+  // Render Paypal quando SDK è pronto e ref è montato
+  useEffect(() => {
+    if (!open || !paypalReady || !paypalRef.current) return;
+    paypalRef.current.innerHTML = "";
+    window.paypal.Buttons({
+      style: {
+        shape: "rect",
+        color: "gold",
+        layout: "vertical",
+        label: "paypal",
+      },
+      createOrder: (data: any, actions: any) => {
+        return actions.order.create({
+          purchase_units: [{ amount: { value: String(price) } }]
+        });
+      },
+      onApprove: async (data: any, actions: any) => {
+        toast("Processo di acquisto in corso...", { duration: 800 });
+        try {
+          const details = await actions.order.capture();
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData.session?.access_token || null;
+
+          const response = await fetch("/functions/v1/buy_tokens", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ orderId: details.id }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            toast.success(`Hai acquistato ${tokenAmount} token con successo!`);
+            window.dispatchEvent(new CustomEvent("refresh-tokens"));
+            onOpenChange(false);
+          } else {
+            toast.error(result.error ?? "Errore durante l'acquisto token.");
+          }
+        } catch (error: any) {
+          console.error("[BuyTokensDialog][onApprove][error]", error);
+          toast.error("Pagamento non riuscito.");
+        }
+      },
+      onError: (err: any) => {
+        toast.error("Problema PayPal: " + (err?.message || err));
+      }
+    }).render(paypalRef.current);
+  // eslint-disable-next-line
+  }, [paypalReady, price, tokenAmount, open]);
+
+  // UI Fallbacks per caricamento/errori
+  let content;
+  if (fetchingClientId) {
+    content = (
+      <div className="text-center py-6 text-muted-foreground text-xs">
+        Caricamento PayPal...
+      </div>
+    );
+  } else if (!paypalClientId) {
+    content = (
+      <div className="text-xs text-red-500 my-2 text-center max-w-[240px] mx-auto">
+        PAYPAL_CLIENT_ID non configurato.<br />
+        Controlla i secrets su Supabase.<br />
+        <span className="text-xs text-gray-500">
+          Assicurati di avere impostato <strong>VITE_PAYPAL_CLIENT_ID</strong> tra i secrets Edge Functions.
+        </span>
+      </div>
+    );
+  } else {
+    content = (
+      <div>
+        <div ref={paypalRef} className="w-full flex justify-center" />
+        {loading && (
+          <Button disabled={true} className="mt-2">
+            Caricamento PayPal…
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Riepilogo acquisto token</DialogTitle>
+          <DialogDescription>
+            <span>
+              Stai per acquistare <span className="font-bold">{tokenAmount}</span> token per&nbsp;
+              <span className="font-bold">{Number(price).toLocaleString("it-IT", { style: "currency", currency: "EUR" })}</span>.
+            </span>
+            <br />
+            <span className="text-xs text-muted-foreground">
+              I token saranno aggiunti al tuo saldo dopo il pagamento.
+            </span>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="my-4">
+          {content}
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Annulla
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
