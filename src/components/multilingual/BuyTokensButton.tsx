@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/components/ui/sonner";
@@ -8,6 +9,9 @@ declare global {
     paypal?: any;
   }
 }
+
+// Presa della variabile ambientale dal prefisso VITE_
+const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
 export const BuyTokensButton = () => {
   const { siteSettings } = useSiteSettings();
@@ -22,9 +26,16 @@ export const BuyTokensButton = () => {
   useEffect(() => {
     if (window.paypal || document.getElementById("paypal-sdk")) return;
     setLoading(true);
+
+    if (!paypalClientId) {
+      setLoading(false);
+      toast.error("PAYPAL_CLIENT_ID non configurato. Controlla i secrets su Supabase.");
+      return;
+    }
+
     const script = document.createElement("script");
     script.id = "paypal-sdk";
-    script.src = `https://www.paypal.com/sdk/js?client-id=${import.meta.env.PAYPAL_CLIENT_ID}&currency=EUR`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=EUR`;
     script.async = true;
     script.onload = () => {
       setLoading(false);
