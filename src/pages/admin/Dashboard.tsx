@@ -73,6 +73,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { dashboardStyles } from "./Dashboard.styles";
+
 const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -1282,8 +1284,8 @@ const Dashboard = () => {
   const CategoriesList = () => {
     return (
       <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-semibold">Categorie</h2>
+        <div className={dashboardStyles.categoriesHeader}>
+          <h2 className={dashboardStyles.categoriesTitle}>Categorie</h2>
           <Button onClick={() => {
             setEditingCategory(null);
             setShowCategoryForm(true);
@@ -1295,15 +1297,15 @@ const Dashboard = () => {
         <ScrollArea className="flex-grow">
           <div className="p-2">
             {isLoadingCategories ? (
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
+              <div className={dashboardStyles.loadingSpinner}>
+                <Skeleton className={dashboardStyles.skeletonItem} />
+                <Skeleton className={dashboardStyles.skeletonItem} />
+                <Skeleton className={dashboardStyles.skeletonItem} />
               </div>
             ) : (
               <div className="space-y-1">
                 {categories.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className={dashboardStyles.emptyState}>
                     Nessuna categoria trovata.<br />
                     Crea una nuova categoria per iniziare.
                   </div>
@@ -1311,29 +1313,29 @@ const Dashboard = () => {
                   categories.map((category, index) => (
                     <div
                       key={category.id}
-                      className={`flex flex-col p-2 rounded-md cursor-pointer ${
+                      className={`${dashboardStyles.categoryItem} ${
                         selectedCategory === category.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-gray-100"
+                          ? dashboardStyles.categoryItemSelected
+                          : dashboardStyles.categoryItemHover
                       }`}
                       onClick={() => handleCategorySelect(category.id)}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className={dashboardStyles.categoryContent}>
                         <div className="flex items-center space-x-2">
                           <span className="truncate max-w-[140px]">{category.title}</span>
                         </div>
                         {!category.is_active && (
-                          <span className="text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                          <span className={dashboardStyles.categoryInactiveLabel}>
                             Disattivata
                           </span>
                         )}
                       </div>
-                      <div className="flex justify-end mt-2">
-                        <div className="flex mr-1">
+                      <div className={dashboardStyles.categoryActions}>
+                        <div className={dashboardStyles.categoryReorderActions}>
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="h-6 w-6"
+                            className={dashboardStyles.buttonSm}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCategoryReorder(category.id, 'up');
@@ -1345,7 +1347,7 @@ const Dashboard = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="h-6 w-6"
+                            className={dashboardStyles.buttonSm}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCategoryReorder(category.id, 'down');
@@ -1400,12 +1402,12 @@ const Dashboard = () => {
     
     return (
       <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
+        <div className={dashboardStyles.productsHeader}>
           {isMobile && (
             <Button 
               variant="ghost" 
               size="icon" 
-              className="mr-2"
+              className={dashboardStyles.mobileBackButton}
               onClick={handleBackToCategories}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -1445,17 +1447,17 @@ const Dashboard = () => {
         <ScrollArea className="flex-grow">
           <div className="p-4">
             {!selectedCategory ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className={dashboardStyles.emptyState}>
                 Seleziona una categoria per visualizzare i prodotti.
               </div>
             ) : isLoadingProducts ? (
               <div className="space-y-4">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className={dashboardStyles.skeletonProduct} />
+                <Skeleton className={dashboardStyles.skeletonProduct} />
+                <Skeleton className={dashboardStyles.skeletonProduct} />
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className={dashboardStyles.emptyState}>
                 {searchQuery ? 
                   "Nessun prodotto trovato per questa ricerca." : 
                   "Nessun prodotto in questa categoria."}
@@ -1465,16 +1467,16 @@ const Dashboard = () => {
                 {filteredProducts.map((product, index) => (
                   <div
                     key={product.id}
-                    className={`border rounded-md p-3 cursor-pointer transition-colors ${
+                    className={`${dashboardStyles.productItem} ${
                       selectedProduct === product.id 
-                        ? "border-primary bg-primary/5" 
-                        : "hover:bg-gray-50"
-                    } ${!product.is_active ? "opacity-60" : ""}`}
+                        ? dashboardStyles.productItemSelected
+                        : dashboardStyles.productItemHover
+                    } ${!product.is_active ? dashboardStyles.productItemInactive : ""}`}
                     onClick={() => handleProductSelect(product.id)}
                   >
-                    <div className="flex space-x-3">
+                    <div className={dashboardStyles.productContent}>
                       {product.image_url ? (
-                        <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                        <div className={dashboardStyles.productImage}>
                           <img
                             src={product.image_url}
                             alt={product.title}
@@ -1482,41 +1484,41 @@ const Dashboard = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-md flex-shrink-0">
+                        <div className={dashboardStyles.productImagePlaceholder}>
                           <Package className="h-6 w-6 text-gray-400" />
                         </div>
                       )}
                       
-                      <div className="flex-1">
-                        <h3 className="font-medium">{product.title}</h3>
+                      <div className={dashboardStyles.productDetails}>
+                        <h3 className={dashboardStyles.productTitle}>{product.title}</h3>
                         {product.description && (
-                          <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                          <p className={dashboardStyles.productDescription}>{product.description}</p>
                         )}
                         
                         <div className="flex items-center mt-1 space-x-2">
-                          <span className="text-sm font-semibold">{product.price_standard} €</span>
+                          <span className={dashboardStyles.productPrice}>{product.price_standard} €</span>
                           {product.has_price_suffix && product.price_suffix && (
-                            <span className="text-xs text-gray-500">{product.price_suffix}</span>
+                            <span className={dashboardStyles.productPriceSuffix}>{product.price_suffix}</span>
                           )}
                           
                           {!product.is_active && (
-                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                            <span className={dashboardStyles.productUnavailable}>
                               Non disponibile
                             </span>
                           )}
                           
                           {product.allergens && product.allergens.length > 0 && (
-                            <div className="flex space-x-1">
+                            <div className={dashboardStyles.productAllergens}>
                               {product.allergens.slice(0, 3).map((allergen) => (
                                 <span 
                                   key={allergen.id}
-                                  className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full"
+                                  className={dashboardStyles.productAllergenTag}
                                 >
                                   {allergen.number}
                                 </span>
                               ))}
                               {product.allergens.length > 3 && (
-                                <span className="text-xs bg-gray-100 text-gray-700 px-1 rounded-full">
+                                <span className={dashboardStyles.productAllergenTag}>
                                   +{product.allergens.length - 3}
                                 </span>
                               )}
@@ -1526,12 +1528,12 @@ const Dashboard = () => {
                       </div>
                     </div>
                     
-                    <div className="flex justify-end mt-2">
-                      <div className="flex mr-1">
+                    <div className={dashboardStyles.productActions}>
+                      <div className={dashboardStyles.productReorderActions}>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="h-6 w-6"
+                          className={dashboardStyles.buttonSm}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleProductReorder(product.id, 'up');
@@ -1543,7 +1545,7 @@ const Dashboard = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="h-6 w-6"
+                          className={dashboardStyles.buttonSm}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleProductReorder(product.id, 'down');
@@ -1609,18 +1611,18 @@ const Dashboard = () => {
     if (isEditing) {
       return (
         <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center p-4 border-b">
+          <div className={dashboardStyles.detailHeader}>
             {isMobile && (
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="mr-2"
+                className={dashboardStyles.mobileBackButton}
                 onClick={handleBackToProducts}
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            <h2 className="text-lg font-semibold">{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
+            <h2 className={dashboardStyles.detailTitle}>{product ? "Modifica Prodotto" : "Nuovo Prodotto"}</h2>
           </div>
           
           <ScrollArea className="flex-grow">
@@ -1645,18 +1647,18 @@ const Dashboard = () => {
     
     return (
       <div className="h-full flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b">
+        <div className={dashboardStyles.detailHeader}>
           {isMobile && (
             <Button 
               variant="ghost" 
               size="icon" 
-              className="mr-2"
+              className={dashboardStyles.mobileBackButton}
               onClick={handleBackToProducts}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
+          <h2 className={dashboardStyles.detailTitle}>Dettagli Prodotto</h2>
           <div className="flex space-x-2">
             <Button 
               size="sm" 
@@ -1668,10 +1670,10 @@ const Dashboard = () => {
         </div>
         
         <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-6">
-            <div className="flex space-x-4">
+          <div className={dashboardStyles.detailContent}>
+            <div className={dashboardStyles.detailMainSection}>
               {product.image_url ? (
-                <div className="w-32 h-32 rounded-md overflow-hidden">
+                <div className={dashboardStyles.detailImage}>
                   <img
                     src={product.image_url}
                     alt={product.title}
@@ -1679,18 +1681,18 @@ const Dashboard = () => {
                   />
                 </div>
               ) : (
-                <div className="w-32 h-32 flex items-center justify-center bg-gray-100 rounded-md">
+                <div className={dashboardStyles.detailImagePlaceholder}>
                   <Package className="h-10 w-10 text-gray-400" />
                 </div>
               )}
               
-              <div className="flex-1">
+              <div className={dashboardStyles.detailProductInfo}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold">{product.title}</h1>
+                    <h1 className={dashboardStyles.detailProductTitle}>{product.title}</h1>
                     {product.label && (
                       <span 
-                        className="px-2 py-0.5 rounded-full text-sm inline-block mt-1"
+                        className={dashboardStyles.detailProductLabel}
                         style={{ 
                           backgroundColor: product.label.color || '#e2e8f0',
                           color: product.label.color ? '#fff' : '#000'
@@ -1701,20 +1703,20 @@ const Dashboard = () => {
                     )}
                   </div>
                   {!product.is_active && (
-                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                    <span className={dashboardStyles.detailUnavailableStatus}>
                       Non disponibile
                     </span>
                   )}
                 </div>
                 
                 {product.description && (
-                  <p className="text-gray-700 mt-2">{product.description}</p>
+                  <p className={dashboardStyles.detailProductDescription}>{product.description}</p>
                 )}
                 
-                <div className="mt-4">
+                <div className={dashboardStyles.detailCategoryInfo}>
                   <div className="flex items-center">
-                    <span className="text-gray-600 font-medium">Categoria: </span>
-                    <span className="ml-2">
+                    <span className={dashboardStyles.detailCategoryLabel}>Categoria: </span>
+                    <span className={dashboardStyles.detailCategoryValue}>
                       {categories.find(c => c.id === product.category_id)?.title || ""}
                     </span>
                   </div>
@@ -1726,8 +1728,8 @@ const Dashboard = () => {
             
             <Card>
               <CardContent className="pt-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-lg font-semibold">
+                <div className={dashboardStyles.tableContainer}>
+                  <div className={dashboardStyles.priceInfo}>
                     <span>
                       {product.price_standard} €{' '}
                       {product.has_price_suffix && product.price_suffix && (
@@ -1736,22 +1738,22 @@ const Dashboard = () => {
                     </span>
                   </div>
                   {product.has_multiple_prices && (
-                    <div className="flex flex-col gap-1">
+                    <div className={dashboardStyles.priceVariants}>
                       {product.price_variant_1_name && product.price_variant_1_value != null && (
-                        <div className="flex justify-between items-center">
+                        <div className={dashboardStyles.priceVariant}>
                           <span>
                             {product.price_variant_1_value} €{' '}
-                            <span className="text-gray-700 text-sm">
+                            <span className={dashboardStyles.priceVariantValue}>
                               {product.price_variant_1_name}
                             </span>
                           </span>
                         </div>
                       )}
                       {product.price_variant_2_name && product.price_variant_2_value != null && (
-                        <div className="flex justify-between items-center">
+                        <div className={dashboardStyles.priceVariant}>
                           <span>
                             {product.price_variant_2_value} €{' '}
-                            <span className="text-gray-700 text-sm">
+                            <span className={dashboardStyles.priceVariantValue}>
                               {product.price_variant_2_name}
                             </span>
                           </span>
@@ -1768,14 +1770,14 @@ const Dashboard = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-semibold mb-4">Caratteristiche</h3>
                   
-                  <div className="flex flex-wrap gap-2">
+                  <div className={dashboardStyles.featuresGrid}>
                     {product.features.map((feature) => (
                       <div 
                         key={feature.id}
-                        className="bg-gray-100 rounded-full px-3 py-1 flex items-center"
+                        className={dashboardStyles.featuresDisplay}
                       >
                         {feature.icon_url && (
-                          <img src={feature.icon_url} alt={feature.title} className="w-4 h-4 mr-1" />
+                          <img src={feature.icon_url} alt={feature.title} className={dashboardStyles.featureIcon} />
                         )}
                         {feature.title}
                       </div>
@@ -1790,11 +1792,11 @@ const Dashboard = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-semibold mb-4">Allergeni</h3>
                   
-                  <div className="flex flex-wrap gap-2">
+                  <div className={dashboardStyles.featuresGrid}>
                     {product.allergens.map((allergen) => (
                       <div 
                         key={allergen.id}
-                        className="bg-gray-100 rounded-full px-3 py-1"
+                        className={dashboardStyles.allergensDisplay}
                       >
                         {allergen.number}: {allergen.title}
                       </div>
@@ -1853,23 +1855,23 @@ const Dashboard = () => {
   };
 
   const DesktopLayout = () => (
-    <div className="grid grid-cols-12 h-full divide-x">
-      <div className="col-span-2 h-full border-r">
+    <div className={dashboardStyles.desktopGrid}>
+      <div className={dashboardStyles.categoriesColumn}>
         <CategoriesList />
       </div>
       
-      <div className="col-span-5 h-full border-r">
+      <div className={dashboardStyles.productsColumn}>
         <ProductsList />
       </div>
       
-      <div className="col-span-5 h-full">
+      <div className={dashboardStyles.detailColumn}>
         <ProductDetail />
       </div>
     </div>
   );
 
   return (
-    <div className="h-[calc(100vh-4rem)]">
+    <div className={dashboardStyles.container}>
       {isMobile ? <MobileLayout /> : <DesktopLayout />}
       
       <CategoryFormPanel />
