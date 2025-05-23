@@ -23,27 +23,35 @@ const TokenPackageSection = () => {
       <div className="mb-4">
         <Label className="font-semibold text-lg">Pacchetto Token - Impostazioni</Label>
         <p className="text-sm text-muted-foreground">
-          Definisci il prezzo del pacchetto token e il numero di token inclusi.
+          Definisci il prezzo del pacchetto token (<span className="font-semibold">in euro &euro;</span>) e il numero di token inclusi.
         </p>
       </div>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex flex-col gap-2 md:w-1/2">
-          <Label htmlFor="token-package-price">Prezzo Pacchetto token</Label>
+          <Label htmlFor="token-package-price">
+            Prezzo Pacchetto token <span className="text-xs text-muted-foreground">(in &euro;)</span>
+          </Label>
           <div className="flex gap-2">
-            <Input
-              id="token-package-price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={tokenPackagePrice}
-              onChange={e => setTokenPackagePrice(e.target.value)}
-              placeholder="Esempio: 29.90"
-            />
+            <div className="relative w-full">
+              <Input
+                id="token-package-price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={tokenPackagePrice}
+                onChange={e => setTokenPackagePrice(e.target.value)}
+                placeholder="Esempio: 29.90"
+                className="pr-10"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none select-none">€</span>
+            </div>
             <Button variant="secondary" onClick={handlePriceSave}>Salva</Button>
           </div>
         </div>
         <div className="flex flex-col gap-2 md:w-1/2">
-          <Label htmlFor="token-package-amount">Numero token pacchetto</Label>
+          <Label htmlFor="token-package-amount">
+            Numero token pacchetto
+          </Label>
           <div className="flex gap-2">
             <Input
               id="token-package-amount"
