@@ -6,15 +6,13 @@ import { Separator } from "@/components/ui/separator";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
-// RIMUOVO import non più usato di ProductLabelSelect dalla sezione info extra 
-import ProductPriceInfo from "./sections/ProductPriceInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
 import AllergenSelector from "./AllergenSelector";
 import FeaturesSelector from "./FeaturesSelector";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import ProductLabelSelect from "./sections/ProductLabelSelect"; // Mi serve qui sopra
+import ProductLabelSelect from "./sections/ProductLabelSelect";
 
 interface ProductFormProps {
   product?: Product;
@@ -55,10 +53,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <CardTitle className="text-lg">Informazioni di Base</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Nessun titolo duplicato qui */}
               <ProductBasicInfo form={form} />
 
-              {/* RIGA: Etichetta prodotto | Prezzo standard | (Suffisso solo se attivo) */}
+              {/* Riga: Etichetta prodotto | Prezzo Standard | (Suffisso prezzo se attivo) */}
               <div className="flex flex-row justify-end items-end gap-4 mt-6 mb-0 flex-wrap">
                 {/* Colonna 1: Etichetta prodotto */}
                 <div className="w-full md:w-auto md:min-w-[160px] max-w-xs flex-1">
@@ -138,112 +135,98 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   )}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Sezione Info Extra */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Info extra</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* RIMUOVO il campo Etichetta prodotto da qui */}
-              {/* Grid una colonna: solo Prezzi multipli - mostro varianti solo se necessario */}
-              <div className="flex flex-col justify-center h-full">
-                {/* Sezione Varianti Prezzo */}
-                {hasMultiplePrices && (
-                  <div className="space-y-4 pl-0 border-l-0 mt-0">
-                    <h4 className="text-md font-medium mb-2">Varianti di prezzo</h4>
-                    {/* Variante 1 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Col 1: Prezzo Variante */}
-                      <FormField
-                        control={form.control}
-                        name="price_variant_1_value"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prezzo Variante 1</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {/* Col 2: Nome Variante */}
-                      <FormField
-                        control={form.control}
-                        name="price_variant_1_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome Variante 1</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="es. Piccola"
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    {/* Variante 2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Col 1: Prezzo Variante */}
-                      <FormField
-                        control={form.control}
-                        name="price_variant_2_value"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prezzo Variante 2</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {/* Col 2: Nome Variante */}
-                      <FormField
-                        control={form.control}
-                        name="price_variant_2_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome Variante 2</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="es. Grande"
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              {/* Varianti Prezzo (solo se prezzi multipli attivi) */}
+              {hasMultiplePrices && (
+                <div className="space-y-4 pl-0 border-l-0 mt-4">
+                  <h4 className="text-md font-medium mb-2">Varianti di prezzo</h4>
+                  {/* Variante 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 1</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Col 2: Nome Variante */}
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 1</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. Piccola"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                )}
-              </div>
+                  {/* Variante 2 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 2</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Col 2: Nome Variante */}
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 2</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. Grande"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Caratteristiche */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              {/* Nessun titolo o descrizione sopra: solo voce espandibile */}
               <FeaturesSelector
                 selectedFeatureIds={selectedFeatures}
                 onChange={setSelectedFeatures}
@@ -254,7 +237,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              {/* Solo voce espandibile */}
               <AllergenSelector
                 selectedAllergenIds={selectedAllergens}
                 onChange={setSelectedAllergens}
@@ -275,4 +257,3 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
-
