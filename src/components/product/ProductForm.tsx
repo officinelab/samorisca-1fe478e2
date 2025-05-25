@@ -50,24 +50,27 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Informazioni Base */}
           <Card className="overflow-visible">
             <CardHeader>
+              {/* Tenere SOLO questa occorrenza del titolo */}
               <CardTitle className="text-lg">Informazioni di Base</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Nessun titolo duplicato qui */}
               <ProductBasicInfo form={form} />
-              {/* Grid inline per Prezzo Standard e Sufisso Prezzo */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-0">
-                {/* Prezzo Standard */}
+              {/* Grid inline per Prezzo Standard e Suffisso Prezzo con toggle */}
+              <div className="flex flex-wrap gap-4 items-end mt-6 mb-0">
+                {/* Prezzo Standard compatto */}
                 <FormField
                   control={form.control}
                   name="price_standard"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col" style={{ minWidth: 0 }}>
                       <FormLabel>Prezzo Standard</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           step="0.01"
                           placeholder="0.00"
+                          className="max-w-[120px]"
                           {...field}
                         />
                       </FormControl>
@@ -75,46 +78,43 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </FormItem>
                   )}
                 />
-                {/* Testo Suffisso: solo se attivo */}
-                {hasPriceSuffix && (
+                {/* Testo Suffisso + Toggle sulla stessa linea */}
+                <div className="flex items-end gap-2 flex-1 min-w-0">
+                  {hasPriceSuffix && (
+                    <FormField
+                      control={form.control}
+                      name="price_suffix"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Testo suffisso</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. /persona, /kg"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   <FormField
                     control={form.control}
-                    name="price_suffix"
+                    name="has_price_suffix"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Testo suffisso</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between m-0 p-0 border-0 shadow-none gap-1 h-[38px]">
+                        <FormLabel className="mb-0">Suffisso prezzo</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="es. /persona, /kg"
-                            {...field}
-                            value={field.value || ""}
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
-              {/* Switch Suffisso Prezzo */}
-              <div className="flex gap-2 items-center mt-2">
-                <FormField
-                  control={form.control}
-                  name="has_price_suffix"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between p-0 m-0 border-0 shadow-none">
-                      <div className="space-y-0.5">
-                        <FormLabel>Suffisso prezzo</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                </div>
               </div>
             </CardContent>
           </Card>

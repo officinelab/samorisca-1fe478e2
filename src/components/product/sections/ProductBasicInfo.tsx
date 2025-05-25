@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   FormField,
@@ -29,28 +28,6 @@ interface ProductBasicInfoProps {
 const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
     <div className="w-full">
-      {/* Titolo + Stato Attivo Inline */}
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-lg font-semibold">Informazioni di Base</span>
-        <FormField
-          control={form.control}
-          name="is_active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center gap-2 mb-0">
-              <FormLabel className="text-base font-medium mb-0">
-                Attivo
-              </FormLabel>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="scale-90"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
       {/* Immagine + Nome/Descrizione - Layout responsive grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Colonna sx: Immagine Prodotto */}
