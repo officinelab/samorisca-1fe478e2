@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -126,29 +125,31 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <CardTitle className="text-lg">Info extra</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Grid due colonne: Etichetta prodotto | Prezzi multipli */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              {/* Grid due colonne: etichetta prodotto | prezzi multipli */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
                 {/* Colonna 1: Etichetta prodotto */}
                 <div className="flex flex-col justify-center h-full">
                   <ProductLabelSelect form={form} labels={labels} />
                 </div>
-                {/* Colonna 2: Prezzi multipli toggle in card per separazione */}
+                {/* Colonna 2: Prezzi multipli (allineamento vert top, padding x match field height) */}
                 <div className="flex flex-col justify-center h-full">
-                  <FormField
-                    control={form.control}
-                    name="has_multiple_prices"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full h-[56px]">
-                        <FormLabel className="font-medium">Prezzi multipli</FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="flex flex-row items-center h-[40px] md:h-full">
+                    <FormField
+                      control={form.control}
+                      name="has_multiple_prices"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full min-h-[40px]">
+                          <FormLabel className="font-medium">Prezzi multipli</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
               {/* Sezione Varianti Prezzo */}
@@ -242,13 +243,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Caratteristiche */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Caratteristiche</CardTitle>
-              <span className="text-xs text-muted-foreground mt-0">
-                Specifica le feature opzionali per questo prodotto
-              </span>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 border-0 shadow-none">
+              {/* Nessun titolo o descrizione sopra: solo voce espandibile */}
               <FeaturesSelector
                 selectedFeatureIds={selectedFeatures}
                 onChange={setSelectedFeatures}
@@ -258,13 +254,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Allergeni */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Allergeni</CardTitle>
-              <span className="text-xs text-muted-foreground mt-0">
-                Seleziona gli allergeni presenti nel prodotto
-              </span>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 border-0 shadow-none">
+              {/* Solo voce espandibile */}
               <AllergenSelector
                 selectedAllergenIds={selectedAllergens}
                 onChange={setSelectedAllergens}
