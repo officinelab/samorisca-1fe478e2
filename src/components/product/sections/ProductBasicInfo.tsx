@@ -21,15 +21,13 @@ import { ProductFormValues } from "@/types/form";
  * - Sotto: layout responsive. Desktop = due colonne, mobile = stack verticale
  *   - Sinistra: Immagine in box quadrato, bottone X in alto a destra
  *   - Destra: Nome prodotto (Input), sotto Descrizione (Textarea)
- *   - Sotto (full): Prezzo Standard, Suffisso prezzo (switch+input). 
  */
 
 interface ProductBasicInfoProps {
   form: UseFormReturn<ProductFormValues>;
-  hasPriceSuffix: boolean;
 }
 
-const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffix }) => {
+const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
     <div className="w-full">
       {/* Stato Attivo */}
@@ -50,7 +48,7 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffi
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    className="scale-75 ml-1"
+                    className="scale-75 ml-1" // Toggle ancora più piccolo
                   />
                 </FormControl>
               </FormItem>
@@ -61,8 +59,8 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffi
 
       {/* Immagine + Nome/Descrizione - Layout responsive grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        {/* Colonna sx: Immagine Prodotto - occupa 35% invece di 25% */}
-        <div className="md:col-span-4 md:w-[35%] col-span-1">
+        {/* Colonna sx: Immagine Prodotto - occupa 4 su 12 colonne (circa 33%) */}
+        <div className="md:col-span-4 col-span-1">
           <FormField
             control={form.control}
             name="image_url"
@@ -74,7 +72,7 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffi
                     <ImageUploader
                       currentImage={field.value || ""}
                       onImageUploaded={(url) => { field.onChange(url); }}
-                      label=""
+                      label="Carica immagine del prodotto"
                       bucketName="menu-images"
                       folderPath="menu"
                     />
@@ -85,8 +83,8 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffi
             )}
           />
         </div>
-        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto */}
-        <div className="flex flex-col gap-5 md:col-span-8 md:w-[65%] col-span-1">
+        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto - occupa 8 su 12 colonne */}
+        <div className="flex flex-col gap-5 md:col-span-8 col-span-1">
           <FormField
             control={form.control}
             name="title"
@@ -120,68 +118,6 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, hasPriceSuffi
           />
         </div>
       </div>
-
-      {/* Prezzo Standard + Suffisso prezzo dentro Informazioni di Base */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-        <FormField
-          control={form.control}
-          name="price_standard"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prezzo Standard</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="has_price_suffix"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>Suffisso prezzo</FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="scale-95"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {/* Testo Suffisso (condizionale) - full width */}
-      {hasPriceSuffix && (
-        <FormField
-          control={form.control}
-          name="price_suffix"
-          render={({ field }) => (
-            <FormItem className="mt-4">
-              <FormLabel>Testo suffisso</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="es. /persona, /kg"
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
     </div>
   );
 };
