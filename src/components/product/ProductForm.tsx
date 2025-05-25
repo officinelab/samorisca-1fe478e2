@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -55,9 +54,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardHeader>
             <CardContent>
               <ProductBasicInfo form={form} />
-
-              {/* Prezzo Standard + Suffisso (inline, NO card/border/ombra) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 mb-0">
+              {/* Grid inline per Prezzo Standard e Sufisso Prezzo */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-0">
                 {/* Prezzo Standard */}
                 <FormField
                   control={form.control}
@@ -77,26 +75,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </FormItem>
                   )}
                 />
-
-                {/* Switch Suffisso Prezzo */}
-                <FormField
-                  control={form.control}
-                  name="has_price_suffix"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between p-0 m-0 border-0 shadow-none">
-                      <div className="space-y-0.5">
-                        <FormLabel>Suffisso prezzo</FormLabel>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
                 {/* Testo Suffisso: solo se attivo */}
                 {hasPriceSuffix && (
                   <FormField
@@ -118,28 +96,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 )}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Sezione Info Extra */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Info extra</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Raggruppa: Etichetta Prodotto + Prezzi multipli */}
-              <div className="flex flex-col gap-4">
-                {/* Etichetta Prodotto */}
-                <ProductLabelSelect form={form} labels={labels} />
-
-                {/* Prezzi Multipli e Varianti */}
+              {/* Switch Suffisso Prezzo */}
+              <div className="flex gap-2 items-center mt-2">
                 <FormField
                   control={form.control}
-                  name="has_multiple_prices"
+                  name="has_price_suffix"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <FormItem className="flex flex-row items-center justify-between p-0 m-0 border-0 shadow-none">
                       <div className="space-y-0.5">
-                        <FormLabel>Prezzi multipli</FormLabel>
+                        <FormLabel>Suffisso prezzo</FormLabel>
                       </div>
                       <FormControl>
                         <Switch
@@ -150,90 +115,125 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </FormItem>
                   )}
                 />
-
-                {/* Varianti Prezzo (solo se attivo) */}
-                {hasMultiplePrices && (
-                  <div className="space-y-4 pl-4 border-l-2 border-muted mt-2">
-                    <h4 className="text-md font-medium">Varianti di prezzo</h4>
-                    {/* Variante 1 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="price_variant_1_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome Variante 1</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="es. Piccola"
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="price_variant_1_value"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prezzo Variante 1</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    {/* Variante 2 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="price_variant_2_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome Variante 2</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="es. Grande"
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="price_variant_2_value"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Prezzo Variante 2</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Sezione Info Extra */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Info extra</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Grid due colonne: etichetta prodotto | prezzi multipli */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Etichetta Prodotto */}
+                <div>
+                  <ProductLabelSelect form={form} labels={labels} />
+                </div>
+                {/* Prezzi multipli */}
+                <div className="flex items-center h-full">
+                  <FormField
+                    control={form.control}
+                    name="has_multiple_prices"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full">
+                        <div className="space-y-0.5">
+                          <FormLabel>Prezzi multipli</FormLabel>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              {/* Varianti Prezzo (solo se attivo) */}
+              {hasMultiplePrices && (
+                <div className="space-y-4 pl-4 border-l-2 border-muted mt-6">
+                  <h4 className="text-md font-medium mb-2">Varianti di prezzo</h4>
+                  {/* Variante 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 1</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="price_variant_1_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 1</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. Piccola"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {/* Variante 2 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Variante 2</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="price_variant_2_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome Variante 2</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. Grande"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
