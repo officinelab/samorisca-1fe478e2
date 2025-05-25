@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -50,14 +51,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Informazioni Base */}
           <Card className="overflow-visible">
             <CardHeader>
-              {/* Tenere SOLO questa occorrenza del titolo */}
               <CardTitle className="text-lg">Informazioni di Base</CardTitle>
             </CardHeader>
             <CardContent>
               {/* Nessun titolo duplicato qui */}
               <ProductBasicInfo form={form} />
-              {/* Grid inline per Prezzo Standard e Suffisso Prezzo con toggle */}
-              <div className="flex flex-wrap gap-4 items-end mt-6 mb-0">
+              {/* RIGA Prezzo Standard e Suffisso Prezzo, allineati a destra */}
+              <div className="flex flex-row justify-end gap-4 items-end mt-6 mb-0">
                 {/* Prezzo Standard compatto */}
                 <FormField
                   control={form.control}
@@ -79,7 +79,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   )}
                 />
                 {/* Testo Suffisso + Toggle sulla stessa linea */}
-                <div className="flex items-end gap-2 flex-1 min-w-0">
+                <div className="flex items-end gap-2 flex-1 min-w-0 max-w-xs">
                   {hasPriceSuffix && (
                     <FormField
                       control={form.control}
