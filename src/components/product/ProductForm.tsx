@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -50,42 +49,28 @@ const ProductForm: React.FC<ProductFormProps> = ({
         >
           {/* Informazioni Base */}
           <Card className="overflow-visible">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader>
+              {/* Tenere SOLO questa occorrenza del titolo */}
               <CardTitle className="text-lg">Informazioni di Base</CardTitle>
-              {/* Switch Stato Attivo inline */}
-              <FormField
-                control={form.control}
-                name="is_active"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 m-0 p-0 border-0 shadow-none">
-                    <FormLabel className="mb-0">Attivo</FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </CardHeader>
             <CardContent>
+              {/* Nessun titolo duplicato qui */}
               <ProductBasicInfo form={form} />
-              {/* RIGA A 3 COLONNE: Prezzo standard | Suffisso prezzo | Prezzi multipli */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end justify-end mt-6 mb-0">
-                {/* Colonna 1: Prezzo Standard */}
+              {/* Grid inline per Prezzo Standard e Suffisso Prezzo con toggle */}
+              <div className="flex flex-wrap gap-4 items-end mt-6 mb-0">
+                {/* Prezzo Standard compatto */}
                 <FormField
                   control={form.control}
                   name="price_standard"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col items-end min-w-0" style={{ minWidth: 0 }}>
+                    <FormItem className="flex flex-col" style={{ minWidth: 0 }}>
                       <FormLabel>Prezzo Standard</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           step="0.01"
                           placeholder="0.00"
-                          className="max-w-[90px] text-right"
+                          className="max-w-[120px]"
                           {...field}
                         />
                       </FormControl>
@@ -93,19 +78,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </FormItem>
                   )}
                 />
-                {/* Colonna 2: Suffisso prezzo e toggle */}
-                <div className="flex flex-row gap-2 items-end justify-end md:justify-end w-full">
+                {/* Testo Suffisso + Toggle sulla stessa linea */}
+                <div className="flex items-end gap-2 flex-1 min-w-0">
                   {hasPriceSuffix && (
                     <FormField
                       control={form.control}
                       name="price_suffix"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col items-end flex-1 min-w-0">
+                        <FormItem className="flex-1">
                           <FormLabel>Testo suffisso</FormLabel>
                           <FormControl>
                             <Input
                               placeholder="es. /persona, /kg"
-                              className="max-w-[110px] text-right"
                               {...field}
                               value={field.value || ""}
                             />
@@ -119,26 +103,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     control={form.control}
                     name="has_price_suffix"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center gap-1 h-[38px] m-0 p-0 border-0 shadow-none">
-                        <FormLabel className="mb-0 whitespace-nowrap">Suffisso prezzo</FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                {/* Colonna 3: Prezzi multipli toggle */}
-                <div className="flex flex-row items-end justify-end w-full">
-                  <FormField
-                    control={form.control}
-                    name="has_multiple_prices"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center gap-1 h-[38px] m-0 p-0 border-0 shadow-none">
-                        <FormLabel className="mb-0 whitespace-nowrap">Prezzi multipli</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between m-0 p-0 border-0 shadow-none gap-1 h-[38px]">
+                        <FormLabel className="mb-0">Suffisso prezzo</FormLabel>
                         <FormControl>
                           <Switch
                             checked={field.value}
@@ -159,14 +125,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <CardTitle className="text-lg">Info extra</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Grid due colonne: etichetta prodotto a sx, vuoto a dx (prima c'era prezzi multipli che ora è sopra) */}
+              {/* Grid due colonne: etichetta prodotto | prezzi multipli */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
                 {/* Colonna 1: Etichetta prodotto */}
                 <div className="flex flex-col justify-center h-full">
                   <ProductLabelSelect form={form} labels={labels} />
                 </div>
-                {/* Colonna 2: vuota (era prezzi multipli) */}
-                <div className="flex flex-col justify-center h-full" />
+                {/* Colonna 2: Prezzi multipli (allineamento vert top, padding x match field height) */}
+                <div className="flex flex-col justify-center h-full">
+                  <div className="flex flex-row items-center h-[40px] md:h-full">
+                    <FormField
+                      control={form.control}
+                      name="has_multiple_prices"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full min-h-[40px]">
+                          <FormLabel className="font-medium">Prezzi multipli</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
               {/* Sezione Varianti Prezzo */}
               {hasMultiplePrices && (
@@ -174,6 +158,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   <h4 className="text-md font-medium mb-2">Varianti di prezzo</h4>
                   {/* Variante 1 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_1_value"
@@ -192,6 +177,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                       )}
                     />
+                    {/* Col 2: Nome Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_1_name"
@@ -212,6 +198,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </div>
                   {/* Variante 2 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_2_value"
@@ -230,6 +217,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                       )}
                     />
+                    {/* Col 2: Nome Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_2_name"
@@ -256,6 +244,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Caratteristiche */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
+              {/* Nessun titolo o descrizione sopra: solo voce espandibile */}
               <FeaturesSelector
                 selectedFeatureIds={selectedFeatures}
                 onChange={setSelectedFeatures}
@@ -266,12 +255,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
+              {/* Solo voce espandibile */}
               <AllergenSelector
                 selectedAllergenIds={selectedAllergens}
                 onChange={setSelectedAllergens}
               />
             </CardContent>
           </Card>
+
+          {/* Azioni */}
           <Separator className="my-4" />
           <ProductActionButtons
             isSubmitting={isSubmitting}
