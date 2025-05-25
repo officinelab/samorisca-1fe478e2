@@ -6,7 +6,6 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -17,7 +16,7 @@ import { ProductFormValues } from "@/types/form";
 
 /**
  * Layout UI sulla base della reference image:
- * - "Stato Attivo" in un box chiaro in alto, switch a destra, descrizione accanto a sinistra
+ * - "Stato Attivo" in linea col titolo "Informazioni di Base"
  * - Sotto: layout responsive. Desktop = due colonne, mobile = stack verticale
  *   - Sinistra: Immagine in box quadrato, bottone X in alto a destra
  *   - Destra: Nome prodotto (Input), sotto Descrizione (Textarea)
@@ -30,36 +29,31 @@ interface ProductBasicInfoProps {
 const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
     <div className="w-full">
-      {/* Stato Attivo */}
-      <div className="bg-muted/40 rounded-lg px-6 py-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <FormField
-            control={form.control}
-            name="is_active"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between w-full gap-4 mb-0">
-                <div className="flex flex-col">
-                  <FormLabel className="text-base font-semibold mb-0">Stato Attivo</FormLabel>
-                  <FormDescription className="text-base text-muted-foreground mb-0">
-                    Mostra questo prodotto nel menu
-                  </FormDescription>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="scale-75 ml-1" // Toggle ancora più piccolo
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+      {/* Titolo + Stato Attivo Inline */}
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-lg font-semibold">Informazioni di Base</span>
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-2 mb-0">
+              <FormLabel className="text-base font-medium mb-0">
+                Attivo
+              </FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="scale-90"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
       </div>
-
       {/* Immagine + Nome/Descrizione - Layout responsive grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        {/* Colonna sx: Immagine Prodotto - occupa 4 su 12 colonne (circa 33%) */}
+        {/* Colonna sx: Immagine Prodotto */}
         <div className="md:col-span-4 col-span-1">
           <FormField
             control={form.control}
@@ -83,7 +77,7 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
             )}
           />
         </div>
-        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto - occupa 8 su 12 colonne */}
+        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto */}
         <div className="flex flex-col gap-5 md:col-span-8 col-span-1">
           <FormField
             control={form.control}
