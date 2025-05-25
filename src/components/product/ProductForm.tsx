@@ -56,52 +56,84 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <ProductBasicInfo form={form} />
 
               {/* Riga: Etichetta prodotto | Prezzo Standard | (Suffisso prezzo se attivo) */}
-              <div className="flex flex-row justify-end items-end gap-4 mt-6 mb-0 flex-wrap">
-                {/* Colonna 1: Etichetta prodotto */}
-                <div className="w-full md:w-auto md:min-w-[160px] max-w-xs flex-1">
-                  <ProductLabelSelect form={form} labels={labels} />
+              {!hasPriceSuffix ? (
+                <div className="flex flex-col md:flex-row gap-4 mt-6 mb-0">
+                  {/* Colonna 1: Etichetta prodotto */}
+                  <div className="flex-1 min-w-0">
+                    <ProductLabelSelect form={form} labels={labels} />
+                  </div>
+                  {/* Colonna 2: Prezzo Standard */}
+                  <div className="flex-1 min-w-0">
+                    <FormField
+                      control={form.control}
+                      name="price_standard"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Standard</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-                {/* Colonna 2: Prezzo Standard */}
-                <FormField
-                  control={form.control}
-                  name="price_standard"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col min-w-[120px] max-w-[140px]">
-                      <FormLabel>Prezzo Standard</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          className="max-w-[120px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {/* Colonna 3: Suffisso prezzo (solo se attivo) */}
-                {hasPriceSuffix && (
-                  <FormField
-                    control={form.control}
-                    name="price_suffix"
-                    render={({ field }) => (
-                      <FormItem className="min-w-[140px] flex-1">
-                        <FormLabel>Testo suffisso</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="es. /persona, /kg"
-                            {...field}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </div>
+              ) : (
+                <div className="flex flex-col md:flex-row gap-4 mt-6 mb-0">
+                  {/* Colonna 1: Etichetta prodotto */}
+                  <div className="w-full md:w-[36%] min-w-0">
+                    <ProductLabelSelect form={form} labels={labels} />
+                  </div>
+                  {/* Colonna 2: Prezzo Standard */}
+                  <div className="w-full md:w-[32%] min-w-0">
+                    <FormField
+                      control={form.control}
+                      name="price_standard"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezzo Standard</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {/* Colonna 3: Suffisso prezzo */}
+                  <div className="w-full md:w-[32%] min-w-0">
+                    <FormField
+                      control={form.control}
+                      name="price_suffix"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Testo suffisso</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="es. /persona, /kg"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* RIGA 2: Toggle Suffix + Toggle Prezzi multipli */}
               <div className="flex flex-row justify-end gap-4 mt-3 flex-wrap">
                 <FormField
@@ -257,3 +289,4 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
+
