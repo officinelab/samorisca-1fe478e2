@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   FormField,
@@ -58,9 +57,9 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
       </div>
 
       {/* Immagine + Nome/Descrizione - Layout responsive grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        {/* Colonna sx: Immagine Prodotto */}
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        {/* Colonna sx: Immagine Prodotto - occupa 3 su 12 colonne cioè 25% */}
+        <div className="md:col-span-3 col-span-1">
           <FormField
             control={form.control}
             name="image_url"
@@ -85,8 +84,8 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
             )}
           />
         </div>
-        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto */}
-        <div className="flex flex-col gap-5">
+        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto - occupa 9 su 12 colonne, cioè 75% */}
+        <div className="flex flex-col gap-5 md:col-span-9 col-span-1">
           <FormField
             control={form.control}
             name="title"
