@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -125,22 +126,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <CardTitle className="text-lg">Info extra</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Grid due colonne: etichetta prodotto | prezzi multipli */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Etichetta Prodotto */}
-                <div>
+              {/* Grid due colonne: Etichetta prodotto | Prezzi multipli */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* Colonna 1: Etichetta prodotto */}
+                <div className="flex flex-col justify-center h-full">
                   <ProductLabelSelect form={form} labels={labels} />
                 </div>
-                {/* Prezzi multipli */}
-                <div className="flex items-center h-full">
+                {/* Colonna 2: Prezzi multipli toggle in card per separazione */}
+                <div className="flex flex-col justify-center h-full">
                   <FormField
                     control={form.control}
                     name="has_multiple_prices"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full">
-                        <div className="space-y-0.5">
-                          <FormLabel>Prezzi multipli</FormLabel>
-                        </div>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm w-full h-[56px]">
+                        <FormLabel className="font-medium">Prezzi multipli</FormLabel>
                         <FormControl>
                           <Switch
                             checked={field.value}
@@ -152,12 +151,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   />
                 </div>
               </div>
-              {/* Varianti Prezzo (solo se attivo) */}
+              {/* Sezione Varianti Prezzo */}
               {hasMultiplePrices && (
-                <div className="space-y-4 pl-4 border-l-2 border-muted mt-6">
+                <div className="space-y-4 pl-0 border-l-0 mt-6">
                   <h4 className="text-md font-medium mb-2">Varianti di prezzo</h4>
                   {/* Variante 1 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_1_value"
@@ -176,6 +176,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                       )}
                     />
+                    {/* Col 2: Nome Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_1_name"
@@ -196,6 +197,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   </div>
                   {/* Variante 2 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Col 1: Prezzo Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_2_value"
@@ -214,6 +216,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         </FormItem>
                       )}
                     />
+                    {/* Col 2: Nome Variante */}
                     <FormField
                       control={form.control}
                       name="price_variant_2_name"
