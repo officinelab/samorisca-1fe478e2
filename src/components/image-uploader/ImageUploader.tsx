@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -123,16 +122,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             type="button"
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2 w-8 h-8"
+            className="absolute top-2 right-2 w-5 h-5"
             onClick={handleRemoveImage}
             disabled={isUploading}
+            tabIndex={0}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2">
-          <div className="text-center mb-2">{label}</div>
           <input
             type="file"
             id={id}
@@ -147,7 +146,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           >
             <UploadPlaceholder 
               isUploading={isUploading}
-              label="Clicca per selezionare un'immagine"
+              label=""
               defaultPreview={defaultPreview}
               currentImage={currentImage}
               hasError={imageError}
