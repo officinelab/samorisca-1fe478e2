@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -55,26 +54,53 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Etichetta */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Etichetta</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductLabelSelect form={form} labels={labels} />
-            </CardContent>
-          </Card>
+          {/* Sezione prezzo standard + suffisso prezzo, non incorniciata, separata da una linea */}
+          <div>
+            <Separator className="my-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Prezzo Standard */}
+              <ProductPriceInfo 
+                form={form}
+                hasPriceSuffix={hasPriceSuffix}
+                hasMultiplePrices={hasMultiplePrices}
+                showStandardPrice
+                showPriceSuffix
+                onlyMultiplePrices={false}
+              />
+            </div>
+            {/* Solo il campo suffisso prezzo, NON come card */}
+            {hasPriceSuffix && (
+              <div className="mt-4 md:w-1/2">
+                <ProductPriceInfo 
+                  form={form}
+                  hasPriceSuffix={hasPriceSuffix}
+                  hasMultiplePrices={hasMultiplePrices}
+                  showStandardPrice={false}
+                  showPriceSuffix
+                  onlyMultiplePrices={false}
+                />
+              </div>
+            )}
+          </div>
 
-          {/* Prezzi */}
+          {/* Sezione Extra Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Prezzo</CardTitle>
+              <CardTitle className="text-lg">Info extra</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Etichetta prodotto */}
+              <ProductLabelSelect form={form} labels={labels} />
+
+              <div className="mt-6" />
+              {/* Prezzi multipli e varianti */}
               <ProductPriceInfo
                 form={form}
                 hasPriceSuffix={hasPriceSuffix}
                 hasMultiplePrices={hasMultiplePrices}
+                showStandardPrice={false}
+                showPriceSuffix={false}
+                onlyMultiplePrices
               />
             </CardContent>
           </Card>
