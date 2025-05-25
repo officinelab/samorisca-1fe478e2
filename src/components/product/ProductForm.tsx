@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -11,6 +10,8 @@ import ProductPriceInfo from "./sections/ProductPriceInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
 import AllergenSelector from "./AllergenSelector";
 import FeaturesSelector from "./FeaturesSelector";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 
 interface ProductFormProps {
   product?: Product;
@@ -51,33 +52,59 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <CardTitle className="text-lg">Informazioni di Base</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProductBasicInfo form={form} />
-            </CardContent>
-          </Card>
-
-          {/* Etichetta */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Etichetta</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductLabelSelect form={form} labels={labels} />
-            </CardContent>
-          </Card>
-
-          {/* Prezzi */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Prezzo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductPriceInfo
-                form={form}
-                hasPriceSuffix={hasPriceSuffix}
-                hasMultiplePrices={hasMultiplePrices}
+              <ProductBasicInfo 
+                form={form} 
+                hasPriceSuffix={hasPriceSuffix} // Passa il prop
               />
             </CardContent>
           </Card>
+
+          {/* Info Extra: Etichetta prodotto + Prezzi multipli */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Info extra</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ProductLabelSelect form={form} labels={labels} />
+                {/* Switch prezzi multipli spostato qui */}
+                <FormField
+                  control={form.control}
+                  name="has_multiple_prices"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm h-full">
+                      <div className="space-y-0.5">
+                        <FormLabel>Prezzi multipli</FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Prezzi - solo varianti se attivi */}
+          {hasMultiplePrices && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Varianti di prezzo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProductPriceInfo
+                  form={form}
+                  hasPriceSuffix={hasPriceSuffix}
+                  hasMultiplePrices={hasMultiplePrices}
+                  onlyVariants // nuovo prop per renderizzare solo varianti
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Caratteristiche */}
           <Card>
