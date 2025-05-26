@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
@@ -15,10 +14,9 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   selectedFeatureIds,
   onToggleFeature,
 }) => {
-  const [features, setFeatures] = React.useState<ProductFeature[]>([]);
+  const [features, setFeatures] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Caricamento una volta sola
   React.useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
@@ -40,7 +38,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   }, []);
 
   return (
-    <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
+    <div>
+      <Label className="block text-xs mb-2">Caratteristiche</Label>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>
       ) : features.length === 0 ? (
@@ -52,7 +51,9 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
               key={feature.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selectedFeatureIds.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
+                selectedFeatureIds.includes(feature.id)
+                  ? "border-primary bg-muted/50"
+                  : "border-input"
               )}
               onClick={() => onToggleFeature(feature.id)}
             >
@@ -65,7 +66,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
           ))}
         </div>
       )}
-    </CollapsibleSection>
+    </div>
   );
 };
 

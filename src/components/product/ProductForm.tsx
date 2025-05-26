@@ -1,30 +1,23 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Product } from "@/types/database";
-import { useProductForm } from "@/hooks/products/useProductForm";
+import { useProductFormState } from "@/hooks/products/useProductFormState";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
-import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import ProductLabelSelect from "./sections/ProductLabelSelect";
 import ProductPriceSection from "./sections/ProductPriceSection";
-
-// Funzione helper per evitare loop
-function arraysAreDifferent(a: string[], b: string[]) {
-  if (a.length !== b.length) return true;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
-  for (let i = 0; i < sa.length; i++) {
-    if (sa[i] !== sb[i]) return true;
-  }
-  return false;
-}
+import { useProductFormSubmit } from "@/hooks/products/useProductFormSubmit";
+import { useAllergens } from "@/hooks/allergens/useAllergens";
+import { useProductAllergens } from "@/hooks/products/useProductAllergens";
+import { useProductFeatures } from "@/hooks/products/useProductFeatures";
+import { useProductLabels } from "@/hooks/products/useProductLabels";
+import AllergenSelector from "./AllergenSelector";
+import FeaturesSelector from "./FeaturesSelector";
 
 interface ProductFormProps {
   product?: Product;
@@ -39,50 +32,41 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  // Dati di base del form
+  const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
+  const { labels } = useProductLabels();
+
+  // Allergen logic "vecchia scuola"
+  const { allergens: allergenOptions, isLoading: loadingAllergens } = useAllergens();
   const {
-    form,
-    isSubmitting,
-    labels,
-    hasPriceSuffix,
-    hasMultiplePrices,
-    handleSubmit,
-    features,
-    selectedFeatureIds,
-    toggleFeature,
-    loadingFeatures,
-    allergens,
-    selectedAllergenIds,
-    toggleAllergen,
-    loadingAllergens,
-  } = useProductForm(product, categoryId);
+    selectedAllergens,
+    setSelectedAllergens,
+    isLoading: loadingSelectedAllergens,
+  } = useProductAllergens(product);
 
-  // Debug logging e fallback
-  const safeFeatures = Array.isArray(features) ? features : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
-  const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
-  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+  // Features logic "vecchia scuola"
+  const { features: featureOptions, isLoading: loadingFeatures } = useProductLabels(); // Qui features da product_features
+  const {
+    selectedFeatures,
+    setSelectedFeatures,
+    isLoading: loadingSelectedFeatures,
+  } = useProductFeatures(product);
 
-  if (!Array.isArray(features)) {
-    console.warn("features non è un array!", features);
-  }
-  if (!Array.isArray(allergens)) {
-    console.warn("allergens non è un array!", allergens);
-  }
-  if (!Array.isArray(selectedFeatureIds)) {
-    console.warn("selectedFeatureIds non è un array!", selectedFeatureIds);
-  }
-  if (!Array.isArray(selectedAllergenIds)) {
-    console.warn("selectedAllergenIds non è un array!", selectedAllergenIds);
-  }
-
-  console.log("ProductForm - safeFeatures", safeFeatures);
-  console.log("ProductForm - safeAllergens", safeAllergens);
-  console.log("ProductForm - safeSelectedFeatureIds", safeSelectedFeatureIds);
-  console.log("ProductForm - safeSelectedAllergenIds", safeSelectedAllergenIds);
-
-  const handleSave = async (formValues: any) => {
-    await handleSubmit(formValues);
+  // Submit handler: aggiorna DB per allergeni/features solo qui
+  const { handleSubmit, isSubmitting } = useProductFormSubmit(async (values: any) => {
+    // ... la callback esegue sempre onSave dopo salvataggio effettivo
     if (onSave) onSave();
+  });
+
+  // wrapper per la submit
+  const handleSave = async (formValues: any) => {
+    // Attenzione: in questa versione, dovrai aggiornare sia valori normali che relazioni su submit.
+    await handleSubmit(
+      formValues,
+      selectedAllergens,
+      selectedFeatures,
+      product?.id
+    );
   };
 
   return (
@@ -105,15 +89,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Sezione caratteristiche */}
+          {/* Sezione caratteristiche (Features) */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              <ProductFeaturesCheckboxes
-                productId={product?.id}
-                features={safeFeatures}
-                selectedFeatureIds={safeSelectedFeatureIds}
-                toggleFeature={toggleFeature}
-                loading={loadingFeatures}
+              <FeaturesSelector
+                selectedFeatureIds={selectedFeatures}
+                onToggleFeature={(fId) => {
+                  if (selectedFeatures.includes(fId)) {
+                    setSelectedFeatures(selectedFeatures.filter((id) => id !== fId));
+                  } else {
+                    setSelectedFeatures([...selectedFeatures, fId]);
+                  }
+                }}
               />
             </CardContent>
           </Card>
@@ -121,12 +108,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Sezione allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              <ProductAllergensCheckboxes
-                productId={product?.id}
-                allergens={safeAllergens}
-                selectedAllergenIds={safeSelectedAllergenIds}
-                toggleAllergen={toggleAllergen}
-                loading={loadingAllergens}
+              <AllergenSelector
+                selectedAllergenIds={selectedAllergens}
+                onToggleAllergen={(aId) => {
+                  if (selectedAllergens.includes(aId)) {
+                    setSelectedAllergens(selectedAllergens.filter((id) => id !== aId));
+                  } else {
+                    setSelectedAllergens([...selectedAllergens, aId]);
+                  }
+                }}
               />
             </CardContent>
           </Card>
