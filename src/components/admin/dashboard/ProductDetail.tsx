@@ -7,8 +7,6 @@ import { Product, Category } from "@/types/database";
 import { Badge } from "@/components/ui/badge";
 import { ProductFeaturesIcons } from "@/components/public-menu/product-card/ProductFeaturesIcons";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
 
 interface ProductDetailProps {
   product: Product | null;
@@ -50,14 +48,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   return (
     <div className="h-full w-full flex flex-col bg-white">
       {/* Header con immagine e titolo */}
-      <Card className="mb-4 relative">
-        {/* Modifica: aggiunta pulsante Modifica in alto a destra */}
-        <div className="absolute top-4 right-4">
-          <Button size="sm" onClick={onEditProduct} variant="outline">
-            <Edit className="w-4 h-4 mr-1" />
-            Modifica
-          </Button>
-        </div>
+      <Card className="mb-4">
         <div className="flex flex-col md:flex-row gap-6 p-6">
           {/* Immagine grande */}
           <div className="flex-shrink-0 flex justify-center items-center">
@@ -188,4 +179,3 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 };
 
 export default ProductDetail;
-
