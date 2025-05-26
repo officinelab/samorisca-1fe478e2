@@ -25,7 +25,11 @@ interface ProductFormProps {
 const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, categoryId }) => {
   // Prevent invalid state: do not proceed if something is deeply wrong
   if (typeof onSave !== "function" || typeof onCancel !== "function") {
-    return null;
+    return (
+      <div className="text-destructive p-6">
+        Errore: il form non è stato inizializzato correttamente.
+      </div>
+    );
   }
 
   const {
@@ -91,3 +95,4 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, ca
 };
 
 export default ProductForm;
+

@@ -23,33 +23,36 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     handleProductFormCancel  // Only declare once here!
   } = dashboard;
 
-  // Callback memorizzate per evitare riferimento nuovo ad ogni render
-  const memoizedCategoryFormSave = useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
-  const memoizedCategoryFormCancel = useCallback(handleProductFormCancel, [handleProductFormCancel]);
-
-  // Anche ProductForm eventualmente può essere trattato uguale.
+  // Memoized callbacks
+  const memoizedCategoryFormSave = React.useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
+  const memoizedCategoryFormCancel = React.useCallback(handleProductFormCancel, [handleProductFormCancel]);
 
   const categoryDialogOpen = showAddCategory || !!editingCategory;
   const productDialogOpen = showAddProduct || !!editingProduct;
 
-  // Category Safety: Only render with required data
-  const safeCategoryForm = categoryDialogOpen && (
-    <CategoryForm
-      category={editingCategory}
-      onSave={memoizedCategoryFormSave}
-      onCancel={memoizedCategoryFormCancel}
-    />
-  );
+  // Defensive checks
+  const safeCategoryForm =
+    categoryDialogOpen && typeof memoizedCategoryFormSave === "function" && typeof memoizedCategoryFormCancel === "function" ? (
+      <CategoryForm
+        category={editingCategory}
+        onSave={memoizedCategoryFormSave}
+        onCancel={memoizedCategoryFormCancel}
+      />
+    ) : (
+      <div className="p-4 text-destructive">Errore di rendering CategoryForm.</div>
+    );
 
-  // Product Safety: Only render with required data and always defined onSave/onCancel
-  const safeProductForm = (productDialogOpen && handleProductFormSave && handleProductFormCancel) ? (
-    <ProductForm
-      product={editingProduct}
-      categoryId={selectedCategoryId || undefined}
-      onSave={handleProductFormSave}
-      onCancel={handleProductFormCancel}
-    />
-  ) : null;
+  const safeProductForm =
+    productDialogOpen && typeof handleProductFormSave === "function" && typeof handleProductFormCancel === "function" ? (
+      <ProductForm
+        product={editingProduct}
+        categoryId={selectedCategoryId || undefined}
+        onSave={handleProductFormSave}
+        onCancel={handleProductFormCancel}
+      />
+    ) : (
+      productDialogOpen ? <div className="p-4 text-destructive">Errore di rendering ProductForm.</div> : null
+    );
 
   if (isMobile) {
     return (
@@ -125,3 +128,4 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
 };
 
 export default DashboardDialogs;
+
