@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 
-// Utility robusta per confronto array
-function arraysAreEqual(a: string[], b: string[]) {
+// Utility robusta per confronto insiemi (non importa l'ordine)
+function arraysAreSetEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
+  const setA = new Set(a);
+  for (const el of b) {
+    if (!setA.has(el)) return false;
   }
   return true;
 }
@@ -52,7 +53,8 @@ export function useProductAllergensCheckboxes(productId?: string) {
           .map(f => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        if (!arraysAreEqual(selectedAllergenIds, nextIds)) {
+        // Confronta come insiemi, non per ordine
+        if (!arraysAreSetEqual(selectedAllergenIds, nextIds)) {
           setSelectedAllergenIds(nextIds);
         }
       }
