@@ -1,67 +1,53 @@
-
 import React from "react";
+import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
+import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Allergen } from "@/types/database";
 
-interface Props {
-  productId?: string;
-  allergens: Allergen[];
+interface AllergenSelectorProps {
   selectedAllergenIds: string[];
-  toggleAllergen: (id: string) => void;
-  loading: boolean;
+  onChange: (allergenIds: string[]) => void;
 }
 
-const ProductAllergensCheckboxes: React.FC<Props> = ({
-  productId,
-  allergens,
-  selectedAllergenIds,
-  toggleAllergen,
-  loading,
-}) => {
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
-  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
+  const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
 
-  if (!Array.isArray(allergens)) {
-    console.warn("ProductAllergensCheckboxes: allergens non è un array!", allergens);
-  }
-  if (!Array.isArray(selectedAllergenIds)) {
-    console.warn("ProductAllergensCheckboxes: selectedAllergenIds non è un array!", selectedAllergenIds);
-  }
-
-  console.log("ProductAllergensCheckboxes - allergens", safeAllergens);
-  console.log("ProductAllergensCheckboxes - selectedAllergenIds", safeSelectedAllergenIds);
+  const handleAllergenToggle = (allergenId: string) => {
+    const newSelection = toggleAllergen(allergenId);
+    onChange(newSelection);
+  };
 
   return (
-    <div>
-      <Label className="block text-xs mb-2">Allergeni</Label>
-      {loading ? (
+    <CollapsibleSection title="Allergeni" defaultOpen={false}>
+      {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>
-      ) : safeAllergens.length === 0 ? (
+      ) : allergens.length === 0 ? (
         <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {safeAllergens.map((allergen) => (
+          {allergens.map((allergen) => (
             <div
               key={allergen.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                safeSelectedAllergenIds.includes(allergen.id) ? "border-primary bg-muted/50" : "border-input"
+                selected.has(allergen.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => toggleAllergen(allergen.id)}
+              onClick={() => handleAllergenToggle(allergen.id)}
             >
-              <Checkbox
-                checked={safeSelectedAllergenIds.includes(allergen.id)}
-                onCheckedChange={() => toggleAllergen(allergen.id)}
+              <Checkbox 
+                checked={selected.has(allergen.id)} 
+                onCheckedChange={() => handleAllergenToggle(allergen.id)} 
               />
-              <span className="text-sm">{allergen.number && `${allergen.number}. `}{allergen.title}</span>
+              <span className="text-sm">
+                {allergen.number && `${allergen.number}. `}{allergen.title}
+              </span>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   );
 };
 
-export default ProductAllergensCheckboxes;
+export default AllergenSelector;
+

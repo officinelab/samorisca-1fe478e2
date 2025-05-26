@@ -105,31 +105,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Sezione caratteristiche */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductFeaturesCheckboxes
-                productId={product?.id}
-                features={safeFeatures}
-                selectedFeatureIds={safeSelectedFeatureIds}
-                toggleFeature={toggleFeature}
-                loading={loadingFeatures}
-              />
-            </CardContent>
-          </Card>
+        {/* Features (Caratteristiche) */}
+        <FeaturesSelector
+          selectedFeatureIds={selectedFeatures}
+          onChange={setSelectedFeatures}
+        />
 
           {/* Sezione allergeni */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductAllergensCheckboxes
-                productId={product?.id}
-                allergens={safeAllergens}
-                selectedAllergenIds={safeSelectedAllergenIds}
-                toggleAllergen={toggleAllergen}
-                loading={loadingAllergens}
-              />
-            </CardContent>
-          </Card>
+       {/* Allergeni */}
+        <AllergenSelector
+          selectedAllergenIds={selectedAllergens}
+          onChange={setSelectedAllergens}
+        />
 
           <Separator className="my-4" />
           <ProductActionButtons
