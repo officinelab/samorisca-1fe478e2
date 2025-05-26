@@ -14,6 +14,17 @@ import { Switch } from "@/components/ui/switch";
 import ProductLabelSelect from "./sections/ProductLabelSelect";
 import ProductPriceSection from "./sections/ProductPriceSection";
 
+// Funzione helper per evitare loop
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
+
 interface ProductFormProps {
   product?: Product;
   categoryId?: string;
@@ -34,21 +45,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    features, // ✅ ARRAY DAL HOOK
+    features,
     selectedFeatureIds,
     setSelectedFeatureIds,
     loadingFeatures,
-    allergens, // ✅ ARRAY DAL HOOK  
+    allergens,
     selectedAllergenIds,
     setSelectedAllergenIds,
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
-  // ✅ PROTEZIONE ARRAYS
+  // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
-  const safeFeatures = Array.isArray(features) ? features : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
 
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
@@ -79,8 +88,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
-                productId={product?.id}
-                features={safeFeatures} {/* ✅ PASSA ARRAY DAL PARENT */}
+                features={features}
                 selectedFeatureIds={safeSelectedFeatureIds}
                 setSelectedFeatureIds={setSelectedFeatureIds}
                 loading={loadingFeatures}
@@ -92,8 +100,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
-                productId={product?.id}
-                allergens={safeAllergens} {/* ✅ PASSA ARRAY DAL PARENT */}
+                allergens={allergens}
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
                 loading={loadingAllergens}
