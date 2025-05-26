@@ -1,9 +1,11 @@
+
 import React from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label"; // <-- Fix: aggiungi l'import
 
 interface FeaturesSelectorProps {
   selectedFeatureIds: string[];
@@ -71,3 +73,4 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
 };
 
 export default FeaturesSelector;
+

@@ -45,7 +45,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   } = useProductAllergens(product);
 
   // Features logic "vecchia scuola"
-  const { features: featureOptions, isLoading: loadingFeatures } = useProductLabels(); // Qui features da product_features
   const {
     selectedFeatures,
     setSelectedFeatures,
@@ -53,14 +52,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
   } = useProductFeatures(product);
 
   // Submit handler: aggiorna DB per allergeni/features solo qui
-  const { handleSubmit, isSubmitting } = useProductFormSubmit(async (values: any) => {
-    // ... la callback esegue sempre onSave dopo salvataggio effettivo
-    if (onSave) onSave();
-  });
+  const { handleSubmit, isSubmitting } = useProductFormSubmit(onSave);
 
   // wrapper per la submit
   const handleSave = async (formValues: any) => {
-    // Attenzione: in questa versione, dovrai aggiornare sia valori normali che relazioni su submit.
     await handleSubmit(
       formValues,
       selectedAllergens,
