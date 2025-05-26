@@ -13,14 +13,16 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
 
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Caratteristiche prodotto (stato semplice, NO toggle, NO useEffect per sync)
+  // Caratteristiche prodotto (vecchio stile, con fetch e stato completo)
   const {
+    features,
     selectedFeatures,
     setSelectedFeatures,
     isLoading: loadingFeatures,
   } = useProductFeatures(product);
 
   const {
+    allergens,
     selectedAllergens,
     setSelectedAllergens,
     isLoading: loadingAllergens,
@@ -48,13 +50,12 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    // Per accesso in ProductForm
-    features: [], // le features vengono caricate nei componenti, non qui
-    selectedFeatureIds: selectedFeatures,
+    features,  // <--- ADESSO ARRAY REALE DA HOOK
+    selectedFeatureIds: selectedFeatures, // <--- NOME UNIFORME
     setSelectedFeatureIds: setSelectedFeatures,
     loadingFeatures,
-    allergens: [], // gli allergeni vengono caricati nei componenti, non qui
-    selectedAllergenIds: selectedAllergens,
+    allergens, // <--- ADESSO ARRAY REALE DA HOOK
+    selectedAllergenIds: selectedAllergens, // <--- NOME UNIFORME
     setSelectedAllergenIds: setSelectedAllergens,
     loadingAllergens,
   };
