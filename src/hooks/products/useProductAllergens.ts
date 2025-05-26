@@ -43,6 +43,12 @@ export const useProductAllergens = (product?: Product) => {
   // Fetch degli allergeni associati al prodotto SOLO 1 volta quando cambia il prodotto!
   useEffect(() => {
     const productId = product?.id;
+
+    console.log('useProductAllergens useEffect triggered', {
+      productId,
+      lastLoadedProductId: lastLoadedProductId.current
+    });
+
     // Se non cambia productId, niente fetch!
     if (!productId || productId === lastLoadedProductId.current)
       return;
