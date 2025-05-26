@@ -41,18 +41,9 @@ export const useProductAllergens = (product?: Product) => {
   // Effettua fetch degli allergeni selezionati solo SE il prodotto ha un id valido, e solo al cambio del productId
   useEffect(() => {
     const productId = product?.id;
-    if (!productId) {
-      if (lastLoadedProductId.current !== undefined) {
-        setSelectedAllergens([]);
-        lastLoadedProductId.current = undefined;
-      }
-      return;
-    }
-    if (lastLoadedProductId.current === productId) {
-      return;
-    }
+    if (!productId || productId === lastLoadedProductId.current) return;
 
-    setIsLoading(true);
+    let mounted = true;
 
     const fetchProductAllergens = async () => {
       try {
@@ -63,19 +54,26 @@ export const useProductAllergens = (product?: Product) => {
 
         if (error) throw error;
         const allergenIds = data ? data.map(item => item.allergen_id) : [];
-        if (arraysAreDifferent(selectedAllergens, allergenIds)) {
-          setSelectedAllergens(allergenIds);
+        if (mounted) {
+          setSelectedAllergens(prev =>
+            arraysAreDifferent(prev, allergenIds) ? allergenIds : prev
+          );
+          lastLoadedProductId.current = productId;
         }
       } catch (error) {
-        console.error("Errore nel caricamento allergeni:", error);
-        setSelectedAllergens([]);
+        if (mounted) {
+          console.error("Errore nel caricamento allergeni:", error);
+          setSelectedAllergens([]);
+          lastLoadedProductId.current = productId; // evita nuovo fetch loop
+        }
       } finally {
-        lastLoadedProductId.current = productId;
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
+    setIsLoading(true);
     fetchProductAllergens();
+    return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
@@ -93,7 +91,7 @@ export const useProductAllergens = (product?: Product) => {
   };
 
   return {
-    allergens, // array completo di oggetti Allergen
+    allergens,
     selectedAllergens,
     setSelectedAllergens: safeSetSelectedAllergens,
     isLoading
