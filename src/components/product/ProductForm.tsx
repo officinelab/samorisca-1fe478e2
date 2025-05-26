@@ -2,6 +2,7 @@ import React from "react";
 import { Form } from "@/components/ui/form";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
+import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
 
 interface ProductFormProps {
   product?: Product;
@@ -16,7 +17,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  console.log('ProductForm WITH FORM WRAPPER render', product?.id);
+  console.log('ProductForm WITH FEATURES render', product?.id);
   
   const {
     form,
@@ -37,12 +38,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <div>
-      <h1>TEST FORM con Form Wrapper - Product ID: {product?.id || 'NEW'}</h1>
+      <h1>TEST FORM con Features - Product ID: {product?.id || 'NEW'}</h1>
       <Form {...form}>
         <form>
-          <p>Form wrapper attivo</p>
-          <p>Features: {features.length} (Selected: {selectedFeatureIds.length})</p>
-          <p>Allergens: {allergens.length} (Selected: {selectedAllergenIds.length})</p>
+          <ProductFeaturesCheckboxes
+            features={features}
+            selectedFeatureIds={selectedFeatureIds}
+            setSelectedFeatureIds={setSelectedFeatureIds}
+            loading={loadingFeatures}
+          />
         </form>
       </Form>
       <button onClick={onCancel}>Cancel</button>
