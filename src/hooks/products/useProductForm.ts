@@ -16,7 +16,6 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     if (categoryId && !values.category_id) {
       values.category_id = categoryId;
     }
-    // NB: Qui features e allergens sono array di ID già pronti
     return await submitForm(values, values.allergens ?? [], values.features ?? [], product?.id);
   };
 
