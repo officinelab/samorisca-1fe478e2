@@ -2,7 +2,7 @@ import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Product } from "@/types/database";
+import { Product, Allergen } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
