@@ -16,29 +16,15 @@ import { Switch } from "@/components/ui/switch";
 import ProductLabelSelect from "./sections/ProductLabelSelect";
 import ProductPriceSection from "./sections/ProductPriceSection";
 
-// Funzione helper per evitare loop
-function arraysAreDifferent(a: string[], b: string[]) {
-  if (a.length !== b.length) return true;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
-  for (let i = 0; i < sa.length; i++) {
-    if (sa[i] !== sb[i]) return true;
-  }
-  return false;
-}
+
 
 interface ProductFormProps {
   product?: Product;
-  categoryId?: string;
-  onSave?: (valuesOverride?: any) => void;
+  onSave?: () => void;
   onCancel?: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({
-  product,
-  onSave,
-  onCancel,
-}) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
   const {
     form,
     isSubmitting,
