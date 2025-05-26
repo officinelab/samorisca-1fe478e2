@@ -6,6 +6,17 @@ import { cn } from "@/lib/utils";
 import { ProductFeature } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 
+// Funzione per confronto robusto (disaccoppiata per riutilizzo)
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
+
 interface Props {
   productId?: string;
   selectedFeatureIds: string[];
@@ -38,10 +49,15 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
   }, []);
 
   const handleChange = (featureId: string) => {
+    let newFeatureIds: string[];
     if (selectedFeatureIds.includes(featureId)) {
-      setSelectedFeatureIds(selectedFeatureIds.filter(id => id !== featureId));
+      newFeatureIds = selectedFeatureIds.filter(id => id !== featureId);
     } else {
-      setSelectedFeatureIds([...selectedFeatureIds, featureId]);
+      newFeatureIds = [...selectedFeatureIds, featureId];
+    }
+    // Aggiorna solo se effettivamente cambia qualcosa
+    if (arraysAreDifferent(selectedFeatureIds, newFeatureIds)) {
+      setSelectedFeatureIds(newFeatureIds);
     }
   };
 
