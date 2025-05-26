@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -67,7 +68,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             e.stopPropagation();
             onMoveUp();
           }}
-          disabled={false} // Ensure always enabled
+          disabled={false}
           tabIndex={-1}
         >
           <ChevronUp className="h-5 w-5" />
@@ -80,7 +81,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
             e.stopPropagation();
             onMoveDown();
           }}
-          disabled={false} // Ensure always enabled
+          disabled={false}
           tabIndex={-1}
         >
           <ChevronDown className="h-5 w-5" />

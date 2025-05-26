@@ -6,8 +6,8 @@ import { Product } from "@/types/database";
 export const useProductAllergens = (product?: Product) => {
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Carica gli allergeni solo quando cambia product.id
+  
+  // Carica gli allergeni associati al prodotto
   useEffect(() => {
     if (product?.id) {
       setIsLoading(true);
@@ -17,7 +17,7 @@ export const useProductAllergens = (product?: Product) => {
             .from("product_allergens")
             .select("allergen_id")
             .eq("product_id", product.id);
-
+            
           if (data) {
             const allergenIds = data.map(item => item.allergen_id);
             setSelectedAllergens(allergenIds);
@@ -28,13 +28,10 @@ export const useProductAllergens = (product?: Product) => {
           setIsLoading(false);
         }
       };
-
+      
       fetchProductAllergens();
-    } else {
-      setSelectedAllergens([]);
     }
-  }, [product?.id]); // dipendenza: SOLO product.id
+  }, [product?.id]);
 
   return { selectedAllergens, setSelectedAllergens, isLoading };
 };
-

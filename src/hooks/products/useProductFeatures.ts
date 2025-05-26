@@ -6,8 +6,8 @@ import { Product } from "@/types/database";
 export const useProductFeatures = (product?: Product) => {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Carica le caratteristiche solo quando cambia product.id
+  
+  // Carica le caratteristiche associate al prodotto
   useEffect(() => {
     if (product?.id) {
       setIsLoading(true);
@@ -17,7 +17,7 @@ export const useProductFeatures = (product?: Product) => {
             .from("product_to_features")
             .select("feature_id")
             .eq("product_id", product.id);
-
+            
           if (data) {
             const featureIds = data.map(item => item.feature_id);
             setSelectedFeatures(featureIds);
@@ -28,12 +28,10 @@ export const useProductFeatures = (product?: Product) => {
           setIsLoading(false);
         }
       };
-
+      
       fetchProductFeatures();
-    } else {
-      setSelectedFeatures([]);
     }
-  }, [product?.id]); // dipendenza: SOLO product.id
+  }, [product?.id]);
 
   return { selectedFeatures, setSelectedFeatures, isLoading };
 };

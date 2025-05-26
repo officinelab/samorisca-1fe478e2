@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
 import { useProductsSearch } from "@/hooks/admin/dashboard/useProductsSearch";
@@ -41,22 +41,13 @@ const ProductsList: React.FC<ProductsListProps> = ({
 }) => {
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
-  // Usa la lista di reordering (se non è vuota), altrimenti products
-  const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
+  const displayProducts = isReorderingProducts ? reorderingProductsList : products;
   const { 
     searchQuery, 
     setSearchQuery, 
     filteredProducts,
     isSearchDisabled 
-  } = useProductsSearch(alwaysActiveReorderingList, false);
-
-  // Inizializza il riordino solo quando arrivano veri prodotti e non è già attivo
-  useEffect(() => {
-    if (products.length > 0 && !isReorderingProducts) {
-      onStartReordering();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products]);
+  } = useProductsSearch(displayProducts, isReorderingProducts);
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId);
@@ -81,6 +72,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
           onSearchChange={setSearchQuery}
           searchDisabled={isSearchDisabled}
           selectedCategory={selectedCategory}
+          isReordering={isReorderingProducts}
+          hasProducts={products.length > 0}
+          onStartReordering={onStartReordering}
+          onCancelReordering={onCancelReordering}
+          onSaveReorder={onSaveReorder}
           onAddProduct={onAddProduct}
         />
         
@@ -98,7 +94,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
                     key={product.id}
                     product={product}
                     isSelected={selectedProductId === product.id}
-                    isReordering={true}
+                    isReordering={isReorderingProducts}
                     canMoveUp={index > 0}
                     canMoveDown={index < filteredProducts.length - 1}
                     onClick={() => onProductSelect(product.id)}
