@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 
@@ -16,6 +16,9 @@ export function useProductAllergensCheckboxes(productId?: string) {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Evita loop continuo di reset
+  const lastProductId = useRef<string | undefined>(undefined);
 
   // Carica tutti gli allergeni all’avvio una sola volta
   useEffect(() => {
@@ -35,8 +38,17 @@ export function useProductAllergensCheckboxes(productId?: string) {
 
   // Carica allergeni selezionati solo quando productId cambia
   useEffect(() => {
+    // Reset solo quando productId passa da un valore a null/undefined
     if (!productId) {
-      if (selectedAllergenIds.length > 0) setSelectedAllergenIds([]);
+      if (lastProductId.current) {
+        setSelectedAllergenIds([]);
+        lastProductId.current = undefined;
+      }
+      return;
+    }
+
+    // Evita refetch se productId identico
+    if (lastProductId.current === productId) {
       return;
     }
 
@@ -55,6 +67,7 @@ export function useProductAllergensCheckboxes(productId?: string) {
         if (!arraysAreEqual(selectedAllergenIds, nextIds)) {
           setSelectedAllergenIds(nextIds);
         }
+        lastProductId.current = productId;
       }
     };
 
@@ -86,3 +99,4 @@ export function useProductAllergensCheckboxes(productId?: string) {
     loading,
   };
 }
+

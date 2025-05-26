@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
@@ -16,6 +16,9 @@ export function useProductFeaturesCheckboxes(productId?: string) {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Per evitare loop infinito sul reset
+  const lastProductId = useRef<string | undefined>(undefined);
 
   // Carica caratteristiche disponibili una volta sola
   useEffect(() => {
@@ -35,9 +38,17 @@ export function useProductFeaturesCheckboxes(productId?: string) {
 
   // Carica caratteristiche già selezionate dal prodotto (quando productId cambia)
   useEffect(() => {
+    // Reset solo quando productId passa da un valore a null/undefined
     if (!productId) {
-      // solo se serve resettare!
-      if (selectedFeatureIds.length > 0) setSelectedFeatureIds([]);
+      if (lastProductId.current) {
+        setSelectedFeatureIds([]);
+        lastProductId.current = undefined;
+      }
+      return;
+    }
+
+    // Evita di rifare la fetch se è lo stesso productId
+    if (lastProductId.current === productId) {
       return;
     }
 
@@ -56,6 +67,7 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         if (!arraysAreEqual(selectedFeatureIds, nextIds)) {
           setSelectedFeatureIds(nextIds);
         }
+        lastProductId.current = productId;
       }
     };
     fetchSelected();
@@ -86,3 +98,4 @@ export function useProductFeaturesCheckboxes(productId?: string) {
     loading,
   };
 }
+
