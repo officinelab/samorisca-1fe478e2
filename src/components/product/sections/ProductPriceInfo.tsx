@@ -21,49 +21,46 @@ const ProductPriceInfo: React.FC<ProductPriceInfoProps> = ({
     <div className="space-y-4 border-t pt-4">
       <h3 className="text-lg font-medium">Informazioni Prezzo</h3>
       
-      {/* Layout a due colonne per le informazioni prezzo base */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Prezzo Standard */}
-        <FormField
-          control={form.control}
-          name="price_standard"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prezzo Standard</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Prezzo Standard */}
+      <FormField
+        control={form.control}
+        name="price_standard"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Prezzo Standard</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-        {/* Suffisso Prezzo Switch */}
-        <FormField
-          control={form.control}
-          name="has_price_suffix"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>Suffisso prezzo</FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
+      {/* Suffisso Prezzo */}
+      <FormField
+        control={form.control}
+        name="has_price_suffix"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+            <div className="space-y-0.5">
+              <FormLabel>Suffisso prezzo</FormLabel>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
 
-      {/* Testo Suffisso (condizionale) - full width */}
+      {/* Testo Suffisso (condizionale) */}
       {hasPriceSuffix && (
         <FormField
           control={form.control}
@@ -84,26 +81,24 @@ const ProductPriceInfo: React.FC<ProductPriceInfoProps> = ({
         />
       )}
 
-      {/* Prezzi Multipli Switch - in griglia con layout responsive */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="has_multiple_prices"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm md:col-span-2">
-              <div className="space-y-0.5">
-                <FormLabel>Prezzi multipli</FormLabel>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
+      {/* Prezzi Multipli */}
+      <FormField
+        control={form.control}
+        name="has_multiple_prices"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+            <div className="space-y-0.5">
+              <FormLabel>Prezzi multipli</FormLabel>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
 
       {/* Varianti Prezzo (condizionale) */}
       {hasMultiplePrices && (
@@ -111,7 +106,7 @@ const ProductPriceInfo: React.FC<ProductPriceInfoProps> = ({
           <h4 className="text-md font-medium">Varianti di prezzo</h4>
           
           {/* Variante 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="price_variant_1_name"
@@ -150,7 +145,7 @@ const ProductPriceInfo: React.FC<ProductPriceInfoProps> = ({
           </div>
           
           {/* Variante 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="price_variant_2_name"

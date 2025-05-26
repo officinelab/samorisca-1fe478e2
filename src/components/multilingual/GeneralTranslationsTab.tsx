@@ -1,10 +1,34 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TranslationField } from "./TranslationField";
+import { CopyButton } from "./CopyButton";
+import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
-import { EntityTypeSelector, entityOptions, EntityOption } from "./EntityTypeSelector";
-import { TranslationsTable } from "./TranslationsTable";
-import { useGeneralTranslationsData } from "./hooks/useGeneralTranslationsData";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface EntityOption {
+  value: string;
+  label: string;
+  type: 'categories' | 'allergens' | 'product_features' | 'product_labels';
+}
+
+interface TranslatableItem {
+  id: string;
+  title: string;
+  description?: string | null;
+  type: "categories" | "allergens" | "product_features" | "product_labels";
+  translationTitle?: string; // valore tradotto, opzionale
+  translationDescription?: string | null; // desc tradotta, opzionale
+}
+
+const entityOptions: EntityOption[] = [
+  { value: 'categories', label: 'Categorie', type: 'categories' },
+  { value: 'allergens', label: 'Allergeni', type: 'allergens' },
+  { value: 'product_features', label: 'Caratteristiche', type: 'product_features' },
+  { value: 'product_labels', label: 'Etichette', type: 'product_labels' },
+];
 
 interface GeneralTranslationsTabProps {
   language: SupportedLanguage;
@@ -12,24 +36,160 @@ interface GeneralTranslationsTabProps {
 
 export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps) => {
   const [selectedEntityType, setSelectedEntityType] = useState<EntityOption>(entityOptions[0]);
-  const { items, loading } = useGeneralTranslationsData(selectedEntityType, language);
+  const [items, setItems] = useState<TranslatableItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      setLoading(true);
+      try {
+        // recupera sempre tutti i dati madre ORIGINALI
+        let selectString = "id, title";
+        if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
+          selectString += ", description";
+        }
+        let query = supabase.from(selectedEntityType.type).select(selectString);
+        if (
+          selectedEntityType.type === "categories" ||
+          selectedEntityType.type === "allergens" ||
+          selectedEntityType.type === "product_features" ||
+          selectedEntityType.type === "product_labels"
+        ) {
+          query = query.order("display_order", { ascending: true });
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Se la lingua selezionata NON è italiano cerca le traduzioni, ma NON sovrascrive la colonna originale!
+        let translationsMap: Record<string, Record<string, string>> = {};
+        if (data.length > 0) {
+          const { data: trans } = await supabase
+            .from("translations")
+            .select("*")
+            .in("entity_id", data.map((it: any) => it.id))
+            .eq("entity_type", selectedEntityType.type)
+            .eq("language", language);
+
+          (trans || []).forEach((tr: any) => {
+            if (!translationsMap[tr.entity_id]) translationsMap[tr.entity_id] = {};
+            translationsMap[tr.entity_id][tr.field] = tr.translated_text;
+          });
+        }
+
+        // Mappa: colonna originale = italiano, campo tradotto separato
+        setItems(
+          (data || []).map((item: any) => ({
+            id: item.id,
+            title: item.title ?? "",
+            description: item.description !== undefined ? item.description : null,
+            type: selectedEntityType.type,
+            translationTitle: translationsMap[item.id]?.title ?? "",
+            translationDescription: translationsMap[item.id]?.description ?? "",
+          }))
+        );
+      } catch (error) {
+        console.error(`Error fetching ${selectedEntityType.label}:`, error);
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItems();
+  }, [selectedEntityType, language]);
+
+  const handleEntityTypeChange = (value: string) => {
+    const selectedOption = entityOptions.find(option => option.value === value);
+    if (selectedOption) {
+      setSelectedEntityType(selectedOption);
+    }
+  };
 
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <EntityTypeSelector
-            selectedEntityType={selectedEntityType}
-            onEntityTypeChange={setSelectedEntityType}
-          />
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Tipo di contenuto</h3>
+            <Select
+              value={selectedEntityType.value}
+              onValueChange={handleEntityTypeChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleziona tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {entityOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="md:col-span-2">
             <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
-            <TranslationsTable
-              items={items}
-              language={language}
-              loading={loading}
-            />
+
+            {loading ? (
+              <div className="text-center py-8">Caricamento in corso...</div>
+            ) : items.length === 0 ? (
+              <div className="text-center py-8">Nessun elemento trovato</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-1/3">Originale (Italiano)</TableHead>
+                    <TableHead className="w-2/3">Traduzione</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => (
+                    <React.Fragment key={item.id}>
+                      <TableRow>
+                        <TableCell className="align-top pt-4 flex items-center gap-2">
+                          <div className="font-medium">{item.title}</div>
+                          <CopyButton text={item.title} label="Copia titolo originale" />
+                        </TableCell>
+                        <TableCell className="pt-4">
+                          <TranslationField
+                            id={item.id}
+                            entityType={item.type}
+                            fieldName="title"
+                            originalText={item.title}
+                            language={language}
+                            // mostro la traduzione solo a destra (campo di input gestirà il recupero se già salvata)
+                          />
+                        </TableCell>
+                      </TableRow>
+
+                      {/* Riga descrizione SOLO se esiste */}
+                      {(item.description !== undefined && item.description !== null && item.description !== "") && (
+                        <TableRow>
+                          <TableCell className="align-top border-t-0 flex items-center gap-2">
+                            <div className="text-sm text-muted-foreground">
+                              Descrizione: {item.description}
+                            </div>
+                            <CopyButton text={item.description} label="Copia descrizione originale" />
+                          </TableCell>
+                          <TableCell className="border-t-0">
+                            <TranslationField
+                              id={item.id}
+                              entityType={item.type}
+                              fieldName="description"
+                              originalText={item.description}
+                              language={language}
+                              multiline
+                              // la traduzione attuale (se esiste) sarà caricata dal custom hook, allineata alla lingua
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </div>
       </CardContent>

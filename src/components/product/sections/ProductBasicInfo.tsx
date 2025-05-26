@@ -15,45 +15,42 @@ interface ProductBasicInfoProps {
 const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
     <>
-      {/* Nome Prodotto e Stato Attivo sulla stessa riga */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Nome Prodotto */}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome Prodotto</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome del prodotto" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Nome Prodotto */}
+      <FormField
+        control={form.control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nome Prodotto</FormLabel>
+            <FormControl>
+              <Input placeholder="Nome del prodotto" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-        {/* Stato Attivo */}
-        <FormField
-          control={form.control}
-          name="is_active"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5">
-                <FormLabel>Stato Attivo</FormLabel>
-                <FormDescription>
-                  Mostra questo prodotto nel menu
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-      </div>
+      {/* Stato Attivo */}
+      <FormField
+        control={form.control}
+        name="is_active"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+            <div className="space-y-0.5">
+              <FormLabel>Stato Attivo</FormLabel>
+              <FormDescription>
+                Mostra questo prodotto nel menu
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
 
       {/* Descrizione */}
       <FormField
@@ -86,12 +83,10 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
               <ImageUploader
                 currentImage={field.value || ""}
                 onImageUploaded={(url) => {
-                  console.log("Image uploaded:", url);
                   field.onChange(url);
                 }}
                 label="Carica immagine del prodotto"
-                bucketName="menu-images"
-                folderPath="products"
+                bucketName="products"
               />
             </FormControl>
             <FormMessage />
