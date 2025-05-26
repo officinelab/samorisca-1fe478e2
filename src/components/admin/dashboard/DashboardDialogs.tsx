@@ -1,9 +1,8 @@
-
 import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
-import ProductForm from "@/components/product/ProductForm";
+import ProductFormSafe from "@/components/product/ProductFormSafe";
 import CategoryForm from "./CategoryForm";
 
 interface DashboardDialogsProps {
@@ -72,14 +71,13 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
                 <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
               </DialogHeader>
               <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
-                {/* Renderizza solo se il dialog è aperto */}
                 {productDialogOpen && (
-                  <ProductForm
-                    key={memoizedEditingProduct?.id || 'new'}
+                  <ProductFormSafe
                     product={memoizedEditingProduct}
                     categoryId={selectedCategoryId || undefined}
                     onSave={handleProductFormSave}
                     onCancel={handleProductFormCancel}
+                    isOpen={productDialogOpen}
                   />
                 )}
               </div>
@@ -124,14 +122,13 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
               <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
             </SheetHeader>
             <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
-              {/* Renderizza solo se il dialog è aperto */}
               {productDialogOpen && (
-                <ProductForm
-                  key={memoizedEditingProduct?.id || 'new'}
+                <ProductFormSafe
                   product={memoizedEditingProduct}
                   categoryId={selectedCategoryId || undefined}
                   onSave={handleProductFormSave}
                   onCancel={handleProductFormCancel}
+                  isOpen={productDialogOpen}
                 />
               )}
             </div>
@@ -143,4 +140,3 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
 };
 
 export default DashboardDialogs;
-
