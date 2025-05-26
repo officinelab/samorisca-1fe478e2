@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,12 +83,21 @@ export const useCategoryOperations = (
   const saveCategory = async (data: { title: string; description?: string; is_active: boolean; id?: string }) => {
     try {
       // Se c'è id aggiorna, altrimenti inserisce
-      const upsertData = {
+      let upsertData: any = {
         ...(data.id ? { id: data.id } : {}),
         title: data.title,
         description: data.description ?? null,
         is_active: data.is_active
       };
+
+      // Aggiungi display_order se è una nuova categoria (senza id)
+      if (!data.id) {
+        // Trova il display_order massimo tra le categorie attuali
+        const maxOrder = categories.length
+          ? Math.max(...categories.map(cat => cat.display_order ?? 0))
+          : 0;
+        upsertData.display_order = maxOrder + 1;
+      }
 
       const { error } = await supabase.from('categories').upsert(upsertData);
       if (error) throw error;
@@ -113,4 +121,3 @@ export const useCategoryOperations = (
     saveCategory // export funzione
   };
 };
-
