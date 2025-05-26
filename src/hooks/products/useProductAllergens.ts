@@ -3,10 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 
-/**
- * Hook aggiornato: aggiorna selectedAllergens solo quando cambia
- * realmente l'id prodotto e solo se cambia effettivamente la selezione.
- */
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -23,7 +19,7 @@ export const useProductAllergens = (product?: Product) => {
   const lastProductId = useRef<string | undefined>();
 
   useEffect(() => {
-    // Esegui solo se cambia ID prodotto
+    // Solo cambia product.id? (non reagire a selectedAllergens!)
     if (product?.id && product.id !== lastProductId.current) {
       setIsLoading(true);
       const fetchProductAllergens = async () => {
@@ -34,7 +30,6 @@ export const useProductAllergens = (product?: Product) => {
             .eq("product_id", product.id);
           if (data) {
             const allergenIds = data.map(item => item.allergen_id);
-            // Modifica stato solo se davvero diverso
             setSelectedAllergens(prev => {
               if (arraysAreDifferent(allergenIds, prev)) {
                 return allergenIds;
@@ -54,7 +49,19 @@ export const useProductAllergens = (product?: Product) => {
       setSelectedAllergens([]);
       lastProductId.current = undefined;
     }
+    // Nessun selectedAllergens nelle deps!
+    // eslint-disable-next-line
   }, [product?.id]);
 
-  return { selectedAllergens, setSelectedAllergens, isLoading };
+  // Safe setter: evita setState ridondanti
+  const safeSetSelectedAllergens = (allergenIds: string[]) => {
+    setSelectedAllergens(prev => {
+      if (arraysAreDifferent(allergenIds, prev)) {
+        return allergenIds;
+      }
+      return prev;
+    });
+  };
+
+  return { selectedAllergens, setSelectedAllergens: safeSetSelectedAllergens, isLoading };
 };

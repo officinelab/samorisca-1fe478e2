@@ -13,21 +13,18 @@ interface AllergenSelectorProps {
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
   const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
 
-  // Salva il primo render per evitare onChange al mount
+  // Evita onChange su mount (uso ref per tracciare user interaction)
   const isFirstRender = useRef(true);
+
+  // Serve solo UI, nessun onChange qui
+  React.useEffect(() => {
+    isFirstRender.current = false; // Riservato per eventuali test futuri
+  }, []);
 
   const handleAllergenToggle = (allergenId: string) => {
     const newSelection = toggleAllergen(allergenId);
     onChange(newSelection);
   };
-
-  React.useEffect(() => {
-    // Non chiamare onChange al mount
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-  }, []); // non chiamare mai onChange qui!
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>

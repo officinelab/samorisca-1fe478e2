@@ -3,10 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 
-/**
- * Hook aggiornato: aggiorna selectedFeatures solo quando cambia
- * realmente l'id prodotto e solo se cambia effettivamente la selezione.
- */
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -23,7 +19,6 @@ export const useProductFeatures = (product?: Product) => {
   const lastProductId = useRef<string | undefined>();
 
   useEffect(() => {
-    // Esegui solo se cambia ID prodotto
     if (product?.id && product.id !== lastProductId.current) {
       setIsLoading(true);
       const fetchProductFeatures = async () => {
@@ -53,7 +48,18 @@ export const useProductFeatures = (product?: Product) => {
       setSelectedFeatures([]);
       lastProductId.current = undefined;
     }
+    // Nessun selectedFeatures nelle deps!
+    // eslint-disable-next-line
   }, [product?.id]);
 
-  return { selectedFeatures, setSelectedFeatures, isLoading };
+  const safeSetSelectedFeatures = (featureIds: string[]) => {
+    setSelectedFeatures(prev => {
+      if (arraysAreDifferent(featureIds, prev)) {
+        return featureIds;
+      }
+      return prev;
+    });
+  };
+
+  return { selectedFeatures, setSelectedFeatures: safeSetSelectedFeatures, isLoading };
 };

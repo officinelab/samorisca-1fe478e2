@@ -51,7 +51,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
-  // Handlers che verificano se il valore è davvero cambiato
+  // Handlers protetti: aggiornano solo se diversi
   const handleAllergensChange = (newAllergens: string[]) => {
     if (arraysAreDifferent(newAllergens, selectedAllergens)) {
       setSelectedAllergens(newAllergens);

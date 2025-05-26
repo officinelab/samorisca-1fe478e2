@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,9 +12,9 @@ interface FeaturesSelectorProps {
 }
 
 const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
-  const [features, setFeatures] = useState<ProductFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
+  const [features, setFeatures] = React.useState<ProductFeature[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [selected, setSelected] = React.useState<Set<string>>(new Set(selectedFeatureIds));
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -39,12 +39,11 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
   }, []);
 
   useEffect(() => {
+    // Sincronizza SOLO la selezione, senza chiamare onChange
     setSelected(new Set(selectedFeatureIds));
-    // Non chiamare onChange qui per evitare loop
-    // OnChange deve partire solo da interazione utente
   }, [selectedFeatureIds]);
 
-  const toggleFeature = (featureId: string) => {
+  const handleUserToggle = (featureId: string) => {
     const newSelected = new Set(selected);
     if (newSelected.has(featureId)) {
       newSelected.delete(featureId);
@@ -72,11 +71,11 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                 selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => toggleFeature(feature.id)}
+              onClick={() => handleUserToggle(feature.id)}
             >
               <Checkbox 
                 checked={selected.has(feature.id)} 
-                onCheckedChange={() => toggleFeature(feature.id)} 
+                onCheckedChange={() => handleUserToggle(feature.id)} 
               />
               <span className="text-sm">{feature.title}</span>
             </div>
