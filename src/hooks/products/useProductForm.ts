@@ -7,25 +7,19 @@ import { useProductFeatures } from "./useProductFeatures";
 import { useState } from "react";
 // SEMPLIFICAZIONE: useProductAllergens non serve più fetch
 
-export const useProductForm = (
-  product?: Product & { allergen_ids?: string[]; feature_ids?: string[] },
-  categoryId?: string,
-  onSave?: () => void
-) => {
+export const useProductForm = (product?: Product & { allergen_ids?: string[], feature_ids?: string[] }, categoryId?: string, onSave?: () => void) => {
   // Form base
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   const { labels } = useProductLabels();
+
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Stato caratteristiche prodotto (usando hook dedicato)
-  const {
-    features,
-    selectedFeatures,
-    setSelectedFeatures,
-    isLoading: isLoadingFeatures
-  } = useProductFeatures(product);
+  // Stato caratteristiche prodotto (puoi mantenere quello attuale, oppure anche qui usare product?.feature_ids se servisse gran uniformità)
 
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>(product?.allergen_ids ?? []);
+  // NB: Se vuoi uniformare anche features, puoi fare come sotto:
+  // const [selectedFeatures, setSelectedFeatures] = useState<string[]>(product?.feature_ids ?? []);
+  // (Qui lasciamo eventuale gestione features invariata)
 
   // Submit con injection di stato allergeni/features
   const handleSubmit = async (values: any) => {
@@ -35,7 +29,7 @@ export const useProductForm = (
     return await submitForm(
       values,
       selectedAllergens,
-      selectedFeatures, // ora passiamo lo stato attuale delle features selezionate
+      product?.feature_ids ?? [], // NB: oppure selectedFeatures se decidi di uniformare anche per features
       product?.id
     );
   };
@@ -47,11 +41,7 @@ export const useProductForm = (
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    // --- Features (per ProductForm) ---
-    selectedFeatureIds: selectedFeatures,
-    setSelectedFeatureIds: setSelectedFeatures,
-    loadingFeatures: isLoadingFeatures,
-    // --- Allergeni ---
+    // features,  // <-- elimina se ora lo carichi a monte!
     selectedAllergenIds: selectedAllergens,
     setSelectedAllergenIds: setSelectedAllergens,
     loadingAllergens: false, // non serve più
