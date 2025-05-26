@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -42,7 +41,9 @@ export const useDashboard = () => {
   };
 
   // AGGIORNATO: ora riceve i dati dal form e li inoltra alla funzione di salvataggio
-  const handleCategoryFormSave = async (values: { title: string; description?: string; is_active: boolean }) => {
+  const handleCategoryFormSave = async (
+    values: { title: string; description?: string; is_active: boolean; id?: string }
+  ) => {
     let catData = { ...values };
     if (editingCategory) {
       // Aggiungi id in caso di modifica
