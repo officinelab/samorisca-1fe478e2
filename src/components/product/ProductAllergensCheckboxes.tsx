@@ -22,22 +22,22 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch degli allergeni all'avvio
   useEffect(() => {
     let mounted = true;
-    const fetchAllergens = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("allergens")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (!error && mounted) setAllergens(data || []);
-      setIsLoading(false);
-    };
-    fetchAllergens();
-    return () => { mounted = false };
+    setIsLoading(true);
+    supabase
+      .from("allergens")
+      .select("*")
+      .order("display_order", { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && mounted) setAllergens(data || []);
+        setIsLoading(false);
+      });
+    return () => { mounted = false; };
   }, []);
 
-  // Nuova versione robusta
+  // Gestione robusta del cambio di selezione, forma funzionale
   const handleChange = (allergenId: string) => {
     setSelectedAllergenIds(prev =>
       prev.includes(allergenId)
@@ -62,14 +62,17 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
             key={allergen.id}
             className={cn(
               "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-              selectedAllergenIds.includes(allergen.id)
+              Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)
                 ? "border-primary bg-muted/50"
                 : "border-input"
             )}
             onClick={() => handleChange(allergen.id)}
+            tabIndex={0}
+            role="button"
+            aria-pressed={Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)}
           >
             <Checkbox
-              checked={selectedAllergenIds.includes(allergen.id)}
+              checked={Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)}
               onCheckedChange={() => handleChange(allergen.id)}
             />
             <span className="text-sm">
@@ -84,4 +87,3 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductAllergensCheckboxes;
-
