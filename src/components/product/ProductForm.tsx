@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -84,8 +85,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* SEZIONE COMMENTATA PER DEBUG FEATURES/ALLERGENI */}
-          {/* 
+          {/* Sezione caratteristiche */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
@@ -97,6 +97,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
+          {/* Sezione allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
@@ -107,7 +108,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
               />
             </CardContent>
           </Card>
-          */}
 
           <Separator className="my-4" />
           <ProductActionButtons
