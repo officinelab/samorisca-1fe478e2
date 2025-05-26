@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js";
 
@@ -104,16 +103,11 @@ serve(async (req) => {
       .select("*")
       .in("key", ["tokenPackagePrice", "tokenPackageAmount"]);
 
-    // Calcolo proporzionale
     const packagePrice = parseFloat(settings?.find((s: any) => s.key === "tokenPackagePrice")?.value ?? "9.90");
     const packageAmount = parseInt(settings?.find((s: any) => s.key === "tokenPackageAmount")?.value ?? "1000", 10);
 
-    // Calcola quanti token spettano in base all'importo pagato
-    let tokensToCredit = 0;
-    if (packagePrice > 0 && packageAmount > 0 && paidAmount > 0) {
-      tokensToCredit = Math.floor((paidAmount / packagePrice) * packageAmount);
-    }
-    if (tokensToCredit <= 0) {
+    // Verifica che prezzo pagato sia congruente col pacchetto
+    if (Math.abs(paidAmount - packagePrice) > 0.01) {
       return new Response(JSON.stringify({ success: false, error: "Importo del pagamento non valido" }), {
         status: 400,
         headers: corsHeaders,
@@ -136,7 +130,7 @@ serve(async (req) => {
           month: monthData,
           tokens_used: 0,
           tokens_limit: 300,
-          purchased_tokens_total: tokensToCredit,
+          purchased_tokens_total: packageAmount,
           purchased_tokens_used: 0,
         }])
         .select("*")
@@ -147,12 +141,12 @@ serve(async (req) => {
       await supabase
         .from("translation_tokens")
         .update({
-          purchased_tokens_total: (tokensData.purchased_tokens_total ?? 0) + tokensToCredit
+          purchased_tokens_total: (tokensData.purchased_tokens_total ?? 0) + packageAmount
         })
         .eq("id", tokensData.id);
     }
 
-    return new Response(JSON.stringify({ success: true, tokensCredited: tokensToCredit }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   } catch (err: any) {
     return new Response(JSON.stringify({ success: false, error: err?.message || String(err) }), { status: 500, headers: corsHeaders });
   }

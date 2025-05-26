@@ -13,5 +13,3 @@ verify_jwt = true
 [functions.public_menu_bundle]
 verify_jwt = false
 
-[functions.get_paypal_client_id]
-verify_jwt = true
