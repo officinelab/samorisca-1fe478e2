@@ -17,49 +17,69 @@ export const useProductFeatures = (product?: Product) => {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastProductId = useRef<string | undefined>();
+  const productIdRef = useRef(product?.id);
+  productIdRef.current = product?.id;
 
   useEffect(() => {
-    if (product?.id && product.id !== lastProductId.current) {
-      setIsLoading(true);
-      const fetchProductFeatures = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_to_features")
-            .select("feature_id")
-            .eq("product_id", product.id);
-          if (data) {
-            const featureIds = data.map(item => item.feature_id);
-            setSelectedFeatures(prev => {
-              if (arraysAreDifferent(featureIds, prev)) {
-                return featureIds;
-              }
-              return prev;
-            });
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento caratteristiche:", error);
-        } finally {
-          lastProductId.current = product.id;
-          setIsLoading(false);
-        }
-      };
-      fetchProductFeatures();
-    } else if (!product?.id && lastProductId.current !== undefined) {
-      setSelectedFeatures([]);
-      lastProductId.current = undefined;
+    const currentProductId = productIdRef.current;
+
+    // Se non c'è product id, resetta lo stato
+    if (!currentProductId) {
+      if (lastProductId.current !== undefined) {
+        setSelectedFeatures([]);
+        lastProductId.current = undefined;
+      }
+      return;
     }
-    // Nessun selectedFeatures nelle deps!
-    // eslint-disable-next-line
+
+    // Se l'id è lo stesso, non fare nulla
+    if (currentProductId === lastProductId.current) {
+      return;
+    }
+
+    // Fetch features per il nuovo prodotto
+    setIsLoading(true);
+    const fetchProductFeatures = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("product_to_features")
+          .select("feature_id")
+          .eq("product_id", currentProductId);
+
+        if (error) throw error;
+
+        if (data) {
+          const featureIds = data.map(item => item.feature_id);
+          setSelectedFeatures(featureIds);
+        }
+      } catch (error) {
+        console.error("Errore nel caricamento caratteristiche:", error);
+        setSelectedFeatures([]);
+      } finally {
+        lastProductId.current = currentProductId;
+        setIsLoading(false);
+      }
+    };
+
+    fetchProductFeatures();
   }, [product?.id]);
 
-  const safeSetSelectedFeatures = (featureIds: string[]) => {
-    setSelectedFeatures(prev => {
-      if (arraysAreDifferent(featureIds, prev)) {
-        return featureIds;
-      }
-      return prev;
-    });
+  const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
+    if (typeof featureIds === "function") {
+      setSelectedFeatures(featureIds);
+    } else {
+      setSelectedFeatures(prev => {
+        if (arraysAreDifferent(featureIds, prev)) {
+          return featureIds;
+        }
+        return prev;
+      });
+    }
   };
 
-  return { selectedFeatures, setSelectedFeatures: safeSetSelectedFeatures, isLoading };
+  return {
+    selectedFeatures,
+    setSelectedFeatures: safeSetSelectedFeatures,
+    isLoading
+  };
 };

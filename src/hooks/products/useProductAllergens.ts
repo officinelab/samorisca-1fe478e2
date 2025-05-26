@@ -17,51 +17,71 @@ export const useProductAllergens = (product?: Product) => {
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastProductId = useRef<string | undefined>();
+  // memo productId, aggiorna sempre a valore attuale
+  const productIdRef = useRef(product?.id);
+  productIdRef.current = product?.id;
 
   useEffect(() => {
-    // Solo cambia product.id? (non reagire a selectedAllergens!)
-    if (product?.id && product.id !== lastProductId.current) {
-      setIsLoading(true);
-      const fetchProductAllergens = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_allergens")
-            .select("allergen_id")
-            .eq("product_id", product.id);
-          if (data) {
-            const allergenIds = data.map(item => item.allergen_id);
-            setSelectedAllergens(prev => {
-              if (arraysAreDifferent(allergenIds, prev)) {
-                return allergenIds;
-              }
-              return prev;
-            });
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento allergeni:", error);
-        } finally {
-          lastProductId.current = product.id;
-          setIsLoading(false);
-        }
-      };
-      fetchProductAllergens();
-    } else if (!product?.id && lastProductId.current !== undefined) {
-      setSelectedAllergens([]);
-      lastProductId.current = undefined;
+    const currentProductId = productIdRef.current;
+
+    // Se non c'è product id, resetta lo stato
+    if (!currentProductId) {
+      if (lastProductId.current !== undefined) {
+        setSelectedAllergens([]);
+        lastProductId.current = undefined;
+      }
+      return;
     }
-    // Nessun selectedAllergens nelle deps!
-    // eslint-disable-next-line
+
+    // Se l'id è lo stesso, non fare nulla
+    if (currentProductId === lastProductId.current) {
+      return;
+    }
+
+    // Fetch allergens per il nuovo prodotto
+    setIsLoading(true);
+    const fetchProductAllergens = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("product_allergens")
+          .select("allergen_id")
+          .eq("product_id", currentProductId);
+
+        if (error) throw error;
+
+        if (data) {
+          const allergenIds = data.map(item => item.allergen_id);
+          setSelectedAllergens(allergenIds);
+        }
+      } catch (error) {
+        console.error("Errore nel caricamento allergeni:", error);
+        setSelectedAllergens([]);
+      } finally {
+        lastProductId.current = currentProductId;
+        setIsLoading(false);
+      }
+    };
+
+    fetchProductAllergens();
   }, [product?.id]);
 
   // Safe setter: evita setState ridondanti
-  const safeSetSelectedAllergens = (allergenIds: string[]) => {
-    setSelectedAllergens(prev => {
-      if (arraysAreDifferent(allergenIds, prev)) {
-        return allergenIds;
-      }
-      return prev;
-    });
+  const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
+    if (typeof allergenIds === "function") {
+      setSelectedAllergens(allergenIds);
+    } else {
+      setSelectedAllergens(prev => {
+        if (arraysAreDifferent(allergenIds, prev)) {
+          return allergenIds;
+        }
+        return prev;
+      });
+    }
   };
 
-  return { selectedAllergens, setSelectedAllergens: safeSetSelectedAllergens, isLoading };
+  return {
+    selectedAllergens,
+    setSelectedAllergens: safeSetSelectedAllergens,
+    isLoading
+  };
 };
