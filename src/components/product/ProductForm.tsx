@@ -45,9 +45,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
+    features,
     selectedFeatureIds,
     toggleFeature,
     loadingFeatures,
+    allergens,
     selectedAllergenIds,
     toggleAllergen,
     loadingAllergens,
@@ -84,6 +86,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
                 productId={product?.id}
+                features={features}
                 selectedFeatureIds={selectedFeatureIds}
                 toggleFeature={toggleFeature}
                 loading={loadingFeatures}
@@ -96,6 +99,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
                 productId={product?.id}
+                allergens={allergens}
                 selectedAllergenIds={selectedAllergenIds}
                 toggleAllergen={toggleAllergen}
                 loading={loadingAllergens}

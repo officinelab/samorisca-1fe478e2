@@ -3,10 +3,11 @@ import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useProductAllergensCheckboxes } from "@/hooks/products/useProductAllergensCheckboxes";
+import { Allergen } from "@/types/database";
 
 interface Props {
   productId?: string;
+  allergens: Allergen[];
   selectedAllergenIds: string[];
   toggleAllergen: (id: string) => void;
   loading: boolean;
@@ -14,12 +15,11 @@ interface Props {
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
   productId,
+  allergens,
   selectedAllergenIds,
   toggleAllergen,
   loading,
 }) => {
-  const { allergens } = useProductAllergensCheckboxes(productId);
-
   return (
     <div>
       <Label className="block text-xs mb-2">Allergeni</Label>
@@ -52,3 +52,4 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductAllergensCheckboxes;
+

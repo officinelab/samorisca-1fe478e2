@@ -3,10 +3,11 @@ import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useProductFeaturesCheckboxes } from "@/hooks/products/useProductFeaturesCheckboxes";
+import { ProductFeature } from "@/types/database";
 
 interface Props {
   productId?: string;
+  features: ProductFeature[];
   selectedFeatureIds: string[];
   toggleFeature: (id: string) => void;
   loading: boolean;
@@ -14,12 +15,11 @@ interface Props {
 
 const ProductFeaturesCheckboxes: React.FC<Props> = ({
   productId,
+  features,
   selectedFeatureIds,
   toggleFeature,
   loading,
 }) => {
-  const { features } = useProductFeaturesCheckboxes(productId);
-
   return (
     <div>
       <Label className="block text-xs mb-2">Caratteristiche</Label>
@@ -52,3 +52,4 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductFeaturesCheckboxes;
+
