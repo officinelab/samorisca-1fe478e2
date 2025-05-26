@@ -91,7 +91,7 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
                 }}
                 label="Carica immagine del prodotto"
                 bucketName="menu-images"
-                folderPath="menu"
+                folderPath="products"
               />
             </FormControl>
             <FormMessage />
