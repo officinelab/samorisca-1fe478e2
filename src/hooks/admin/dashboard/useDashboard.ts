@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -40,8 +41,14 @@ export const useDashboard = () => {
     setShowAddProduct(true);
   };
 
-  const handleCategoryFormSave = async () => {
-    await dashboardOperations.loadData();
+  // AGGIORNATO: ora riceve i dati dal form e li inoltra alla funzione di salvataggio
+  const handleCategoryFormSave = async (values: { title: string; description?: string; is_active: boolean }) => {
+    let catData = { ...values };
+    if (editingCategory) {
+      // Aggiungi id in caso di modifica
+      catData = { ...catData, id: editingCategory.id };
+    }
+    await dashboardOperations.saveCategory(catData);
     setShowAddCategory(false);
     setEditingCategory(null);
   };

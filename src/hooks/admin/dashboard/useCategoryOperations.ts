@@ -80,6 +80,28 @@ export const useCategoryOperations = (
     }
   };
 
+  // AGGIUNTA: salva nuova categoria (o aggiorna se ha id)
+  const saveCategory = async (data: { title: string; description?: string; is_active: boolean; id?: string }) => {
+    try {
+      // Se c'è id aggiorna, altrimenti inserisce
+      const upsertData = {
+        ...(data.id ? { id: data.id } : {}),
+        title: data.title,
+        description: data.description ?? null,
+        is_active: data.is_active
+      };
+
+      const { error } = await supabase.from('categories').upsert(upsertData);
+      if (error) throw error;
+
+      await loadCategories();
+      toast.success(data.id ? "Categoria aggiornata!" : "Categoria creata!");
+    } catch (error) {
+      console.error('Error saving category:', error);
+      toast.error("Errore nel salvataggio della categoria. Riprova più tardi.");
+    }
+  };
+
   return {
     isReorderingCategories,
     reorderingCategoriesList,
@@ -87,6 +109,8 @@ export const useCategoryOperations = (
     cancelReorderingCategories,
     moveCategoryInList,
     saveReorderCategories,
-    deleteCategory
+    deleteCategory,
+    saveCategory // export funzione
   };
 };
+
