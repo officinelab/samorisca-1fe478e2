@@ -1,5 +1,5 @@
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -51,32 +51,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
-  // Memoizziamo realmente il valore, in modo che cambi solo quando cambia il contenuto!
-  const memoSelectedAllergens = useMemo(
-    () => [...selectedAllergens],
-    [JSON.stringify(selectedAllergens)]
-  );
-  const memoSelectedFeatures = useMemo(
-    () => [...selectedFeatures],
-    [JSON.stringify(selectedFeatures)]
-  );
-
-  // Callback memoizzate che non cambiano mai a meno che non cambino realmente i valori "primari"
+  // Usiamo semplicemente i valori dagli hook (array stabili)
   const handleAllergensChange = useCallback(
     (newAllergens: string[]) => {
-      if (arraysAreDifferent(newAllergens, memoSelectedAllergens)) {
+      if (arraysAreDifferent(newAllergens, selectedAllergens)) {
         setSelectedAllergens(newAllergens);
       }
     },
-    [setSelectedAllergens, JSON.stringify(memoSelectedAllergens)]
+    [setSelectedAllergens, selectedAllergens]
   );
   const handleFeaturesChange = useCallback(
     (newFeatures: string[]) => {
-      if (arraysAreDifferent(newFeatures, memoSelectedFeatures)) {
+      if (arraysAreDifferent(newFeatures, selectedFeatures)) {
         setSelectedFeatures(newFeatures);
       }
     },
-    [setSelectedFeatures, JSON.stringify(memoSelectedFeatures)]
+    [setSelectedFeatures, selectedFeatures]
   );
 
   return (
@@ -93,7 +83,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardHeader>
             <CardContent>
               <ProductBasicInfo form={form} />
-
               {/* --- SEZIONE PREZZI --- */}
               <ProductPriceSection
                 form={form}
@@ -108,7 +97,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <FeaturesSelector
-                selectedFeatureIds={memoSelectedFeatures}
+                selectedFeatureIds={selectedFeatures}
                 onChange={handleFeaturesChange}
               />
             </CardContent>
@@ -118,7 +107,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <AllergenSelector
-                selectedAllergenIds={memoSelectedAllergens}
+                selectedAllergenIds={selectedAllergens}
                 onChange={handleAllergensChange}
               />
             </CardContent>

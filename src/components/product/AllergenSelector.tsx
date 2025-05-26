@@ -24,12 +24,14 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({
   const { allergens, isLoading, toggleAllergen, selected } =
     useAllergenCheckboxes(selectedAllergenIds);
 
+  // Usiamo una callback memoizzata che non cambia mai tranne che su change vero
   const handleAllergenToggle = React.useCallback((allergenId: string) => {
     const newSelection = toggleAllergen(allergenId);
+    // Chiama onChange solo su modifica reale (evita ciclo)
     if (!areEqualArr(newSelection, selectedAllergenIds)) {
       onChange(newSelection);
     }
-  }, [onChange, toggleAllergen, selectedAllergenIds]);
+  }, [onChange, toggleAllergen, selectedAllergenIds.join(",")]);
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>
