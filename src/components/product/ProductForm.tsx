@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -55,7 +56,30 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
-  // Gestore submit che invia ANCHE i dati di allergeni/features
+  // Debug logging e fallback
+  const safeFeatures = Array.isArray(features) ? features : [];
+  const safeAllergens = Array.isArray(allergens) ? allergens : [];
+  const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
+  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+
+  if (!Array.isArray(features)) {
+    console.warn("features non è un array!", features);
+  }
+  if (!Array.isArray(allergens)) {
+    console.warn("allergens non è un array!", allergens);
+  }
+  if (!Array.isArray(selectedFeatureIds)) {
+    console.warn("selectedFeatureIds non è un array!", selectedFeatureIds);
+  }
+  if (!Array.isArray(selectedAllergenIds)) {
+    console.warn("selectedAllergenIds non è un array!", selectedAllergenIds);
+  }
+
+  console.log("ProductForm - safeFeatures", safeFeatures);
+  console.log("ProductForm - safeAllergens", safeAllergens);
+  console.log("ProductForm - safeSelectedFeatureIds", safeSelectedFeatureIds);
+  console.log("ProductForm - safeSelectedAllergenIds", safeSelectedAllergenIds);
+
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
     if (onSave) onSave();
@@ -81,33 +105,32 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Nuova sezione caratteristiche */}
+          {/* Sezione caratteristiche */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
                 productId={product?.id}
-                features={features}
-                selectedFeatureIds={selectedFeatureIds}
+                features={safeFeatures}
+                selectedFeatureIds={safeSelectedFeatureIds}
                 toggleFeature={toggleFeature}
                 loading={loadingFeatures}
               />
             </CardContent>
           </Card>
 
-          {/* Nuova sezione allergeni */}
+          {/* Sezione allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
                 productId={product?.id}
-                allergens={allergens}
-                selectedAllergenIds={selectedAllergenIds}
+                allergens={safeAllergens}
+                selectedAllergenIds={safeSelectedAllergenIds}
                 toggleAllergen={toggleAllergen}
                 loading={loadingAllergens}
               />
             </CardContent>
           </Card>
 
-          {/* Azioni */}
           <Separator className="my-4" />
           <ProductActionButtons
             isSubmitting={isSubmitting}

@@ -20,26 +20,39 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
   toggleFeature,
   loading,
 }) => {
+  const safeFeatures = Array.isArray(features) ? features : [];
+  const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
+
+  if (!Array.isArray(features)) {
+    console.warn("ProductFeaturesCheckboxes: features non è un array!", features);
+  }
+  if (!Array.isArray(selectedFeatureIds)) {
+    console.warn("ProductFeaturesCheckboxes: selectedFeatureIds non è un array!", selectedFeatureIds);
+  }
+
+  console.log("ProductFeaturesCheckboxes - features", safeFeatures);
+  console.log("ProductFeaturesCheckboxes - selectedFeatureIds", safeSelectedFeatureIds);
+
   return (
     <div>
       <Label className="block text-xs mb-2">Caratteristiche</Label>
       {loading ? (
         <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>
-      ) : features.length === 0 ? (
+      ) : safeFeatures.length === 0 ? (
         <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          {features.map((feature) => (
+          {safeFeatures.map((feature) => (
             <div
               key={feature.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selectedFeatureIds.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
+                safeSelectedFeatureIds.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
               onClick={() => toggleFeature(feature.id)}
             >
               <Checkbox
-                checked={selectedFeatureIds.includes(feature.id)}
+                checked={safeSelectedFeatureIds.includes(feature.id)}
                 onCheckedChange={() => toggleFeature(feature.id)}
               />
               <span className="text-sm">{feature.title}</span>
@@ -52,4 +65,3 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductFeaturesCheckboxes;
-
