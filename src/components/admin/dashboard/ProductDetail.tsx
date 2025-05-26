@@ -44,20 +44,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       ? { label: product.price_variant_2_name, value: Number(product.price_variant_2_value).toFixed(2) }
       : null
   ].filter(Boolean);
-  // Stato Attivo
   const isActive = product.is_active;
 
   return (
     <div className="h-full w-full flex flex-col bg-white">
-      {/* Header con immagine e titolo */}
-      <Card className="mb-4 relative">
-        {/* Modifica: aggiunta pulsante Modifica in alto a destra */}
-        <div className="absolute top-4 right-4">
-          <Button size="sm" onClick={onEditProduct} variant="outline">
-            <Edit className="w-4 h-4 mr-1" />
-            Modifica
-          </Button>
-        </div>
+      {/* Header ristrutturato con flex per pulsante Modifica */}
+      <Card className="mb-4">
         <div className="flex flex-col md:flex-row gap-6 p-6">
           {/* Immagine grande */}
           <div className="flex-shrink-0 flex justify-center items-center">
@@ -68,26 +60,36 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               className="w-32 h-32 rounded-md overflow-hidden border shadow-sm bg-gray-50"
             />
           </div>
-          {/* Info principali */}
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold">{product.title}</h2>
-              {isActive
-                ? <Badge variant="default" className="ml-1">Attivo</Badge>
-                : <Badge variant="secondary" className="ml-1">Disattivo</Badge>
-              }
-              {label &&
-                <Badge style={
-                  label.color
-                    ? { backgroundColor: label.color, color: label.text_color ?? "#fff" }
-                    : {}
-                }>
-                  {label.title}
-                </Badge>
-              }
-            </div>
-            <div className="text-gray-500 text-sm">
-              Categoria: <span className="font-semibold">{selectedCategory?.title || "-"}</span>
+          {/* Header info principali + azioni */}
+          <div className="flex-1 flex flex-col gap-2">
+            <div className="flex flex-row items-start justify-between mb-2">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold">{product.title}</h2>
+                  {isActive
+                    ? <Badge variant="default" className="ml-1">Attivo</Badge>
+                    : <Badge variant="secondary" className="ml-1">Disattivo</Badge>
+                  }
+                  {label &&
+                    <Badge style={
+                      label.color
+                        ? { backgroundColor: label.color, color: label.text_color ?? "#fff" }
+                        : {}
+                    }>
+                      {label.title}
+                    </Badge>
+                  }
+                </div>
+                <div className="text-gray-500 text-sm">
+                  Categoria: <span className="font-semibold">{selectedCategory?.title || "-"}</span>
+                </div>
+              </div>
+              <div className="shrink-0">
+                <Button size="sm" onClick={onEditProduct} variant="outline">
+                  <Edit className="w-4 h-4 mr-1" />
+                  Modifica
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-xs mb-0">Descrizione</Label>
@@ -188,4 +190,3 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 };
 
 export default ProductDetail;
-
