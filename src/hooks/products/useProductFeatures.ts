@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 
 /**
- * Only reset/reload selectedFeatures when product id changes,
- * and state is actually different, to prevent infinite loops.
+ * Hook aggiornato per gestire selectedFeatures senza ciclo infinito.
+ * Aggiorna lo stato solo quando product.id cambia realmente.
  */
 export const useProductFeatures = (product?: Product) => {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
@@ -21,21 +21,15 @@ export const useProductFeatures = (product?: Product) => {
             .from("product_to_features")
             .select("feature_id")
             .eq("product_id", product.id);
-
           if (data) {
             const featureIds = data.map(item => item.feature_id);
-            const hasChanged =
-              featureIds.length !== selectedFeatures.length ||
-              !featureIds.every(id => selectedFeatures.includes(id));
-            if (hasChanged) {
-              setSelectedFeatures(featureIds);
-            }
+            setSelectedFeatures(featureIds);
           }
         } catch (error) {
-          console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
+          console.error("Errore nel caricamento caratteristiche:", error);
         } finally {
-          setIsLoading(false);
           lastProductId.current = product.id;
+          setIsLoading(false);
         }
       };
       fetchProductFeatures();
@@ -43,7 +37,6 @@ export const useProductFeatures = (product?: Product) => {
       if (selectedFeatures.length > 0) setSelectedFeatures([]);
       lastProductId.current = undefined;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
   return { selectedFeatures, setSelectedFeatures, isLoading };
