@@ -52,15 +52,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingFeatures,
     selectedAllergenIds,
     setSelectedAllergenIds,
-    // loadingAllergens,  // Non usare questa var: è sempre false!
+    // loadingAllergens,
   } = useProductForm(product, categoryId, allergens);
 
-  // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
 
-  // Mostra loading se la lista allergeni è vuota (finché la fetch termina)
-  const isLoadingAllergens = !Array.isArray(allergens) || allergens.length === 0;
+  // DEBUG LOG: per vedere cosa arriva dagli allergeni
+  console.log("DEBUG ProductForm - allergens prop:", allergens);
+
+  // Semplifica: se passati come prop, loading è sempre false.
+  // Se invece vuoi ancora visualizzare lo stato di caricamento, 
+  // usa un prop/variabile della dashboard che indica il loading.
+  // Per ora lo settiamo a false per test (verifica che tu abbia i dati)
+  const isLoadingAllergens = false;
 
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
