@@ -46,6 +46,9 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     );
   };
 
+  // Protezione ulteriore: solo se l'array è reale
+  if (!Array.isArray(selectedFeatureIds)) return null;
+
   if (isLoading || loading) {
     return <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>;
   }
@@ -57,22 +60,22 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     <div>
       <Label className="block text-xs mb-2">Caratteristiche</Label>
       <div className="grid grid-cols-2 gap-2">
-        {features.map((feature) => (
+        {Array.isArray(features) && features.map((feature) => (
           <div
             key={feature.id}
             className={cn(
               "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-              Array.isArray(selectedFeatureIds) && selectedFeatureIds.includes(feature.id)
+              selectedFeatureIds.includes(feature.id)
                 ? "border-primary bg-muted/50"
                 : "border-input"
             )}
             onClick={() => handleChange(feature.id)}
             tabIndex={0}
             role="button"
-            aria-pressed={Array.isArray(selectedFeatureIds) && selectedFeatureIds.includes(feature.id)}
+            aria-pressed={selectedFeatureIds.includes(feature.id)}
           >
             <Checkbox
-              checked={Array.isArray(selectedFeatureIds) && selectedFeatureIds.includes(feature.id)}
+              checked={selectedFeatureIds.includes(feature.id)}
               onCheckedChange={() => handleChange(feature.id)}
             />
             <span className="text-sm">{feature.title}</span>

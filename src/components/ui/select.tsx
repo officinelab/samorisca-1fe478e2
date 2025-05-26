@@ -116,9 +116,9 @@ const SelectItem = React.forwardRef<
     value: string; // Assicuriamoci che la prop value sia sempre presente e sia una stringa
   }
 >(({ className, children, ...props }, ref) => {
-  // Aggiungiamo una validazione per assicurarci che value non sia vuoto
-  if (!props.value || props.value === "") {
-    console.error("SelectItem must have a non-empty value prop");
+  // Miglioriamo la validazione per la prop value
+  if (props.value === undefined || props.value === null || (typeof props.value === "string" && props.value.trim() === "")) {
+    console.error("SelectItem must have a non-empty, non-null value prop (suggest using a string come 'none' for nessuna etichetta).");
     return null;
   }
 

@@ -19,9 +19,9 @@ const ProductLabelSelect: React.FC<ProductLabelSelectProps> = ({ form, labels })
       render={({ field }) => (
         <FormItem>
           <FormLabel>Etichetta prodotto</FormLabel>
-          <Select 
-            value={field.value || ""} 
-            onValueChange={field.onChange}
+          <Select
+            value={field.value || "none"}
+            onValueChange={val => field.onChange(val === "none" ? null : val)}
           >
             <FormControl>
               <SelectTrigger>
@@ -29,8 +29,8 @@ const ProductLabelSelect: React.FC<ProductLabelSelectProps> = ({ form, labels })
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">Nessuna etichetta</SelectItem>
-              {labels.map((label) => (
+              <SelectItem value="none">Nessuna etichetta</SelectItem>
+              {Array.isArray(labels) && labels.map((label) => (
                 <SelectItem key={label.id} value={label.id}>
                   <div className="flex items-center gap-2">
                     {label.color && (
