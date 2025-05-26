@@ -12,6 +12,7 @@ export const useProductOperations = (
 ) => {
   const [isReorderingProducts, setIsReorderingProducts] = useState(false);
   const [reorderingProductsList, setReorderingProductsList] = useState<Product[]>([]);
+  const [isSaving, setIsSaving] = useState(false); // Previeni salvataggi multipli
 
   const startReorderingProducts = useCallback(() => {
     setIsReorderingProducts(true);
@@ -23,23 +24,34 @@ export const useProductOperations = (
     setReorderingProductsList([]);
   };
 
-  const moveProductInList = (productId: string, direction: 'up' | 'down') => {
+  // Muovi il prodotto e salva l'ordine SUBITO dopo lo spostamento
+  const moveProductInList = async (productId: string, direction: 'up' | 'down') => {
+    if (isSaving) return; // Previeni salvataggi in contemporanea
+
     const currentIndex = reorderingProductsList.findIndex(p => p.id === productId);
     if (currentIndex === -1) return;
 
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    
     if (newIndex < 0 || newIndex >= reorderingProductsList.length) return;
-    
+
     const updatedList = [...reorderingProductsList];
     [updatedList[currentIndex], updatedList[newIndex]] = [updatedList[newIndex], updatedList[currentIndex]];
-    
+
     setReorderingProductsList(updatedList);
+
+    // Salva l'ordine immediatamente DOPO il setState
+    // Per usare il valore aggiornato, aspetta il prossimo tick con setTimeout 0
+    setIsSaving(true);
+    setTimeout(async () => {
+      await saveReorderProducts(updatedList);
+      setIsSaving(false);
+    }, 0);
   };
 
-  const saveReorderProducts = async () => {
+  // Salva l'ordine dati come argomento, oppure usa lo stato attuale
+  const saveReorderProducts = async (customList?: Product[]) => {
     try {
-      const updates = reorderingProductsList.map((product, index) => ({
+      const updates = (customList || reorderingProductsList).map((product, index) => ({
         id: product.id,
         display_order: index + 1,
         title: product.title,
@@ -57,20 +69,19 @@ export const useProductOperations = (
         price_suffix: product.price_suffix,
         label_id: product.label_id
       }));
-      
+
       const { error } = await supabase
         .from('products')
         .upsert(updates);
-      
+
       if (error) throw error;
-      
+
       if (selectedCategoryId) {
         await loadProducts(selectedCategoryId);
       }
-      
+
       setIsReorderingProducts(false);
       setReorderingProductsList([]);
-      
       toast.success("Ordine dei prodotti aggiornato con successo!");
     } catch (error) {
       console.error('Error reordering products:', error);
@@ -84,13 +95,13 @@ export const useProductOperations = (
         .from('products')
         .delete()
         .eq('id', productId);
-      
+
       if (error) throw error;
-      
+
       if (selectedCategoryId) {
         await loadProducts(selectedCategoryId);
       }
-      
+
       setSelectedProductId(null);
       toast.success("Prodotto eliminato con successo!");
     } catch (error) {
