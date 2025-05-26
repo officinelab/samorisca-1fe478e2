@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -60,29 +61,31 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
         </Dialog>
 
         {/* Product Form Dialog */}
-        <Dialog open={productDialogOpen} onOpenChange={(open) => {
-          if (!open) {
-            handleProductFormCancel();
-          }
-        }}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
-            </DialogHeader>
-            {/* Sostituito tutto il ProductForm come richiesto */}
-            {productDialogOpen && (
+        {productDialogOpen && (
+          <Dialog open={productDialogOpen} onOpenChange={(open) => {
+            if (!open) {
+              handleProductFormCancel();
+            }
+          }}>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
+              <DialogHeader>
+                <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
+              </DialogHeader>
               <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
-                <ProductForm
-                  key={`${memoizedEditingProduct?.id || 'new'}-${Date.now()}`}
-                  product={memoizedEditingProduct}
-                  categoryId={selectedCategoryId || undefined}
-                  onSave={handleProductFormSave}
-                  onCancel={handleProductFormCancel}
-                />
+                {/* Renderizza solo se il dialog è aperto */}
+                {productDialogOpen && (
+                  <ProductForm
+                    key={memoizedEditingProduct?.id || 'new'}
+                    product={memoizedEditingProduct}
+                    categoryId={selectedCategoryId || undefined}
+                    onSave={handleProductFormSave}
+                    onCancel={handleProductFormCancel}
+                  />
+                )}
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </>
     );
   }
@@ -110,31 +113,34 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
       </Sheet>
 
       {/* Product Form Sheet */}
-      <Sheet open={productDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          handleProductFormCancel();
-        }
-      }}>
-        <SheetContent className="sm:max-w-4xl overflow-hidden">
-          <SheetHeader>
-            <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
-          </SheetHeader>
-          {/* Sostituito tutto il ProductForm come richiesto */}
-          {productDialogOpen && (
+      {productDialogOpen && (
+        <Sheet open={productDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            handleProductFormCancel();
+          }
+        }}>
+          <SheetContent className="sm:max-w-4xl overflow-hidden">
+            <SheetHeader>
+              <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
+            </SheetHeader>
             <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
-              <ProductForm
-                key={`${memoizedEditingProduct?.id || 'new'}-${Date.now()}`}
-                product={memoizedEditingProduct}
-                categoryId={selectedCategoryId || undefined}
-                onSave={handleProductFormSave}
-                onCancel={handleProductFormCancel}
-              />
+              {/* Renderizza solo se il dialog è aperto */}
+              {productDialogOpen && (
+                <ProductForm
+                  key={memoizedEditingProduct?.id || 'new'}
+                  product={memoizedEditingProduct}
+                  categoryId={selectedCategoryId || undefined}
+                  onSave={handleProductFormSave}
+                  onCancel={handleProductFormCancel}
+                />
+              )}
             </div>
-          )}
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      )}
     </>
   );
 };
 
 export default DashboardDialogs;
+

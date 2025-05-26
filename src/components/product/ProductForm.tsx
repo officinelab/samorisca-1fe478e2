@@ -70,6 +70,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
+  // DEBUG aggiuntivo richiesto
+  React.useEffect(() => {
+    console.log('ProductForm mount/update debug:', {
+      productId: product?.id,
+      formValues: form.getValues(),
+      selectedFeatureIds,
+      selectedAllergenIds,
+    });
+  }, [product?.id, selectedFeatureIds.length, selectedAllergenIds.length]);
+
+  React.useEffect(() => {
+    return () => {
+      console.log('ProductForm unmounting for product:', product?.id);
+    };
+  }, [product?.id]);
+
   console.log('ProductForm render:', {
     productId: product?.id,
     hasProduct: !!product,
@@ -94,55 +110,55 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
-      {/* <Form {...form}> */}
-      <form onSubmit={(e) => { e.preventDefault(); handleSave(form.getValues()); }} className="space-y-6">
-        {/* Informazioni Base */}
-        <Card className="overflow-visible">
-          <CardHeader>
-            <CardTitle className="text-lg">Informazioni di Base</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProductBasicInfo form={form} />
-            <ProductPriceSection
-              form={form}
-              labels={labels}
-              hasPriceSuffix={hasPriceSuffix}
-              hasMultiplePrices={hasMultiplePrices}
-            />
-          </CardContent>
-        </Card>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          {/* Informazioni Base */}
+          <Card className="overflow-visible">
+            <CardHeader>
+              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductBasicInfo form={form} />
+              <ProductPriceSection
+                form={form}
+                labels={labels}
+                hasPriceSuffix={hasPriceSuffix}
+                hasMultiplePrices={hasMultiplePrices}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Sezione caratteristiche */}
-        <Card>
-          <CardContent className="p-0 border-0 shadow-none">
-            <ProductFeaturesCheckboxes
-              features={features}
-              selectedFeatureIds={safeSelectedFeatureIds}
-              setSelectedFeatureIds={setSelectedFeatureIds}
-              loading={loadingFeatures}
-            />
-          </CardContent>
-        </Card>
+          {/* Sezione caratteristiche */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductFeaturesCheckboxes
+                features={features}
+                selectedFeatureIds={Array.isArray(selectedFeatureIds) ? selectedFeatureIds : []}
+                setSelectedFeatureIds={setSelectedFeatureIds}
+                loading={loadingFeatures}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Sezione allergeni */}
-        <Card>
-          <CardContent className="p-0 border-0 shadow-none">
-            <ProductAllergensCheckboxes
-              allergens={allergens}
-              selectedAllergenIds={safeSelectedAllergenIds}
-              setSelectedAllergenIds={setSelectedAllergenIds}
-              loading={loadingAllergens}
-            />
-          </CardContent>
-        </Card>
+          {/* Sezione allergeni */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductAllergensCheckboxes
+                allergens={allergens}
+                selectedAllergenIds={Array.isArray(selectedAllergenIds) ? selectedAllergenIds : []}
+                setSelectedAllergenIds={setSelectedAllergenIds}
+                loading={loadingAllergens}
+              />
+            </CardContent>
+          </Card>
 
-        <Separator className="my-4" />
-        <ProductActionButtons
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-        />
-      </form>
-      {/* </Form> */}
+          <Separator className="my-4" />
+          <ProductActionButtons
+            isSubmitting={isSubmitting}
+            onCancel={onCancel}
+          />
+        </form>
+      </Form>
     </div>
   );
 };
