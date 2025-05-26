@@ -1,55 +1,36 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Allergen } from "@/types/database";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
-  productId?: string;
   selectedAllergenIds: string[];
-  setSelectedAllergenIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+  setSelectedAllergenIds: (updater: (prev: string[]) => string[]) => void;
   loading: boolean;
+  allergens?: Allergen[]; // opzionale: meglio passarli dal parent se vuoi un flusso completamente controllato
 }
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
-  productId,
   selectedAllergenIds,
   setSelectedAllergenIds,
   loading,
+  allergens = [],
 }) => {
-  const [allergens, setAllergens] = useState<Allergen[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Nessun useEffect, nessun fetch qui! Tutto delegato al parent
 
-  // Fetch allergeni disponibili una sola volta
-  useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    supabase
-      .from("allergens")
-      .select("*")
-      .order("display_order", { ascending: true })
-      .then(({ data, error }) => {
-        if (!error && mounted) setAllergens(data || []);
-        setIsLoading(false);
-      });
-    return () => { mounted = false; };
-  }, []);
-
-  // Gestione selezione robusta (forma funzionale)
-  const handleChange = (allergenId: string) => {
+  const handleChange = (id: string) => {
     setSelectedAllergenIds(prev =>
-      prev.includes(allergenId)
-        ? prev.filter(id => id !== allergenId)
-        : [...prev, allergenId]
+      prev.includes(id)
+        ? prev.filter(a => a !== id)
+        : [...prev, id]
     );
   };
 
-  if (isLoading || loading) {
+  if (loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
-
   if (!Array.isArray(allergens) || allergens.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
@@ -59,7 +40,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
       <Label className="block text-xs mb-2">Allergeni</Label>
       <div className="grid grid-cols-2 gap-2">
         {allergens.map((allergen) => {
-          const checked = Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id);
+          const checked = selectedAllergenIds.includes(allergen.id);
           return (
             <div
               key={allergen.id}
