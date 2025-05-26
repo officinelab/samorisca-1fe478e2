@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -46,39 +45,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    features,
     selectedFeatureIds,
-    toggleFeature,
+    setSelectedFeatureIds,
     loadingFeatures,
-    allergens,
     selectedAllergenIds,
-    toggleAllergen,
+    setSelectedAllergenIds,
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
-  // Debug logging e fallback
-  const safeFeatures = Array.isArray(features) ? features : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
+  // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
-
-  if (!Array.isArray(features)) {
-    console.warn("features non è un array!", features);
-  }
-  if (!Array.isArray(allergens)) {
-    console.warn("allergens non è un array!", allergens);
-  }
-  if (!Array.isArray(selectedFeatureIds)) {
-    console.warn("selectedFeatureIds non è un array!", selectedFeatureIds);
-  }
-  if (!Array.isArray(selectedAllergenIds)) {
-    console.warn("selectedAllergenIds non è un array!", selectedAllergenIds);
-  }
-
-  console.log("ProductForm - safeFeatures", safeFeatures);
-  console.log("ProductForm - safeAllergens", safeAllergens);
-  console.log("ProductForm - safeSelectedFeatureIds", safeSelectedFeatureIds);
-  console.log("ProductForm - safeSelectedAllergenIds", safeSelectedAllergenIds);
 
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
@@ -110,9 +87,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
                 productId={product?.id}
-                features={safeFeatures}
                 selectedFeatureIds={safeSelectedFeatureIds}
-                toggleFeature={toggleFeature}
+                setSelectedFeatureIds={setSelectedFeatureIds}
                 loading={loadingFeatures}
               />
             </CardContent>
@@ -123,9 +99,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
                 productId={product?.id}
-                allergens={safeAllergens}
                 selectedAllergenIds={safeSelectedAllergenIds}
-                toggleAllergen={toggleAllergen}
+                setSelectedAllergenIds={setSelectedAllergenIds}
                 loading={loadingAllergens}
               />
             </CardContent>

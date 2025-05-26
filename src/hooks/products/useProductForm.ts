@@ -1,9 +1,10 @@
+
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
 import { Product } from "@/types/database";
-import { useProductFeaturesCheckboxes } from "./useProductFeaturesCheckboxes";
-import { useProductAllergensCheckboxes } from "./useProductAllergensCheckboxes";
+import { useProductFeatures } from "./useProductFeatures";
+import { useProductAllergens } from "./useProductAllergens";
 
 export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
   // Form base
@@ -12,24 +13,20 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
 
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Stato locale caratteristiche e allergeni tramite i nuovi hooks
+  // Caratteristiche prodotto (stato semplice, NO toggle, NO useEffect per sync)
   const {
-    features,
-    selectedFeatureIds,
-    setSelectedFeatureIds,
-    toggleFeature,
-    loading: loadingFeatures,
-  } = useProductFeaturesCheckboxes(product?.id);
+    selectedFeatures,
+    setSelectedFeatures,
+    isLoading: loadingFeatures,
+  } = useProductFeatures(product);
 
   const {
-    allergens,
-    selectedAllergenIds,
-    setSelectedAllergenIds,
-    toggleAllergen,
-    loading: loadingAllergens,
-  } = useProductAllergensCheckboxes(product?.id);
+    selectedAllergens,
+    setSelectedAllergens,
+    isLoading: loadingAllergens,
+  } = useProductAllergens(product);
 
-  // Intercetta il submit e invia i dati delle features/allergeni selezionati
+  // Submit con injection di stato features/allergeni
   const handleSubmit = async (values: any) => {
     // Inietta la category se manca
     if (categoryId && !values.category_id) {
@@ -38,8 +35,8 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     // Passa state aggiornato!
     return await submitForm(
       values, // form
-      selectedAllergenIds,
-      selectedFeatureIds,
+      selectedAllergens,
+      selectedFeatures,
       product?.id
     );
   };
@@ -52,15 +49,13 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     hasMultiplePrices,
     handleSubmit,
     // Per accesso in ProductForm
-    features,
-    selectedFeatureIds,
-    setSelectedFeatureIds,
-    toggleFeature,
+    features: [], // le features vengono caricate nei componenti, non qui
+    selectedFeatureIds: selectedFeatures,
+    setSelectedFeatureIds: setSelectedFeatures,
     loadingFeatures,
-    allergens,
-    selectedAllergenIds,
-    setSelectedAllergenIds,
-    toggleAllergen,
+    allergens: [], // gli allergeni vengono caricati nei componenti, non qui
+    selectedAllergenIds: selectedAllergens,
+    setSelectedAllergenIds: setSelectedAllergens,
     loadingAllergens,
   };
 };

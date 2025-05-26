@@ -1,65 +1,83 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Allergen } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   productId?: string;
-  allergens: Allergen[];
   selectedAllergenIds: string[];
-  toggleAllergen: (id: string) => void;
+  setSelectedAllergenIds: (ids: string[]) => void;
   loading: boolean;
 }
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
   productId,
-  allergens,
   selectedAllergenIds,
-  toggleAllergen,
+  setSelectedAllergenIds,
   loading,
 }) => {
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
-  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+  const [allergens, setAllergens] = useState<Allergen[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!Array.isArray(allergens)) {
-    console.warn("ProductAllergensCheckboxes: allergens non è un array!", allergens);
-  }
-  if (!Array.isArray(selectedAllergenIds)) {
-    console.warn("ProductAllergensCheckboxes: selectedAllergenIds non è un array!", selectedAllergenIds);
-  }
+  useEffect(() => {
+    let mounted = true;
+    const fetchAllergens = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("allergens")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (!error && mounted) setAllergens(data || []);
+      setIsLoading(false);
+    };
+    fetchAllergens();
+    return () => { mounted = false };
+  }, []);
 
-  console.log("ProductAllergensCheckboxes - allergens", safeAllergens);
-  console.log("ProductAllergensCheckboxes - selectedAllergenIds", safeSelectedAllergenIds);
+  const handleChange = (allergenId: string) => {
+    if (selectedAllergenIds.includes(allergenId)) {
+      setSelectedAllergenIds(selectedAllergenIds.filter(id => id !== allergenId));
+    } else {
+      setSelectedAllergenIds([...selectedAllergenIds, allergenId]);
+    }
+  };
+
+  if (isLoading || loading) {
+    return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
+  }
+  if (allergens.length === 0) {
+    return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
+  }
 
   return (
     <div>
       <Label className="block text-xs mb-2">Allergeni</Label>
-      {loading ? (
-        <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>
-      ) : safeAllergens.length === 0 ? (
-        <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {safeAllergens.map((allergen) => (
-            <div
-              key={allergen.id}
-              className={cn(
-                "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                safeSelectedAllergenIds.includes(allergen.id) ? "border-primary bg-muted/50" : "border-input"
-              )}
-              onClick={() => toggleAllergen(allergen.id)}
-            >
-              <Checkbox
-                checked={safeSelectedAllergenIds.includes(allergen.id)}
-                onCheckedChange={() => toggleAllergen(allergen.id)}
-              />
-              <span className="text-sm">{allergen.number && `${allergen.number}. `}{allergen.title}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 gap-2">
+        {allergens.map((allergen) => (
+          <div
+            key={allergen.id}
+            className={cn(
+              "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+              selectedAllergenIds.includes(allergen.id)
+                ? "border-primary bg-muted/50"
+                : "border-input"
+            )}
+            onClick={() => handleChange(allergen.id)}
+          >
+            <Checkbox
+              checked={selectedAllergenIds.includes(allergen.id)}
+              onCheckedChange={() => handleChange(allergen.id)}
+            />
+            <span className="text-sm">
+              {allergen.number && `${allergen.number}. `}
+              {allergen.title}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
