@@ -1,3 +1,4 @@
+
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
@@ -6,20 +7,22 @@ import { useProductFeaturesCheckboxes } from "./useProductFeaturesCheckboxes";
 import { useProductAllergensCheckboxes } from "./useProductAllergensCheckboxes";
 
 export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
-  // Form base
+  // Defensive: stabilizza la stringa id prodotto (evita cicli nelle hooks figli)
+  const productId = product && typeof product.id === "string" ? product.id : undefined;
+
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   const { labels } = useProductLabels();
 
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Stato locale caratteristiche e allergeni tramite i nuovi hooks
+  // Stato locale caratteristiche e allergeni tramite i nuovi hooks - passa sempre productId primitiva
   const {
     features,
     selectedFeatureIds,
     setSelectedFeatureIds,
     toggleFeature,
     loading: loadingFeatures,
-  } = useProductFeaturesCheckboxes(product?.id);
+  } = useProductFeaturesCheckboxes(productId);
 
   const {
     allergens,
@@ -27,7 +30,7 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     setSelectedAllergenIds,
     toggleAllergen,
     loading: loadingAllergens,
-  } = useProductAllergensCheckboxes(product?.id);
+  } = useProductAllergensCheckboxes(productId);
 
   // Intercetta il submit e invia i dati delle features/allergeni selezionati
   const handleSubmit = async (values: any) => {
@@ -40,7 +43,7 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
       values, // form
       selectedAllergenIds,
       selectedFeatureIds,
-      product?.id
+      productId
     );
   };
 
