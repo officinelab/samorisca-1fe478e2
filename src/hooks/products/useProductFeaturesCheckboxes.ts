@@ -3,54 +3,61 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
+// Loads features and manages selected features for a single product.
+// Ensures no endless update loops when editing product.
 export function useProductFeaturesCheckboxes(productId?: string) {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Carica tutte le features disponibili
+  // Load all available features ONCE
   useEffect(() => {
+    let mounted = true;
+
     const fetchFeatures = async () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("product_features")
         .select("*")
         .order("display_order", { ascending: true });
-      if (!error) setFeatures(data || []);
+      if (!error && mounted) setFeatures(data || []);
       setLoading(false);
     };
     fetchFeatures();
+
+    return () => { mounted = false };
   }, []);
 
-  // Carica le features selezionate per il prodotto (solo in edit)
+  // Only load selected features if productId exists
   useEffect(() => {
     if (!productId) {
-      setSelectedFeatureIds([]);
+      setSelectedFeatureIds([]); // for new product, none selected
       return;
     }
+    let mounted = true;
     const fetchSelected = async () => {
       const { data, error } = await supabase
         .from("product_to_features")
         .select("feature_id")
         .eq("product_id", productId);
-      if (!error && data) {
+      // Only update state if still mounted
+      if (!error && data && mounted) {
         setSelectedFeatureIds(data.map((f) => f.feature_id));
       }
     };
     fetchSelected();
+    return () => { mounted = false };
   }, [productId]);
 
-  // Funzione per gestire il toggle delle checkbox
+  // Local toggle, does not save to DB until Save is pressed
   const toggleFeature = (fId: string) => {
     setSelectedFeatureIds((prev) =>
       prev.includes(fId) ? prev.filter((id) => id !== fId) : [...prev, fId]
     );
   };
 
-  // Reset selezioni a mano (opzionale)
-  const resetSelectedFeatures = () => {
-    setSelectedFeatureIds([]);
-  };
+  // Optionally allow for manual reset
+  const resetSelectedFeatures = () => setSelectedFeatureIds([]);
 
   return {
     features,
