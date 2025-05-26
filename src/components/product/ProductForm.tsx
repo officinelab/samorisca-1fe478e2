@@ -1,5 +1,4 @@
-
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -7,8 +6,8 @@ import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-import AllergenSelector from "./AllergenSelector";
-import FeaturesSelector from "./FeaturesSelector";
+import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
+import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -45,66 +44,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
     labels,
     hasPriceSuffix,
     hasMultiplePrices,
-    // selectedAllergens,
-    // setSelectedAllergens,
-    // selectedFeatures,
-    // setSelectedFeatures,
     handleSubmit,
+    selectedFeatureIds,
+    toggleFeature,
+    loadingFeatures,
+    selectedAllergenIds,
+    toggleAllergen,
+    loadingAllergens,
   } = useProductForm(product, categoryId);
-
-  // ---------- Stato locale per Allergen/Features selezionati ----------
-  // Inizializza locale solo al mount/cambio prodotto
-  const [localAllergens, setLocalAllergens] = useState<string[]>(product?.allergens?.map(a => a.id) ?? []);
-  const [localFeatures, setLocalFeatures] = useState<string[]>(product?.features?.map(f => f.id) ?? []);
-  useEffect(() => {
-    setLocalAllergens(product?.allergens?.map(a => a.id) ?? []);
-    setLocalFeatures(product?.features?.map(f => f.id) ?? []);
-  }, [product?.id]);
-  // --------------------------------------------------------------------
-
-  // Handler per cambiare allergene solo localmente
-  const handleAllergenToggle = useCallback((allergenId: string) => {
-    setLocalAllergens(prev =>
-      prev.includes(allergenId)
-        ? prev.filter(id => id !== allergenId)
-        : [...prev, allergenId]
-    );
-  }, []);
-
-  // Handler per cambiare feature solo localmente
-  const handleFeatureToggle = useCallback((featureId: string) => {
-    setLocalFeatures(prev =>
-      prev.includes(featureId)
-        ? prev.filter(id => id !== featureId)
-        : [...prev, featureId]
-    );
-  }, []);
 
   // Gestore submit che invia ANCHE i dati di allergeni/features
   const handleSave = async (formValues: any) => {
-    await handleSubmit({
-      ...formValues,
-      allergens: localAllergens,
-      features: localFeatures,
-    });
-    // Inoltra anche al parent, se richiesto
-    if (onSave) {
-      onSave({
-        ...product,
-        ...formValues,
-        allergens: localAllergens,
-        features: localFeatures,
-      });
-    }
+    await handleSubmit(formValues);
+    if (onSave) onSave();
   };
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleSave)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
           {/* Informazioni Base */}
           <Card className="overflow-visible">
             <CardHeader>
@@ -112,7 +70,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardHeader>
             <CardContent>
               <ProductBasicInfo form={form} />
-              {/* --- SEZIONE PREZZI --- */}
               <ProductPriceSection
                 form={form}
                 labels={labels}
@@ -122,22 +79,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Caratteristiche (stato locale!) */}
+          {/* Nuova sezione caratteristiche */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              <FeaturesSelector
-                selectedFeatureIds={localFeatures}
-                onToggleFeature={handleFeatureToggle}
+              <ProductFeaturesCheckboxes
+                productId={product?.id}
+                selectedFeatureIds={selectedFeatureIds}
+                toggleFeature={toggleFeature}
+                loading={loadingFeatures}
               />
             </CardContent>
           </Card>
 
-          {/* Allergeni (stato locale!) */}
+          {/* Nuova sezione allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
-              <AllergenSelector
-                selectedAllergenIds={localAllergens}
-                onToggleAllergen={handleAllergenToggle}
+              <ProductAllergensCheckboxes
+                productId={product?.id}
+                selectedAllergenIds={selectedAllergenIds}
+                toggleAllergen={toggleAllergen}
+                loading={loadingAllergens}
               />
             </CardContent>
           </Card>
