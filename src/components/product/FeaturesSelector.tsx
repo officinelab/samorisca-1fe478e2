@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React, { useState, useEffect } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,23 +11,13 @@ interface FeaturesSelectorProps {
   onChange: (featureIds: string[]) => void;
 }
 
-const areEqualArr = (a: string[], b: string[]) => {
-  if (a.length !== b.length) return false;
-  const sA = [...a].sort();
-  const sB = [...b].sort();
-  return sA.every((val, idx) => val === sB[idx]);
-};
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
-  selectedFeatureIds,
-  onChange,
-}) => {
-  const [features, setFeatures] = React.useState<ProductFeature[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [selected, setSelected] = React.useState<Set<string>>(new Set(selectedFeatureIds));
-
-  // Caricamento una volta sola
-  React.useEffect(() => {
+  // Carica le caratteristiche dei prodotti
+  useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
       try {
@@ -47,31 +38,24 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Sincronizza selected SOLO su vero cambio array
-  React.useEffect(() => {
-    const newSet = new Set(selectedFeatureIds);
-    if (!areEqualArr(Array.from(selected), selectedFeatureIds)) {
-      setSelected(newSet);
-    }
-    // eslint-disable-next-line
-  }, [selectedFeatureIds.join(",")]);
+  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
+  useEffect(() => {
+    setSelected(new Set(selectedFeatureIds));
+  }, [selectedFeatureIds]);
 
-  // Callback MEMO e stabile
-  const handleUserToggle = React.useCallback((featureId: string) => {
+  // Toggle per selezionare/deselezionare una caratteristica
+  const toggleFeature = (featureId: string) => {
     const newSelected = new Set(selected);
     if (newSelected.has(featureId)) {
       newSelected.delete(featureId);
     } else {
       newSelected.add(featureId);
     }
-    const arrNewSelected = Array.from(newSelected);
-
     setSelected(newSelected);
-    if (!areEqualArr(arrNewSelected, selectedFeatureIds)) {
-      onChange(arrNewSelected);
-    }
-    return arrNewSelected;
-  }, [selected, selectedFeatureIds.join(","), onChange]);
+    const newSelection = Array.from(newSelected);
+    onChange(newSelection);
+    return newSelection;
+  };
 
   return (
     <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
@@ -88,11 +72,11 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                 selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => handleUserToggle(feature.id)}
+              onClick={() => toggleFeature(feature.id)}
             >
-              <Checkbox
-                checked={selected.has(feature.id)}
-                onCheckedChange={() => handleUserToggle(feature.id)}
+              <Checkbox 
+                checked={selected.has(feature.id)} 
+                onCheckedChange={() => toggleFeature(feature.id)} 
               />
               <span className="text-sm">{feature.title}</span>
             </div>

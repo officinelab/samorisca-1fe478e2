@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -13,10 +13,10 @@ export const useProductOperations = (
   const [isReorderingProducts, setIsReorderingProducts] = useState(false);
   const [reorderingProductsList, setReorderingProductsList] = useState<Product[]>([]);
 
-  const startReorderingProducts = useCallback(() => {
+  const startReorderingProducts = () => {
     setIsReorderingProducts(true);
     setReorderingProductsList([...products]);
-  }, [products]);
+  };
 
   const cancelReorderingProducts = () => {
     setIsReorderingProducts(false);

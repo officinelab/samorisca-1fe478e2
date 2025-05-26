@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,25 +48,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       is_active: category?.is_active ?? true,
     },
   });
-
-  // Reset del form solo quando category cambia veramente
-  useEffect(() => {
-    if (category) {
-      form.reset({
-        title: category.title || "",
-        description: category.description || "",
-        is_active: category.is_active ?? true,
-      });
-    } else {
-      form.reset({
-        title: "",
-        description: "",
-        is_active: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
-
+  
   const onSubmit = async (values: CategoryFormData) => {
     await onSave(values);
   };
