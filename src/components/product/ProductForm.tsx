@@ -55,6 +55,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
     features,  // <-- needed for features
   } = useProductForm(product, categoryId);
 
+  // Debug: monitor each rerender
+  console.log("ProductForm render", { selectedAllergenIds, allergens, loadingAllergens });
+
   // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
@@ -103,7 +106,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
                 loading={loadingAllergens}
-                allergens={allergens} // explicitly pass allergens if necessary
+                allergens={allergens}
               />
             </CardContent>
           </Card>

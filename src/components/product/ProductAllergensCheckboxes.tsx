@@ -9,7 +9,7 @@ interface Props {
   selectedAllergenIds: string[];
   setSelectedAllergenIds: (updater: (prev: string[]) => string[]) => void;
   loading: boolean;
-  allergens?: Allergen[]; // opzionale: meglio passarli dal parent se vuoi un flusso completamente controllato
+  allergens?: Allergen[];
 }
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
@@ -18,14 +18,18 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   loading,
   allergens = [],
 }) => {
-  // Nessun useEffect, nessun fetch qui! Tutto delegato al parent
-
+  // Debug: log when the component renders and when selectedAllergenIds changes
+  console.log("ProductAllergensCheckboxes render", { selectedAllergenIds, allergens, loading });
+  
   const handleChange = (id: string) => {
-    setSelectedAllergenIds(prev =>
-      prev.includes(id)
-        ? prev.filter(a => a !== id)
-        : [...prev, id]
-    );
+    setSelectedAllergenIds(prev => {
+      const updated =
+        prev.includes(id)
+          ? prev.filter(a => a !== id)
+          : [...prev, id];
+      console.log("handleChange allergen", { id, prev, updated });
+      return updated;
+    });
   };
 
   if (loading) {
