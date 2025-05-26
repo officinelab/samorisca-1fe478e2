@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
@@ -19,10 +19,16 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     editingProduct,
     selectedCategoryId,
     handleCategoryFormSave,
+    handleProductFormCancel,
     handleProductFormSave,
-    handleCategoryFormCancel,
     handleProductFormCancel
   } = dashboard;
+
+  // Callback memorizzate per evitare riferimento nuovo ad ogni render
+  const memoizedCategoryFormSave = useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
+  const memoizedCategoryFormCancel = useCallback(handleProductFormCancel, [handleProductFormCancel]);
+
+  // Anche ProductForm eventualmente può essere trattato uguale.
 
   const categoryDialogOpen = showAddCategory || !!editingCategory;
   const productDialogOpen = showAddProduct || !!editingProduct;
@@ -33,7 +39,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
         {/* Category Form Dialog */}
         <Dialog open={categoryDialogOpen} onOpenChange={(open) => {
           if (!open) {
-            handleCategoryFormCancel();
+            memoizedCategoryFormCancel();
           }
         }}>
           <DialogContent className="sm:max-w-md">
@@ -42,8 +48,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             </DialogHeader>
             <CategoryForm
               category={editingCategory}
-              onSave={handleCategoryFormSave}
-              onCancel={handleCategoryFormCancel}
+              onSave={memoizedCategoryFormSave}
+              onCancel={memoizedCategoryFormCancel}
             />
           </DialogContent>
         </Dialog>
@@ -77,7 +83,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
       {/* Category Form Sheet */}
       <Sheet open={categoryDialogOpen} onOpenChange={(open) => {
         if (!open) {
-          handleCategoryFormCancel();
+          memoizedCategoryFormCancel();
         }
       }}>
         <SheetContent className="sm:max-w-md">
@@ -87,8 +93,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
           <div className="pt-4">
             <CategoryForm
               category={editingCategory}
-              onSave={handleCategoryFormSave}
-              onCancel={handleCategoryFormCancel}
+              onSave={memoizedCategoryFormSave}
+              onCancel={memoizedCategoryFormCancel}
             />
           </div>
         </SheetContent>
