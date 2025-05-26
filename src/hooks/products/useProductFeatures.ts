@@ -91,7 +91,7 @@ export const useProductFeatures = (product?: Product) => {
   };
 
   return {
-    features,
+    features, // array completo di oggetti ProductFeature
     selectedFeatures,
     setSelectedFeatures: safeSetSelectedFeatures,
     isLoading

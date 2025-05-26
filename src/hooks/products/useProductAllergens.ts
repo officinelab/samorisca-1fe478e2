@@ -93,7 +93,7 @@ export const useProductAllergens = (product?: Product) => {
   };
 
   return {
-    allergens,
+    allergens, // array completo di oggetti Allergen
     selectedAllergens,
     setSelectedAllergens: safeSetSelectedAllergens,
     isLoading
