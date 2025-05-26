@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Allergen } from "@/types/database";
@@ -80,7 +79,6 @@ export const useProductAllergens = (product?: Product) => {
 
   // Permette al componente figlio di aggiornare lo stato locale senza essere sovrascritto!
   const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
-    console.log('Setting allergens:', allergenIds);
     setSelectedAllergens(allergenIds);
   };
 

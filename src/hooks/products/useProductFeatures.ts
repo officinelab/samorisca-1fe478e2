@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductFeature } from "@/types/database";
@@ -78,7 +77,6 @@ export const useProductFeatures = (product?: Product) => {
   }, [product?.id]);
 
   const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
-    console.log('Setting features:', featureIds);
     if (typeof featureIds === "function") {
       setSelectedFeatures(featureIds);
     } else {
