@@ -5,7 +5,6 @@ import { useProductFormSubmit } from "./useProductFormSubmit";
 import { Product } from "@/types/database";
 import { useProductFeatures } from "./useProductFeatures";
 import { useProductAllergens } from "./useProductAllergens";
-import { useCallback } from "react";
 
 export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
@@ -25,21 +24,6 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     setSelectedAllergens,
     isLoading: loadingAllergens,
   } = useProductAllergens(product);
-
-  // Semplificati: i setter ora fanno solo set diretto
-  const setSelectedFeatureIds = useCallback(
-    (ids: string[] | ((prev: string[]) => string[])) => {
-      setSelectedFeatures(ids);
-    },
-    [setSelectedFeatures]
-  );
-
-  const setSelectedAllergenIds = useCallback(
-    (ids: string[] | ((prev: string[]) => string[])) => {
-      setSelectedAllergens(ids);
-    },
-    [setSelectedAllergens]
-  );
 
   // Submit con injection di stato features/allergeni
   const handleSubmit = async (values: any) => {
@@ -63,12 +47,11 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     handleSubmit,
     features,
     selectedFeatureIds: selectedFeatures,
-    setSelectedFeatureIds,
+    setSelectedFeatureIds: setSelectedFeatures,
     loadingFeatures,
     allergens,
     selectedAllergenIds: selectedAllergens,
-    setSelectedAllergenIds,
+    setSelectedAllergenIds: setSelectedAllergens,
     loadingAllergens,
   };
 };
-

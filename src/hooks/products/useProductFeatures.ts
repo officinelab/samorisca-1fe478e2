@@ -1,25 +1,12 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductFeature } from "@/types/database";
-
-function arraysAreDifferent(a: string[], b: string[]) {
-  if (a.length !== b.length) return true;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
-  for (let i = 0; i < sa.length; i++) {
-    if (sa[i] !== sb[i]) return true;
-  }
-  return false;
-}
 
 export const useProductFeatures = (product?: Product) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const lastProductId = useRef<string | undefined>();
-  const productIdRef = useRef(product?.id);
-  productIdRef.current = product?.id;
 
   // Carica tutte le features all'avvio
   useEffect(() => {
@@ -37,66 +24,42 @@ export const useProductFeatures = (product?: Product) => {
     return () => { mounted = false; };
   }, []);
 
+  // Carica features del prodotto
   useEffect(() => {
-    const currentProductId = productIdRef.current;
-
-    if (!currentProductId) {
-      if (lastProductId.current !== undefined) {
-        setSelectedFeatures([]);
-        lastProductId.current = undefined;
-      }
+    if (!product?.id) {
+      setSelectedFeatures([]);
       return;
     }
 
-    if (currentProductId === lastProductId.current) {
-      return;
-    }
-
-    setIsLoading(true);
+    let mounted = true;
     const fetchProductFeatures = async () => {
+      setIsLoading(true);
       try {
         const { data, error } = await supabase
           .from("product_to_features")
           .select("feature_id")
-          .eq("product_id", currentProductId);
+          .eq("product_id", product.id);
 
         if (error) throw error;
-        if (data) {
+        if (mounted && data) {
           const featureIds = data.map(item => item.feature_id);
           setSelectedFeatures(featureIds);
         }
       } catch (error) {
-        console.error("Errore nel caricamento caratteristiche:", error);
-        setSelectedFeatures([]);
+        if (mounted) setSelectedFeatures([]);
       } finally {
-        lastProductId.current = currentProductId;
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
     fetchProductFeatures();
+    return () => { mounted = false; };
   }, [product?.id]);
 
-  // SAFE setter: evita update inutili comparando array ordinati
-  const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
-    if (typeof featureIds === "function") {
-      setSelectedFeatures(featureIds);
-    } else {
-      setSelectedFeatures(prev => {
-        const prevSorted = [...prev].sort().join(',');
-        const nextSorted = [...featureIds].sort().join(',');
-        if (prevSorted === nextSorted) {
-          return prev; // Evita update/react re-render
-        }
-        return featureIds;
-      });
-    }
-  };
-
   return {
-    features, // array completo di oggetti ProductFeature
+    features,
     selectedFeatures,
-    setSelectedFeatures: safeSetSelectedFeatures,
+    setSelectedFeatures,
     isLoading
   };
 };
