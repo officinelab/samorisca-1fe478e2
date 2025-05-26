@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
@@ -40,7 +41,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
 }) => {
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
-  // Rendi sempre attivo il riordino e la lista prodotti riordinabile.
+  // Usa la lista di reordering (se non è vuota), altrimenti products
   const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
   const { 
     searchQuery, 
@@ -49,12 +50,13 @@ const ProductsList: React.FC<ProductsListProps> = ({
     isSearchDisabled 
   } = useProductsSearch(alwaysActiveReorderingList, false);
 
-  // Al montaggio, se la lista di riordino è ancora vuota o il riordino non è attivo, inizializzala automaticamente
+  // Inizializza il riordino solo quando arrivano veri prodotti e non è già attivo
   useEffect(() => {
-    if (!isReorderingProducts) {
+    if (products.length > 0 && !isReorderingProducts) {
       onStartReordering();
     }
-  }, [isReorderingProducts, onStartReordering]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId);
