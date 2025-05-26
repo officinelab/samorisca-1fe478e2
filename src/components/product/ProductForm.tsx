@@ -2,7 +2,7 @@ import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Product, Allergen } from "@/types/database";
+import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
@@ -52,20 +52,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingFeatures,
     selectedAllergenIds,
     setSelectedAllergenIds,
-    // loadingAllergens,
+    loadingAllergens,
   } = useProductForm(product, categoryId, allergens);
 
+  // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
-
-  // DEBUG LOG: per vedere cosa arriva dagli allergeni
-  console.log("DEBUG ProductForm - allergens prop:", allergens);
-
-  // Semplifica: se passati come prop, loading è sempre false.
-  // Se invece vuoi ancora visualizzare lo stato di caricamento, 
-  // usa un prop/variabile della dashboard che indica il loading.
-  // Per ora lo settiamo a false per test (verifica che tu abbia i dati)
-  const isLoadingAllergens = false;
 
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
@@ -111,7 +103,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 allergens={allergens}
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
-                loading={isLoadingAllergens}
+                loading={loadingAllergens}
               />
             </CardContent>
           </Card>

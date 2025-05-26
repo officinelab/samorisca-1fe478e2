@@ -18,9 +18,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   setSelectedAllergenIds,
   loading,
 }) => {
-  // DEBUG LOG per capire se riceviamo gli allergeni
-  console.log("DEBUG ProductAllergensCheckboxes - allergens prop:", allergens);
-
+  // Gestione selezione robusta (forma funzionale)
   const handleChange = (allergenId: string) => {
     setSelectedAllergenIds(prev =>
       prev.includes(allergenId)
@@ -33,7 +31,6 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
 
-  // Qui mostra "nessun allergene disponibile" solo se non ci sono allergeni dopo loading
   if (!Array.isArray(allergens) || allergens.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
