@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   productId?: string;
   selectedAllergenIds: string[];
-  setSelectedAllergenIds: (ids: string[]) => void;
+  setSelectedAllergenIds: (ids: string[] | ((prev: string[]) => string[])) => void;
   loading: boolean;
 }
 
@@ -37,18 +37,19 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     return () => { mounted = false };
   }, []);
 
+  // Nuova versione robusta
   const handleChange = (allergenId: string) => {
-    if (selectedAllergenIds.includes(allergenId)) {
-      setSelectedAllergenIds(selectedAllergenIds.filter(id => id !== allergenId));
-    } else {
-      setSelectedAllergenIds([...selectedAllergenIds, allergenId]);
-    }
+    setSelectedAllergenIds(prev =>
+      prev.includes(allergenId)
+        ? prev.filter(id => id !== allergenId)
+        : [...prev, allergenId]
+    );
   };
 
   if (isLoading || loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
-  if (allergens.length === 0) {
+  if (!Array.isArray(allergens) || allergens.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
 
@@ -83,3 +84,4 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductAllergensCheckboxes;
+

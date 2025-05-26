@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   productId?: string;
   selectedFeatureIds: string[];
-  setSelectedFeatureIds: (ids: string[]) => void;
+  setSelectedFeatureIds: (ids: string[] | ((prev: string[]) => string[])) => void;
   loading: boolean;
 }
 
@@ -37,19 +37,20 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     return () => { mounted = false };
   }, []);
 
+  // Nuova versione robusta
   const handleChange = (featureId: string) => {
-    if (selectedFeatureIds.includes(featureId)) {
-      setSelectedFeatureIds(selectedFeatureIds.filter(id => id !== featureId));
-    } else {
-      setSelectedFeatureIds([...selectedFeatureIds, featureId]);
-    }
+    setSelectedFeatureIds(prev =>
+      prev.includes(featureId)
+        ? prev.filter(id => id !== featureId)
+        : [...prev, featureId]
+    );
   };
 
   if (isLoading || loading) {
     return <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>;
   }
 
-  if (features.length === 0) {
+  if (!Array.isArray(features) || features.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>;
   }
 
@@ -81,3 +82,4 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductFeaturesCheckboxes;
+
