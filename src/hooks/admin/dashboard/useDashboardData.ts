@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,61 +72,39 @@ export const useDashboardData = () => {
     try {
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*, label:label_id(*)')
+        .select(`
+          *,
+          label:label_id(*),
+          product_allergens:product_allergens (
+            allergen_id
+          ),
+          product_to_features:product_to_features (
+            feature_id
+          )
+        `)
         .eq('category_id', categoryId)
         .order('display_order', { ascending: true });
 
       if (productsError) throw productsError;
-      
-      const productsWithDetails = await Promise.all(
-        (productsData || []).map(async (product) => {
-          const { data: productAllergens, error: allergensError } = await supabase
-            .from('product_allergens')
-            .select('allergen_id')
-            .eq('product_id', product.id);
-          
-          if (allergensError) throw allergensError;
-          
-          let productAllergensDetails: Allergen[] = [];
-          if (productAllergens && productAllergens.length > 0) {
-            const allergenIds = productAllergens.map(pa => pa.allergen_id);
-            const { data: allergensDetails, error: detailsError } = await supabase
-              .from('allergens')
-              .select('*')
-              .in('id', allergenIds);
-            
-            if (detailsError) throw detailsError;
-            productAllergensDetails = allergensDetails || [];
-          }
-          
-          const { data: productFeatures, error: featuresError } = await supabase
-            .from('product_to_features')
-            .select('feature_id')
-            .eq('product_id', product.id);
-          
-          if (featuresError) throw featuresError;
-          
-          let productFeaturesDetails: ProductFeature[] = [];
-          if (productFeatures && productFeatures.length > 0) {
-            const featureIds = productFeatures.map(pf => pf.feature_id);
-            const { data: featuresDetails, error: detailsError } = await supabase
-              .from('product_features')
-              .select('*')
-              .in('id', featureIds)
-              .order('display_order', { ascending: true });
-            
-            if (detailsError) throw detailsError;
-            productFeaturesDetails = featuresDetails || [];
-          }
-          
-          return { 
-            ...product, 
-            allergens: productAllergensDetails,
-            features: productFeaturesDetails
-          } as Product;
-        })
-      );
-      
+
+      // NOTA: ora productsData[x].product_allergens è array di { allergen_id }
+      //       idem per product_to_features
+
+      const productsWithDetails = (productsData || []).map((product: any) => {
+        const allergen_ids = Array.isArray(product.product_allergens)
+          ? product.product_allergens.map((pa: any) => pa.allergen_id)
+          : [];
+        const feature_ids = Array.isArray(product.product_to_features)
+          ? product.product_to_features.map((pf: any) => pf.feature_id)
+          : [];
+        // Mantieni il resto dei dati prodotto originale
+        return {
+          ...product,
+          allergen_ids,
+          feature_ids,
+        } as Product & { allergen_ids: string[]; feature_ids: string[] };
+      });
+
       setProducts(productsWithDetails);
       setSelectedProductId(null);
     } catch (error) {

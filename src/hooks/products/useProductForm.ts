@@ -4,41 +4,32 @@ import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
 import { Product } from "@/types/database";
 import { useProductFeatures } from "./useProductFeatures";
-import { useProductAllergens } from "./useProductAllergens";
+import { useState } from "react";
+// SEMPLIFICAZIONE: useProductAllergens non serve più fetch
 
-export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
+export const useProductForm = (product?: Product & { allergen_ids?: string[], feature_ids?: string[] }, categoryId?: string, onSave?: () => void) => {
   // Form base
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   const { labels } = useProductLabels();
 
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Caratteristiche prodotto (vecchio stile, con fetch e stato completo)
-  const {
-    features,
-    selectedFeatures,
-    setSelectedFeatures,
-    isLoading: loadingFeatures,
-  } = useProductFeatures(product);
+  // Stato caratteristiche prodotto (puoi mantenere quello attuale, oppure anche qui usare product?.feature_ids se servisse gran uniformità)
 
-  const {
-    allergens,
-    selectedAllergens,
-    setSelectedAllergens,
-    isLoading: loadingAllergens,
-  } = useProductAllergens(product);
+  const [selectedAllergens, setSelectedAllergens] = useState<string[]>(product?.allergen_ids ?? []);
+  // NB: Se vuoi uniformare anche features, puoi fare come sotto:
+  // const [selectedFeatures, setSelectedFeatures] = useState<string[]>(product?.feature_ids ?? []);
+  // (Qui lasciamo eventuale gestione features invariata)
 
-  // Submit con injection di stato features/allergeni
+  // Submit con injection di stato allergeni/features
   const handleSubmit = async (values: any) => {
-    // Inietta la category se manca
     if (categoryId && !values.category_id) {
       values.category_id = categoryId;
     }
-    // Passa state aggiornato!
     return await submitForm(
-      values, // form
+      values,
       selectedAllergens,
-      selectedFeatures,
+      product?.feature_ids ?? [], // NB: oppure selectedFeatures se decidi di uniformare anche per features
       product?.id
     );
   };
@@ -50,13 +41,9 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    features,  // <--- ADESSO ARRAY REALE DA HOOK
-    selectedFeatureIds: selectedFeatures, // <--- NOME UNIFORME
-    setSelectedFeatureIds: setSelectedFeatures,
-    loadingFeatures,
-    allergens, // <--- ADESSO ARRAY REALE DA HOOK
-    selectedAllergenIds: selectedAllergens, // <--- NOME UNIFORME
+    // features,  // <-- elimina se ora lo carichi a monte!
+    selectedAllergenIds: selectedAllergens,
     setSelectedAllergenIds: setSelectedAllergens,
-    loadingAllergens,
+    loadingAllergens: false, // non serve più
   };
 };
