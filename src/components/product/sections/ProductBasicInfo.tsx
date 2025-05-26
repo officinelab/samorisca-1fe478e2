@@ -10,89 +10,157 @@ import { ProductFormValues } from "@/types/form";
 
 interface ProductBasicInfoProps {
   form: UseFormReturn<ProductFormValues>;
+  onlyImage?: boolean;
+  onlyMainFields?: boolean;
 }
 
-const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
+const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form, onlyImage = false, onlyMainFields = false }) => {
   return (
     <>
-      {/* Nome Prodotto */}
-      <FormField
-        control={form.control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Nome Prodotto</FormLabel>
-            <FormControl>
-              <Input placeholder="Nome del prodotto" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Solo Immagine */}
+      {onlyImage && (
+        <FormField
+          control={form.control}
+          name="image_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Immagine Prodotto</FormLabel>
+              <FormControl>
+                <ImageUploader
+                  currentImage={field.value || ""}
+                  onImageUploaded={(url) => {
+                    field.onChange(url);
+                  }}
+                  label="Carica immagine del prodotto"
+                  bucketName="products"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+      {/* Solo MainFields */}
+      {onlyMainFields && (
+        <>
+          {/* Nome Prodotto */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome Prodotto</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome del prodotto" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {/* Descrizione */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrizione</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Descrizione del prodotto"
+                    className="min-h-32"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
+      )}
+      {/* OLD FULL VERSION (per retrocompatibilità, non usata adesso) */}
+      {!onlyImage && !onlyMainFields && (
+        <>
+          {/* Nome Prodotto */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome Prodotto</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome del prodotto" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      {/* Stato Attivo */}
-      <FormField
-        control={form.control}
-        name="is_active"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <FormLabel>Stato Attivo</FormLabel>
-              <FormDescription>
-                Mostra questo prodotto nel menu
-              </FormDescription>
-            </div>
-            <FormControl>
-              <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
-              />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+          {/* Stato Attivo */}
+          <FormField
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Stato Attivo</FormLabel>
+                  <FormDescription>
+                    Mostra questo prodotto nel menu
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
-      {/* Descrizione */}
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Descrizione</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Descrizione del prodotto"
-                className="min-h-32"
-                {...field}
-                value={field.value || ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          {/* Descrizione */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrizione</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Descrizione del prodotto"
+                    className="min-h-32"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      {/* Immagine Prodotto */}
-      <FormField
-        control={form.control}
-        name="image_url"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Immagine Prodotto</FormLabel>
-            <FormControl>
-              <ImageUploader
-                currentImage={field.value || ""}
-                onImageUploaded={(url) => {
-                  field.onChange(url);
-                }}
-                label="Carica immagine del prodotto"
-                bucketName="products"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          {/* Immagine Prodotto */}
+          <FormField
+            control={form.control}
+            name="image_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Immagine Prodotto</FormLabel>
+                <FormControl>
+                  <ImageUploader
+                    currentImage={field.value || ""}
+                    onImageUploaded={(url) => {
+                      field.onChange(url);
+                    }}
+                    label="Carica immagine del prodotto"
+                    bucketName="products"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
+      )}
     </>
   );
 };
