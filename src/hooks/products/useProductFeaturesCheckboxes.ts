@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
@@ -18,7 +18,9 @@ export function useProductFeaturesCheckboxes(productId?: string) {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load all available features ONCE
+  // Ref per ricordare il precedente ed evitare loop di setState
+  const prevFeatureIds = useRef<string[]>([]);
+
   useEffect(() => {
     let mounted = true;
     const fetchFeatures = async () => {
@@ -34,10 +36,10 @@ export function useProductFeaturesCheckboxes(productId?: string) {
     return () => { mounted = false };
   }, []);
 
-  // Only load selected features if productId exists
   useEffect(() => {
     if (!productId) {
       setSelectedFeatureIds([]);
+      prevFeatureIds.current = [];
       return;
     }
     let mounted = true;
@@ -51,23 +53,13 @@ export function useProductFeaturesCheckboxes(productId?: string) {
           .map((f) => typeof f.feature_id === "string" ? f.feature_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        // Solo se davvero diverso (anche per tipo/riferimento)
-        setSelectedFeatureIds((prev) => {
-          if (
-            arraysAreDifferent(prev, nextIds) &&
-            JSON.stringify(prev) !== JSON.stringify(nextIds)
-          ) {
-            // Extra log di sicurezza
-            console.log(
-              "[useProductFeaturesCheckboxes] Update features: ",
-              "prev:", prev,
-              "next:", nextIds
-            );
-            return nextIds;
-          }
-          // Nessun update inutile
-          return prev;
-        });
+        if (arraysAreDifferent(prevFeatureIds.current, nextIds)) {
+          console.log("[useProductFeaturesCheckboxes] Effettuo update selectedFeatureIds", nextIds);
+          setSelectedFeatureIds(nextIds);
+          prevFeatureIds.current = nextIds;
+        } else {
+          // console.log("[useProductFeaturesCheckboxes] Nessun update necessario");
+        }
       }
     };
     fetchSelected();
@@ -75,14 +67,18 @@ export function useProductFeaturesCheckboxes(productId?: string) {
     // eslint-disable-next-line
   }, [productId]);
 
-  // Local toggle, does not save to DB until Save is pressed
   const toggleFeature = (fId: string) => {
-    setSelectedFeatureIds((prev) =>
-      prev.includes(fId) ? prev.filter((id) => id !== fId) : [...prev, fId]
-    );
+    setSelectedFeatureIds((prev) => {
+      const updated = prev.includes(fId) ? prev.filter((id) => id !== fId) : [...prev, fId];
+      prevFeatureIds.current = updated;
+      return updated;
+    });
   };
 
-  const resetSelectedFeatures = () => setSelectedFeatureIds([]);
+  const resetSelectedFeatures = () => {
+    setSelectedFeatureIds([]);
+    prevFeatureIds.current = [];
+  };
 
   return {
     features,

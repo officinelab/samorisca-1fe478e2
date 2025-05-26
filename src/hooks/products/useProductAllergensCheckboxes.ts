@@ -1,11 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 
-/**
- * Confronta due array di stringhe e ritorna true se diversi.
- */
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -21,7 +18,9 @@ export function useProductAllergensCheckboxes(productId?: string) {
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load all available allergens ONCE
+  // Ref per evitare ripetuti setState usless
+  const prevAllergenIds = useRef<string[]>([]);
+
   useEffect(() => {
     let mounted = true;
     const fetchAllergens = async () => {
@@ -37,10 +36,10 @@ export function useProductAllergensCheckboxes(productId?: string) {
     return () => { mounted = false };
   }, []);
 
-  // Only load selected allergens if productId exists
   useEffect(() => {
     if (!productId) {
       setSelectedAllergenIds([]);
+      prevAllergenIds.current = [];
       return;
     }
     let mounted = true;
@@ -54,20 +53,16 @@ export function useProductAllergensCheckboxes(productId?: string) {
           .map((f) => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        setSelectedAllergenIds((prev) => {
-          if (
-            arraysAreDifferent(prev, nextIds) &&
-            JSON.stringify(prev) !== JSON.stringify(nextIds)
-          ) {
-            console.log(
-              "[useProductAllergensCheckboxes] Update allergens: ",
-              "prev:", prev,
-              "next:", nextIds
-            );
-            return nextIds;
-          }
-          return prev;
-        });
+        // Solo aggiorna se effettivamente diverso dal precedente
+        if (arraysAreDifferent(prevAllergenIds.current, nextIds)) {
+          // log per debug:
+          console.log("[useProductAllergensCheckboxes] Effettuo update selectedAllergenIds", nextIds);
+          setSelectedAllergenIds(nextIds);
+          prevAllergenIds.current = nextIds; // salva lo stato attuale per prossimo ciclo
+        } else {
+          // Se uguale, skippo
+          // console.log("[useProductAllergensCheckboxes] Nessun update necessario");
+        }
       }
     };
     fetchSelected();
@@ -76,12 +71,17 @@ export function useProductAllergensCheckboxes(productId?: string) {
   }, [productId]);
 
   const toggleAllergen = (aId: string) => {
-    setSelectedAllergenIds((prev) =>
-      prev.includes(aId) ? prev.filter((id) => id !== aId) : [...prev, aId]
-    );
+    setSelectedAllergenIds((prev) => {
+      const updated = prev.includes(aId) ? prev.filter((id) => id !== aId) : [...prev, aId];
+      prevAllergenIds.current = updated;
+      return updated;
+    });
   };
 
-  const resetSelectedAllergens = () => setSelectedAllergenIds([]);
+  const resetSelectedAllergens = () => {
+    setSelectedAllergenIds([]);
+    prevAllergenIds.current = [];
+  };
 
   return {
     allergens,
