@@ -1,101 +1,38 @@
 
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ProductFeature } from "@/types/database";
+import { Product } from "@/types/database";
 
-// Utility robusta per confronto array
-function arraysAreEqual(a: string[], b: string[]) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
-export function useProductFeaturesCheckboxes(productId?: string) {
-  const [features, setFeatures] = useState<ProductFeature[]>([]);
-  const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // Per evitare loop infinito sul reset
-  const lastProductId = useRef<string | undefined>(undefined);
-
-  // Carica caratteristiche disponibili una volta sola
+export const useProductFeatures = (product?: Product) => {
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Carica le caratteristiche associate al prodotto
   useEffect(() => {
-    let mounted = true;
-    const fetchFeatures = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("product_features")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (!error && mounted) setFeatures(data || []);
-      setLoading(false);
-    };
-    fetchFeatures();
-    return () => { mounted = false };
-  }, []);
-
-  // Carica caratteristiche già selezionate dal prodotto (quando productId cambia)
-  useEffect(() => {
-    // Reset solo quando productId passa da un valore a null/undefined
-    if (!productId) {
-      if (lastProductId.current) {
-        setSelectedFeatureIds([]);
-        lastProductId.current = undefined;
-      }
-      return;
-    }
-
-    // Evita di rifare la fetch se è lo stesso productId
-    if (lastProductId.current === productId) {
-      return;
-    }
-
-    let mounted = true;
-    const fetchSelected = async () => {
-      const { data, error } = await supabase
-        .from("product_to_features")
-        .select("feature_id")
-        .eq("product_id", productId);
-
-      if (!error && data && mounted) {
-        const nextIds = (data || [])
-          .map(f => typeof f.feature_id === "string" ? f.feature_id : undefined)
-          .filter((id): id is string => !!id && id.length > 0);
-
-        if (!arraysAreEqual(selectedFeatureIds, nextIds)) {
-          setSelectedFeatureIds(nextIds);
+    if (product?.id) {
+      setIsLoading(true);
+      const fetchProductFeatures = async () => {
+        try {
+          const { data } = await supabase
+            .from("product_to_features")
+            .select("feature_id")
+            .eq("product_id", product.id);
+            
+          if (data) {
+            const featureIds = data.map(item => item.feature_id);
+            setSelectedFeatures(featureIds);
+          }
+        } catch (error) {
+          console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
+        } finally {
+          setIsLoading(false);
         }
-        lastProductId.current = productId;
-      }
-    };
-    fetchSelected();
-    return () => { mounted = false };
-    // eslint-disable-next-line
-  }, [productId]);
+      };
+      
+      fetchProductFeatures();
+    }
+  }, [product?.id]);
 
-  const toggleFeature = (fId: string) => {
-    setSelectedFeatureIds((prev) => {
-      if (prev.includes(fId)) {
-        return prev.filter((id) => id !== fId);
-      } else {
-        return [...prev, fId];
-      }
-    });
-  };
-
-  const resetSelectedFeatures = () => {
-    setSelectedFeatureIds([]);
-  };
-
-  return {
-    features,
-    selectedFeatureIds,
-    setSelectedFeatureIds,
-    toggleFeature,
-    resetSelectedFeatures,
-    loading,
-  };
-}
-
+  return { selectedFeatures, setSelectedFeatures, isLoading };
+};
