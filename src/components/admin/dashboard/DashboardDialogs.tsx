@@ -1,4 +1,3 @@
-
 import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -24,11 +23,13 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     handleCategoryFormCancel      // callback che andava usata per le categorie
   } = dashboard;
 
-  // Usa direttamente editingProduct come suggerito per evitare loop infiniti
-  const memoizedEditingProduct = React.useMemo(
-    () => editingProduct ? editingProduct : undefined,
-    [editingProduct]
-  );
+  // Opzione CONSIGLIATA: rimuovere allergens/features da editingProduct prima di passarli al form
+  const memoizedEditingProduct = React.useMemo(() => {
+    if (!editingProduct) return undefined;
+    // Rimuovi allergens e features per evitare loop infiniti
+    const { allergens, features, ...cleanProduct } = editingProduct;
+    return cleanProduct;
+  }, [editingProduct?.id]);
 
   // Callback memorizzate per evitare riferimento nuovo ad ogni render
   const memoizedCategoryFormSave = React.useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
