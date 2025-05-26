@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { dashboardStyles } from "@/pages/admin/Dashboard.styles";
@@ -8,8 +8,6 @@ import { ProductFeaturesIcons } from "@/components/public-menu/product-card/Prod
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import StandaloneProductEditDialog from "./StandaloneProductEditDialog";
-
 interface ProductDetailProps {
   product: Product | null;
   selectedCategory: Category | null;
@@ -20,9 +18,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   selectedCategory,
   onEditProduct
 }) => {
-  // stato per gestire la nuova popup
-  const [showEdit2, setShowEdit2] = useState(false);
-
   if (!product) {
     return <div className="h-full flex items-center justify-center text-gray-500">
         Seleziona un prodotto per visualizzare i dettagli.
@@ -70,13 +65,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   Categoria: <span className="font-semibold">{selectedCategory?.title || "-"}</span>
                 </div>
               </div>
-              <div className="shrink-0 flex gap-2">
+              <div className="shrink-0">
                 <Button size="sm" onClick={onEditProduct} variant="outline">
                   <Edit className="w-4 h-4 mr-1" />
                   Modifica
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setShowEdit2(true)}>
-                  Modifica 2
                 </Button>
               </div>
             </div>
@@ -153,12 +145,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           </div>
         </CardContent>
       </Card>
-      {/* Dialog Modifica 2 */}
-      <StandaloneProductEditDialog
-        open={showEdit2}
-        onOpenChange={setShowEdit2}
-        product={product}
-      />
     </div>;
 };
 export default ProductDetail;
