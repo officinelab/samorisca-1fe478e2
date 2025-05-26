@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/types/database";
+import { Product, ProductFeature } from "@/types/database";
 
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
@@ -14,16 +14,32 @@ function arraysAreDifferent(a: string[], b: string[]) {
 }
 
 export const useProductFeatures = (product?: Product) => {
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastProductId = useRef<string | undefined>();
   const productIdRef = useRef(product?.id);
   productIdRef.current = product?.id;
 
+  // Carica tutte le features all'avvio
+  useEffect(() => {
+    let mounted = true;
+    const fetchFeatures = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("product_features")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (!error && mounted && data) setFeatures(data);
+      setIsLoading(false);
+    };
+    fetchFeatures();
+    return () => { mounted = false; };
+  }, []);
+
   useEffect(() => {
     const currentProductId = productIdRef.current;
 
-    // Se non c'è product id, resetta lo stato
     if (!currentProductId) {
       if (lastProductId.current !== undefined) {
         setSelectedFeatures([]);
@@ -32,12 +48,10 @@ export const useProductFeatures = (product?: Product) => {
       return;
     }
 
-    // Se l'id è lo stesso, non fare nulla
     if (currentProductId === lastProductId.current) {
       return;
     }
 
-    // Fetch features per il nuovo prodotto
     setIsLoading(true);
     const fetchProductFeatures = async () => {
       try {
@@ -47,7 +61,6 @@ export const useProductFeatures = (product?: Product) => {
           .eq("product_id", currentProductId);
 
         if (error) throw error;
-
         if (data) {
           const featureIds = data.map(item => item.feature_id);
           setSelectedFeatures(featureIds);
@@ -78,6 +91,7 @@ export const useProductFeatures = (product?: Product) => {
   };
 
   return {
+    features,
     selectedFeatures,
     setSelectedFeatures: safeSetSelectedFeatures,
     isLoading

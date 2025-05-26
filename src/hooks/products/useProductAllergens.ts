@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/types/database";
+import { Product, Allergen } from "@/types/database";
 
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
@@ -14,28 +14,40 @@ function arraysAreDifferent(a: string[], b: string[]) {
 }
 
 /**
- * Questo hook mantiene lo stato locale degli allergeni selezionati per un prodotto.
- * Aggiorna il DB solo su salvataggio esplicito (non ad ogni modifica di selezione/check).
- * Effettua il fetch SOLO se il prodotto ha un id valido. 
+ * Questo hook mantiene lo stato locale degli allergeni selezionati e carica anche TUTTI gli allergeni dal db.
  */
 export const useProductAllergens = (product?: Product) => {
+  const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const lastLoadedProductId = useRef<string | undefined>(undefined);
 
-  // Effettua fetch solo SE il prodotto ha un id valido, e solo al cambio del productId
+  // Carica tutti gli allergeni all'avvio
+  useEffect(() => {
+    let mounted = true;
+    const fetchAllergens = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("allergens")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (mounted && !error && data) setAllergens(data);
+      setIsLoading(false);
+    };
+    fetchAllergens();
+    return () => { mounted = false; };
+  }, []);
+
+  // Effettua fetch degli allergeni selezionati solo SE il prodotto ha un id valido, e solo al cambio del productId
   useEffect(() => {
     const productId = product?.id;
-    // Skip per prodotti nuovi (senza id), nessun fetch o set automatici
     if (!productId) {
       if (lastLoadedProductId.current !== undefined) {
-        setSelectedAllergens([]); // Svuota lo stato, ma solo 1 volta
+        setSelectedAllergens([]);
         lastLoadedProductId.current = undefined;
       }
       return;
     }
-
-    // Se è lo stesso prodotto, non rifare fetch
     if (lastLoadedProductId.current === productId) {
       return;
     }
@@ -50,9 +62,7 @@ export const useProductAllergens = (product?: Product) => {
           .eq("product_id", productId);
 
         if (error) throw error;
-
         const allergenIds = data ? data.map(item => item.allergen_id) : [];
-        // Aggiorna solo se c'è reale differenza (no ciclo)
         if (arraysAreDifferent(selectedAllergens, allergenIds)) {
           setSelectedAllergens(allergenIds);
         }
@@ -67,11 +77,8 @@ export const useProductAllergens = (product?: Product) => {
 
     fetchProductAllergens();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product?.id]); // Dipendi SOLO dal productId vero!
+  }, [product?.id]);
 
-  /**
-   * Setter sicuro che aggiorna solo su cambiamento reale (evita loop).
-   */
   const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
     if (typeof allergenIds === "function") {
       setSelectedAllergens(allergenIds);
@@ -86,9 +93,9 @@ export const useProductAllergens = (product?: Product) => {
   };
 
   return {
+    allergens,
     selectedAllergens,
     setSelectedAllergens: safeSetSelectedAllergens,
     isLoading
-    // Il salvataggio su DB va fatto solo quando “confermi”/“salvi” il prodotto!
   };
 };
