@@ -7,14 +7,16 @@ import { cn } from "@/lib/utils";
 
 interface AllergenSelectorProps {
   selectedAllergenIds: string[];
-  onToggleAllergen: (allergenId: string) => void;
+  onChange: (allergenIds: string[]) => void;
 }
 
-const AllergenSelector: React.FC<AllergenSelectorProps> = ({
-  selectedAllergenIds,
-  onToggleAllergen
-}) => {
-  const { allergens, isLoading } = useAllergenCheckboxes();
+const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
+  const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
+
+  const handleAllergenToggle = (allergenId: string) => {
+    const newSelection = toggleAllergen(allergenId);
+    onChange(newSelection);
+  };
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>
@@ -29,19 +31,16 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({
               key={allergen.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selectedAllergenIds.includes(allergen.id)
-                  ? "border-primary bg-muted/50"
-                  : "border-input"
+                selected.has(allergen.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => onToggleAllergen(allergen.id)}
+              onClick={() => handleAllergenToggle(allergen.id)}
             >
-              <Checkbox
-                checked={selectedAllergenIds.includes(allergen.id)}
-                onCheckedChange={() => onToggleAllergen(allergen.id)}
+              <Checkbox 
+                checked={selected.has(allergen.id)} 
+                onCheckedChange={() => handleAllergenToggle(allergen.id)} 
               />
               <span className="text-sm">
-                {allergen.number && `${allergen.number}. `}
-                {allergen.title}
+                {allergen.number && `${allergen.number}. `}{allergen.title}
               </span>
             </div>
           ))}
