@@ -1,169 +1,144 @@
 
 import React from "react";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import ImageUploader from "@/components/ImageUploader";
+import { Form } from "@/components/ui/form";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
-
-import ProductLabelSelect from "./sections/ProductLabelSelect";
-import ProductPriceInfo from "./sections/ProductPriceInfo";
+import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-import AllergenSelector from "./AllergenSelector";
-import FeaturesSelector from "./FeaturesSelector";
+import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
+import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import ProductLabelSelect from "./sections/ProductLabelSelect";
+import ProductPriceSection from "./sections/ProductPriceSection";
+
+// Funzione helper per evitare loop
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
 
 interface ProductFormProps {
   product?: Product;
-  onSave?: () => void;
+  categoryId?: string;
+  onSave?: (valuesOverride?: any) => void;
   onCancel?: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({
+  product,
+  categoryId,
+  onSave,
+  onCancel,
+}) => {
   const {
     form,
     isSubmitting,
     labels,
     hasPriceSuffix,
     hasMultiplePrices,
-    selectedAllergens,
-    setSelectedAllergens,
-    selectedFeatures,
-    setSelectedFeatures,
-    handleSubmit
-  } = useProductForm(product, onSave);
+    handleSubmit,
+    features,
+    selectedFeatureIds,
+    toggleFeature,
+    loadingFeatures,
+    allergens,
+    selectedAllergenIds,
+    toggleAllergen,
+    loadingAllergens,
+  } = useProductForm(product, categoryId);
+
+  // Debug logging e fallback
+  const safeFeatures = Array.isArray(features) ? features : [];
+  const safeAllergens = Array.isArray(allergens) ? allergens : [];
+  const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
+  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+
+  if (!Array.isArray(features)) {
+    console.warn("features non è un array!", features);
+  }
+  if (!Array.isArray(allergens)) {
+    console.warn("allergens non è un array!", allergens);
+  }
+  if (!Array.isArray(selectedFeatureIds)) {
+    console.warn("selectedFeatureIds non è un array!", selectedFeatureIds);
+  }
+  if (!Array.isArray(selectedAllergenIds)) {
+    console.warn("selectedAllergenIds non è un array!", selectedAllergenIds);
+  }
+
+  console.log("ProductForm - safeFeatures", safeFeatures);
+  console.log("ProductForm - safeAllergens", safeAllergens);
+  console.log("ProductForm - safeSelectedFeatureIds", safeSelectedFeatureIds);
+  console.log("ProductForm - safeSelectedAllergenIds", safeSelectedAllergenIds);
+
+  const handleSave = async (formValues: any) => {
+    await handleSubmit(formValues);
+    if (onSave) onSave();
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+    <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          {/* Informazioni Base */}
+          <Card className="overflow-visible">
+            <CardHeader>
+              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductBasicInfo form={form} />
+              <ProductPriceSection
+                form={form}
+                labels={labels}
+                hasPriceSuffix={hasPriceSuffix}
+                hasMultiplePrices={hasMultiplePrices}
+              />
+            </CardContent>
+          </Card>
 
-         {/* Box "Stato Attivo" */}
-        <div className="rounded-lg border bg-muted/50 px-4 py-3 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="font-medium text-base">Attivo</span>
-            <span className="text-muted-foreground text-base font-normal">Mostra questo prodotto nel menu</span>
-          </div>
-          <FormField
-            control={form.control}
-            name="is_active"
-            render={({ field }) => (
-              <FormItem className="m-0 p-0 border-0 shadow-none">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
+          {/* Sezione caratteristiche */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductFeaturesCheckboxes
+                productId={product?.id}
+                features={safeFeatures}
+                selectedFeatureIds={safeSelectedFeatureIds}
+                toggleFeature={toggleFeature}
+                loading={loadingFeatures}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Sezione allergeni */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductAllergensCheckboxes
+                productId={product?.id}
+                allergens={safeAllergens}
+                selectedAllergenIds={safeSelectedAllergenIds}
+                toggleAllergen={toggleAllergen}
+                loading={loadingAllergens}
+              />
+            </CardContent>
+          </Card>
+
+          <Separator className="my-4" />
+          <ProductActionButtons
+            isSubmitting={isSubmitting}
+            onCancel={onCancel}
           />
-        </div>
-        
-        
-        
-        {/* Nome prodotto */}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="font-semibold text-base">
-                Nome Prodotto
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Nome del prodotto"
-                  {...field}
-                  className="font-normal text-base"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-      
-
-        {/* Descrizione */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="font-semibold text-base">
-                Descrizione
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Descrizione del prodotto"
-                  className="min-h-32 font-normal text-base"
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Features (Caratteristiche) */}
-        <FeaturesSelector
-          selectedFeatureIds={selectedFeatures}
-          onChange={setSelectedFeatures}
-        />
-
-        {/* Immagine Prodotto */}
-        <div>
-          <FormField
-            control={form.control}
-            name="image_url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold text-base">
-                  Immagine Prodotto
-                </FormLabel>
-                <FormControl>
-                  <div className="rounded-xl border bg-background p-2 flex flex-col items-center justify-center">
-                    <ImageUploader
-                      currentImage={field.value || ""}
-                      onImageUploaded={(url) => field.onChange(url)}
-                      label="Carica immagine"
-                      bucketName="products"
-                      id="product-image-upload"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Etichetta prodotto */}
-        <ProductLabelSelect form={form} labels={labels} />
-
-        {/* Info prezzi */}
-        <ProductPriceInfo 
-          form={form} 
-          hasPriceSuffix={hasPriceSuffix}
-          hasMultiplePrices={hasMultiplePrices}
-        />
-
-        {/* Allergeni */}
-        <AllergenSelector
-          selectedAllergenIds={selectedAllergens}
-          onChange={setSelectedAllergens}
-        />
-
-        {/* Pulsanti azione */}
-        <ProductActionButtons
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-        />
-
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </div>
   );
 };
 

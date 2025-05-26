@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   FormField,
@@ -6,7 +5,6 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -15,105 +13,72 @@ import ImageUploader from "@/components/ImageUploader";
 import { UseFormReturn } from "react-hook-form";
 import { ProductFormValues } from "@/types/form";
 
+/**
+ * Layout UI sulla base della reference image:
+ * - "Stato Attivo" in linea col titolo "Informazioni di Base"
+ * - Sotto: layout responsive. Desktop = due colonne, mobile = stack verticale
+ *   - Sinistra: Immagine in box quadrato, bottone X in alto a destra
+ *   - Destra: Nome prodotto (Input), sotto Descrizione (Textarea)
+ */
+
 interface ProductBasicInfoProps {
   form: UseFormReturn<ProductFormValues>;
 }
 
 const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
-    <section>
-      <h2 className="text-2xl font-semibold mb-2">Informazioni di Base</h2>
-
-      {/* Box Stato Attivo - full row box con bordo e bg chiaro */}
-      <div className="mb-4 rounded-lg border bg-muted/50 px-4 py-3 flex items-center justify-between flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-base">Stato Attivo</span>
-          <span className="ml-1 text-muted-foreground text-base font-normal">
-            Mostra questo prodotto nel menu
-          </span>
-        </div>
-        <div className="flex-shrink-0 ml-4">
-          <FormField
-            control={form.control}
-            name="is_active"
-            render={({ field }) => (
-              <FormItem className="m-0 p-0 border-0 shadow-none">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
-
-      {/* Responsive two-column layout */}
-      <div className="flex flex-col md:flex-row gap-6 w-full">
-        {/* Colonna sinistra: Image */}
-        <div className="md:w-1/3 w-full">
+    <div className="w-full">
+      {/* Immagine + Nome/Descrizione - Layout responsive grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        {/* Colonna sx: Immagine Prodotto */}
+        <div className="md:col-span-4 col-span-1">
           <FormField
             control={form.control}
             name="image_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold text-base">
-                  Immagine Prodotto
-                </FormLabel>
-                <FormControl>
-                  <div className="rounded-xl border bg-background p-4 flex items-center justify-center min-h-[170px]">
+                <FormLabel className="text-base font-semibold">Immagine Prodotto</FormLabel>
+                <div className="mt-2 relative">
+                  <div className="relative">
                     <ImageUploader
                       currentImage={field.value || ""}
-                      onImageUploaded={(url) => field.onChange(url)}
-                      label=""
-                      bucketName="products"
-                      // Riduci la "X" di rimozione via css qui sotto
-                      id="product-image-upload"
-                      // Stili già presenti
+                      onImageUploaded={(url) => { field.onChange(url); }}
+                      label="Carica immagine del prodotto"
+                      bucketName="menu-images"
+                      folderPath="menu"
                     />
                   </div>
-                </FormControl>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        {/* Colonna destra: Nome prodotto e Descrizione */}
-        <div className="flex-1 flex flex-col gap-4">
+        {/* Colonna dx: Nome prodotto sopra, Descrizione sotto */}
+        <div className="flex flex-col gap-5 md:col-span-8 col-span-1">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold text-base">
-                  Nome Prodotto
-                </FormLabel>
+                <FormLabel className="text-base font-semibold">Nome Prodotto</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Nome del prodotto"
-                    {...field}
-                    className="font-normal text-base"
-                  />
+                  <Input placeholder="Nome del prodotto" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-semibold text-base">
-                  Descrizione
-                </FormLabel>
+                <FormLabel className="text-base font-semibold">Descrizione</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Descrizione del prodotto"
-                    className="min-h-32 font-normal text-base"
+                    className="min-h-28"
                     {...field}
                     value={field.value || ""}
                   />
@@ -124,7 +89,7 @@ const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
           />
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

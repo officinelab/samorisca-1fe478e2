@@ -1,21 +1,28 @@
 
 import { useAllergens } from "./useAllergens";
 import { useAllergenSelection } from "./useAllergenSelection";
-import { Allergen } from "@/types/database";
+import { useMemo } from "react";
 
-// Hook per gestire la lista di allergeni selezionabili
 export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
+  // Memoizza l'array di IDs per evitare re-render inutili
+  const memoizedSelectedIds = useMemo(() => selectedAllergenIds, [
+    selectedAllergenIds.join(",")
+  ]);
+
   // Carica la lista di allergeni
   const { allergens, isLoading } = useAllergens();
-  
-  // Gestisce lo stato di selezione
-  const { selected, toggleAllergen, selectedAllergenIds: currentSelectedIds } = 
-    useAllergenSelection(selectedAllergenIds);
 
-  // Ottieni gli allergeni completi (con tutti i dati) dalla selezione IDs
-  const getSelectedFullAllergens = () => {
+  // Gestisce lo stato di selezione
+  const {
+    selected,
+    toggleAllergen,
+    selectedAllergenIds: currentSelectedIds
+  } = useAllergenSelection(memoizedSelectedIds);
+
+  // Gli allergeni selezionati in formato completo
+  const selectedFullAllergens = useMemo(() => {
     return allergens.filter(allergen => selected.has(allergen.id));
-  };
+  }, [allergens, selected]);
 
   return {
     allergens,
@@ -23,6 +30,6 @@ export const useAllergenCheckboxes = (selectedAllergenIds: string[] = []) => {
     selected,
     toggleAllergen,
     selectedAllergens: currentSelectedIds,
-    selectedFullAllergens: getSelectedFullAllergens()
+    selectedFullAllergens
   };
 };
