@@ -78,6 +78,7 @@ export const useProductFeatures = (product?: Product) => {
   }, [product?.id]);
 
   const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
+    console.log('Setting features:', featureIds);
     if (typeof featureIds === "function") {
       setSelectedFeatures(featureIds);
     } else {

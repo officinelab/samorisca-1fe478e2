@@ -84,7 +84,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Sezione caratteristiche */}
+          {/* SEZIONE COMMENTATA PER DEBUG FEATURES/ALLERGENI */}
+          {/* 
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductFeaturesCheckboxes
@@ -96,7 +97,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-          {/* Sezione allergeni */}
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
@@ -107,6 +107,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
               />
             </CardContent>
           </Card>
+          */}
 
           <Separator className="my-4" />
           <ProductActionButtons

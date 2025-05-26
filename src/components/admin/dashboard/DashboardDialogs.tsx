@@ -19,7 +19,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     selectedCategoryId,
     handleCategoryFormSave,
     handleProductFormSave,
-    handleProductFormCancel  // Only declare once here!
+    handleProductFormCancel,      // per prodotti
+    handleCategoryFormCancel      // callback che andava usata per le categorie
   } = dashboard;
 
   // Memoizza i prodotti per evitare cicli di render dovuti a referenze diverse
@@ -29,8 +30,9 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
   );
 
   // Callback memorizzate per evitare riferimento nuovo ad ogni render
-  const memoizedCategoryFormSave = useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
-  const memoizedCategoryFormCancel = useCallback(handleProductFormCancel, [handleProductFormCancel]);
+  const memoizedCategoryFormSave = React.useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
+  const memoizedCategoryFormCancel = React.useCallback(handleCategoryFormCancel, [handleCategoryFormCancel]);
+  // N.B.: Usare la giusta callback anche negli sheet/dialog per le categorie!
 
   // Anche ProductForm eventualmente può essere trattato uguale.
 
