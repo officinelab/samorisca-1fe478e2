@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,10 +13,21 @@ interface AllergenSelectorProps {
 const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
   const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
 
+  // Salva il primo render per evitare onChange al mount
+  const isFirstRender = useRef(true);
+
   const handleAllergenToggle = (allergenId: string) => {
     const newSelection = toggleAllergen(allergenId);
     onChange(newSelection);
   };
+
+  React.useEffect(() => {
+    // Non chiamare onChange al mount
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+  }, []); // non chiamare mai onChange qui!
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>

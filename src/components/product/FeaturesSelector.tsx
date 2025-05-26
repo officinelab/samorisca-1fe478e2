@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,8 +15,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
+  const isFirstRender = useRef(true);
 
-  // Carica le caratteristiche dei prodotti
   useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
@@ -38,12 +38,12 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     fetchFeatures();
   }, []);
 
-  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
   useEffect(() => {
     setSelected(new Set(selectedFeatureIds));
+    // Non chiamare onChange qui per evitare loop
+    // OnChange deve partire solo da interazione utente
   }, [selectedFeatureIds]);
 
-  // Toggle per selezionare/deselezionare una caratteristica
   const toggleFeature = (featureId: string) => {
     const newSelected = new Set(selected);
     if (newSelected.has(featureId)) {
