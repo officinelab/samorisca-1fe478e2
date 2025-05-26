@@ -66,7 +66,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
                 form={form} 
                 hasPriceSuffix={hasPriceSuffix}
                 hasMultiplePrices={hasMultiplePrices}
-                minimalVersion={true}
               />
             </div>
           </div>
@@ -77,20 +76,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
           <div className="flex items-center gap-2">
             <span className="text-sm">Suffisso prezzo</span>
             <ProductPriceInfo 
-              form={form} hasPriceSuffix={hasPriceSuffix} hasMultiplePrices={hasMultiplePrices} 
-              minimalSwitch="suffix"
+              form={form}
+              hasPriceSuffix={hasPriceSuffix}
+              hasMultiplePrices={hasMultiplePrices}
             />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm">Prezzi multipli</span>
             <ProductPriceInfo 
-              form={form} hasPriceSuffix={hasPriceSuffix} hasMultiplePrices={hasMultiplePrices} 
-              minimalSwitch="multiple"
+              form={form}
+              hasPriceSuffix={hasPriceSuffix}
+              hasMultiplePrices={hasMultiplePrices}
             />
           </div>
         </div>
 
-        {/* --- Sposta qui Caratteristiche e Allergeni --- */}
+        {/* Caratteristiche e Allergeni come ultime sezioni */}
         <FeaturesSelector
           selectedFeatureIds={selectedFeatures}
           onChange={setSelectedFeatures}
