@@ -6,17 +6,6 @@ import { cn } from "@/lib/utils";
 import { Allergen } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 
-// Funzione per confronto robusto tra array di ID, come negli hook
-function arraysAreDifferent(a: string[], b: string[]) {
-  if (a.length !== b.length) return true;
-  const sa = [...a].sort();
-  const sb = [...b].sort();
-  for (let i = 0; i < sa.length; i++) {
-    if (sa[i] !== sb[i]) return true;
-  }
-  return false;
-}
-
 interface Props {
   productId?: string;
   selectedAllergenIds: string[];
@@ -49,15 +38,10 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   }, []);
 
   const handleChange = (allergenId: string) => {
-    let newAllergenIds: string[];
     if (selectedAllergenIds.includes(allergenId)) {
-      newAllergenIds = selectedAllergenIds.filter(id => id !== allergenId);
+      setSelectedAllergenIds(selectedAllergenIds.filter(id => id !== allergenId));
     } else {
-      newAllergenIds = [...selectedAllergenIds, allergenId];
-    }
-    // Aggiorna solo se effettivamente cambia qualcosa
-    if (arraysAreDifferent(selectedAllergenIds, newAllergenIds)) {
-      setSelectedAllergenIds(newAllergenIds);
+      setSelectedAllergenIds([...selectedAllergenIds, allergenId]);
     }
   };
 
