@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,16 +8,18 @@ import { cn } from "@/lib/utils";
 
 interface FeaturesSelectorProps {
   selectedFeatureIds: string[];
-  onChange: (featureIds: string[]) => void;
+  onToggleFeature: (featureId: string) => void;
 }
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
-  const [features, setFeatures] = useState<ProductFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
+  selectedFeatureIds,
+  onToggleFeature,
+}) => {
+  const [features, setFeatures] = React.useState<ProductFeature[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  // Carica le caratteristiche dei prodotti
-  useEffect(() => {
+  // Caricamento una volta sola
+  React.useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
       try {
@@ -34,28 +36,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
         setIsLoading(false);
       }
     };
-
     fetchFeatures();
   }, []);
-
-  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
-  useEffect(() => {
-    setSelected(new Set(selectedFeatureIds));
-  }, [selectedFeatureIds]);
-
-  // Toggle per selezionare/deselezionare una caratteristica
-  const toggleFeature = (featureId: string) => {
-    const newSelected = new Set(selected);
-    if (newSelected.has(featureId)) {
-      newSelected.delete(featureId);
-    } else {
-      newSelected.add(featureId);
-    }
-    setSelected(newSelected);
-    const newSelection = Array.from(newSelected);
-    onChange(newSelection);
-    return newSelection;
-  };
 
   return (
     <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
@@ -70,13 +52,13 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
               key={feature.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
+                selectedFeatureIds.includes(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => toggleFeature(feature.id)}
+              onClick={() => onToggleFeature(feature.id)}
             >
-              <Checkbox 
-                checked={selected.has(feature.id)} 
-                onCheckedChange={() => toggleFeature(feature.id)} 
+              <Checkbox
+                checked={selectedFeatureIds.includes(feature.id)}
+                onCheckedChange={() => onToggleFeature(feature.id)}
               />
               <span className="text-sm">{feature.title}</span>
             </div>

@@ -36,6 +36,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const previousImage = useRef<string | null>(null);
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // Convert MB to bytes
   
+  console.log("ImageUploader props:", { bucketName, folderPath, currentImage });
+  
   // Carica l'immagine corrente all'inizializzazione del componente
   useEffect(() => {
     if (currentImage) {
@@ -51,6 +53,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    console.log("Starting image upload for file:", file.name, "to bucket:", bucketName);
     
     setIsUploading(true);
     setImageError(false);
@@ -68,6 +72,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     });
     
     if (uploadResult) {
+      console.log("Upload successful:", uploadResult);
       setImageUrl(uploadResult);
       onImageUploaded(uploadResult);
       toast.success("Immagine caricata con successo!");
@@ -80,6 +85,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         await deleteImageFromStorage(previousImage.current, bucketName);
       }
       previousImage.current = uploadResult;
+    } else {
+      console.error("Upload failed");
+      setImageError(true);
+      setImageUrl(null);
     }
     
     setIsUploading(false);
@@ -113,16 +122,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             type="button"
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2 w-8 h-8"
+            className="absolute top-2 right-2 w-5 h-5"
             onClick={handleRemoveImage}
             disabled={isUploading}
+            tabIndex={0}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2">
-          <div className="text-center mb-2">{label}</div>
           <input
             type="file"
             id={id}
@@ -137,7 +146,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           >
             <UploadPlaceholder 
               isUploading={isUploading}
-              label="Clicca per selezionare un'immagine"
+              label=""
               defaultPreview={defaultPreview}
               currentImage={currentImage}
               hasError={imageError}

@@ -1,30 +1,47 @@
-
-import { Product } from "@/types/database";
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
-import { useProductAllergens } from "./useProductAllergens";
-import { useProductFeatures } from "./useProductFeatures";
 import { useProductFormSubmit } from "./useProductFormSubmit";
+import { Product } from "@/types/database";
+import { useProductFeaturesCheckboxes } from "./useProductFeaturesCheckboxes";
+import { useProductAllergensCheckboxes } from "./useProductAllergensCheckboxes";
 
-export const useProductForm = (product?: Product, onSave?: () => void) => {
-  // Hook per il form e lo stato
+export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
+  // Form base
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
-  
-  // Hook per le etichette
   const { labels } = useProductLabels();
-  
-  // Hook per gli allergeni
-  const { selectedAllergens, setSelectedAllergens } = useProductAllergens(product);
-  
-  // Hook per le caratteristiche
-  const { selectedFeatures, setSelectedFeatures } = useProductFeatures(product);
-  
-  // Hook per la gestione dell'invio del form
+
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Gestore per l'invio del form
+  // Stato locale caratteristiche e allergeni tramite i nuovi hooks
+  const {
+    features,
+    selectedFeatureIds,
+    setSelectedFeatureIds,
+    toggleFeature,
+    loading: loadingFeatures,
+  } = useProductFeaturesCheckboxes(product?.id);
+
+  const {
+    allergens,
+    selectedAllergenIds,
+    setSelectedAllergenIds,
+    toggleAllergen,
+    loading: loadingAllergens,
+  } = useProductAllergensCheckboxes(product?.id);
+
+  // Intercetta il submit e invia i dati delle features/allergeni selezionati
   const handleSubmit = async (values: any) => {
-    return await submitForm(values, selectedAllergens, selectedFeatures, product?.id);
+    // Inietta la category se manca
+    if (categoryId && !values.category_id) {
+      values.category_id = categoryId;
+    }
+    // Passa state aggiornato!
+    return await submitForm(
+      values, // form
+      selectedAllergenIds,
+      selectedFeatureIds,
+      product?.id
+    );
   };
 
   return {
@@ -33,10 +50,17 @@ export const useProductForm = (product?: Product, onSave?: () => void) => {
     labels,
     hasPriceSuffix,
     hasMultiplePrices,
-    selectedAllergens,
-    setSelectedAllergens,
-    selectedFeatures,
-    setSelectedFeatures,
-    handleSubmit
+    handleSubmit,
+    // Per accesso in ProductForm
+    features,
+    selectedFeatureIds,
+    setSelectedFeatureIds,
+    toggleFeature,
+    loadingFeatures,
+    allergens,
+    selectedAllergenIds,
+    setSelectedAllergenIds,
+    toggleAllergen,
+    loadingAllergens,
   };
 };
