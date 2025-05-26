@@ -51,6 +51,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     selectedAllergenIds,
     setSelectedAllergenIds,
     loadingAllergens,
+    allergens, // <-- needed for prop
+    features,  // <-- needed for features
   } = useProductForm(product, categoryId);
 
   // Questi array sono sempre sicuri ora
@@ -98,10 +100,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
-                productId={product?.id}
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
                 loading={loadingAllergens}
+                allergens={allergens} // explicitly pass allergens if necessary
               />
             </CardContent>
           </Card>
