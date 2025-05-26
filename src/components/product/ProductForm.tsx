@@ -1,18 +1,29 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Form } from "@/components/ui/form";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
-
-// Form Section Components
 import ProductBasicInfo from "./sections/ProductBasicInfo";
-import ProductLabelSelect from "./sections/ProductLabelSelect";
-import ProductPriceInfo from "./sections/ProductPriceInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-
-// Feature and Allergen Selectors
 import AllergenSelector from "./AllergenSelector";
 import FeaturesSelector from "./FeaturesSelector";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import ProductLabelSelect from "./sections/ProductLabelSelect";
+import ProductPriceSection from "./sections/ProductPriceSection";
+
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
 
 interface ProductFormProps {
   product?: Product;
@@ -21,11 +32,11 @@ interface ProductFormProps {
   onCancel?: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ 
-  product, 
+const ProductForm: React.FC<ProductFormProps> = ({
+  product,
   categoryId,
-  onSave, 
-  onCancel 
+  onSave,
+  onCancel,
 }) => {
   const {
     form,
@@ -37,44 +48,80 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setSelectedAllergens,
     selectedFeatures,
     setSelectedFeatures,
-    handleSubmit
+    handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
+  // Usiamo semplicemente i valori dagli hook (array stabili)
+  const handleAllergensChange = useCallback(
+    (newAllergens: string[]) => {
+      if (arraysAreDifferent(newAllergens, selectedAllergens)) {
+        setSelectedAllergens(newAllergens);
+      }
+    },
+    [setSelectedAllergens, selectedAllergens]
+  );
+  const handleFeaturesChange = useCallback(
+    (newFeatures: string[]) => {
+      if (arraysAreDifferent(newFeatures, selectedFeatures)) {
+        setSelectedFeatures(newFeatures);
+      }
+    },
+    [setSelectedFeatures, selectedFeatures]
+  );
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Informazioni di base - Nome, Attivo, Descrizione, Immagine */}
-        <ProductBasicInfo form={form} />
-        
-        {/* Selezione etichetta */}
-        <ProductLabelSelect form={form} labels={labels} />
-        
-        {/* Selezione caratteristiche - espandibile */}
-        <FeaturesSelector
-          selectedFeatureIds={selectedFeatures}
-          onChange={setSelectedFeatures}
-        />
+    <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="space-y-6"
+        >
+          {/* Informazioni Base */}
+          <Card className="overflow-visible">
+            <CardHeader>
+              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductBasicInfo form={form} />
+              {/* --- SEZIONE PREZZI --- */}
+              <ProductPriceSection
+                form={form}
+                labels={labels}
+                hasPriceSuffix={hasPriceSuffix}
+                hasMultiplePrices={hasMultiplePrices}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Informazioni prezzo */}
-        <ProductPriceInfo 
-          form={form} 
-          hasPriceSuffix={hasPriceSuffix}
-          hasMultiplePrices={hasMultiplePrices}
-        />
+          {/* Caratteristiche */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <FeaturesSelector
+                selectedFeatureIds={selectedFeatures}
+                onChange={handleFeaturesChange}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Selezione allergeni - espandibile */}
-        <AllergenSelector
-          selectedAllergenIds={selectedAllergens}
-          onChange={setSelectedAllergens}
-        />
+          {/* Allergeni */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <AllergenSelector
+                selectedAllergenIds={selectedAllergens}
+                onChange={handleAllergensChange}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Pulsanti azione */}
-        <ProductActionButtons
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-        />
-      </form>
-    </Form>
+          {/* Azioni */}
+          <Separator className="my-4" />
+          <ProductActionButtons
+            isSubmitting={isSubmitting}
+            onCancel={onCancel}
+          />
+        </form>
+      </Form>
+    </div>
   );
 };
 

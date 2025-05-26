@@ -10,13 +10,28 @@ interface AllergenSelectorProps {
   onChange: (allergenIds: string[]) => void;
 }
 
-const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds, onChange }) => {
-  const { allergens, isLoading, toggleAllergen, selected } = useAllergenCheckboxes(selectedAllergenIds);
+const areEqualArr = (a: string[], b: string[]) => {
+  if (a.length !== b.length) return false;
+  const sA = [...a].sort();
+  const sB = [...b].sort();
+  return sA.every((val, idx) => val === sB[idx]);
+};
 
-  const handleAllergenToggle = (allergenId: string) => {
+const AllergenSelector: React.FC<AllergenSelectorProps> = ({
+  selectedAllergenIds,
+  onChange,
+}) => {
+  const { allergens, isLoading, toggleAllergen, selected } =
+    useAllergenCheckboxes(selectedAllergenIds);
+
+  // Usiamo una callback memoizzata che non cambia mai tranne che su change vero
+  const handleAllergenToggle = React.useCallback((allergenId: string) => {
     const newSelection = toggleAllergen(allergenId);
-    onChange(newSelection);
-  };
+    // Chiama onChange solo su modifica reale (evita ciclo)
+    if (!areEqualArr(newSelection, selectedAllergenIds)) {
+      onChange(newSelection);
+    }
+  }, [onChange, toggleAllergen, selectedAllergenIds.join(",")]);
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>
@@ -31,16 +46,19 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({ selectedAllergenIds
               key={allergen.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selected.has(allergen.id) ? "border-primary bg-muted/50" : "border-input"
+                selected.has(allergen.id)
+                  ? "border-primary bg-muted/50"
+                  : "border-input"
               )}
               onClick={() => handleAllergenToggle(allergen.id)}
             >
-              <Checkbox 
-                checked={selected.has(allergen.id)} 
-                onCheckedChange={() => handleAllergenToggle(allergen.id)} 
+              <Checkbox
+                checked={selected.has(allergen.id)}
+                onCheckedChange={() => handleAllergenToggle(allergen.id)}
               />
               <span className="text-sm">
-                {allergen.number && `${allergen.number}. `}{allergen.title}
+                {allergen.number && `${allergen.number}. `}
+                {allergen.title}
               </span>
             </div>
           ))}
