@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
@@ -54,8 +55,7 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         .eq("product_id", productId);
       // Only update state if still mounted
       if (!error && data && mounted) {
-        // Filtra tutte le entry null/undefined (bug fix!)
-        const nextIds = (data.map((f) => f.feature_id).filter((id) => !!id)) as string[];
+        const nextIds = data.map((f) => f.feature_id);
         setSelectedFeatureIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );

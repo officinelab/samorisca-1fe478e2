@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
@@ -51,8 +52,8 @@ export function useProductAllergensCheckboxes(productId?: string) {
         .select("allergen_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        // Filtra tutte le entry null/undefined (bug fix!)
-        const nextIds = (data.map((f) => f.allergen_id).filter((id) => !!id)) as string[];
+        // Aggiorna solo se cambiato per evitare loop
+        const nextIds = data.map((f) => f.allergen_id);
         setSelectedAllergenIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );
@@ -82,3 +83,4 @@ export function useProductAllergensCheckboxes(productId?: string) {
     loading,
   };
 }
+
