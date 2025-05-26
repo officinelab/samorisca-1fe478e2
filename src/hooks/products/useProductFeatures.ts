@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -36,3 +35,4 @@ export const useProductFeatures = (product?: Product) => {
 
   return { selectedFeatures, setSelectedFeatures, isLoading };
 };
+
