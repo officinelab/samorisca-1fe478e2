@@ -43,14 +43,19 @@ const ProductsList: React.FC<ProductsListProps> = ({
 
   // Usa la lista di reordering (se non è vuota), altrimenti products
   const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
+
+  // FILTRO PER CATEGORIA: mostro solo i prodotti della categoria selezionata
+  const categoryFilteredProducts = selectedCategory
+    ? alwaysActiveReorderingList.filter(product => product.category_id === selectedCategory.id)
+    : alwaysActiveReorderingList;
+
   const { 
     searchQuery, 
     setSearchQuery, 
     filteredProducts,
     isSearchDisabled 
-  } = useProductsSearch(alwaysActiveReorderingList, false);
+  } = useProductsSearch(categoryFilteredProducts, false);
 
-  // Inizializza il riordino solo quando arrivano veri prodotti e non è già attivo
   useEffect(() => {
     if (products.length > 0 && !isReorderingProducts) {
       onStartReordering();
