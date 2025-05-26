@@ -1,15 +1,17 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 
 export const useProductAllergens = (product?: Product) => {
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const lastProductId = useRef<string | undefined>();
 
-  // Carica gli allergeni solo quando cambia product.id
   useEffect(() => {
-    if (product?.id) {
+    console.log("[useProductAllergens] effect running. Current product.id:", product?.id, "Last product.id:", lastProductId.current);
+    // Only run when product.id changes, skip if not changed
+    if (product?.id && product.id !== lastProductId.current) {
       setIsLoading(true);
       const fetchProductAllergens = async () => {
         try {
@@ -26,15 +28,15 @@ export const useProductAllergens = (product?: Product) => {
           console.error("Errore nel caricamento degli allergeni del prodotto:", error);
         } finally {
           setIsLoading(false);
+          lastProductId.current = product.id;
         }
       };
-
       fetchProductAllergens();
-    } else {
+    } else if (!product?.id) {
       setSelectedAllergens([]);
+      lastProductId.current = undefined;
     }
-  }, [product?.id]); // dipendenza: SOLO product.id
+  }, [product?.id]);
 
   return { selectedAllergens, setSelectedAllergens, isLoading };
 };
-
