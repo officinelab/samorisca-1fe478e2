@@ -50,7 +50,11 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
                 ? "border-primary bg-muted/50"
                 : "border-input"
             )}
-            onClick={() => handleChange(feature.id)}
+            onClick={(e) => {
+              // Solo se il click NON proviene dalla checkbox interna
+              if ((e.target as HTMLElement).closest('[role="checkbox"]')) return;
+              handleChange(feature.id);
+            }}
             tabIndex={0}
             role="button"
             aria-pressed={selectedFeatureIds.includes(feature.id)}
@@ -58,6 +62,7 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
             <Checkbox
               checked={selectedFeatureIds.includes(feature.id)}
               onCheckedChange={() => handleChange(feature.id)}
+              onClick={(e) => e.stopPropagation()}
             />
             <span className="text-sm">{feature.title}</span>
           </div>

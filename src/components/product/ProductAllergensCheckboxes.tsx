@@ -49,7 +49,11 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                 checked ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => handleChange(allergen.id)}
+              onClick={(e) => {
+                // Solo se il click NON parte dalla checkbox
+                if ((e.target as HTMLElement).closest('[role="checkbox"]')) return;
+                handleChange(allergen.id);
+              }}
               tabIndex={0}
               role="button"
               aria-pressed={checked}
@@ -57,6 +61,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
               <Checkbox
                 checked={checked}
                 onCheckedChange={() => handleChange(allergen.id)}
+                onClick={(e) => e.stopPropagation()}
               />
               <span className="text-sm">
                 {allergen.number && `${allergen.number}. `}
