@@ -3,6 +3,19 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
+/**
+ * Confronta due array di stringhe e ritorna true se diversi.
+ */
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
+
 // Loads features and manages selected features for a single product.
 // Ensures no endless update loops when editing product.
 export function useProductFeaturesCheckboxes(productId?: string) {
@@ -42,11 +55,15 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         .eq("product_id", productId);
       // Only update state if still mounted
       if (!error && data && mounted) {
-        setSelectedFeatureIds(data.map((f) => f.feature_id));
+        const nextIds = data.map((f) => f.feature_id);
+        setSelectedFeatureIds((prev) =>
+          arraysAreDifferent(prev, nextIds) ? nextIds : prev
+        );
       }
     };
     fetchSelected();
     return () => { mounted = false };
+    // eslint-disable-next-line
   }, [productId]);
 
   // Local toggle, does not save to DB until Save is pressed

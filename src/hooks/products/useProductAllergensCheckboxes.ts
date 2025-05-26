@@ -3,6 +3,19 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 
+/**
+ * Confronta due array di stringhe e ritorna true se diversi.
+ */
+function arraysAreDifferent(a: string[], b: string[]) {
+  if (a.length !== b.length) return true;
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  for (let i = 0; i < sa.length; i++) {
+    if (sa[i] !== sb[i]) return true;
+  }
+  return false;
+}
+
 // Loads allergens and manages selected allergens for a single product.
 // Ensures no endless update loops when editing product.
 export function useProductAllergensCheckboxes(productId?: string) {
@@ -39,11 +52,16 @@ export function useProductAllergensCheckboxes(productId?: string) {
         .select("allergen_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        setSelectedAllergenIds(data.map((f) => f.allergen_id));
+        // Aggiorna solo se cambiato per evitare loop
+        const nextIds = data.map((f) => f.allergen_id);
+        setSelectedAllergenIds((prev) =>
+          arraysAreDifferent(prev, nextIds) ? nextIds : prev
+        );
       }
     };
     fetchSelected();
     return () => { mounted = false };
+    // eslint-disable-next-line
   }, [productId]);
 
   // Local toggle, does not save to DB until Save is pressed
@@ -65,3 +83,4 @@ export function useProductAllergensCheckboxes(productId?: string) {
     loading,
   };
 }
+
