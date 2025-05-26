@@ -36,121 +36,134 @@ const ProductItem: React.FC<ProductItemProps> = ({
   onMoveUp,
   onMoveDown
 }) => {
+  // CLASSES
+  const baseClass = [
+    "flex",
+    "items-center",
+    "border",
+    "rounded-xl",
+    "px-4",
+    "py-3",
+    "gap-3",
+    "transition-colors",
+    "bg-gray-50",
+    "shadow-sm",
+    isSelected
+      ? "border-primary bg-primary/5"
+      : "hover:bg-gray-100 border-gray-200",
+    !product.is_active ? "opacity-60" : "",
+    "w-full"
+  ].join(" ");
+
   return (
-    <div
-      className={`${dashboardStyles.productItem} ${
-        isSelected 
-          ? dashboardStyles.productItemSelected
-          : dashboardStyles.productItemHover
-      } ${!product.is_active ? dashboardStyles.productItemInactive : ""}`}
-      onClick={() => !isReordering && onClick()}
-    >
-      <div className={dashboardStyles.productContent}>
+    <div className={baseClass} onClick={() => !isReordering && onClick()}>
+      {/* COLONNA 1: REORDER ARROWS */}
+      <div className="flex flex-col items-center justify-center pr-2 gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={e => {
+            e.stopPropagation();
+            onMoveUp();
+          }}
+          disabled={isReordering ? !canMoveUp : true}
+          tabIndex={-1}
+        >
+          <ChevronUp className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={e => {
+            e.stopPropagation();
+            onMoveDown();
+          }}
+          disabled={isReordering ? !canMoveDown : true}
+          tabIndex={-1}
+        >
+          <ChevronDown className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* COLONNA 2: PRODUCT IMAGE */}
+      <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center mr-2">
         {product.image_url ? (
-          <div className={dashboardStyles.productImage}>
-            <img
-              src={product.image_url}
-              alt={product.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <img
+            src={product.image_url}
+            alt={product.title}
+            className="w-full h-full object-cover"
+          />
         ) : (
-          <div className={dashboardStyles.productImagePlaceholder}>
-            <Package className="h-6 w-6 text-gray-400" />
-          </div>
+          <Package className="h-8 w-8 text-gray-400" />
         )}
-        
-        <div className={dashboardStyles.productDetails}>
-          <h3 className={dashboardStyles.productTitle}>{product.title}</h3>
-          {product.description && (
-            <p className={dashboardStyles.productDescription}>{product.description}</p>
+      </div>
+
+      {/* COLONNA 3: TESTUAL INFO */}
+      <div className="flex flex-col flex-1 min-w-0 gap-1">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-lg text-gray-900 truncate">{product.title}</span>
+          {product.has_price_suffix && product.price_suffix && (
+            <span className="text-xs text-gray-500">{product.price_suffix}</span>
           )}
-          
-          <div className="flex items-center mt-1 space-x-2">
-            <span className={dashboardStyles.productPrice}>{product.price_standard} €</span>
-            {product.has_price_suffix && product.price_suffix && (
-              <span className={dashboardStyles.productPriceSuffix}>{product.price_suffix}</span>
-            )}
-            
-            {!product.is_active && (
-              <span className={dashboardStyles.productUnavailable}>
-                Non disponibile
-              </span>
-            )}
-            
-            {product.allergens && product.allergens.length > 0 && (
-              <div className={dashboardStyles.productAllergens}>
-                {product.allergens.slice(0, 3).map((allergen) => (
-                  <span 
-                    key={allergen.id}
-                    className={dashboardStyles.productAllergenTag}
-                  >
-                    {allergen.number}
-                  </span>
-                ))}
-                {product.allergens.length > 3 && (
-                  <span className={dashboardStyles.productAllergenTag}>
-                    +{product.allergens.length - 3}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
+          {!product.is_active && (
+            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium ml-1">
+              Non disponibile
+            </span>
+          )}
+        </div>
+        {product.description && (
+          <span className="text-sm text-gray-500 line-clamp-2">{product.description}</span>
+        )}
+        <div className="flex flex-wrap items-center gap-2 mt-1">
+          <span className="text-base font-semibold text-gray-900">{Number(product.price_standard).toFixed(2)} €</span>
+          {product.allergens && product.allergens.length > 0 && (
+            <div className="flex gap-1">
+              {product.allergens.slice(0, 3).map((allergen) => (
+                <span 
+                  key={allergen.id}
+                  className="rounded-full bg-white border px-2 py-0.5 text-xs font-medium text-gray-700 shadow"
+                >
+                  {allergen.number}
+                </span>
+              ))}
+              {product.allergens.length > 3 && (
+                <span className="rounded-full bg-white border px-2 py-0.5 text-xs font-medium text-gray-700 shadow">
+                  +{product.allergens.length - 3}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
-      
-      <div className={dashboardStyles.productActions}>
-        {isReordering ? (
-          <div className={dashboardStyles.productReorderActions}>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className={dashboardStyles.buttonSm}
-              onClick={(e) => {
-                e.stopPropagation();
-                onMoveUp();
-              }}
-              disabled={!canMoveUp}
-            >
-              <ChevronUp className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className={dashboardStyles.buttonSm}
-              onClick={(e) => {
-                e.stopPropagation();
-                onMoveDown();
-              }}
-              disabled={!canMoveDown}
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </>
-        )}
+
+      {/* COLONNA 4: AZIONI (EDIT, DELETE)*/}
+      <div className="flex flex-col items-center justify-between h-full pl-2 gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={e => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          tabIndex={-1}
+        >
+          <Edit className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={e => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          tabIndex={-1}
+        >
+          <Trash2 className="h-5 w-5" />
+        </Button>
       </div>
     </div>
   );
