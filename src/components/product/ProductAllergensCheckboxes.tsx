@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -5,32 +6,19 @@ import { cn } from "@/lib/utils";
 import { Allergen } from "@/types/database";
 
 interface Props {
-  productId?: string;
-  allergens: Allergen[]; // ✅ RICEVUTO DAL PARENT
+  allergens: Allergen[];
   selectedAllergenIds: string[];
   setSelectedAllergenIds: (ids: string[] | ((prev: string[]) => string[])) => void;
   loading: boolean;
 }
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
-  productId,
-  allergens, // ✅ NON PIÙ FETCH INTERNO!
+  allergens,
   selectedAllergenIds,
   setSelectedAllergenIds,
   loading,
 }) => {
-  // ❌ RIMOSSO: useEffect per fetch allergens
-  // ❌ RIMOSSO: useState per allergens locali
-  
-  // ✅ GESTIONE SEMPLICE E SICURA
-  const handleChange = (allergenId: string) => {
-    setSelectedAllergenIds(prev =>
-      prev.includes(allergenId)
-        ? prev.filter(id => id !== allergenId)
-        : [...prev, allergenId]
-    );
-  };
-
+  // Se caricamento, mostra messaggio di loading
   if (loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
@@ -38,6 +26,15 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   if (!Array.isArray(allergens) || allergens.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
+
+  // Gestione selezione robusta (forma funzionale)
+  const handleChange = (allergenId: string) => {
+    setSelectedAllergenIds(prev =>
+      prev.includes(allergenId)
+        ? prev.filter(id => id !== allergenId)
+        : [...prev, allergenId]
+    );
+  };
 
   return (
     <div>

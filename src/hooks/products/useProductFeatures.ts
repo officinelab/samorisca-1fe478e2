@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductFeature } from "@/types/database";
 
@@ -17,47 +17,29 @@ export const useProductFeatures = (product?: Product) => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // ✅ TRACKING per evitare re-fetch inutili
   const lastProductId = useRef<string | undefined>();
-  const isInitialized = useRef(false);
+  const productIdRef = useRef(product?.id);
+  productIdRef.current = product?.id;
 
-  // ✅ FETCH FEATURES: Solo una volta al mount
+  // Carica tutte le features all'avvio
   useEffect(() => {
-    if (isInitialized.current) return;
-    
     let mounted = true;
     const fetchFeatures = async () => {
       setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("product_features")
-          .select("*")
-          .order("display_order", { ascending: true });
-        
-        if (mounted && !error && data) {
-          setFeatures(data);
-          isInitialized.current = true;
-        }
-      } catch (error) {
-        console.error("Errore caricamento features:", error);
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
+      const { data, error } = await supabase
+        .from("product_features")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (!error && mounted && data) setFeatures(data);
+      setIsLoading(false);
     };
-    
     fetchFeatures();
     return () => { mounted = false; };
-  }, []); // ✅ NESSUNA DIPENDENZA = solo al mount
+  }, []);
 
-  // ✅ FETCH SELEZIONI: Solo quando cambia product.id
   useEffect(() => {
-    const currentProductId = product?.id;
+    const currentProductId = productIdRef.current;
 
-    // ✅ SKIP se non cambia product
-    if (currentProductId === lastProductId.current) return;
-
-    // ✅ RESET se non c'è product
     if (!currentProductId) {
       if (lastProductId.current !== undefined) {
         setSelectedFeatures([]);
@@ -66,9 +48,11 @@ export const useProductFeatures = (product?: Product) => {
       return;
     }
 
-    let mounted = true;
+    if (currentProductId === lastProductId.current) {
+      return;
+    }
+
     setIsLoading(true);
-    
     const fetchProductFeatures = async () => {
       try {
         const { data, error } = await supabase
@@ -76,27 +60,24 @@ export const useProductFeatures = (product?: Product) => {
           .select("feature_id")
           .eq("product_id", currentProductId);
 
-        if (mounted && !error) {
-          const featureIds = data ? data.map(item => item.feature_id) : [];
+        if (error) throw error;
+        if (data) {
+          const featureIds = data.map(item => item.feature_id);
           setSelectedFeatures(featureIds);
-          lastProductId.current = currentProductId;
         }
       } catch (error) {
         console.error("Errore nel caricamento caratteristiche:", error);
-        if (mounted) setSelectedFeatures([]);
+        setSelectedFeatures([]);
       } finally {
-        if (mounted) setIsLoading(false);
+        lastProductId.current = currentProductId;
+        setIsLoading(false);
       }
     };
 
     fetchProductFeatures();
-    return () => { mounted = false; };
-  }, [product?.id]); // ✅ SOLO product?.id nelle dipendenze
+  }, [product?.id]);
 
-  // ✅ SETTER STABILIZZATO con useCallback
-  const safeSetSelectedFeatures = useCallback((
-    featureIds: string[] | ((prev: string[]) => string[])
-  ) => {
+  const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
     if (typeof featureIds === "function") {
       setSelectedFeatures(featureIds);
     } else {
@@ -107,10 +88,10 @@ export const useProductFeatures = (product?: Product) => {
         return prev;
       });
     }
-  }, []);
+  };
 
   return {
-    features, // ✅ array completo di oggetti ProductFeature
+    features, // array completo di oggetti ProductFeature
     selectedFeatures,
     setSelectedFeatures: safeSetSelectedFeatures,
     isLoading
