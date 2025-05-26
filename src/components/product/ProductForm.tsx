@@ -36,7 +36,6 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({
   product,
-  categoryId,
   onSave,
   onCancel,
 }) => {
@@ -47,46 +46,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    features,
-    selectedFeatureIds,
-    setSelectedFeatureIds,
-    toggleFeature,
-    loadingFeatures,
-    allergens,
-    selectedAllergenIds,
-    setSelectedAllergenIds,
-    toggleAllergen,
-    loadingAllergens,
-  } = useProductForm(product, categoryId);
+    selectedAllergens,
+    setSelectedAllergens,
+    selectedFeatures,
+    setSelectedFeatures,
+  } = useProductForm(product, onSave);
 
-  // Debug logging e fallback
-  const safeFeatures = Array.isArray(features) ? features : [];
-  const safeAllergens = Array.isArray(allergens) ? allergens : [];
-  const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
-  const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
-
-  if (!Array.isArray(features)) {
-    console.warn("features non è un array!", features);
-  }
-  if (!Array.isArray(allergens)) {
-    console.warn("allergens non è un array!", allergens);
-  }
-  if (!Array.isArray(selectedFeatureIds)) {
-    console.warn("selectedFeatureIds non è un array!", selectedFeatureIds);
-  }
-  if (!Array.isArray(selectedAllergenIds)) {
-    console.warn("selectedAllergenIds non è un array!", selectedAllergenIds);
-  }
-
-  console.log("ProductForm - safeFeatures", safeFeatures);
-  console.log("ProductForm - safeAllergens", safeAllergens);
-  console.log("ProductForm - safeSelectedFeatureIds", safeSelectedFeatureIds);
-  console.log("ProductForm - safeSelectedAllergenIds", safeSelectedAllergenIds);
-
-  const handleSave = async (formValues: any) => {
-    await handleSubmit(formValues);
-    if (onSave) onSave();
-  };
+ 
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
