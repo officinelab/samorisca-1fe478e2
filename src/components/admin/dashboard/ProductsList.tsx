@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
@@ -44,14 +43,17 @@ const ProductsList: React.FC<ProductsListProps> = ({
   // Usa la lista di reordering (se non è vuota), altrimenti products
   const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
 
-  // Filtraggio categoria NON più necessario (la lista prodotti è già filtrata a monte)
+  // Filtra per categoria selezionata
+  const filteredByCategory = selectedCategory
+    ? alwaysActiveReorderingList.filter(p => p.category_id === selectedCategory.id)
+    : alwaysActiveReorderingList;
 
   const { 
     searchQuery, 
     setSearchQuery, 
     filteredProducts,
     isSearchDisabled 
-  } = useProductsSearch(alwaysActiveReorderingList, false);
+  } = useProductsSearch(filteredByCategory, false);
 
   useEffect(() => {
     if (products.length > 0 && !isReorderingProducts) {
