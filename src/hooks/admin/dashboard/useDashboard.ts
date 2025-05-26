@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -13,6 +14,8 @@ export const useDashboard = () => {
 
   // Carica i prodotti della categoria selezionata
   const handleCategorySelect = async (categoryId: string) => {
+    // Esce dalla modalità riordino prodotti quando si cambia categoria!
+    dashboardOperations.cancelReorderingProducts();
     dashboardOperations.setSelectedCategoryId(categoryId);
     dashboardOperations.setSelectedProductId(null);
     if (dashboardOperations.loadProducts) {
@@ -90,3 +93,4 @@ export const useDashboard = () => {
     handleProductFormCancel
   };
 };
+
