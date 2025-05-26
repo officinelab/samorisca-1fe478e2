@@ -52,12 +52,15 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingFeatures,
     selectedAllergenIds,
     setSelectedAllergenIds,
-    loadingAllergens,
+    // loadingAllergens,  // Non usare questa var: è sempre false!
   } = useProductForm(product, categoryId, allergens);
 
   // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
   const safeSelectedAllergenIds = Array.isArray(selectedAllergenIds) ? selectedAllergenIds : [];
+
+  // Mostra loading se la lista allergeni è vuota (finché la fetch termina)
+  const isLoadingAllergens = !Array.isArray(allergens) || allergens.length === 0;
 
   const handleSave = async (formValues: any) => {
     await handleSubmit(formValues);
@@ -103,7 +106,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 allergens={allergens}
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
-                loading={loadingAllergens}
+                loading={isLoadingAllergens}
               />
             </CardContent>
           </Card>
