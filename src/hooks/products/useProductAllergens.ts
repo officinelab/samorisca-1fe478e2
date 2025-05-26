@@ -1,49 +1,37 @@
-import { Product } from "@/types/database";
-import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Hook che mantiene lo stato locale degli allergeni selezionati per un prodotto.
- * Aggiorna il DB solo su salvataggio esplicito.
- */
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/types/database";
+
 export const useProductAllergens = (product?: Product) => {
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
-  const lastLoadedProductId = useRef<string | undefined>(undefined);
-
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Carica gli allergeni associati al prodotto
   useEffect(() => {
-    const productId = product?.id;
-    if (!productId) {
-      if (lastLoadedProductId.current !== undefined) {
-        setSelectedAllergens([]);
-        lastLoadedProductId.current = undefined;
-      }
-      return;
+    if (product?.id) {
+      setIsLoading(true);
+      const fetchProductAllergens = async () => {
+        try {
+          const { data } = await supabase
+            .from("product_allergens")
+            .select("allergen_id")
+            .eq("product_id", product.id);
+            
+          if (data) {
+            const allergenIds = data.map(item => item.allergen_id);
+            setSelectedAllergens(allergenIds);
+          }
+        } catch (error) {
+          console.error("Errore nel caricamento degli allergeni del prodotto:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchProductAllergens();
     }
-
-    if (lastLoadedProductId.current === productId) return;
-
-    const fetchProductAllergens = async () => {
-      const { data, error } = await supabase
-        .from("product_allergens")
-        .select("allergen_id")
-        .eq("product_id", productId);
-
-      if (error) {
-        console.error("Errore nel caricamento allergeni prodotto:", error);
-        setSelectedAllergens([]);
-      } else {
-        setSelectedAllergens(data?.map(item => item.allergen_id) || []);
-      }
-      lastLoadedProductId.current = productId;
-    };
-
-    fetchProductAllergens();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
-  return {
-    selectedAllergens,
-    setSelectedAllergens,
-    isLoading: false
-  };
+  return { selectedAllergens, setSelectedAllergens, isLoading };
 };

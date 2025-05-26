@@ -1,25 +1,23 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label"; // <-- Fix: aggiungi l'import
 
 interface FeaturesSelectorProps {
   selectedFeatureIds: string[];
-  onToggleFeature: (featureId: string) => void;
+  onChange: (featureIds: string[]) => void;
 }
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
-  selectedFeatureIds,
-  onToggleFeature,
-}) => {
-  const [features, setFeatures] = React.useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set(selectedFeatureIds));
 
-  React.useEffect(() => {
+  // Carica le caratteristiche dei prodotti
+  useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
       try {
@@ -36,12 +34,31 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
         setIsLoading(false);
       }
     };
+
     fetchFeatures();
   }, []);
 
+  // Aggiorna la selezione quando cambiano le caratteristiche selezionate
+  useEffect(() => {
+    setSelected(new Set(selectedFeatureIds));
+  }, [selectedFeatureIds]);
+
+  // Toggle per selezionare/deselezionare una caratteristica
+  const toggleFeature = (featureId: string) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(featureId)) {
+      newSelected.delete(featureId);
+    } else {
+      newSelected.add(featureId);
+    }
+    setSelected(newSelected);
+    const newSelection = Array.from(newSelected);
+    onChange(newSelection);
+    return newSelection;
+  };
+
   return (
-    <div>
-      <Label className="block text-xs mb-2">Caratteristiche</Label>
+    <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>
       ) : features.length === 0 ? (
@@ -53,24 +70,21 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
               key={feature.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-                selectedFeatureIds.includes(feature.id)
-                  ? "border-primary bg-muted/50"
-                  : "border-input"
+                selected.has(feature.id) ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={() => onToggleFeature(feature.id)}
+              onClick={() => toggleFeature(feature.id)}
             >
-              <Checkbox
-                checked={selectedFeatureIds.includes(feature.id)}
-                onCheckedChange={() => onToggleFeature(feature.id)}
+              <Checkbox 
+                checked={selected.has(feature.id)} 
+                onCheckedChange={() => toggleFeature(feature.id)} 
               />
               <span className="text-sm">{feature.title}</span>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   );
 };
 
 export default FeaturesSelector;
-
