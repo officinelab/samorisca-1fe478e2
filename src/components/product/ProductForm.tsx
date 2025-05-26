@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -6,25 +7,22 @@ import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-// import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes"; // <- RIMOSSO VECCHIO IMPORT
-import FeaturesSelector from "./FeaturesSelector"; // <- NUOVO IMPORT CORRETTO
-// import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
-import AllergenSelector from "./AllergenSelector"; // Consiglio: stesso ragionamento dell’altro rename
+import FeaturesSelector from "./FeaturesSelector";
+import AllergenSelector from "./AllergenSelector";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import ProductLabelSelect from "./sections/ProductLabelSelect";
 import ProductPriceSection from "./sections/ProductPriceSection";
 
-
-
 interface ProductFormProps {
   product?: Product;
   onSave?: () => void;
   onCancel?: () => void;
+  categoryId?: string;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, categoryId }) => {
   const {
     form,
     isSubmitting,
@@ -32,18 +30,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    selectedAllergens,
-    setSelectedAllergens,
-    selectedFeatures,
-    setSelectedFeatures,
-  } = useProductForm(product, onSave);
-
- 
+    features,
+    selectedFeatureIds,
+    setSelectedFeatureIds,
+    toggleFeature,
+    loadingFeatures,
+    allergens,
+    selectedAllergenIds,
+    setSelectedAllergenIds,
+    toggleAllergen,
+    loadingAllergens,
+  } = useProductForm(product, categoryId, onSave);
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {/* Informazioni Base */}
           <Card className="overflow-visible">
             <CardHeader>
