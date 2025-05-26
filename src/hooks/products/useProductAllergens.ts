@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Allergen } from "@/types/database";
 
-// Funzione di confronto, rimane se serve per future funzioni
+// Resta la funzione di confronto
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -15,16 +15,17 @@ function arraysAreDifferent(a: string[], b: string[]) {
 }
 
 /**
- * Hook che carica tutti gli allergeni (SOLO la lista allergeni disponibili),
- * la selezione locale NON viene mai sovrascritta da db.
- * Gli allergeni selezionati partono SEMPRE da array vuoto.
+ * Hook che carica tutti gli allergeni, e pre-seleziona quelli del prodotto SOLO all'inizio o quando cambia davvero il prodotto.
+ * NON fa re-fetch o reset dello stato locale delle selezioni dopo il primo caricamento per evitare loop infiniti/check infinite.
  */
-export const useProductAllergens = (_product?: Product) => {
+export const useProductAllergens = (product?: Product) => {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  // Ci serve tenere traccia di quale prodotto abbiamo fatto mount iniziale
+  const lastLoadedProductId = useRef<string | undefined>(undefined);
 
-  // Carica tutti gli allergeni solo la prima volta che il componente si monta
+  // Carica tutti gli allergeni (sempre solo la prima volta che il componente si monta)
   useEffect(() => {
     let mounted = true;
     const fetchAllergens = async () => {
@@ -40,7 +41,44 @@ export const useProductAllergens = (_product?: Product) => {
     return () => { mounted = false; };
   }, []);
 
-  // selectedAllergens ora è SOLO locale, nessun sincronismo con DB
+  // Fetch degli allergeni associati al prodotto SOLO 1 volta quando cambia il prodotto!
+  useEffect(() => {
+    const productId = product?.id;
+    // Se non cambia productId, niente fetch!
+    if (!productId || productId === lastLoadedProductId.current)
+      return;
+
+    let mounted = true;
+
+    const fetchProductAllergens = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("product_allergens")
+        .select("allergen_id")
+        .eq("product_id", productId);
+      if (error) {
+        if (mounted) setSelectedAllergens([]);
+        setIsLoading(false);
+        lastLoadedProductId.current = productId;
+        return;
+      }
+      const allergenIds = data ? data.map(item => item.allergen_id) : [];
+      if (mounted) {
+        setSelectedAllergens(allergenIds); // Inizializza SOLO la prima volta!
+        lastLoadedProductId.current = productId;
+      }
+      setIsLoading(false);
+    };
+
+    fetchProductAllergens();
+    // Nessun effetto collaterale quando selectedAllergens cambia!
+    return () => { mounted = false; };
+
+    // SOLO se cambia il prodotto si triggera, NON su selectedAllergens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
+
+  // Permette al componente figlio di aggiornare lo stato locale senza essere sovrascritto!
   const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
     setSelectedAllergens(allergenIds);
   };
@@ -52,4 +90,3 @@ export const useProductAllergens = (_product?: Product) => {
     isLoading
   };
 };
-
