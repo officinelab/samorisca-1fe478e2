@@ -44,11 +44,6 @@ export const useProductAllergens = (product?: Product) => {
   useEffect(() => {
     const productId = product?.id;
 
-    console.log('useProductAllergens useEffect triggered', {
-      productId,
-      lastLoadedProductId: lastLoadedProductId.current
-    });
-
     // Se non cambia productId, niente fetch!
     if (!productId || productId === lastLoadedProductId.current)
       return;

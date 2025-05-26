@@ -39,12 +39,6 @@ export const useProductFeatures = (product?: Product) => {
   useEffect(() => {
     const currentProductId = productIdRef.current;
 
-    console.log('useProductFeatures useEffect triggered', {
-      currentProductId,
-      lastProductId: lastProductId.current,
-      productId: product?.id
-    });
-
     if (!currentProductId) {
       if (lastProductId.current !== undefined) {
         setSelectedFeatures([]);

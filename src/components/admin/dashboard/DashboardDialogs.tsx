@@ -23,16 +23,15 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     handleCategoryFormCancel      // callback che andava usata per le categorie
   } = dashboard;
 
-  // Memoizza i prodotti per evitare cicli di render dovuti a referenze diverse
+  // Usa direttamente editingProduct come suggerito per evitare loop infiniti
   const memoizedEditingProduct = React.useMemo(
-    () => editingProduct ? { ...editingProduct } : undefined,
-    [editingProduct?.id]
+    () => editingProduct ? editingProduct : undefined,
+    [editingProduct]
   );
 
   // Callback memorizzate per evitare riferimento nuovo ad ogni render
   const memoizedCategoryFormSave = React.useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
   const memoizedCategoryFormCancel = React.useCallback(handleCategoryFormCancel, [handleCategoryFormCancel]);
-  // N.B.: Usare la giusta callback anche negli sheet/dialog per le categorie!
 
   // Anche ProductForm eventualmente può essere trattato uguale.
 
