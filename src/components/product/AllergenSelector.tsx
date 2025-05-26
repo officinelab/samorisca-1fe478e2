@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,13 +24,12 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({
   const { allergens, isLoading, toggleAllergen, selected } =
     useAllergenCheckboxes(selectedAllergenIds);
 
-  // Solo se click utente
-  const handleAllergenToggle = (allergenId: string) => {
+  const handleAllergenToggle = React.useCallback((allergenId: string) => {
     const newSelection = toggleAllergen(allergenId);
     if (!areEqualArr(newSelection, selectedAllergenIds)) {
       onChange(newSelection);
     }
-  };
+  }, [onChange, toggleAllergen, selectedAllergenIds]);
 
   return (
     <CollapsibleSection title="Allergeni" defaultOpen={false}>

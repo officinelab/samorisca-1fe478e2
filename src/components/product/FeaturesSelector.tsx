@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { ProductFeature } from "@/types/database";
 import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,6 +26,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   const [isLoading, setIsLoading] = React.useState(true);
   const [selected, setSelected] = React.useState<Set<string>>(new Set(selectedFeatureIds));
 
+  // Caricamento una volta sola
   useEffect(() => {
     const fetchFeatures = async () => {
       setIsLoading(true);
@@ -47,19 +48,19 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
     fetchFeatures();
   }, []);
 
-  // Aggiorna solo su vero cambio prop
+  // Sincronizza selected solo quando l'array cambia davvero
   useEffect(() => {
     setSelected((prev) => {
       const newSet = new Set(selectedFeatureIds);
       if (areEqualArr(Array.from(prev), selectedFeatureIds)) {
-        return prev; // Evita inutile update
+        return prev;
       }
       return newSet;
     });
-  }, [selectedFeatureIds]);
+  }, [JSON.stringify(selectedFeatureIds)]);
 
-  // Chiamata onChange SOLO su interazione utente
-  const handleUserToggle = (featureId: string) => {
+  // Memoizziamo la callback
+  const handleUserToggle = React.useCallback((featureId: string) => {
     const newSelected = new Set(selected);
     if (newSelected.has(featureId)) {
       newSelected.delete(featureId);
@@ -73,7 +74,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
       onChange(arrNewSelected);
     }
     return arrNewSelected;
-  };
+  }, [selected, selectedFeatureIds, onChange]);
 
   return (
     <CollapsibleSection title="Caratteristiche" defaultOpen={false}>

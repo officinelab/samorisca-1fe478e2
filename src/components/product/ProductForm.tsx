@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -50,18 +51,24 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
-  // MEMO version to block new reference loops
-  const memoSelectedAllergens = useMemo(() => selectedAllergens, [selectedAllergens]);
-  const memoSelectedFeatures = useMemo(() => selectedFeatures, [selectedFeatures]);
+  // Memoizziamo realmente il valore, in modo che cambi solo quando cambia il contenuto!
+  const memoSelectedAllergens = useMemo(
+    () => [...selectedAllergens],
+    [JSON.stringify(selectedAllergens)]
+  );
+  const memoSelectedFeatures = useMemo(
+    () => [...selectedFeatures],
+    [JSON.stringify(selectedFeatures)]
+  );
 
-  // Evita ciclo: chiama set solo se effettivamente diverso
+  // Callback memoizzate che non cambiano mai a meno che non cambino realmente i valori "primari"
   const handleAllergensChange = useCallback(
     (newAllergens: string[]) => {
       if (arraysAreDifferent(newAllergens, memoSelectedAllergens)) {
         setSelectedAllergens(newAllergens);
       }
     },
-    [setSelectedAllergens, memoSelectedAllergens]
+    [setSelectedAllergens, JSON.stringify(memoSelectedAllergens)]
   );
   const handleFeaturesChange = useCallback(
     (newFeatures: string[]) => {
@@ -69,7 +76,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
         setSelectedFeatures(newFeatures);
       }
     },
-    [setSelectedFeatures, memoSelectedFeatures]
+    [setSelectedFeatures, JSON.stringify(memoSelectedFeatures)]
   );
 
   return (
