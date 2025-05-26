@@ -1,5 +1,4 @@
-
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
@@ -22,6 +21,12 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     handleProductFormSave,
     handleProductFormCancel  // Only declare once here!
   } = dashboard;
+
+  // Memoizza i prodotti per evitare cicli di render dovuti a referenze diverse
+  const memoizedEditingProduct = React.useMemo(
+    () => editingProduct ? { ...editingProduct } : undefined,
+    [editingProduct?.id]
+  );
 
   // Callback memorizzate per evitare riferimento nuovo ad ogni render
   const memoizedCategoryFormSave = useCallback(handleCategoryFormSave, [handleCategoryFormSave]);
@@ -65,7 +70,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             </DialogHeader>
             <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
               <ProductForm
-                product={editingProduct}
+                product={memoizedEditingProduct}
                 categoryId={selectedCategoryId || undefined}
                 onSave={handleProductFormSave}
                 onCancel={handleProductFormCancel}
@@ -111,7 +116,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
           </SheetHeader>
           <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
             <ProductForm
-              product={editingProduct}
+              product={memoizedEditingProduct}
               categoryId={selectedCategoryId || undefined}
               onSave={handleProductFormSave}
               onCancel={handleProductFormCancel}
