@@ -1,42 +1,23 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Allergen } from "@/types/database";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
-  productId?: string;
+  allergens: Allergen[];
   selectedAllergenIds: string[];
   setSelectedAllergenIds: (ids: string[] | ((prev: string[]) => string[])) => void;
   loading: boolean;
 }
 
 const ProductAllergensCheckboxes: React.FC<Props> = ({
-  productId,
+  allergens,
   selectedAllergenIds,
   setSelectedAllergenIds,
   loading,
 }) => {
-  const [allergens, setAllergens] = useState<Allergen[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch allergeni disponibili una sola volta
-  useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    supabase
-      .from("allergens")
-      .select("*")
-      .order("display_order", { ascending: true })
-      .then(({ data, error }) => {
-        if (!error && mounted) setAllergens(data || []);
-        setIsLoading(false);
-      });
-    return () => { mounted = false; };
-  }, []);
-
   // Gestione selezione robusta (forma funzionale)
   const handleChange = (allergenId: string) => {
     setSelectedAllergenIds(prev =>
@@ -46,7 +27,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     );
   };
 
-  if (isLoading || loading) {
+  if (loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
 
@@ -89,3 +70,4 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
 };
 
 export default ProductAllergensCheckboxes;
+

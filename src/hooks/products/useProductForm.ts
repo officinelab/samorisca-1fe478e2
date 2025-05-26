@@ -2,14 +2,18 @@
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
-import { Product } from "@/types/database";
+import { Product, Allergen } from "@/types/database";
 import { useProductFeatures } from "./useProductFeatures";
 import { useState } from "react";
-// SEMPLIFICAZIONE: useProductAllergens non serve più fetch
 
+/**
+ * product: prodotto pre-caricato (con eventuale allergen_ids, feature_ids)
+ * allergens: lista di allergeni già caricata dal parent
+ */
 export const useProductForm = (
   product?: Product & { allergen_ids?: string[]; feature_ids?: string[] },
   categoryId?: string,
+  allergens?: Allergen[],
   onSave?: () => void
 ) => {
   // Form base
@@ -54,6 +58,7 @@ export const useProductForm = (
     // --- Allergeni ---
     selectedAllergenIds: selectedAllergens,
     setSelectedAllergenIds: setSelectedAllergens,
-    loadingAllergens: false, // non serve più
+    loadingAllergens: false,
+    allergens, // ora sempre disponibile come prop da passare direttamente
   };
 };

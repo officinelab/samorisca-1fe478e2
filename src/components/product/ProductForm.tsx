@@ -30,6 +30,7 @@ interface ProductFormProps {
   categoryId?: string;
   onSave?: (valuesOverride?: any) => void;
   onCancel?: () => void;
+  allergens?: Allergen[]; // Passa la lista di allergeni già caricata
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({
@@ -37,6 +38,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   categoryId,
   onSave,
   onCancel,
+  allergens = []
 }) => {
   const {
     form,
@@ -51,7 +53,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     selectedAllergenIds,
     setSelectedAllergenIds,
     loadingAllergens,
-  } = useProductForm(product, categoryId);
+  } = useProductForm(product, categoryId, allergens);
 
   // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
@@ -98,7 +100,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <ProductAllergensCheckboxes
-                productId={product?.id}
+                allergens={allergens}
                 selectedAllergenIds={safeSelectedAllergenIds}
                 setSelectedAllergenIds={setSelectedAllergenIds}
                 loading={loadingAllergens}
