@@ -86,57 +86,63 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (onSave) onSave();
   };
 
+  const handleSaveRaw = async () => {
+    const formValues = form.getValues();
+    await handleSave(formValues);
+    if (onSave) onSave();
+  };
+
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
-          {/* Informazioni Base */}
-          <Card className="overflow-visible">
-            <CardHeader>
-              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductBasicInfo form={form} />
-              <ProductPriceSection
-                form={form}
-                labels={labels}
-                hasPriceSuffix={hasPriceSuffix}
-                hasMultiplePrices={hasMultiplePrices}
-              />
-            </CardContent>
-          </Card>
+      {/* <Form {...form}> */}
+      <form onSubmit={(e) => { e.preventDefault(); handleSave(form.getValues()); }} className="space-y-6">
+        {/* Informazioni Base */}
+        <Card className="overflow-visible">
+          <CardHeader>
+            <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProductBasicInfo form={form} />
+            <ProductPriceSection
+              form={form}
+              labels={labels}
+              hasPriceSuffix={hasPriceSuffix}
+              hasMultiplePrices={hasMultiplePrices}
+            />
+          </CardContent>
+        </Card>
 
-          {/* Sezione caratteristiche */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductFeaturesCheckboxes
-                features={features}
-                selectedFeatureIds={safeSelectedFeatureIds}
-                setSelectedFeatureIds={setSelectedFeatureIds}
-                loading={loadingFeatures}
-              />
-            </CardContent>
-          </Card>
+        {/* Sezione caratteristiche */}
+        <Card>
+          <CardContent className="p-0 border-0 shadow-none">
+            <ProductFeaturesCheckboxes
+              features={features}
+              selectedFeatureIds={safeSelectedFeatureIds}
+              setSelectedFeatureIds={setSelectedFeatureIds}
+              loading={loadingFeatures}
+            />
+          </CardContent>
+        </Card>
 
-          {/* Sezione allergeni */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductAllergensCheckboxes
-                allergens={allergens}
-                selectedAllergenIds={safeSelectedAllergenIds}
-                setSelectedAllergenIds={setSelectedAllergenIds}
-                loading={loadingAllergens}
-              />
-            </CardContent>
-          </Card>
+        {/* Sezione allergeni */}
+        <Card>
+          <CardContent className="p-0 border-0 shadow-none">
+            <ProductAllergensCheckboxes
+              allergens={allergens}
+              selectedAllergenIds={safeSelectedAllergenIds}
+              setSelectedAllergenIds={setSelectedAllergenIds}
+              loading={loadingAllergens}
+            />
+          </CardContent>
+        </Card>
 
-          <Separator className="my-4" />
-          <ProductActionButtons
-            isSubmitting={isSubmitting}
-            onCancel={onCancel}
-          />
-        </form>
-      </Form>
+        <Separator className="my-4" />
+        <ProductActionButtons
+          isSubmitting={isSubmitting}
+          onCancel={onCancel}
+        />
+      </form>
+      {/* </Form> */}
     </div>
   );
 };
