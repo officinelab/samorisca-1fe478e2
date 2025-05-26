@@ -32,6 +32,25 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
   const categoryDialogOpen = showAddCategory || !!editingCategory;
   const productDialogOpen = showAddProduct || !!editingProduct;
 
+  // Category Safety: Only render with required data
+  const safeCategoryForm = categoryDialogOpen && (
+    <CategoryForm
+      category={editingCategory}
+      onSave={memoizedCategoryFormSave}
+      onCancel={memoizedCategoryFormCancel}
+    />
+  );
+
+  // Product Safety: Only render with required data and always defined onSave/onCancel
+  const safeProductForm = (productDialogOpen && handleProductFormSave && handleProductFormCancel) ? (
+    <ProductForm
+      product={editingProduct}
+      categoryId={selectedCategoryId || undefined}
+      onSave={handleProductFormSave}
+      onCancel={handleProductFormCancel}
+    />
+  ) : null;
+
   if (isMobile) {
     return (
       <>
@@ -45,11 +64,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             <DialogHeader>
               <DialogTitle>{editingCategory ? "Modifica Categoria" : "Nuova Categoria"}</DialogTitle>
             </DialogHeader>
-            <CategoryForm
-              category={editingCategory}
-              onSave={memoizedCategoryFormSave}
-              onCancel={memoizedCategoryFormCancel}
-            />
+            {safeCategoryForm}
           </DialogContent>
         </Dialog>
 
@@ -64,12 +79,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
               <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
-              <ProductForm
-                product={editingProduct}
-                categoryId={selectedCategoryId || undefined}
-                onSave={handleProductFormSave}
-                onCancel={handleProductFormCancel}
-              />
+              {safeProductForm}
             </div>
           </DialogContent>
         </Dialog>
@@ -90,11 +100,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             <SheetTitle>{editingCategory ? "Modifica Categoria" : "Nuova Categoria"}</SheetTitle>
           </SheetHeader>
           <div className="pt-4">
-            <CategoryForm
-              category={editingCategory}
-              onSave={memoizedCategoryFormSave}
-              onCancel={memoizedCategoryFormCancel}
-            />
+            {safeCategoryForm}
           </div>
         </SheetContent>
       </Sheet>
@@ -110,12 +116,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
           </SheetHeader>
           <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
-            <ProductForm
-              product={editingProduct}
-              categoryId={selectedCategoryId || undefined}
-              onSave={handleProductFormSave}
-              onCancel={handleProductFormCancel}
-            />
+            {safeProductForm}
           </div>
         </SheetContent>
       </Sheet>

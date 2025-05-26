@@ -23,6 +23,11 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel, categoryId }) => {
+  // Prevent invalid state: do not proceed if something is deeply wrong
+  if (typeof onSave !== "function" || typeof onCancel !== "function") {
+    return null;
+  }
+
   const {
     form,
     isSubmitting,
