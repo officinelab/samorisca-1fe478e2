@@ -39,6 +39,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onCancel,
 }) => {
   // DEBUG: render count/output
+  const [renderCount, setRenderCount] = React.useState(0);
+  React.useEffect(() => {
+    setRenderCount(prev => prev + 1);
+    console.log(`ProductForm render #${renderCount + 1}`, {
+      productId: typeof product !== 'undefined' ? product?.id : undefined,
+      hasProduct: !!product,
+    });
+
+    if (renderCount > 50) {
+      console.error('TOO MANY RENDERS - STOPPING');
+      return;
+    }
+  }, []);
+
   const {
     form,
     isSubmitting,
