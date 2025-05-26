@@ -1,5 +1,3 @@
-
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -40,6 +38,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSave,
   onCancel,
 }) => {
+  // DEBUG: render count/output
   const {
     form,
     isSubmitting,
@@ -57,18 +56,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
-  // DEBUG: Log mount/unmount ed aggiornamenti chiave
-  React.useEffect(() => {
-    console.log('ProductForm mounted/updated', {
-      productId: product?.id,
-      featureIds: selectedFeatureIds,
-      allergenIds: selectedAllergenIds
-    });
-    return () => {
-      console.log('ProductForm unmounting', product?.id);
-    };
-    // Attenzione: log solo su cambio di prodotto (id)
-  }, [product?.id]);
+  console.log('ProductForm render:', {
+    productId: product?.id,
+    hasProduct: !!product,
+    featuresLength: selectedFeatureIds.length,
+    allergensLength: selectedAllergenIds.length
+  });
 
   // Questi array sono sempre sicuri ora
   const safeSelectedFeatureIds = Array.isArray(selectedFeatureIds) ? selectedFeatureIds : [];
@@ -135,4 +128,3 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
-

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, ProductFeature } from "@/types/database";
@@ -76,15 +77,18 @@ export const useProductFeatures = (product?: Product) => {
     fetchProductFeatures();
   }, [product?.id]);
 
+  // SAFE setter: evita update inutili comparando array ordinati
   const safeSetSelectedFeatures = (featureIds: string[] | ((prev: string[]) => string[])) => {
     if (typeof featureIds === "function") {
       setSelectedFeatures(featureIds);
     } else {
       setSelectedFeatures(prev => {
-        if (arraysAreDifferent(featureIds, prev)) {
-          return featureIds;
+        const prevSorted = [...prev].sort().join(',');
+        const nextSorted = [...featureIds].sort().join(',');
+        if (prevSorted === nextSorted) {
+          return prev; // Evita update/react re-render
         }
-        return prev;
+        return featureIds;
       });
     }
   };

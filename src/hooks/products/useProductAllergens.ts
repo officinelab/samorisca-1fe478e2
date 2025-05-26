@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product, Allergen } from "@/types/database";
@@ -78,9 +79,20 @@ export const useProductAllergens = (product?: Product) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
-  // Permette al componente figlio di aggiornare lo stato locale senza essere sovrascritto!
+  // Setter "safe": aggiorna solo se l'array è DAVVERO diverso
   const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
-    setSelectedAllergens(allergenIds);
+    if (typeof allergenIds === "function") {
+      setSelectedAllergens(allergenIds);
+    } else {
+      setSelectedAllergens(prev => {
+        const prevSorted = [...prev].sort().join(',');
+        const nextSorted = [...allergenIds].sort().join(',');
+        if (prevSorted === nextSorted) {
+          return prev;
+        }
+        return allergenIds;
+      });
+    }
   };
 
   return {

@@ -1,3 +1,4 @@
+
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
@@ -25,32 +26,19 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     isLoading: loadingAllergens,
   } = useProductAllergens(product);
 
-  // Memoizza i setter per evitare re-render inutili e solo se l'array cambia DAVVERO
+  // Semplificati: i setter ora fanno solo set diretto
   const setSelectedFeatureIds = useCallback(
     (ids: string[] | ((prev: string[]) => string[])) => {
-      setSelectedFeatures((prevIds) => {
-        const newIds = typeof ids === 'function' ? ids(prevIds) : ids;
-        // confronta sortati, evita aggiornamenti se uguali
-        if (JSON.stringify([...prevIds].sort()) === JSON.stringify([...newIds].sort())) {
-          return prevIds;
-        }
-        return newIds;
-      });
+      setSelectedFeatures(ids);
     },
-    []
+    [setSelectedFeatures]
   );
 
   const setSelectedAllergenIds = useCallback(
     (ids: string[] | ((prev: string[]) => string[])) => {
-      setSelectedAllergens((prevIds) => {
-        const newIds = typeof ids === 'function' ? ids(prevIds) : ids;
-        if (JSON.stringify([...prevIds].sort()) === JSON.stringify([...newIds].sort())) {
-          return prevIds;
-        }
-        return newIds;
-      });
+      setSelectedAllergens(ids);
     },
-    []
+    [setSelectedAllergens]
   );
 
   // Submit con injection di stato features/allergeni
@@ -83,3 +71,4 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     loadingAllergens,
   };
 };
+
