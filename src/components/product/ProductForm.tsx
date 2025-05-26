@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -51,17 +50,27 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
-  // Handlers protetti: aggiornano solo se diversi
-  const handleAllergensChange = (newAllergens: string[]) => {
-    if (arraysAreDifferent(newAllergens, selectedAllergens)) {
-      setSelectedAllergens(newAllergens);
-    }
-  };
-  const handleFeaturesChange = (newFeatures: string[]) => {
-    if (arraysAreDifferent(newFeatures, selectedFeatures)) {
-      setSelectedFeatures(newFeatures);
-    }
-  };
+  // MEMO version to block new reference loops
+  const memoSelectedAllergens = useMemo(() => selectedAllergens, [selectedAllergens]);
+  const memoSelectedFeatures = useMemo(() => selectedFeatures, [selectedFeatures]);
+
+  // Evita ciclo: chiama set solo se effettivamente diverso
+  const handleAllergensChange = useCallback(
+    (newAllergens: string[]) => {
+      if (arraysAreDifferent(newAllergens, memoSelectedAllergens)) {
+        setSelectedAllergens(newAllergens);
+      }
+    },
+    [setSelectedAllergens, memoSelectedAllergens]
+  );
+  const handleFeaturesChange = useCallback(
+    (newFeatures: string[]) => {
+      if (arraysAreDifferent(newFeatures, memoSelectedFeatures)) {
+        setSelectedFeatures(newFeatures);
+      }
+    },
+    [setSelectedFeatures, memoSelectedFeatures]
+  );
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
@@ -92,7 +101,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <FeaturesSelector
-                selectedFeatureIds={selectedFeatures}
+                selectedFeatureIds={memoSelectedFeatures}
                 onChange={handleFeaturesChange}
               />
             </CardContent>
@@ -102,7 +111,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <Card>
             <CardContent className="p-0 border-0 shadow-none">
               <AllergenSelector
-                selectedAllergenIds={selectedAllergens}
+                selectedAllergenIds={memoSelectedAllergens}
                 onChange={handleAllergensChange}
               />
             </CardContent>

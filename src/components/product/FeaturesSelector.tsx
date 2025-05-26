@@ -11,11 +11,20 @@ interface FeaturesSelectorProps {
   onChange: (featureIds: string[]) => void;
 }
 
-const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds, onChange }) => {
+const areEqualArr = (a: string[], b: string[]) => {
+  if (a.length !== b.length) return false;
+  const sA = [...a].sort();
+  const sB = [...b].sort();
+  return sA.every((val, idx) => val === sB[idx]);
+};
+
+const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
+  selectedFeatureIds,
+  onChange,
+}) => {
   const [features, setFeatures] = React.useState<ProductFeature[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selected, setSelected] = React.useState<Set<string>>(new Set(selectedFeatureIds));
-  const isFirstRender = useRef(true);
 
   useEffect(() => {
     const fetchFeatures = async () => {
@@ -38,11 +47,18 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     fetchFeatures();
   }, []);
 
+  // Aggiorna solo su vero cambio prop
   useEffect(() => {
-    // Sincronizza SOLO la selezione, senza chiamare onChange
-    setSelected(new Set(selectedFeatureIds));
+    setSelected((prev) => {
+      const newSet = new Set(selectedFeatureIds);
+      if (areEqualArr(Array.from(prev), selectedFeatureIds)) {
+        return prev; // Evita inutile update
+      }
+      return newSet;
+    });
   }, [selectedFeatureIds]);
 
+  // Chiamata onChange SOLO su interazione utente
   const handleUserToggle = (featureId: string) => {
     const newSelected = new Set(selected);
     if (newSelected.has(featureId)) {
@@ -50,10 +66,13 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
     } else {
       newSelected.add(featureId);
     }
+    const arrNewSelected = Array.from(newSelected);
+
     setSelected(newSelected);
-    const newSelection = Array.from(newSelected);
-    onChange(newSelection);
-    return newSelection;
+    if (!areEqualArr(arrNewSelected, selectedFeatureIds)) {
+      onChange(arrNewSelected);
+    }
+    return arrNewSelected;
   };
 
   return (
@@ -73,9 +92,9 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({ selectedFeatureIds,
               )}
               onClick={() => handleUserToggle(feature.id)}
             >
-              <Checkbox 
-                checked={selected.has(feature.id)} 
-                onCheckedChange={() => handleUserToggle(feature.id)} 
+              <Checkbox
+                checked={selected.has(feature.id)}
+                onCheckedChange={() => handleUserToggle(feature.id)}
               />
               <span className="text-sm">{feature.title}</span>
             </div>
