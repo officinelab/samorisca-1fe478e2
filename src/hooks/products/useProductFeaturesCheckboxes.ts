@@ -1,10 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
-/**
- * Confronta due array di stringhe e ritorna true se diversi.
- */
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -15,8 +13,6 @@ function arraysAreDifferent(a: string[], b: string[]) {
   return false;
 }
 
-// Loads features and manages selected features for a single product.
-// Ensures no endless update loops when editing product.
 export function useProductFeaturesCheckboxes(productId?: string) {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
@@ -41,7 +37,7 @@ export function useProductFeaturesCheckboxes(productId?: string) {
   // Only load selected features if productId exists
   useEffect(() => {
     if (!productId) {
-      setSelectedFeatureIds([]); // for new product, none selected
+      setSelectedFeatureIds([]);
       return;
     }
     let mounted = true;
@@ -51,15 +47,27 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         .select("feature_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        // Filtro e conversione rigorosa
         const nextIds = (data || [])
           .map((f) => typeof f.feature_id === "string" ? f.feature_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        // Aggiorna stato solo se effettivamente diverso
-        setSelectedFeatureIds((prev) =>
-          arraysAreDifferent(prev, nextIds) ? nextIds : prev
-        );
+        // Solo se davvero diverso (anche per tipo/riferimento)
+        setSelectedFeatureIds((prev) => {
+          if (
+            arraysAreDifferent(prev, nextIds) &&
+            JSON.stringify(prev) !== JSON.stringify(nextIds)
+          ) {
+            // Extra log di sicurezza
+            console.log(
+              "[useProductFeaturesCheckboxes] Update features: ",
+              "prev:", prev,
+              "next:", nextIds
+            );
+            return nextIds;
+          }
+          // Nessun update inutile
+          return prev;
+        });
       }
     };
     fetchSelected();
@@ -74,7 +82,6 @@ export function useProductFeaturesCheckboxes(productId?: string) {
     );
   };
 
-  // Optionally allow for manual reset
   const resetSelectedFeatures = () => setSelectedFeatureIds([]);
 
   return {

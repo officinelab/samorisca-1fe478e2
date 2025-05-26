@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
@@ -15,8 +16,6 @@ function arraysAreDifferent(a: string[], b: string[]) {
   return false;
 }
 
-// Loads allergens and manages selected allergens for a single product.
-// Ensures no endless update loops when editing product.
 export function useProductAllergensCheckboxes(productId?: string) {
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
@@ -51,14 +50,24 @@ export function useProductAllergensCheckboxes(productId?: string) {
         .select("allergen_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        // Solo stringhe realmente valide
         const nextIds = (data || [])
           .map((f) => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        setSelectedAllergenIds((prev) =>
-          arraysAreDifferent(prev, nextIds) ? nextIds : prev
-        );
+        setSelectedAllergenIds((prev) => {
+          if (
+            arraysAreDifferent(prev, nextIds) &&
+            JSON.stringify(prev) !== JSON.stringify(nextIds)
+          ) {
+            console.log(
+              "[useProductAllergensCheckboxes] Update allergens: ",
+              "prev:", prev,
+              "next:", nextIds
+            );
+            return nextIds;
+          }
+          return prev;
+        });
       }
     };
     fetchSelected();
@@ -66,14 +75,12 @@ export function useProductAllergensCheckboxes(productId?: string) {
     // eslint-disable-next-line
   }, [productId]);
 
-  // Local toggle, does not save to DB until Save is pressed
   const toggleAllergen = (aId: string) => {
     setSelectedAllergenIds((prev) =>
       prev.includes(aId) ? prev.filter((id) => id !== aId) : [...prev, aId]
     );
   };
 
-  // Optionally allow for manual reset
   const resetSelectedAllergens = () => setSelectedAllergenIds([]);
 
   return {
