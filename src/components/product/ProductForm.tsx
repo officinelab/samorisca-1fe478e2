@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -112,13 +111,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Features (Caratteristiche) */}
           <FeaturesSelector
             selectedFeatureIds={selectedFeatureIds}
-            onChange={setSelectedFeatureIds}
+            onToggleFeature={toggleFeature}
           />
 
           {/* Sezione allergeni */}
           <AllergenSelector
             selectedAllergenIds={selectedAllergenIds}
-            onChange={setSelectedAllergenIds}
+            onToggleAllergen={toggleAllergen}
           />
 
           <Separator className="my-4" />
@@ -133,4 +132,3 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
-
