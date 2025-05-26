@@ -1,4 +1,5 @@
 import React from "react";
+import { Form } from "@/components/ui/form";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 
@@ -15,7 +16,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  console.log('ProductForm WITH HOOK render', product?.id);
+  console.log('ProductForm WITH FORM WRAPPER render', product?.id);
   
   const {
     form,
@@ -33,19 +34,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
     setSelectedAllergenIds,
     loadingAllergens,
   } = useProductForm(product, categoryId);
-  
-  console.log('Hook data:', {
-    featuresCount: features.length,
-    selectedFeatures: selectedFeatureIds.length,
-    allergensCount: allergens.length,
-    selectedAllergens: selectedAllergenIds.length
-  });
 
   return (
     <div>
-      <h1>TEST FORM con Hook - Product ID: {product?.id || 'NEW'}</h1>
-      <p>Features: {features.length} (Selected: {selectedFeatureIds.length})</p>
-      <p>Allergens: {allergens.length} (Selected: {selectedAllergenIds.length})</p>
+      <h1>TEST FORM con Form Wrapper - Product ID: {product?.id || 'NEW'}</h1>
+      <Form {...form}>
+        <form>
+          <p>Form wrapper attivo</p>
+          <p>Features: {features.length} (Selected: {selectedFeatureIds.length})</p>
+          <p>Allergens: {allergens.length} (Selected: {selectedAllergenIds.length})</p>
+        </form>
+      </Form>
       <button onClick={onCancel}>Cancel</button>
     </div>
   );
