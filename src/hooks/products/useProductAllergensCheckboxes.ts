@@ -1,9 +1,9 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 
-// Utility più robusta per confronto array
+// Utility robusta per confronto array
 function arraysAreEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -17,8 +17,7 @@ export function useProductAllergensCheckboxes(productId?: string) {
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const prevAllergenIds = useRef<string[]>([]);
-
+  // Carica tutti gli allergeni all’avvio una sola volta
   useEffect(() => {
     let mounted = true;
     const fetchAllergens = async () => {
@@ -34,10 +33,10 @@ export function useProductAllergensCheckboxes(productId?: string) {
     return () => { mounted = false };
   }, []);
 
+  // Carica allergeni selezionati solo quando productId cambia
   useEffect(() => {
     if (!productId) {
-      setSelectedAllergenIds([]);
-      prevAllergenIds.current = [];
+      if (selectedAllergenIds.length > 0) setSelectedAllergenIds([]);
       return;
     }
 
@@ -53,10 +52,8 @@ export function useProductAllergensCheckboxes(productId?: string) {
           .map(f => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        // Confronto con il ref; aggiorna solo se realmente cambiato
-        if (!arraysAreEqual(prevAllergenIds.current, nextIds)) {
+        if (!arraysAreEqual(selectedAllergenIds, nextIds)) {
           setSelectedAllergenIds(nextIds);
-          prevAllergenIds.current = nextIds; // Solo DOPO setState
         }
       }
     };
@@ -68,21 +65,16 @@ export function useProductAllergensCheckboxes(productId?: string) {
 
   const toggleAllergen = (aId: string) => {
     setSelectedAllergenIds((prev) => {
-      let updated: string[];
       if (prev.includes(aId)) {
-        updated = prev.filter((id) => id !== aId);
+        return prev.filter((id) => id !== aId);
       } else {
-        updated = [...prev, aId];
+        return [...prev, aId];
       }
-      // Aggiorna la ref subito dopo aver cambiato stato
-      prevAllergenIds.current = updated;
-      return updated;
     });
   };
 
   const resetSelectedAllergens = () => {
     setSelectedAllergenIds([]);
-    prevAllergenIds.current = [];
   };
 
   return {

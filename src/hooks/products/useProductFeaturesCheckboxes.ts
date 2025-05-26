@@ -1,9 +1,9 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
 
-// Utility più robusta per confronto array
+// Utility robusta per confronto array
 function arraysAreEqual(a: string[], b: string[]) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -17,8 +17,7 @@ export function useProductFeaturesCheckboxes(productId?: string) {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const prevFeatureIds = useRef<string[]>([]);
-
+  // Carica caratteristiche disponibili una volta sola
   useEffect(() => {
     let mounted = true;
     const fetchFeatures = async () => {
@@ -34,10 +33,11 @@ export function useProductFeaturesCheckboxes(productId?: string) {
     return () => { mounted = false };
   }, []);
 
+  // Carica caratteristiche già selezionate dal prodotto (quando productId cambia)
   useEffect(() => {
     if (!productId) {
-      setSelectedFeatureIds([]);
-      prevFeatureIds.current = [];
+      // solo se serve resettare!
+      if (selectedFeatureIds.length > 0) setSelectedFeatureIds([]);
       return;
     }
 
@@ -53,10 +53,8 @@ export function useProductFeaturesCheckboxes(productId?: string) {
           .map(f => typeof f.feature_id === "string" ? f.feature_id : undefined)
           .filter((id): id is string => !!id && id.length > 0);
 
-        // Confronto con il ref; aggiorna solo se realmente cambiato
-        if (!arraysAreEqual(prevFeatureIds.current, nextIds)) {
+        if (!arraysAreEqual(selectedFeatureIds, nextIds)) {
           setSelectedFeatureIds(nextIds);
-          prevFeatureIds.current = nextIds; // Solo DOPO setState
         }
       }
     };
@@ -67,21 +65,16 @@ export function useProductFeaturesCheckboxes(productId?: string) {
 
   const toggleFeature = (fId: string) => {
     setSelectedFeatureIds((prev) => {
-      let updated: string[];
       if (prev.includes(fId)) {
-        updated = prev.filter((id) => id !== fId);
+        return prev.filter((id) => id !== fId);
       } else {
-        updated = [...prev, fId];
+        return [...prev, fId];
       }
-      // Aggiorna la ref subito dopo aver cambiato stato
-      prevFeatureIds.current = updated;
-      return updated;
     });
   };
 
   const resetSelectedFeatures = () => {
     setSelectedFeatureIds([]);
-    prevFeatureIds.current = [];
   };
 
   return {
