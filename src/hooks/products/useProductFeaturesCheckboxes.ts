@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductFeature } from "@/types/database";
@@ -26,7 +25,6 @@ export function useProductFeaturesCheckboxes(productId?: string) {
   // Load all available features ONCE
   useEffect(() => {
     let mounted = true;
-
     const fetchFeatures = async () => {
       setLoading(true);
       const { data, error } = await supabase
@@ -37,7 +35,6 @@ export function useProductFeaturesCheckboxes(productId?: string) {
       setLoading(false);
     };
     fetchFeatures();
-
     return () => { mounted = false };
   }, []);
 
@@ -53,12 +50,13 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         .from("product_to_features")
         .select("feature_id")
         .eq("product_id", productId);
-      // Only update state if still mounted
       if (!error && data && mounted) {
-        // FILTRO: Prendi solo stringhe valide e definite
+        // Filtro e conversione rigorosa
         const nextIds = (data || [])
-          .map((f) => f.feature_id)
-          .filter(id => !!id && typeof id === "string" && id.length > 0);
+          .map((f) => typeof f.feature_id === "string" ? f.feature_id : undefined)
+          .filter((id): id is string => !!id && id.length > 0);
+
+        // Aggiorna stato solo se effettivamente diverso
         setSelectedFeatureIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );

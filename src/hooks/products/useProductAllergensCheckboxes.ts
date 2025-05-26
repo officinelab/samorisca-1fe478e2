@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
@@ -52,10 +51,11 @@ export function useProductAllergensCheckboxes(productId?: string) {
         .select("allergen_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        // FILTRO: Prendi solo stringhe valide e definite
+        // Solo stringhe realmente valide
         const nextIds = (data || [])
-          .map((f) => f.allergen_id)
-          .filter(id => !!id && typeof id === "string" && id.length > 0);
+          .map((f) => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
+          .filter((id): id is string => !!id && id.length > 0);
+
         setSelectedAllergenIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );
@@ -85,4 +85,3 @@ export function useProductAllergensCheckboxes(productId?: string) {
     loading,
   };
 }
-
