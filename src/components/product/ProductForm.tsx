@@ -38,6 +38,30 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
 
+         {/* Box "Stato Attivo" */}
+        <div className="rounded-lg border bg-muted/50 px-4 py-3 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="font-medium text-base">Attivo</span>
+            <span className="text-muted-foreground text-base font-normal">Mostra questo prodotto nel menu</span>
+          </div>
+          <FormField
+            control={form.control}
+            name="is_active"
+            render={({ field }) => (
+              <FormItem className="m-0 p-0 border-0 shadow-none">
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        
+        
         {/* Nome prodotto */}
         <FormField
           control={form.control}
@@ -59,27 +83,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
           )}
         />
 
-        {/* Box "Stato Attivo" */}
-        <div className="rounded-lg border bg-muted/50 px-4 py-3 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="font-medium text-base">Attivo</span>
-            <span className="text-muted-foreground text-base font-normal">Mostra questo prodotto nel menu</span>
-          </div>
-          <FormField
-            control={form.control}
-            name="is_active"
-            render={({ field }) => (
-              <FormItem className="m-0 p-0 border-0 shadow-none">
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+      
 
         {/* Descrizione */}
         <FormField
