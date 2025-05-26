@@ -18,7 +18,6 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   setSelectedAllergenIds,
   loading,
 }) => {
-  // Se caricamento, mostra messaggio di loading
   if (loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
@@ -27,13 +26,14 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
 
-  // Gestione selezione robusta (forma funzionale)
-  const handleChange = (allergenId: string) => {
-    setSelectedAllergenIds(prev =>
-      prev.includes(allergenId)
-        ? prev.filter(id => id !== allergenId)
-        : [...prev, allergenId]
-    );
+  const handleChange = (allergenId: string, checked: boolean) => {
+    setSelectedAllergenIds(prev => {
+      if (checked) {
+        return prev.includes(allergenId) ? prev : [...prev, allergenId];
+      } else {
+        return prev.filter(id => id !== allergenId);
+      }
+    });
   };
 
   return (
@@ -43,31 +43,22 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
         {allergens.map((allergen) => {
           const checked = Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id);
           return (
-            <div
+            <label
               key={allergen.id}
               className={cn(
                 "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
                 checked ? "border-primary bg-muted/50" : "border-input"
               )}
-              onClick={(e) => {
-                // Solo se il click NON parte dalla checkbox
-                if ((e.target as HTMLElement).closest('[role="checkbox"]')) return;
-                handleChange(allergen.id);
-              }}
-              tabIndex={0}
-              role="button"
-              aria-pressed={checked}
             >
               <Checkbox
                 checked={checked}
-                onCheckedChange={() => handleChange(allergen.id)}
-                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={(checked) => handleChange(allergen.id, checked as boolean)}
               />
               <span className="text-sm">
                 {allergen.number && `${allergen.number}. `}
                 {allergen.title}
               </span>
-            </div>
+            </label>
           );
         })}
       </div>

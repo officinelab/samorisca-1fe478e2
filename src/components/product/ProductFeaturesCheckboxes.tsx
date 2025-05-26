@@ -18,7 +18,6 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
   setSelectedFeatureIds,
   loading,
 }) => {
-  // Protezione ulteriore: solo se l'array è reale
   if (!Array.isArray(selectedFeatureIds)) return null;
 
   if (loading) {
@@ -28,13 +27,14 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     return <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>;
   }
 
-  // Gestione robusta del cambio di selezione, forma funzionale
-  const handleChange = (featureId: string) => {
-    setSelectedFeatureIds(prev =>
-      prev.includes(featureId)
-        ? prev.filter(id => id !== featureId)
-        : [...prev, featureId]
-    );
+  const handleChange = (featureId: string, checked: boolean) => {
+    setSelectedFeatureIds(prev => {
+      if (checked) {
+        return prev.includes(featureId) ? prev : [...prev, featureId];
+      } else {
+        return prev.filter(id => id !== featureId);
+      }
+    });
   };
 
   return (
@@ -42,7 +42,7 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
       <Label className="block text-xs mb-2">Caratteristiche</Label>
       <div className="grid grid-cols-2 gap-2">
         {features.map((feature) => (
-          <div
+          <label
             key={feature.id}
             className={cn(
               "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
@@ -50,22 +50,13 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
                 ? "border-primary bg-muted/50"
                 : "border-input"
             )}
-            onClick={(e) => {
-              // Solo se il click NON proviene dalla checkbox interna
-              if ((e.target as HTMLElement).closest('[role="checkbox"]')) return;
-              handleChange(feature.id);
-            }}
-            tabIndex={0}
-            role="button"
-            aria-pressed={selectedFeatureIds.includes(feature.id)}
           >
             <Checkbox
               checked={selectedFeatureIds.includes(feature.id)}
-              onCheckedChange={() => handleChange(feature.id)}
-              onClick={(e) => e.stopPropagation()}
+              onCheckedChange={(checked) => handleChange(feature.id, checked as boolean)}
             />
             <span className="text-sm">{feature.title}</span>
-          </div>
+          </label>
         ))}
       </div>
     </div>
