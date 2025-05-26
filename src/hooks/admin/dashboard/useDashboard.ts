@@ -1,12 +1,9 @@
-
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
 
 export const useDashboard = () => {
   const [currentView, setCurrentView] = useState<'categories' | 'products' | 'detail'>('categories');
-  
-  // Dialog states
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -14,10 +11,13 @@ export const useDashboard = () => {
 
   const dashboardOperations = useDashboardOperations();
 
-  // Event handlers
-  const handleCategorySelect = (categoryId: string) => {
+  // Carica i prodotti della categoria selezionata
+  const handleCategorySelect = async (categoryId: string) => {
     dashboardOperations.setSelectedCategoryId(categoryId);
     dashboardOperations.setSelectedProductId(null);
+    if (dashboardOperations.loadProducts) {
+      await dashboardOperations.loadProducts(categoryId);
+    }
   };
 
   const handleProductSelect = (productId: string) => {
@@ -63,18 +63,13 @@ export const useDashboard = () => {
   };
 
   return {
-    // State
     currentView,
     setCurrentView,
     showAddCategory,
     editingCategory,
     showAddProduct,
     editingProduct,
-    
-    // Dashboard operations
     ...dashboardOperations,
-    
-    // Event handlers
     handleCategorySelect,
     handleProductSelect,
     handleEditCategory,
