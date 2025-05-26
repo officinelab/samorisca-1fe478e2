@@ -7,8 +7,10 @@ import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
 import ProductBasicInfo from "./sections/ProductBasicInfo";
 import ProductActionButtons from "./sections/ProductActionButtons";
-import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
-import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
+// import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes"; // <- RIMOSSO VECCHIO IMPORT
+import FeaturesSelector from "./FeaturesSelector"; // <- NUOVO IMPORT CORRETTO
+// import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
+import AllergenSelector from "./AllergenSelector"; // Consiglio: stesso ragionamento dell’altro rename
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -48,10 +50,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
     features,
     selectedFeatureIds,
+    setSelectedFeatureIds,
     toggleFeature,
     loadingFeatures,
     allergens,
     selectedAllergenIds,
+    setSelectedAllergenIds,
     toggleAllergen,
     loadingAllergens,
   } = useProductForm(product, categoryId);
@@ -105,18 +109,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </CardContent>
           </Card>
 
-        {/* Features (Caratteristiche) */}
-        <FeaturesSelector
-          selectedFeatureIds={selectedFeatures}
-          onChange={setSelectedFeatures}
-        />
+          {/* Features (Caratteristiche) */}
+          <FeaturesSelector
+            selectedFeatureIds={selectedFeatureIds}
+            onChange={setSelectedFeatureIds}
+          />
 
           {/* Sezione allergeni */}
-       {/* Allergeni */}
-        <AllergenSelector
-          selectedAllergenIds={selectedAllergens}
-          onChange={setSelectedAllergens}
-        />
+          <AllergenSelector
+            selectedAllergenIds={selectedAllergenIds}
+            onChange={setSelectedAllergenIds}
+          />
 
           <Separator className="my-4" />
           <ProductActionButtons
@@ -130,3 +133,4 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
+
