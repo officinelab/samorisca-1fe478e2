@@ -5,15 +5,13 @@ import { useProductFormSubmit } from "./useProductFormSubmit";
 import { Product } from "@/types/database";
 import { useProductFeatures } from "./useProductFeatures";
 import { useProductAllergens } from "./useProductAllergens";
+import { useCallback } from "react";
 
 export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
-  // Form base
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   const { labels } = useProductLabels();
-
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
-  // Caratteristiche prodotto (vecchio stile, con fetch e stato completo)
   const {
     features,
     selectedFeatures,
@@ -28,15 +26,24 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     isLoading: loadingAllergens,
   } = useProductAllergens(product);
 
+  // Memoizza i setter per evitare re-render inutili
+  const setSelectedFeatureIds = useCallback(
+    (ids: string[] | ((prev: string[]) => string[])) => setSelectedFeatures(ids),
+    [setSelectedFeatures]
+  );
+
+  const setSelectedAllergenIds = useCallback(
+    (ids: string[] | ((prev: string[]) => string[])) => setSelectedAllergens(ids),
+    [setSelectedAllergens]
+  );
+
   // Submit con injection di stato features/allergeni
   const handleSubmit = async (values: any) => {
-    // Inietta la category se manca
     if (categoryId && !values.category_id) {
       values.category_id = categoryId;
     }
-    // Passa state aggiornato!
     return await submitForm(
-      values, // form
+      values, 
       selectedAllergens,
       selectedFeatures,
       product?.id
@@ -50,13 +57,13 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     hasPriceSuffix,
     hasMultiplePrices,
     handleSubmit,
-    features,  // <--- ADESSO ARRAY REALE DA HOOK
-    selectedFeatureIds: selectedFeatures, // <--- NOME UNIFORME
-    setSelectedFeatureIds: setSelectedFeatures,
+    features,
+    selectedFeatureIds: selectedFeatures,
+    setSelectedFeatureIds,
     loadingFeatures,
-    allergens, // <--- ADESSO ARRAY REALE DA HOOK
-    selectedAllergenIds: selectedAllergens, // <--- NOME UNIFORME
-    setSelectedAllergenIds: setSelectedAllergens,
+    allergens,
+    selectedAllergenIds: selectedAllergens,
+    setSelectedAllergenIds,
     loadingAllergens,
   };
 };

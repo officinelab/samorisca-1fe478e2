@@ -1,41 +1,32 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { ProductFeature } from "@/types/database";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
-  productId?: string;
+  features: ProductFeature[];
   selectedFeatureIds: string[];
   setSelectedFeatureIds: (ids: string[] | ((prev: string[]) => string[])) => void;
   loading: boolean;
 }
 
 const ProductFeaturesCheckboxes: React.FC<Props> = ({
-  productId,
+  features,
   selectedFeatureIds,
   setSelectedFeatureIds,
   loading,
 }) => {
-  const [features, setFeatures] = useState<ProductFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Protezione ulteriore: solo se l'array è reale
+  if (!Array.isArray(selectedFeatureIds)) return null;
 
-  // Fetch delle caratteristiche all'avvio
-  useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    supabase
-      .from("product_features")
-      .select("*")
-      .order("display_order", { ascending: true })
-      .then(({ data, error }) => {
-        if (!error && mounted) setFeatures(data || []);
-        setIsLoading(false);
-      });
-    return () => { mounted = false; };
-  }, []);
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>;
+  }
+  if (!Array.isArray(features) || features.length === 0) {
+    return <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>;
+  }
 
   // Gestione robusta del cambio di selezione, forma funzionale
   const handleChange = (featureId: string) => {
@@ -46,21 +37,11 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     );
   };
 
-  // Protezione ulteriore: solo se l'array è reale
-  if (!Array.isArray(selectedFeatureIds)) return null;
-
-  if (isLoading || loading) {
-    return <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>;
-  }
-  if (!Array.isArray(features) || features.length === 0) {
-    return <div className="text-sm text-muted-foreground">Nessuna caratteristica disponibile</div>;
-  }
-
   return (
     <div>
       <Label className="block text-xs mb-2">Caratteristiche</Label>
       <div className="grid grid-cols-2 gap-2">
-        {Array.isArray(features) && features.map((feature) => (
+        {features.map((feature) => (
           <div
             key={feature.id}
             className={cn(
