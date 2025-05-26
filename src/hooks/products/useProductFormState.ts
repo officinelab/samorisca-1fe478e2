@@ -1,8 +1,8 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productFormSchema, ProductFormValues } from "@/types/form";
 import { Product } from "@/types/database";
+import { useEffect } from "react";
 
 // Funzione per convertire i dati del prodotto in valori per il form
 export function productToFormValues(product: Product): ProductFormValues {
@@ -25,18 +25,28 @@ export function productToFormValues(product: Product): ProductFormValues {
 }
 
 export const useProductFormState = (product?: Product) => {
-  // Inizializza il form con i dati del prodotto o valori predefiniti
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
-    defaultValues: product 
-      ? productToFormValues(product) 
-      : {
-          is_active: true,
-          has_price_suffix: false,
-          has_multiple_prices: false,
-        }
+    defaultValues: {
+      is_active: true,
+      has_price_suffix: false,
+      has_multiple_prices: false,
+    }
   });
-  
+
+  // Reset del form quando cambia il prodotto
+  useEffect(() => {
+    if (product) {
+      form.reset(productToFormValues(product));
+    } else {
+      form.reset({
+        is_active: true,
+        has_price_suffix: false,
+        has_multiple_prices: false,
+      });
+    }
+  }, [product?.id, form]);
+
   const { watch } = form;
   const hasPriceSuffix = watch("has_price_suffix");
   const hasMultiplePrices = watch("has_multiple_prices");

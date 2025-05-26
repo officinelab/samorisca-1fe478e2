@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,17 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useGlobalBrowserTitle } from "@/hooks/useGlobalBrowserTitle";
 
 const queryClient = new QueryClient();
+
+// Debug: traccia loop infinito React Hook Form (solo sviluppo)
+if (import.meta.env.MODE === 'development') {
+  const originalError = console.error;
+  console.error = (...args) => {
+    if (typeof args[0] === "string" && args[0].includes("Maximum update depth exceeded")) {
+      console.trace("Loop infinito rilevato!");
+    }
+    originalError(...args);
+  };
+}
 
 const AppWithGlobalTitle = () => {
   const { siteSettings } = useSiteSettings();
