@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import ProductLabelSelect from "./sections/ProductLabelSelect";
 import ProductPriceSection from "./sections/ProductPriceSection";
 
+// Funzione helper per evitare loop
 function arraysAreDifferent(a: string[], b: string[]) {
   if (a.length !== b.length) return true;
   const sa = [...a].sort();
@@ -51,7 +52,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
   } = useProductForm(product, categoryId, onSave);
 
-  // Usiamo semplicemente i valori dagli hook (array stabili)
+  // Aggiorna SOLO stato locale, non il parent/prodotto!
   const handleAllergensChange = useCallback(
     (newAllergens: string[]) => {
       if (arraysAreDifferent(newAllergens, selectedAllergens)) {

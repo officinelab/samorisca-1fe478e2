@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { Product } from "@/types/database";
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
@@ -9,16 +10,27 @@ import { useProductFormSubmit } from "./useProductFormSubmit";
 export const useProductForm = (product?: Product, categoryId?: string, onSave?: () => void) => {
   // Hook per il form e lo stato
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
-  
+
   // Hook per le etichette
   const { labels } = useProductLabels();
-  
-  // Hook per gli allergeni
-  const { selectedAllergens, setSelectedAllergens } = useProductAllergens(product);
-  
-  // Hook per le caratteristiche
-  const { selectedFeatures, setSelectedFeatures } = useProductFeatures(product);
-  
+
+  // Hook per gli allergeni/features solo per FETCH all'apertura prodotto
+  const { selectedAllergens: initialAllergens } = useProductAllergens(product);
+  const { selectedFeatures: initialFeatures } = useProductFeatures(product);
+
+  // Stato locale indipendente di editing (allergeni/features)
+  const [localAllergens, setLocalAllergens] = useState<string[]>(initialAllergens);
+  const [localFeatures, setLocalFeatures] = useState<string[]>(initialFeatures);
+
+  // Aggiorna stato locale SOLO se il prodotto cambia veramente
+  useEffect(() => {
+    setLocalAllergens(initialAllergens);
+  }, [product?.id, initialAllergens.join(",")]);
+
+  useEffect(() => {
+    setLocalFeatures(initialFeatures);
+  }, [product?.id, initialFeatures.join(",")]);
+
   // Hook per la gestione dell'invio del form
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
@@ -28,7 +40,7 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     if (categoryId && !values.category_id) {
       values.category_id = categoryId;
     }
-    return await submitForm(values, selectedAllergens, selectedFeatures, product?.id);
+    return await submitForm(values, localAllergens, localFeatures, product?.id);
   };
 
   return {
@@ -37,10 +49,10 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     labels,
     hasPriceSuffix,
     hasMultiplePrices,
-    selectedAllergens,
-    setSelectedAllergens,
-    selectedFeatures,
-    setSelectedFeatures,
+    selectedAllergens: localAllergens,
+    setSelectedAllergens: setLocalAllergens,
+    selectedFeatures: localFeatures,
+    setSelectedFeatures: setLocalFeatures,
     handleSubmit
   };
 };
