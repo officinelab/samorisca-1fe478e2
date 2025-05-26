@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
@@ -40,20 +41,23 @@ const ProductsList: React.FC<ProductsListProps> = ({
 }) => {
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
-  // Usa la lista di reordering (se non è vuota), altrimenti products
-  const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
+  // 1. Usa la lista giusta (quella in riordino se necessario)
+  const baseProductList = isReorderingProducts
+    ? reorderingProductsList
+    : products;
 
-  // Filtra per categoria selezionata
-  const filteredByCategory = selectedCategory
-    ? alwaysActiveReorderingList.filter(p => p.category_id === selectedCategory.id)
-    : alwaysActiveReorderingList;
+  // 2. Filtra per categoria selezionata
+  const categoryFilteredProducts = selectedCategory
+    ? baseProductList.filter(p => p.category_id === selectedCategory.id)
+    : baseProductList;
 
-  const { 
-    searchQuery, 
-    setSearchQuery, 
+  // 3. Passa i prodotti già filtrati per categoria all'hook di ricerca
+  const {
+    searchQuery,
+    setSearchQuery,
     filteredProducts,
-    isSearchDisabled 
-  } = useProductsSearch(filteredByCategory, false);
+    isSearchDisabled
+  } = useProductsSearch(categoryFilteredProducts, false);
 
   useEffect(() => {
     if (products.length > 0 && !isReorderingProducts) {
@@ -128,3 +132,4 @@ const ProductsList: React.FC<ProductsListProps> = ({
 };
 
 export default ProductsList;
+
