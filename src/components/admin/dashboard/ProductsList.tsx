@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
 import { useProductsSearch } from "@/hooks/admin/dashboard/useProductsSearch";
@@ -41,7 +40,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
 }) => {
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
-  // Modificato: rendi attivo SEMPRE il riordino e la lista prodotti riordinabile.
+  // Rendi sempre attivo il riordino e la lista prodotti riordinabile.
   const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
   const { 
     searchQuery, 
@@ -49,6 +48,13 @@ const ProductsList: React.FC<ProductsListProps> = ({
     filteredProducts,
     isSearchDisabled 
   } = useProductsSearch(alwaysActiveReorderingList, false);
+
+  // Al montaggio, se la lista di riordino è ancora vuota o il riordino non è attivo, inizializzala automaticamente
+  useEffect(() => {
+    if (!isReorderingProducts) {
+      onStartReordering();
+    }
+  }, [isReorderingProducts, onStartReordering]);
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId);
@@ -91,8 +97,8 @@ const ProductsList: React.FC<ProductsListProps> = ({
                     product={product}
                     isSelected={selectedProductId === product.id}
                     isReordering={true}
-                    canMoveUp={true}
-                    canMoveDown={true}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < filteredProducts.length - 1}
                     onClick={() => onProductSelect(product.id)}
                     onEdit={() => onEditProduct(product)}
                     onDelete={() => handleDeleteClick(product.id)}
@@ -116,4 +122,3 @@ const ProductsList: React.FC<ProductsListProps> = ({
 };
 
 export default ProductsList;
-
