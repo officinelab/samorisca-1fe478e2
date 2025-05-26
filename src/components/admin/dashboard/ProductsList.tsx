@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
@@ -47,7 +46,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
     setSearchQuery, 
     filteredProducts,
     isSearchDisabled 
-  } = useProductsSearch(displayProducts, isReorderingProducts);
+  } = useProductsSearch(displayProducts, false); // reordering feature disattivata, sempre false
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId);
@@ -72,11 +71,6 @@ const ProductsList: React.FC<ProductsListProps> = ({
           onSearchChange={setSearchQuery}
           searchDisabled={isSearchDisabled}
           selectedCategory={selectedCategory}
-          isReordering={isReorderingProducts}
-          hasProducts={products.length > 0}
-          onStartReordering={onStartReordering}
-          onCancelReordering={onCancelReordering}
-          onSaveReorder={onSaveReorder}
           onAddProduct={onAddProduct}
         />
         
@@ -94,9 +88,9 @@ const ProductsList: React.FC<ProductsListProps> = ({
                     key={product.id}
                     product={product}
                     isSelected={selectedProductId === product.id}
-                    isReordering={isReorderingProducts}
-                    canMoveUp={index > 0}
-                    canMoveDown={index < filteredProducts.length - 1}
+                    isReordering={false} // disattivo sempre
+                    canMoveUp={true}     // sempre vero
+                    canMoveDown={true}   // sempre vero
                     onClick={() => onProductSelect(product.id)}
                     onEdit={() => onEditProduct(product)}
                     onDelete={() => handleDeleteClick(product.id)}
