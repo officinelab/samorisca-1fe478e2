@@ -22,7 +22,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch degli allergeni all'avvio
+  // Fetch allergeni disponibili una sola volta
   useEffect(() => {
     let mounted = true;
     setIsLoading(true);
@@ -37,7 +37,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     return () => { mounted = false; };
   }, []);
 
-  // Gestione robusta del cambio di selezione, forma funzionale
+  // Gestione selezione robusta (forma funzionale)
   const handleChange = (allergenId: string) => {
     setSelectedAllergenIds(prev =>
       prev.includes(allergenId)
@@ -49,6 +49,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
   if (isLoading || loading) {
     return <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>;
   }
+
   if (!Array.isArray(allergens) || allergens.length === 0) {
     return <div className="text-sm text-muted-foreground">Nessun allergene disponibile</div>;
   }
@@ -57,30 +58,31 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     <div>
       <Label className="block text-xs mb-2">Allergeni</Label>
       <div className="grid grid-cols-2 gap-2">
-        {allergens.map((allergen) => (
-          <div
-            key={allergen.id}
-            className={cn(
-              "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
-              Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)
-                ? "border-primary bg-muted/50"
-                : "border-input"
-            )}
-            onClick={() => handleChange(allergen.id)}
-            tabIndex={0}
-            role="button"
-            aria-pressed={Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)}
-          >
-            <Checkbox
-              checked={Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id)}
-              onCheckedChange={() => handleChange(allergen.id)}
-            />
-            <span className="text-sm">
-              {allergen.number && `${allergen.number}. `}
-              {allergen.title}
-            </span>
-          </div>
-        ))}
+        {allergens.map((allergen) => {
+          const checked = Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id);
+          return (
+            <div
+              key={allergen.id}
+              className={cn(
+                "flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors",
+                checked ? "border-primary bg-muted/50" : "border-input"
+              )}
+              onClick={() => handleChange(allergen.id)}
+              tabIndex={0}
+              role="button"
+              aria-pressed={checked}
+            >
+              <Checkbox
+                checked={checked}
+                onCheckedChange={() => handleChange(allergen.id)}
+              />
+              <span className="text-sm">
+                {allergen.number && `${allergen.number}. `}
+                {allergen.title}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
