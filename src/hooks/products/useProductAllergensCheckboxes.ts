@@ -1,55 +1,90 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/types/database";
+import { Allergen } from "@/types/database";
+
+// Utility robusta per confronto insiemi (non importa l'ordine)
+function arraysAreSetEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  const setA = new Set(a);
+  for (const el of b) {
+    if (!setA.has(el)) return false;
+  }
+  return true;
+}
 
 export function useProductAllergensCheckboxes(productId?: string) {
+  const [allergens, setAllergens] = useState<Allergen[]>([]);
   const [selectedAllergenIds, setSelectedAllergenIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Carica gli allergeni associati al prodotto
+  // Carica tutti gli allergeni all’avvio una sola volta
   useEffect(() => {
-    if (productId) {
-      setIsLoading(true);
-      const fetchProductAllergens = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_allergens")
-            .select("allergen_id")
-            .eq("product_id", productId);
+    let mounted = true;
+    const fetchAllergens = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("allergens")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (!error && mounted) setAllergens(data || []);
+      setLoading(false);
+    };
+    fetchAllergens();
+    return () => { mounted = false };
+  }, []);
 
-          if (data) {
-            const allergenIds = data.map(item => item.allergen_id);
-            setSelectedAllergenIds(allergenIds);
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento degli allergeni del prodotto:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchProductAllergens();
-    } else {
-      setSelectedAllergenIds([]);
+  // Carica allergeni selezionati solo quando productId cambia
+  useEffect(() => {
+    if (!productId) {
+      if (selectedAllergenIds.length > 0) setSelectedAllergenIds([]);
+      return;
     }
+
+    let mounted = true;
+    const fetchSelected = async () => {
+      const { data, error } = await supabase
+        .from("product_allergens")
+        .select("allergen_id")
+        .eq("product_id", productId);
+
+      if (!error && data && mounted) {
+        const nextIds = (data || [])
+          .map(f => typeof f.allergen_id === "string" ? f.allergen_id : undefined)
+          .filter((id): id is string => !!id && id.length > 0);
+
+        // Confronta come insiemi, non per ordine
+        if (!arraysAreSetEqual(selectedAllergenIds, nextIds)) {
+          setSelectedAllergenIds(nextIds);
+        }
+      }
+    };
+
+    fetchSelected();
+    return () => { mounted = false };
+    // eslint-disable-next-line
   }, [productId]);
 
-  // Example dummy data for available allergens (replace with actual data/fetch as needed)
-  const allergens = [];
+  const toggleAllergen = (aId: string) => {
+    setSelectedAllergenIds((prev) => {
+      if (prev.includes(aId)) {
+        return prev.filter((id) => id !== aId);
+      } else {
+        return [...prev, aId];
+      }
+    });
+  };
 
-  // Handlers for toggling selection (implement actual allergen list and logic as needed)
-  function toggleAllergen(id: string) {
-    setSelectedAllergenIds(prev =>
-      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
-    );
-  }
+  const resetSelectedAllergens = () => {
+    setSelectedAllergenIds([]);
+  };
 
   return {
     allergens,
     selectedAllergenIds,
     setSelectedAllergenIds,
     toggleAllergen,
-    loading: isLoading,
+    resetSelectedAllergens,
+    loading,
   };
 }

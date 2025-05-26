@@ -1,55 +1,89 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/types/database";
+import { ProductFeature } from "@/types/database";
+
+// Utility robusta per confronto insiemi (non importa l'ordine)
+function arraysAreSetEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  const setA = new Set(a);
+  for (const el of b) {
+    if (!setA.has(el)) return false;
+  }
+  return true;
+}
 
 export function useProductFeaturesCheckboxes(productId?: string) {
+  const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Carica le caratteristiche associate al prodotto
+  // Carica caratteristiche disponibili una volta sola
   useEffect(() => {
-    if (productId) {
-      setIsLoading(true);
-      const fetchProductFeatures = async () => {
-        try {
-          const { data } = await supabase
-            .from("product_to_features")
-            .select("feature_id")
-            .eq("product_id", productId);
+    let mounted = true;
+    const fetchFeatures = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("product_features")
+        .select("*")
+        .order("display_order", { ascending: true });
+      if (!error && mounted) setFeatures(data || []);
+      setLoading(false);
+    };
+    fetchFeatures();
+    return () => { mounted = false };
+  }, []);
 
-          if (data) {
-            const featureIds = data.map(item => item.feature_id);
-            setSelectedFeatureIds(featureIds);
-          }
-        } catch (error) {
-          console.error("Errore nel caricamento delle caratteristiche del prodotto:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchProductFeatures();
-    } else {
-      setSelectedFeatureIds([]);
+  // Carica caratteristiche già selezionate dal prodotto (quando productId cambia)
+  useEffect(() => {
+    if (!productId) {
+      if (selectedFeatureIds.length > 0) setSelectedFeatureIds([]);
+      return;
     }
+
+    let mounted = true;
+    const fetchSelected = async () => {
+      const { data, error } = await supabase
+        .from("product_to_features")
+        .select("feature_id")
+        .eq("product_id", productId);
+
+      if (!error && data && mounted) {
+        const nextIds = (data || [])
+          .map(f => typeof f.feature_id === "string" ? f.feature_id : undefined)
+          .filter((id): id is string => !!id && id.length > 0);
+
+        // Confronta come insiemi, non per ordine
+        if (!arraysAreSetEqual(selectedFeatureIds, nextIds)) {
+          setSelectedFeatureIds(nextIds);
+        }
+      }
+    };
+    fetchSelected();
+    return () => { mounted = false };
+    // eslint-disable-next-line
   }, [productId]);
 
-  // Example dummy data for available features (replace with actual data/fetch as needed)
-  const features = [];
+  const toggleFeature = (fId: string) => {
+    setSelectedFeatureIds((prev) => {
+      if (prev.includes(fId)) {
+        return prev.filter((id) => id !== fId);
+      } else {
+        return [...prev, fId];
+      }
+    });
+  };
 
-  // Handlers for toggling selection (implement actual feature list and logic as needed)
-  function toggleFeature(id: string) {
-    setSelectedFeatureIds(prev =>
-      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
-    );
-  }
+  const resetSelectedFeatures = () => {
+    setSelectedFeatureIds([]);
+  };
 
   return {
     features,
     selectedFeatureIds,
     setSelectedFeatureIds,
     toggleFeature,
-    loading: isLoading,
+    resetSelectedFeatures,
+    loading,
   };
 }

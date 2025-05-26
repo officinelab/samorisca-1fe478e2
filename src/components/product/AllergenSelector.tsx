@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useAllergenCheckboxes } from "@/hooks/allergens/useAllergenCheckboxes";
+import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +17,7 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({
   const { allergens, isLoading } = useAllergenCheckboxes();
 
   return (
-    <div>
-      <h3 className="font-semibold text-base mb-2">Allergeni</h3>
+    <CollapsibleSection title="Allergeni" defaultOpen={false}>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento allergeni...</div>
       ) : allergens.length === 0 ? (
@@ -47,9 +47,8 @@ const AllergenSelector: React.FC<AllergenSelectorProps> = ({
           ))}
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   );
 };
 
 export default AllergenSelector;
-

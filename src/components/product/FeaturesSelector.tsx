@@ -1,6 +1,7 @@
 
 import React from "react";
 import { ProductFeature } from "@/types/database";
+import CollapsibleSection from "@/components/dashboard/CollapsibleSection";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -39,8 +40,7 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
   }, []);
 
   return (
-    <div>
-      <h3 className="font-semibold text-base mb-2">Caratteristiche</h3>
+    <CollapsibleSection title="Caratteristiche" defaultOpen={false}>
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Caricamento caratteristiche...</div>
       ) : features.length === 0 ? (
@@ -65,9 +65,8 @@ const FeaturesSelector: React.FC<FeaturesSelectorProps> = ({
           ))}
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   );
 };
 
 export default FeaturesSelector;
-
