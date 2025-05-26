@@ -52,8 +52,10 @@ export function useProductAllergensCheckboxes(productId?: string) {
         .select("allergen_id")
         .eq("product_id", productId);
       if (!error && data && mounted) {
-        // Aggiorna solo se cambiato per evitare loop
-        const nextIds = data.map((f) => f.allergen_id);
+        // FILTRO: Prendi solo stringhe valide e definite
+        const nextIds = (data || [])
+          .map((f) => f.allergen_id)
+          .filter(id => !!id && typeof id === "string" && id.length > 0);
         setSelectedAllergenIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );

@@ -55,7 +55,10 @@ export function useProductFeaturesCheckboxes(productId?: string) {
         .eq("product_id", productId);
       // Only update state if still mounted
       if (!error && data && mounted) {
-        const nextIds = data.map((f) => f.feature_id);
+        // FILTRO: Prendi solo stringhe valide e definite
+        const nextIds = (data || [])
+          .map((f) => f.feature_id)
+          .filter(id => !!id && typeof id === "string" && id.length > 0);
         setSelectedFeatureIds((prev) =>
           arraysAreDifferent(prev, nextIds) ? nextIds : prev
         );
