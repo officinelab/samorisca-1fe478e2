@@ -19,9 +19,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
     editingProduct,
     selectedCategoryId,
     handleCategoryFormSave,
-    handleProductFormCancel,
     handleProductFormSave,
-    handleProductFormCancel
+    handleProductFormCancel  // Only declare once here!
   } = dashboard;
 
   // Callback memorizzate per evitare riferimento nuovo ad ogni render
