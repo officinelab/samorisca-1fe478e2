@@ -1,3 +1,4 @@
+
 import { useProductFormState } from "./useProductFormState";
 import { useProductLabels } from "./useProductLabels";
 import { useProductFormSubmit } from "./useProductFormSubmit";
@@ -8,7 +9,6 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
   // Form base
   const { form, hasPriceSuffix, hasMultiplePrices } = useProductFormState(product);
   const { labels } = useProductLabels();
-
   const { handleSubmit: submitForm, isSubmitting } = useProductFormSubmit(onSave);
 
   // Nuova logica di submit: salva relazioni features/allergeni
@@ -20,10 +20,11 @@ export const useProductForm = (product?: Product, categoryId?: string, onSave?: 
     // Salva prodotto base
     const result = await submitForm(values, [], [], product?.id);
 
-    if (!result.success || !result.data) return result;
+    // Fix: Use product and productId instead of data
+    if (!result.success || !result.product) return result;
 
     // Prendi productId (nuovo o esistente)
-    const prodId = result.data.id || product?.id;
+    const prodId = result.productId || product?.id;
 
     // Salva relazioni product_to_features
     if ("features" in values) {
