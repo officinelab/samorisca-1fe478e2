@@ -41,14 +41,23 @@ const ProductsList: React.FC<ProductsListProps> = ({
 }) => {
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
-  // Modificato: rendi attivo SEMPRE il riordino e la lista prodotti riordinabile.
-  const alwaysActiveReorderingList = reorderingProductsList.length > 0 ? reorderingProductsList : products;
-  const { 
+  // Always use the reordering list if present, else products
+  const alwaysActiveReorderingList: Product[] = Array.isArray(reorderingProductsList) && reorderingProductsList.length > 0
+    ? reorderingProductsList
+    : Array.isArray(products) ? products : [];
+
+  // Defensive: Ensure input is always array
+  const {
     searchQuery, 
     setSearchQuery, 
-    filteredProducts,
+    filteredProducts: rawFilteredProducts,
     isSearchDisabled 
   } = useProductsSearch(alwaysActiveReorderingList, false);
+
+  // Extra guard: filter out invalid entries
+  const filteredProducts = Array.isArray(rawFilteredProducts)
+    ? rawFilteredProducts.filter((p): p is Product => !!p && typeof p === 'object' && !!p.id)
+    : [];
 
   const handleDeleteClick = (productId: string) => {
     setProductToDelete(productId);
@@ -85,7 +94,7 @@ const ProductsList: React.FC<ProductsListProps> = ({
               />
             ) : (
               <div className="space-y-2">
-                {filteredProducts.map((product, index) => (
+                {filteredProducts.map((product) => (
                   <ProductItem
                     key={product.id}
                     product={product}
@@ -116,4 +125,3 @@ const ProductsList: React.FC<ProductsListProps> = ({
 };
 
 export default ProductsList;
-
