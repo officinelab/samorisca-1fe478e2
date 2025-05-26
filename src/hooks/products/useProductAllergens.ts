@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -14,31 +13,29 @@ function arraysAreDifferent(a: string[], b: string[]) {
 }
 
 export const useProductAllergens = (product?: Product) => {
+  // Stato per gli allergeni correnti mostrati (locale)
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const lastProductId = useRef<string | undefined>();
-  // memo productId, aggiorna sempre a valore attuale
-  const productIdRef = useRef(product?.id);
-  productIdRef.current = product?.id;
+  const lastLoadedProductId = useRef<string | undefined>();
 
+  // Caricamento allergeni dal database solo al cambio prodotto
   useEffect(() => {
-    const currentProductId = productIdRef.current;
+    const currentProductId = product?.id;
 
-    // Se non c'è product id, resetta lo stato
+    // Caso: Nessun prodotto selezionato, svuota solo una volta
     if (!currentProductId) {
-      if (lastProductId.current !== undefined) {
+      if (lastLoadedProductId.current !== undefined) {
         setSelectedAllergens([]);
-        lastProductId.current = undefined;
+        lastLoadedProductId.current = undefined;
       }
       return;
     }
 
-    // Se l'id è lo stesso, non fare nulla
-    if (currentProductId === lastProductId.current) {
+    // Caso: Lo stesso prodotto selezionato → NON fare nulla!
+    if (currentProductId === lastLoadedProductId.current) {
       return;
     }
 
-    // Fetch allergens per il nuovo prodotto
     setIsLoading(true);
     const fetchProductAllergens = async () => {
       try {
@@ -49,15 +46,13 @@ export const useProductAllergens = (product?: Product) => {
 
         if (error) throw error;
 
-        if (data) {
-          const allergenIds = data.map(item => item.allergen_id);
-          setSelectedAllergens(allergenIds);
-        }
+        const allergenIds = data ? data.map(item => item.allergen_id) : [];
+        setSelectedAllergens(allergenIds); // Aggiorna solo quando cambio prodotto
       } catch (error) {
         console.error("Errore nel caricamento allergeni:", error);
         setSelectedAllergens([]);
       } finally {
-        lastProductId.current = currentProductId;
+        lastLoadedProductId.current = currentProductId;
         setIsLoading(false);
       }
     };
@@ -65,7 +60,7 @@ export const useProductAllergens = (product?: Product) => {
     fetchProductAllergens();
   }, [product?.id]);
 
-  // Safe setter: evita setState ridondanti
+  // Setter che aggiorna SOLO se ci sono differenze reali (evita loop)
   const safeSetSelectedAllergens = (allergenIds: string[] | ((prev: string[]) => string[])) => {
     if (typeof allergenIds === "function") {
       setSelectedAllergens(allergenIds);
