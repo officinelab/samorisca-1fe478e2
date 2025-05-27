@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 type UserRoleRow = {
   id: string;
   user_id: string;
+  user_name: string | null;
   role: string;
 };
 
@@ -19,7 +20,7 @@ export default function UserRolesManager() {
       setLoading(true);
       const { data, error } = await supabase
         .from("user_roles")
-        .select("id, user_id, role")
+        .select("id, user_id, user_name, role")
         .order("role", { ascending: true });
       if (!error && data) setRoles(data as UserRoleRow[]);
       setLoading(false);
@@ -35,8 +36,8 @@ export default function UserRolesManager() {
         1. Clicca su <b>user_roles</b> &rarr; <b>Insert Row</b>.<br />
         2. Inserisci l'<b>UUID dell'utente</b> (user_id) e seleziona uno dei ruoli disponibili:<br />
         <span className="bg-muted px-2 py-1 rounded">admin</span>{' '}
-        <span className="bg-muted px-2 py-1 rounded">admin_supervisor</span>
-        <br /><br />
+        <span className="bg-muted px-2 py-1 rounded">admin_supervisor</span><br /><br />
+        <b>Consiglio:</b> puoi anche salvare il nome dell’utente nel campo “user_name” per una gestione più chiara.<br /><br />
         Gli utenti sono identificati con il loro UUID, che puoi trovare nella sezione <b>Auth &rarr; Users</b> della console Supabase.<br />
         <a href="https://supabase.com/dashboard/project/dqkrmewgeeuxhbxrwpjp/auth/users" className="underline text-primary" target="_blank" rel="noopener noreferrer">
           Vai alla sezione utenti</a>
@@ -50,18 +51,20 @@ export default function UserRolesManager() {
           <TableHeader>
             <TableRow>
               <TableHead>User ID</TableHead>
+              <TableHead>Nome</TableHead>
               <TableHead>Ruolo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {roles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center text-muted-foreground">Nessun ruolo assegnato</TableCell>
+                <TableCell colSpan={3} className="text-center text-muted-foreground">Nessun ruolo assegnato</TableCell>
               </TableRow>
             ) : (
               roles.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.user_id}</TableCell>
+                  <TableCell className="text-sm">{r.user_name || <span className="italic text-muted-foreground">—</span>}</TableCell>
                   <TableCell>{r.role}</TableCell>
                 </TableRow>
               ))
