@@ -1,5 +1,5 @@
 
-export type PublicMenuUiLang = 'it' | 'en' | 'es' | 'fr';
+export type PublicMenuUiLang = 'it' | 'en' | 'es' | 'fr' | 'de';
 
 export type PublicMenuUiStringKey =
   | "service_and_cover"
@@ -97,6 +97,25 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     confirm: "Confirmer",
     product_features: "Caractéristiques du produit"
   },
+  de: {
+    service_and_cover: "Service und Gedeck",
+    show_allergens_info: "Allergeninformationen anzeigen",
+    hide_allergens_info: "Allergeninformationen ausblenden",
+    allergens_legend: "Allergen-Legende",
+    info_products: "Produktinformationen",
+    description: "Beschreibung",
+    allergens: "Allergene",
+    price: "Preis",
+    add: "Hinzufügen",
+    add_to_cart: "Zur Bestellung hinzufügen",
+    your_order: "Ihre Bestellung",
+    review_order: "Überprüfen Sie Ihre Bestellung, bevor Sie sie dem Kellner mitteilen.",
+    empty_order: "Ihre Bestellung ist leer",
+    total: "Gesamt",
+    cancel: "Abbrechen",
+    confirm: "Bestätigen",
+    product_features: "Produkteigenschaften"
+  }
 };
 
 export default uiStrings;
