@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -36,14 +37,16 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   onMoveUp,
   onMoveDown
 }) => {
+  // Ref per gestire l'interval
   const moveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Gestione movimento continuo
   const handleContinuousMove = (
     moveFn: () => void,
     canMove: boolean
   ) => {
     if (!canMove) return;
-    moveFn();
+    moveFn(); // Prima chiamata immediata
     moveIntervalRef.current = setInterval(() => {
       moveFn();
     }, MOVE_CONTINUOUS_INTERVAL);
@@ -56,6 +59,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     }
   };
 
+  // Evidenza categoria selezionata e animazioni
   const getItemClass = () => {
     let c = `${dashboardStyles.categoryItem} transition-[border,box-shadow] duration-150 ease-in`;
     if (isSelected && isReordering) {
@@ -69,7 +73,6 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     return c;
   };
 
-  // Nuovo layout come richiesto: 2 colonne, titolo con wrap, icone impilate, no truncate/max-w
   return (
     <div
       className={getItemClass()}
@@ -80,97 +83,89 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
       tabIndex={isReordering ? 0 : undefined}
       aria-selected={isSelected}
     >
-      {/* Container con 2 colonne */}
-      <div className="flex justify-between items-center gap-2">
-        {/* Colonna 1: Titolo */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2">
-            {/* Rimuovi truncate e max-w per permettere il wrap del testo */}
-            <span className="break-words">{category.title}</span>
+      <div className={dashboardStyles.categoryContent}>
+        <div className="flex items-center space-x-2">
+          <span className="truncate max-w-[140px]">{category.title}</span>
+        </div>
+        {!category.is_active && (
+          <span className={dashboardStyles.categoryInactiveLabel}>
+            Disattivata
+          </span>
+        )}
+      </div>
+      
+      <div className={dashboardStyles.categoryActions}>
+        {isReordering ? (
+          <div className={dashboardStyles.categoryReorderActions}>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={`${dashboardStyles.buttonSm} 
+                ${index === 0 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
+                transition-colors`}
+              onMouseDown={e => {
+                e.stopPropagation();
+                handleContinuousMove(onMoveUp, index > 0);
+              }}
+              onMouseUp={stopContinuousMove}
+              onMouseLeave={stopContinuousMove}
+              onTouchEnd={stopContinuousMove}
+              onClick={e => {
+                e.stopPropagation();
+                onMoveUp();
+              }}
+              disabled={index === 0}
+              aria-label="Sposta su"
+            >
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={`${dashboardStyles.buttonSm} 
+                ${index === totalCategories - 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
+                transition-colors`}
+              onMouseDown={e => {
+                e.stopPropagation();
+                handleContinuousMove(onMoveDown, index < totalCategories - 1);
+              }}
+              onMouseUp={stopContinuousMove}
+              onMouseLeave={stopContinuousMove}
+              onTouchEnd={stopContinuousMove}
+              onClick={e => {
+                e.stopPropagation();
+                onMoveDown();
+              }}
+              disabled={index === totalCategories - 1}
+              aria-label="Sposta giù"
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
           </div>
-          {!category.is_active && (
-            <span className={dashboardStyles.categoryInactiveLabel}>
-              Disattivata
-            </span>
-          )}
-        </div>
-        
-        {/* Colonna 2: Azioni */}
-        <div className="flex-shrink-0">
-          {isReordering ? (
-            <div className="flex flex-col space-y-1">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className={`${dashboardStyles.buttonSm} 
-                  ${index === 0 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
-                  transition-colors`}
-                onMouseDown={e => {
-                  e.stopPropagation();
-                  handleContinuousMove(onMoveUp, index > 0);
-                }}
-                onMouseUp={stopContinuousMove}
-                onMouseLeave={stopContinuousMove}
-                onTouchEnd={stopContinuousMove}
-                onClick={e => {
-                  e.stopPropagation();
-                  onMoveUp();
-                }}
-                disabled={index === 0}
-                aria-label="Sposta su"
-              >
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className={`${dashboardStyles.buttonSm} 
-                  ${index === totalCategories - 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
-                  transition-colors`}
-                onMouseDown={e => {
-                  e.stopPropagation();
-                  handleContinuousMove(onMoveDown, index < totalCategories - 1);
-                }}
-                onMouseUp={stopContinuousMove}
-                onMouseLeave={stopContinuousMove}
-                onTouchEnd={stopContinuousMove}
-                onClick={e => {
-                  e.stopPropagation();
-                  onMoveDown();
-                }}
-                disabled={index === totalCategories - 1}
-                aria-label="Sposta giù"
-              >
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col space-y-1">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit();
-                }}
-                aria-label="Modifica categoria"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                aria-label="Elimina categoria"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
+        ) : (
+          <>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -10,14 +10,13 @@ export const dashboardStyles = {
   // Categories list
   categoriesHeader: "flex justify-between items-center p-4 border-b",
   categoriesTitle: "text-lg font-semibold",
-  // Aggiornamento: più padding per categoryItem
-  categoryItem: "p-3 rounded-md cursor-pointer",
+  categoryItem: "flex flex-col p-2 rounded-md cursor-pointer",
   categoryItemSelected: "bg-primary text-primary-foreground",
   categoryItemHover: "hover:bg-gray-100",
   categoryItemInactive: "opacity-60",
--  categoryContent: "flex items-center justify-between", // Non serve più
--  categoryActions: "flex justify-end mt-2",              // Non serve più
--  categoryReorderActions: "flex mr-1",                   // Non serve più
+  categoryContent: "flex items-center justify-between",
+  categoryActions: "flex justify-end mt-2",
+  categoryReorderActions: "flex mr-1",
   categoryInactiveLabel: "text-sm px-2 py-0.5 rounded-full bg-gray-200 text-gray-700",
 
   // Products list  
