@@ -77,7 +77,6 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
                     categoryId={selectedCategoryId || undefined}
                     onSave={handleProductFormSave}
                     onCancel={handleProductFormCancel}
-                    isOpen={productDialogOpen}
                   />
                 )}
               </div>
@@ -128,7 +127,6 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
                   categoryId={selectedCategoryId || undefined}
                   onSave={handleProductFormSave}
                   onCancel={handleProductFormCancel}
-                  isOpen={productDialogOpen}
                 />
               )}
             </div>
