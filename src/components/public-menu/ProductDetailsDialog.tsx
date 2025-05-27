@@ -137,8 +137,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         fontStyle: fontSettings?.price?.fontStyle,
                         fontSize: fontSettings?.price?.fontSize
                       }}>
-                      {product.price_standard?.toFixed(2)} €
-                      {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                      {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                     </span>
                     <Button
                       variant="outline"

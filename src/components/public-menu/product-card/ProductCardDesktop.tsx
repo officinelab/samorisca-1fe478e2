@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
@@ -84,8 +83,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
               }}
               className="font-medium flex items-center"
             >
-              {product.price_standard?.toFixed(2)} €
-              {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+              {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
             </span>
           ) : null}
         </div>
@@ -134,8 +132,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
                     fontSize: fontSettings?.price?.fontSize || 16,
                   }}
                 >
-                  {product.price_standard?.toFixed(2)} €
-                  {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                  {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                 </span>
                 <Plus size={16} />
               </Button>
@@ -200,7 +197,9 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
             }}
           >
             {!isMobileView && "Aggiungi"}
-            <Plus size={16} />
+            <span className="flex items-center">
+              <Plus size={16} />
+            </span>
           </Button>
         )}
       </CardContent>

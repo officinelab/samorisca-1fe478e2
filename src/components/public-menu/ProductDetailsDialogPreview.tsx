@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,8 +131,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                       fontSize: sizePrice
                     }}
                   >
-                    {product.price_standard?.toFixed(2)} €
-                    {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                   </span>
                   <Button
                     variant="outline"
@@ -218,4 +216,3 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
     </div>
   );
 };
-
