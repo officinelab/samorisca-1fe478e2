@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -10,10 +9,12 @@ import SiteSettingsManager from "@/components/menu-settings/SiteSettingsManager"
 import SupervisorSettingsManager from "@/components/menu-settings/SupervisorSettingsManager";
 import Allergens from "./Allergens";
 import OnlineMenuLayoutSection from "@/components/menu-settings/OnlineMenuLayoutSection";
+import { useUserRoles } from "@/hooks/auth/useUserRoles";
 
 const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
   const location = useLocation();
+  const { hasRole, isLoading: rolesLoading } = useUserRoles();
 
   // Gestisce il caso in cui veniamo reindirizzati dalla vecchia pagina allergeni
   useEffect(() => {
@@ -22,7 +23,11 @@ const MenuSettings = () => {
     }
   }, [location.state]);
   
-  return <div className="container py-6">
+  // Supervisor tab visibility
+  const showSupervisorTab = hasRole("admin_supervisor");
+
+  return (
+    <div className="container py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Impostazioni Menu</h1>
       </div>
@@ -36,7 +41,10 @@ const MenuSettings = () => {
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
           <TabsTrigger value="layouts">Layouts di Stampa</TabsTrigger>
           <TabsTrigger value="settings">Settaggi</TabsTrigger>
-          <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
+          {/* Supervisor: visibile solo ad admin_supervisor */}
+          {showSupervisorTab && (
+            <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
+          )}
           <TabsTrigger value="publicmenulayout">Layout menu online</TabsTrigger>
         </TabsList>
         
@@ -85,20 +93,23 @@ const MenuSettings = () => {
           <SiteSettingsManager />
         </TabsContent>
 
-        <TabsContent value="supervisor" className="space-y-4">
-          <h2 className="text-xl font-semibold">Supervisor</h2>
-          <p className="text-muted-foreground">
-            Gestisci le impostazioni dei testi mostrati nel sito pubblico.
-          </p>
-          <Separator className="my-4" />
-          <SupervisorSettingsManager />
-        </TabsContent>
+        {/* Mostra contenuto Supervisor solo se il ruolo è quello giusto */}
+        {showSupervisorTab && (
+          <TabsContent value="supervisor" className="space-y-4">
+            <h2 className="text-xl font-semibold">Supervisor</h2>
+            <p className="text-muted-foreground">
+              Gestisci le impostazioni dei testi mostrati nel sito pubblico.
+            </p>
+            <Separator className="my-4" />
+            <SupervisorSettingsManager />
+          </TabsContent>
+        )}
 
         <TabsContent value="publicmenulayout" className="space-y-4">
           <OnlineMenuLayoutSection />
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
 export default MenuSettings;
-
