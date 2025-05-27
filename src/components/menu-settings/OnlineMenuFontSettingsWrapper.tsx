@@ -1,12 +1,14 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
 import { FontSettingsSection } from "./FontSettingsSection";
 
 interface OnlineMenuFontSettingsWrapperProps {
   selectedLayout: string;
-  onFontSettingsChange?: (settings: any) => void;
+  fontSettings: any;
+  onFontSettingsChange: (settings: any) => void;
+  setFontSettings: (val: any) => void;
 }
 
 // Nuove costanti base size ±4pt
@@ -89,22 +91,23 @@ const initializeFontSettings = (siteSettings: any, selectedLayout: string) => {
 
 export function OnlineMenuFontSettingsWrapper({
   selectedLayout,
-  onFontSettingsChange
+  fontSettings,
+  onFontSettingsChange,
+  setFontSettings
 }: OnlineMenuFontSettingsWrapperProps) {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
 
-  // Usa sempre la funzione di init sicura
-  const [fontSettings, setFontSettings] = useState(() => initializeFontSettings(siteSettings, selectedLayout));
-
+  // aggiorna fontSettings solo da props, mai da stato proprio
   useEffect(() => {
-    setFontSettings(initializeFontSettings(siteSettings, selectedLayout));
+    // opzionale legacy sync con Supabase. Potresti anche rimuovere, rimane per sicurezza passiva
+    // setFontSettings(initializeFontSettings(siteSettings, selectedLayout));
     // eslint-disable-next-line
   }, [selectedLayout, siteSettings?.publicMenuFontSettings]);
 
   const handleFontChange = async (key: "title" | "description" | "price", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
-    setFontSettings(newValue);
+    setFontSettings(newValue); // Lo stato "alto" aggiorna tutte le anteprime in tempo reale!
     const nextPublicMenuFontSettings = {
       ...publicMenuFontSettings,
       [selectedLayout]: newValue

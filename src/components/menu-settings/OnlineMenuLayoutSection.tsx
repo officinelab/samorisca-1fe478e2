@@ -22,6 +22,7 @@ export default function OnlineMenuLayoutSection() {
   const [buttonSettings, setButtonSettings] = useState(
     siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS
   );
+  // stato locale fontSettings ora effettivamente sollevato, sempre usato anche per tutte le anteprime
   const [fontSettings, setFontSettings] = useState(() =>
     initializeCompleteFontSettings(siteSettings, selectedLayout)
   );
@@ -92,7 +93,9 @@ export default function OnlineMenuLayoutSection() {
         {/* Font Settings Column */}
         <FontSettingsColumn
           selectedLayout={selectedLayout}
+          fontSettings={fontSettings}
           onFontSettingsChange={handleFontSettingsChange}
+          setFontSettings={setFontSettings}
         />
         {/* Button Settings Column */}
         <ButtonSettingsColumn
