@@ -56,13 +56,16 @@ export const useDashboard = () => {
     setEditingCategory(null);
   };
 
-  // AGGIORNATO: ora ricarica i prodotti dopo il salvataggio
+  // AGGIORNATO: ora ricarica tutti i dati della dashboard dopo il salvataggio
   const handleProductFormSave = async () => {
-    if (dashboardOperations.selectedCategoryId && dashboardOperations.loadProducts) {
-      await dashboardOperations.loadProducts(dashboardOperations.selectedCategoryId);
-    }
+    console.log('handleProductFormSave called');
+
+    // Usa loadData che ricarica tutto, inclusi i prodotti
+    await dashboardOperations.loadData();
+
     setShowAddProduct(false);
     setEditingProduct(null);
+    console.log('Products reloaded and form closed');
   };
 
   const handleCategoryFormCancel = () => {
