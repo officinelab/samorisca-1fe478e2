@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DEFAULT_GOOGLE_FONTS } from "./FontSelector";
 import { Button } from "@/components/ui/button";
@@ -72,17 +71,19 @@ export function FontSettingsSection({
     return [...DEFAULT_GOOGLE_FONTS, ...customFonts];
   });
 
-  const fields = [
-    { key: "title", label: "Titolo" },
-    { key: "description", label: "Descrizione" },
-    { key: "price", label: "Prezzo" }
-  ];
+  // Array tipizzato per mapping sicuro
+  const fontFields: ("title" | "description" | "price")[] = ["title", "description", "price"];
+  const fieldLabels: Record<"title" | "description" | "price", string> = {
+    title: "Titolo",
+    description: "Descrizione",
+    price: "Prezzo"
+  };
 
   return (
     <div className="space-y-4">
-      {fields.map(({ key, label }) => (
+      {fontFields.map((key) => (
         <div key={key} className="border rounded-lg p-4">
-          <h4 className="font-semibold mb-3">{label}</h4>
+          <h4 className="font-semibold mb-3">{fieldLabels[key]}</h4>
           {/* Font family, weight, style controls */}
           <div className="flex items-center gap-2 mb-3">
             <button
