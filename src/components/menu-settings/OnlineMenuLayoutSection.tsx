@@ -1,12 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
 import { toast } from "@/hooks/use-toast";
-import { OnlineMenuLayoutSelector } from "./OnlineMenuLayoutSelector";
-import { OnlineMenuFontSelectors } from "./OnlineMenuFontSelectors";
 import { OnlineMenuLayoutPreview } from "./OnlineMenuLayoutPreview";
 import { OnlineMenuProductDetailsPreview } from "./OnlineMenuProductDetailsPreview";
-import { OnlineMenuAddToCartButtonSettings } from "./OnlineMenuAddToCartButtonSettings";
+import { LayoutTypeSelectorInline } from "./LayoutTypeSelectorInline";
+import { FontSettingsSection } from "./FontSettingsSection";
+import { ButtonSettingsSection } from "./ButtonSettingsSection";
 
 // Esempio prodotto di test
 const exampleProduct: Product = {
@@ -181,17 +182,17 @@ export default function OnlineMenuLayoutSection() {
         Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo, descrizione e prezzo.
       </p>
 
-      <OnlineMenuLayoutSelector
+      <LayoutTypeSelectorInline
         selectedLayout={selectedLayout}
         onSelect={handleLayoutChange}
       />
 
-      <OnlineMenuAddToCartButtonSettings
+      <ButtonSettingsSection
         value={buttonSettings}
         onChange={handleButtonChange}
       />
 
-      <OnlineMenuFontSelectors fontSettings={fontSettings} onFontChange={handleFontChange} />
+      <FontSettingsSection fontSettings={fontSettings} onFontChange={handleFontChange} />
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
