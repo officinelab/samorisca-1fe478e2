@@ -14,8 +14,9 @@ interface ProductCardDesktopCustom1Props {
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   fontSettings?: {
-    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
-    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
 }
 
@@ -31,6 +32,7 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
 
   // Carica dinamicamente il font titolo
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
+  useDynamicGoogleFont(fontSettings?.price?.fontFamily);
 
   return (
     <Card className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
@@ -58,7 +60,14 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
             )}
           </div>
           {!product.has_multiple_prices ? (
-            <span className="font-medium flex items-center">
+            <span
+              className="font-medium flex items-center"
+              style={{
+                fontFamily: fontSettings?.price?.fontFamily,
+                fontWeight: fontSettings?.price?.fontWeight,
+                fontStyle: fontSettings?.price?.fontStyle,
+              }}
+            >
               {product.price_standard?.toFixed(2)} €
               {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
             </span>
@@ -100,7 +109,13 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
                   addToCart(product);
                 }}
               >
-                <span>
+                <span
+                  style={{
+                    fontFamily: fontSettings?.price?.fontFamily,
+                    fontWeight: fontSettings?.price?.fontWeight,
+                    fontStyle: fontSettings?.price?.fontStyle,
+                  }}
+                >
                   {product.price_standard?.toFixed(2)} €
                   {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                 </span>
@@ -117,7 +132,13 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
                   addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                 }}
               >
-                <span>
+                <span
+                  style={{
+                    fontFamily: fontSettings?.price?.fontFamily,
+                    fontWeight: fontSettings?.price?.fontWeight,
+                    fontStyle: fontSettings?.price?.fontStyle,
+                  }}
+                >
                   {product.price_variant_1_value?.toFixed(2)} €
                   {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
                 </span>
@@ -134,7 +155,13 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
                   addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                 }}
               >
-                <span>
+                <span
+                  style={{
+                    fontFamily: fontSettings?.price?.fontFamily,
+                    fontWeight: fontSettings?.price?.fontWeight,
+                    fontStyle: fontSettings?.price?.fontStyle,
+                  }}
+                >
                   {product.price_variant_2_value?.toFixed(2)} €
                   {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
                 </span>

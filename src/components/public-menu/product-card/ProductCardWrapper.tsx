@@ -18,8 +18,9 @@ interface ProductCardWrapperProps {
   truncateText: (text: string | null, maxLength: number) => string;
   layoutType?: ProductCardLayoutType;
   fontSettings?: {
-    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
-    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    title?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    description?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    price?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
   };
 }
 

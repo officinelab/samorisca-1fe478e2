@@ -16,8 +16,9 @@ interface ProductCardMobileProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   fontSettings?: {
-    title: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    description: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
 }
 
@@ -34,6 +35,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
 
   // Carica dinamicamente il font titolo
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
+  useDynamicGoogleFont(fontSettings?.price?.fontFamily);
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
@@ -92,7 +94,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
               {/* Standard price row */}
               {product.price_standard !== null && product.price_standard !== undefined && (
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-medium">
+                  <span
+                    className="font-medium"
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_standard.toFixed(2)} €{priceSuffix}
                   </span>
                   <Button
@@ -111,7 +120,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
               {/* Variante 1 */}
               {product.price_variant_1_name && product.price_variant_1_value !== null && (
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-medium">
+                  <span
+                    className="font-medium"
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_variant_1_value?.toFixed(2)} €
                     {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
                   </span>
@@ -131,7 +147,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
               {/* Variante 2 */}
               {product.price_variant_2_name && product.price_variant_2_value !== null && (
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-medium">
+                  <span
+                    className="font-medium"
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_variant_2_value?.toFixed(2)} €
                     {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
                   </span>
@@ -151,7 +174,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
             </div>
           ) : (
             <div className="flex items-center justify-between w-full">
-              <span className="font-medium">
+              <span
+                className="font-medium"
+                style={{
+                  fontFamily: fontSettings?.price?.fontFamily,
+                  fontWeight: fontSettings?.price?.fontWeight,
+                  fontStyle: fontSettings?.price?.fontStyle,
+                }}
+              >
                 {product.price_standard !== null && product.price_standard !== undefined
                   ? `${product.price_standard.toFixed(2)} €${priceSuffix}`
                   : ""}

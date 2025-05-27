@@ -13,8 +13,9 @@ interface ProductDetailsDialogPreviewProps {
   hideImage?: boolean;
   language?: string;
   fontSettings?: {
-    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
-    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
 }
 
@@ -33,6 +34,9 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
+  // Carica i font dinamicamente (in questo caso prezzo)
+  // (Si può fare qui o nel componente padre)
+  // Iniettato direttamente nello style dove serve
   return (
     <div className="w-full px-4 pb-4">
       <div className="py-4">
@@ -107,7 +111,13 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               {/* Prezzo standard SOLO con suffisso */}
               {typeof product.price_standard === "number" && (
                 <div className="flex justify-between items-center gap-2">
-                  <span>
+                  <span
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_standard?.toFixed(2)} €
                     {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                   </span>
@@ -123,7 +133,13 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               {/* Variante 1 */}
               {product.price_variant_1_name && product.price_variant_1_value !== null && (
                 <div className="flex justify-between items-center gap-2">
-                  <span>
+                  <span
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_variant_1_value?.toFixed(2)} €
                     {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
                   </span>
@@ -139,7 +155,13 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               {/* Variante 2 */}
               {product.price_variant_2_name && product.price_variant_2_value !== null && (
                 <div className="flex justify-between items-center gap-2">
-                  <span>
+                  <span
+                    style={{
+                      fontFamily: fontSettings?.price?.fontFamily,
+                      fontWeight: fontSettings?.price?.fontWeight,
+                      fontStyle: fontSettings?.price?.fontStyle,
+                    }}
+                  >
                     {product.price_variant_2_value?.toFixed(2)} €
                     {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
                   </span>
@@ -154,7 +176,14 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               )}
             </div>
           ) : (
-            <p className="font-medium">
+            <p
+              className="font-medium"
+              style={{
+                fontFamily: fontSettings?.price?.fontFamily,
+                fontWeight: fontSettings?.price?.fontWeight,
+                fontStyle: fontSettings?.price?.fontStyle,
+              }}
+            >
               {typeof product.price_standard === "number" && (
                 <>
                   {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
