@@ -41,14 +41,55 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
+  // Nuova funzione handleSave con debug completo
   const handleSave = async (formValues: any) => {
-    await handleSubmit(formValues);
-    if (onSave) onSave();
+    console.log('=== FORM SUBMIT DEBUG ===');
+    console.log('1. Raw form values:', formValues);
+    console.log('2. Category ID from props:', categoryId);
+    console.log('3. Form validation errors:', form.formState.errors);
+    console.log('4. Form is valid:', form.formState.isValid);
+    
+    // Verifica campi obbligatori
+    const requiredFields = {
+      title: formValues.title,
+      category_id: formValues.category_id || categoryId,
+      price_standard: formValues.price_standard
+    };
+    
+    console.log('5. Required fields check:', requiredFields);
+    
+    // Se manca category_id, proviamo a prenderla dai props
+    if (!formValues.category_id && categoryId) {
+      console.log('6. Setting category_id from props');
+      formValues.category_id = categoryId;
+    }
+    
+    console.log('7. Final values before submit:', formValues);
+    
+    try {
+      const result = await handleSubmit(formValues);
+      console.log('8. Submit result:', result);
+      
+      if (onSave) {
+        console.log('9. Calling onSave callback');
+        onSave();
+      }
+    } catch (error) {
+      console.error('10. Submit error:', error);
+    }
   };
 
   return (
     <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
       <Form {...form}>
+        {/* Campo nascosto per category_id se viene passata come prop */}
+        {categoryId && !product && (
+          <input 
+            type="hidden" 
+            {...form.register('category_id')} 
+            value={categoryId} 
+          />
+        )}
         <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
           {/* Informazioni Base */}
           <Card className="overflow-visible">
@@ -102,3 +143,4 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
+
