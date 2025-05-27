@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -7,6 +6,7 @@ import AdminTitleSection from "./AdminTitleSection";
 import FooterTextSection from "./FooterTextSection";
 import BrowserTitleSection from "./BrowserTitleSection";
 import TokenPackageSection from "./TokenPackageSection";
+import PublicMenuUrlSection from "./PublicMenuUrlSection";
 
 const TextSettingsSection = () => {
   return (
@@ -25,6 +25,8 @@ const TextSettingsSection = () => {
           <BrowserTitleSection />
           <Separator className="my-8" />
           <TokenPackageSection />
+          <Separator className="my-8" />
+          <PublicMenuUrlSection />
         </div>
       </CardContent>
     </Card>
