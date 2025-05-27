@@ -1,8 +1,7 @@
-
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ImagesAndLogosSection from "./ImagesAndLogosSection";
 import MenuSettingsSection from "./MenuSettingsSection";
-// import { useGlobalBrowserTitle } from "@/hooks/useGlobalBrowserTitle";
+import DownloadMenuQrCodeButton from "./DownloadMenuQrCodeButton";
 
 const SiteSettingsManager = () => {
   const { isLoading, siteSettings } = useSiteSettings();
@@ -21,6 +20,9 @@ const SiteSettingsManager = () => {
     <div className="space-y-8 max-w-4xl mx-auto">
       <ImagesAndLogosSection />
       <MenuSettingsSection />
+      <div className="pt-2">
+        <DownloadMenuQrCodeButton />
+      </div>
       {/* RIMUOVI <TextSettingsSection /> */}
     </div>
   );
