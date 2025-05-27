@@ -6,6 +6,7 @@ import { ButtonSettingsSection } from "./ButtonSettingsSection";
 
 interface OnlineMenuButtonSettingsWrapperProps {
   selectedLayout: string;
+  onButtonSettingsChange?: (settings: any) => void;
 }
 
 const DEFAULT_BUTTON_SETTINGS = {
@@ -13,7 +14,10 @@ const DEFAULT_BUTTON_SETTINGS = {
   icon: "plus"
 };
 
-export function OnlineMenuButtonSettingsWrapper({ selectedLayout }: OnlineMenuButtonSettingsWrapperProps) {
+export function OnlineMenuButtonSettingsWrapper({
+  selectedLayout,
+  onButtonSettingsChange
+}: OnlineMenuButtonSettingsWrapperProps) {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const publicMenuButtonSettings = siteSettings?.publicMenuButtonSettings || {};
   const currButtonSettings = {
@@ -33,6 +37,7 @@ export function OnlineMenuButtonSettingsWrapper({ selectedLayout }: OnlineMenuBu
 
   const handleButtonChange = async (newValue: { color: string; icon: string }) => {
     setButtonSettings(newValue);
+
     const nextPublicMenuButtonSettings = {
       ...publicMenuButtonSettings,
       [selectedLayout]: newValue
@@ -40,6 +45,9 @@ export function OnlineMenuButtonSettingsWrapper({ selectedLayout }: OnlineMenuBu
     await saveSetting("publicMenuButtonSettings", nextPublicMenuButtonSettings);
     await refetchSettings();
     toast({ title: "Pulsante aggiornato", description: `Pulsante aggiornato per layout ${selectedLayout}` });
+    if (onButtonSettingsChange) {
+      onButtonSettingsChange(newValue);
+    }
   };
 
   return (

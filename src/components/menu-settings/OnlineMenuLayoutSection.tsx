@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
@@ -77,15 +76,51 @@ function truncateText(text: string | null = "", maxLength: number = 120) {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 }
 
+const DEFAULT_FONT_SETTINGS = {
+  title: {
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
+  description: {
+    fontFamily: "Open Sans",
+    fontWeight: "normal",
+    fontStyle: "normal",
+  },
+  price: {
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
+};
+
+const DEFAULT_BUTTON_SETTINGS = {
+  color: "#9b87f5",
+  icon: "plus"
+};
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
+  // Stati locali allineati per preview sempre aggiornata
+  const [buttonSettings, setButtonSettings] = useState(
+    siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS
+  );
+  const [fontSettings, setFontSettings] = useState(
+    siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  );
+
+  // Sync stati locali a cambio layout e siteSettings
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
   }, [siteSettings?.publicMenuLayoutType]);
 
-  // Cambia layout e aggiorna anche le anteprime!
+  useEffect(() => {
+    setButtonSettings(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS);
+    setFontSettings(siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+  }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettings]);
+
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
     await saveSetting("publicMenuLayoutType", newLayout);
@@ -94,6 +129,15 @@ export default function OnlineMenuLayoutSection() {
       title: "Layout applicato",
       description: `Hai selezionato il layout "${newLayout === "default" ? "Classico" : "Custom 1"}"`
     });
+  };
+
+  // Callback passati ai wrapper: aggiornano anche lo stato locale della preview
+  const handleButtonSettingsChange = (settings: any) => {
+    setButtonSettings(settings);
+  };
+
+  const handleFontSettingsChange = (settings: any) => {
+    setFontSettings(settings);
   };
 
   return (
@@ -108,23 +152,28 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      <OnlineMenuButtonSettingsWrapper selectedLayout={selectedLayout} />
+      <OnlineMenuButtonSettingsWrapper
+        selectedLayout={selectedLayout}
+        onButtonSettingsChange={handleButtonSettingsChange}
+      />
 
-      <OnlineMenuFontSettingsWrapper selectedLayout={selectedLayout} />
+      <OnlineMenuFontSettingsWrapper
+        selectedLayout={selectedLayout}
+        onFontSettingsChange={handleFontSettingsChange}
+      />
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        // I dati reali per preview ora vengono passati dai wrapper!
-        fontSettings={siteSettings?.publicMenuFontSettings?.[selectedLayout] || {}}
-        buttonSettings={siteSettings?.publicMenuButtonSettings?.[selectedLayout] || { color: "#9b87f5", icon: "plus" }}
+        fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
       />
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={siteSettings?.publicMenuFontSettings?.[selectedLayout] || {}}
-        buttonSettings={siteSettings?.publicMenuButtonSettings?.[selectedLayout] || { color: "#9b87f5", icon: "plus" }}
+        fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />
     </div>

@@ -6,6 +6,7 @@ import { FontSettingsSection } from "./FontSettingsSection";
 
 interface OnlineMenuFontSettingsWrapperProps {
   selectedLayout: string;
+  onFontSettingsChange?: (settings: any) => void;
 }
 
 const DEFAULT_FONT_SETTINGS = {
@@ -26,7 +27,10 @@ const DEFAULT_FONT_SETTINGS = {
   },
 };
 
-export function OnlineMenuFontSettingsWrapper({ selectedLayout }: OnlineMenuFontSettingsWrapperProps) {
+export function OnlineMenuFontSettingsWrapper({
+  selectedLayout,
+  onFontSettingsChange
+}: OnlineMenuFontSettingsWrapperProps) {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
   const currFontSettings = {
@@ -54,6 +58,9 @@ export function OnlineMenuFontSettingsWrapper({ selectedLayout }: OnlineMenuFont
     await saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
     await refetchSettings();
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
+    if (onFontSettingsChange) {
+      onFontSettingsChange(newValue);
+    }
   };
 
   return (
