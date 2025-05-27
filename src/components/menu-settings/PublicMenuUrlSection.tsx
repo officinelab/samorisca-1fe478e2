@@ -44,8 +44,8 @@ const PublicMenuUrlSection = () => {
           onChange={e => setValue(e.target.value)}
           autoComplete="off"
         />
-        <Button onClick={handleSave} loading={loading} disabled={loading}>
-          Salva
+        <Button onClick={handleSave} disabled={loading}>
+          {loading ? "Salvataggio..." : "Salva"}
         </Button>
       </div>
     </section>
