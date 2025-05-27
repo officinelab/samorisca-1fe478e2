@@ -36,7 +36,7 @@ export function OnlineMenuLayoutPreview({
         width: 520,
         minWidth: 350
       }} className="rounded-md">
-          <div className="max-w-2xl w-full min-w-[350px] border rounded-md shadow p-3 mx-auto bg-zinc-200">
+          <div className="max-w-2xl w-full min-w-[350px] border rounded-md shadow bg-white p-3 mx-auto">
             <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima desktop</span>
             <ProductCardWrapper product={exampleProduct} onProductSelect={() => {}} addToCart={() => {}} truncateText={truncateText} deviceView="desktop" layoutType={selectedLayout as ProductCardLayoutType} fontSettings={{
             title: {
@@ -68,8 +68,8 @@ export function OnlineMenuLayoutPreview({
         transformOrigin: "top center",
         width: 375,
         minWidth: 310
-      }} className="rounded-md">
-          <div className="max-w-md w-full border rounded-md shadow p-3 mx-auto bg-zinc-200">
+      }} className="rounded-md bg-[#000a00]/0">
+          <div className="max-w-md w-full border rounded-md shadow bg-white p-3 mx-auto">
             <span className="block text-center text-xs text-muted-foreground mb-1">Anteprima mobile</span>
             <ProductCardWrapper product={exampleProduct} onProductSelect={() => {}} addToCart={() => {}} truncateText={truncateText} deviceView="mobile" layoutType={selectedLayout as ProductCardLayoutType} fontSettings={{
             title: {
