@@ -22,6 +22,11 @@ interface ProductCardWrapperProps {
     description?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     price?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
   };
+  // Nuovo: personalizzazione button
+  buttonSettings?: {
+    addToCartButtonColor?: string;
+    addToCartButtonIcon?: string;
+  };
 }
 
 // Mappa dei layout disponibili, pronto per espansioni future
@@ -45,6 +50,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
   truncateText,
   layoutType = 'default',
   fontSettings,
+  buttonSettings,
 }) => {
   const isMobile = useIsMobile();
   const LayoutSet = productCardLayouts[layoutType] || productCardLayouts.default;
@@ -57,6 +63,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         addToCart={addToCart}
         truncateText={truncateText}
         fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
       />
     );
   }

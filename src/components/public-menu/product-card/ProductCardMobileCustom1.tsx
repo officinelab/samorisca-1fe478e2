@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, BookmarkPlus, CirclePlus, HeartPlus, BadgePlus, CircleCheckBig } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
@@ -19,6 +18,10 @@ interface ProductCardMobileCustom1Props {
     description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
     price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
+  buttonSettings?: {
+    addToCartButtonColor?: string;
+    addToCartButtonIcon?: string;
+  };
 }
 
 export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> = ({
@@ -26,7 +29,8 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
   onProductSelect,
   addToCart,
   truncateText,
-  fontSettings
+  fontSettings,
+  buttonSettings
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -35,6 +39,28 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
   // Carica dinamicamente il font titolo
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
   useDynamicGoogleFont(fontSettings?.price?.fontFamily);
+
+  const buttonBgColor = buttonSettings?.addToCartButtonColor || "#7E69AB";
+  const iconName = buttonSettings?.addToCartButtonIcon || "plus";
+
+  const renderIcon = (icon: string, size = 16, color = "#fff") => {
+    switch (icon) {
+      case "bookmark-plus":
+        return <BookmarkPlus size={size} color={color} />;
+      case "circle-plus":
+        return <CirclePlus size={size} color={color} />;
+      case "plus":
+        return <Plus size={size} color={color} />;
+      case "heart-plus":
+        return <HeartPlus size={size} color={color} />;
+      case "badge-plus":
+        return <BadgePlus size={size} color={color} />;
+      case "circle-check-big":
+        return <CircleCheckBig size={size} color={color} />;
+      default:
+        return <Plus size={size} color={color} />;
+    }
+  };
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
@@ -107,9 +133,10 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                       e.stopPropagation();
                       addToCart(product);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    style={{ backgroundColor: buttonBgColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-80"
                   >
-                    <Plus size={16} />
+                    {renderIcon(iconName)}
                   </Button>
                 </div>
               )}
@@ -134,9 +161,10 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                       e.stopPropagation();
                       addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    style={{ backgroundColor: buttonBgColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-80"
                   >
-                    <Plus size={16} />
+                    {renderIcon(iconName)}
                   </Button>
                 </div>
               )}
@@ -161,9 +189,10 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                       e.stopPropagation();
                       addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    style={{ backgroundColor: buttonBgColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-80"
                   >
-                    <Plus size={16} />
+                    {renderIcon(iconName)}
                   </Button>
                 </div>
               )}
@@ -189,9 +218,10 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                style={{ backgroundColor: buttonBgColor }}
+                className="rounded-full h-8 w-8 shadow-md hover:opacity-80"
               >
-                <Plus size={16} />
+                {renderIcon(iconName)}
               </Button>
             </div>
           )}
