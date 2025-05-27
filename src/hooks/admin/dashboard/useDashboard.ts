@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -56,24 +57,8 @@ export const useDashboard = () => {
     setEditingCategory(null);
   };
 
-  // AGGIORNATO: dopo salvataggio, aggiorna prodotti della categoria corrente e anche il prodotto selezionato se serve
   const handleProductFormSave = async () => {
-    if (dashboardOperations.selectedCategoryId && dashboardOperations.loadProducts) {
-      await dashboardOperations.loadProducts(dashboardOperations.selectedCategoryId);
-      // Sincronizza il selectedProduct se uno è selezionato
-      if (
-        dashboardOperations.selectedProductId &&
-        dashboardOperations.products &&
-        dashboardOperations.products.length > 0
-      ) {
-        const updatedProduct = dashboardOperations.products.find(
-          (p) => p.id === dashboardOperations.selectedProductId
-        );
-        if (updatedProduct) {
-          dashboardOperations.setSelectedProductId(updatedProduct.id);
-        }
-      }
-    }
+    await dashboardOperations.loadData();
     setShowAddProduct(false);
     setEditingProduct(null);
   };
@@ -108,3 +93,4 @@ export const useDashboard = () => {
     handleProductFormCancel
   };
 };
+
