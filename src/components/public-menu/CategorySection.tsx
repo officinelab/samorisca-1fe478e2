@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
@@ -19,6 +20,10 @@ interface CategorySectionProps {
     title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
   };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
+  };
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -31,7 +36,8 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   truncateText,
   language = 'it',
   productCardLayoutType = "default",
-  fontSettings
+  fontSettings,
+  buttonSettings
 }) => {
   const isMobile = useIsMobile();
   const { siteSettings } = useSiteSettings();
@@ -66,6 +72,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
                 truncateText={truncateText}
                 layoutType={productCardLayoutType}
                 fontSettings={fontSettings}
+                buttonSettings={buttonSettings}
               />
             );
           }) : (
@@ -102,3 +109,4 @@ export const CategorySectionSkeleton: React.FC = () => {
     </div>
   );
 };
+
