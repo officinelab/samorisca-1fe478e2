@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
@@ -152,15 +153,25 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      <OnlineMenuButtonSettingsWrapper
-        selectedLayout={selectedLayout}
-        onButtonSettingsChange={handleButtonSettingsChange}
-      />
-
-      <OnlineMenuFontSettingsWrapper
-        selectedLayout={selectedLayout}
-        onFontSettingsChange={handleFontSettingsChange}
-      />
+      {/* Due colonne per impostazioni font e pulsante */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+        {/* Colonna Font */}
+        <div className="bg-muted/50 rounded-md p-4">
+          <h3 className="text-lg font-semibold mb-3">Font titolo, descrizione, prezzo</h3>
+          <OnlineMenuFontSettingsWrapper
+            selectedLayout={selectedLayout}
+            onFontSettingsChange={handleFontSettingsChange}
+          />
+        </div>
+        {/* Colonna Pulsante */}
+        <div className="bg-muted/50 rounded-md p-4">
+          <h3 className="text-lg font-semibold mb-3">Pulsante "Aggiungi al carrello"</h3>
+          <OnlineMenuButtonSettingsWrapper
+            selectedLayout={selectedLayout}
+            onButtonSettingsChange={handleButtonSettingsChange}
+          />
+        </div>
+      </div>
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
