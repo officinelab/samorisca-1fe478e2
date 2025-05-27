@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
 import { FontSettingsSection } from "./FontSettingsSection";
-import { FontSizeSettingsGrid } from "./FontSizeSettingsGrid";
 
 interface OnlineMenuFontSettingsWrapperProps {
   selectedLayout: string;

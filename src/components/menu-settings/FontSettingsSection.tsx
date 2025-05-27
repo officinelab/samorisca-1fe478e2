@@ -12,12 +12,6 @@ interface FontSettingsSectionProps {
   max?: number;
 }
 
-const LABELS = {
-  title: "Font Titolo",
-  description: "Font Descrizione",
-  price: "Font Prezzo",
-};
-
 const COLUMNS = [
   { key: "desktop", label: "DESKTOP" },
   { key: "mobile", label: "MOBILE" },
@@ -32,9 +26,12 @@ export function FontSettingsSection({
   min = 8,
   max = 40,
 }: FontSettingsSectionProps) {
+  // Use constant keys for correct typing.
+  const KEYS = ["title", "description", "price"] as const;
+
   return (
     <div className="flex flex-col gap-4">
-      {Object.keys(fontSettings).map((sectionKey) => (
+      {KEYS.map((sectionKey) => (
         <div key={sectionKey} className="flex items-center gap-4">
           {/* Font selector e stili */}
           <div className="min-w-[270px]">
@@ -55,7 +52,7 @@ export function FontSettingsSection({
                     variant="outline"
                     className="w-6 h-6 p-0"
                     onClick={() =>
-                      onFontSizeChange(sectionKey as any, col.key as any, Math.max(min, fontSizes[sectionKey][col.key] - 1))
+                      onFontSizeChange(sectionKey, col.key as "desktop" | "mobile" | "details", Math.max(min, fontSizes[sectionKey][col.key] - 1))
                     }
                     disabled={fontSizes[sectionKey][col.key] <= min}
                   >–</Button>
@@ -66,7 +63,7 @@ export function FontSettingsSection({
                     variant="outline"
                     className="w-6 h-6 p-0"
                     onClick={() =>
-                      onFontSizeChange(sectionKey as any, col.key as any, Math.min(max, fontSizes[sectionKey][col.key] + 1))
+                      onFontSizeChange(sectionKey, col.key as "desktop" | "mobile" | "details", Math.min(max, fontSizes[sectionKey][col.key] + 1))
                     }
                     disabled={fontSizes[sectionKey][col.key] >= max}
                   >+</Button>
