@@ -14,6 +14,51 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
   const [translatingAll, setTranslatingAll] = useState(false);
   const { translateText, getExistingTranslation, currentService, getServiceName } = useTranslationService();
 
+  // NUOVA FUNZIONE: Controlla se un campo necessita traduzione (mancante O obsoleto)
+  const checkIfNeedsTranslation = async (
+    entityId: string, 
+    entityType: string, 
+    fieldName: string, 
+    language: SupportedLanguage
+  ): Promise<boolean> => {
+    try {
+      // 1. Ottieni l'entità originale per la data di aggiornamento
+      const { data: entity, error: entityError } = await supabase
+        .from(entityType)
+        .select('updated_at')
+        .eq('id', entityId)
+        .single();
+
+      if (entityError || !entity) return false;
+
+      // 2. Controlla se esiste una traduzione
+      const { data: translation, error: translationError } = await supabase
+        .from('translations')
+        .select('last_updated')
+        .eq('entity_id', entityId)
+        .eq('entity_type', entityType)
+        .eq('field', fieldName)
+        .eq('language', language)
+        .single();
+
+      // Se non esiste traduzione = MANCANTE (badge rosso)
+      if (translationError || !translation) {
+        return true;
+      }
+
+      // Se esiste, controlla se è obsoleta confrontando le date
+      const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
+      const translationUpdatedAt = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
+      
+      // Se la traduzione è più vecchia dell'entità = OBSOLETA (badge arancione)
+      return translationUpdatedAt < entityUpdatedAt;
+
+    } catch (error) {
+      console.error('Error checking translation status:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (!selectedCategoryId) return;
     
@@ -83,6 +128,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     }
   };
 
+  // FUNZIONE CORRETTA: Traduce sia badge rossi CHE arancioni
   const translateAllProducts = async () => {
     if (!selectedCategoryId || products.length === 0) return;
     
@@ -101,10 +147,10 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     
     try {
       for (const product of products) {
-        // Traduzione del titolo
+        // Traduzione del titolo (include obsoleti)
         if (product.title) {
-          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage);
-          if (!existingTitle) {
+          const needsTranslation = await checkIfNeedsTranslation(product.id, 'products', 'title', selectedLanguage);
+          if (needsTranslation) {
             const result = await translateText(product.title, selectedLanguage, product.id, 'products', 'title');
             if (result.success) successfulTranslations++;
           } else {
@@ -112,10 +158,10 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
           }
         }
         
-        // Traduzione della descrizione
+        // Traduzione della descrizione (include obsoleti)
         if (product.description) {
-          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage);
-          if (!existingDescription) {
+          const needsTranslation = await checkIfNeedsTranslation(product.id, 'products', 'description', selectedLanguage);
+          if (needsTranslation) {
             const result = await translateText(product.description, selectedLanguage, product.id, 'products', 'description');
             if (result.success) successfulTranslations++;
           } else {
@@ -123,10 +169,10 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
           }
         }
         
-        // Traduzione del suffisso prezzo
+        // Traduzione del suffisso prezzo (include obsoleti)
         if (product.has_price_suffix && product.price_suffix) {
-          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage);
-          if (!existingSuffix) {
+          const needsTranslation = await checkIfNeedsTranslation(product.id, 'products', 'price_suffix', selectedLanguage);
+          if (needsTranslation) {
             const result = await translateText(product.price_suffix, selectedLanguage, product.id, 'products', 'price_suffix');
             if (result.success) successfulTranslations++;
           } else {
@@ -134,10 +180,10 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
           }
         }
         
-        // Traduzione del nome variante 1
+        // Traduzione del nome variante 1 (include obsoleti)
         if (product.has_multiple_prices && product.price_variant_1_name) {
-          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage);
-          if (!existingVariant1) {
+          const needsTranslation = await checkIfNeedsTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage);
+          if (needsTranslation) {
             const result = await translateText(product.price_variant_1_name, selectedLanguage, product.id, 'products', 'price_variant_1_name');
             if (result.success) successfulTranslations++;
           } else {
@@ -145,10 +191,10 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
           }
         }
         
-        // Traduzione del nome variante 2
+        // Traduzione del nome variante 2 (include obsoleti)
         if (product.has_multiple_prices && product.price_variant_2_name) {
-          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage);
-          if (!existingVariant2) {
+          const needsTranslation = await checkIfNeedsTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage);
+          if (needsTranslation) {
             const result = await translateText(product.price_variant_2_name, selectedLanguage, product.id, 'products', 'price_variant_2_name');
             if (result.success) successfulTranslations++;
           } else {
@@ -167,9 +213,14 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         }
       }
       
+      // Emetti evento per aggiornare i badge
+      if (typeof window !== "undefined" && window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent("refresh-translation-status"));
+      }
+      
       toast({
         title: "Traduzione completata",
-        description: `Tradotti ${successfulTranslations} campi con ${serviceName}, ${skippedTranslations} campi già tradotti sono stati saltati.`,
+        description: `Tradotti ${successfulTranslations} campi con ${serviceName}, ${skippedTranslations} campi aggiornati sono stati saltati.`,
       });
       
     } catch (error) {
