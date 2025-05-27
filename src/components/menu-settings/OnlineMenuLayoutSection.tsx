@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
@@ -103,46 +102,48 @@ export default function OnlineMenuLayoutSection() {
           onButtonSettingsChange={handleButtonSettingsChange}
         />
       </div>
-      {/* Preview aggiornate con i fontSize corretti */}
-      <OnlineMenuLayoutPreview
-        selectedLayout={selectedLayout}
-        fontSettings={{
-          title: { 
-            ...fontSettings.title, 
-            fontSize: fontSettings.title?.desktop?.fontSize || 18 
-          },
-          description: { 
-            ...fontSettings.description, 
-            fontSize: fontSettings.description?.desktop?.fontSize || 14 
-          },
-          price: { 
-            ...fontSettings.price, 
-            fontSize: fontSettings.price?.desktop?.fontSize || 16 
-          }
-        }}
-        buttonSettings={buttonSettings}
-        exampleProduct={exampleProduct}
-        truncateText={truncateText}
-      />
-      <OnlineMenuProductDetailsPreview
-        selectedLayout={selectedLayout}
-        fontSettings={{
-          title: { 
-            ...fontSettings.title, 
-            fontSize: fontSettings.title?.detail?.fontSize || 18 
-          },
-          description: { 
-            ...fontSettings.description, 
-            fontSize: fontSettings.description?.detail?.fontSize || 16 
-          },
-          price: { 
-            ...fontSettings.price, 
-            fontSize: fontSettings.price?.detail?.fontSize || 18 
-          }
-        }}
-        buttonSettings={buttonSettings}
-        exampleProduct={exampleProduct}
-      />
+      {/* -- RAGGRUPPO LE 3 ANTEPRIME IN UN CONTENITORE RESPONSIVE -- */}
+      <div className="w-full flex flex-col lg:flex-row gap-8 justify-center items-start flex-wrap">
+        <OnlineMenuLayoutPreview
+          selectedLayout={selectedLayout}
+          fontSettings={{
+            title: { 
+              ...fontSettings.title, 
+              fontSize: fontSettings.title?.desktop?.fontSize || 18 
+            },
+            description: { 
+              ...fontSettings.description, 
+              fontSize: fontSettings.description?.desktop?.fontSize || 14 
+            },
+            price: { 
+              ...fontSettings.price, 
+              fontSize: fontSettings.price?.desktop?.fontSize || 16 
+            }
+          }}
+          buttonSettings={buttonSettings}
+          exampleProduct={exampleProduct}
+          truncateText={truncateText}
+        />
+        <OnlineMenuProductDetailsPreview
+          selectedLayout={selectedLayout}
+          fontSettings={{
+            title: { 
+              ...fontSettings.title, 
+              fontSize: fontSettings.title?.detail?.fontSize || 18 
+            },
+            description: { 
+              ...fontSettings.description, 
+              fontSize: fontSettings.description?.detail?.fontSize || 16 
+            },
+            price: { 
+              ...fontSettings.price, 
+              fontSize: fontSettings.price?.detail?.fontSize || 18 
+            }
+          }}
+          buttonSettings={buttonSettings}
+          exampleProduct={exampleProduct}
+        />
+      </div>
     </div>
   );
 }
