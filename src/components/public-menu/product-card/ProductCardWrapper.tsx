@@ -61,7 +61,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         addToCart={addToCart}
         truncateText={truncateText}
         fontSettings={fontSettings}
-        buttonSettings={buttonSettings}
+        buttonSettings={buttonSettings} {/* Passo sempre, anche custom1 */}
       />
     );
   }
@@ -72,6 +72,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
       onProductSelect={onProductSelect}
       addToCart={addToCart}
       fontSettings={fontSettings}
+      buttonSettings={buttonSettings} {/* Passo anche qui per uniformità */}
     />
   );
 };

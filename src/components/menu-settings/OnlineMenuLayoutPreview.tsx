@@ -47,6 +47,7 @@ export function OnlineMenuLayoutPreview({
               deviceView="desktop"
               layoutType={selectedLayout as ProductCardLayoutType}
               fontSettings={fontSettings}
+              buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
             <Button

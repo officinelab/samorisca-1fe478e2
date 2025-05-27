@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
 import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
+import { ProductCardButtonIconsDemo } from "@/components/menu-settings/ProductCardButtonIconsDemo";
 
 interface ProductCardMobileCustom1Props {
   product: Product;
@@ -19,6 +19,10 @@ interface ProductCardMobileCustom1Props {
     description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
     price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
+  };
 }
 
 export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> = ({
@@ -26,7 +30,8 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
   onProductSelect,
   addToCart,
   truncateText,
-  fontSettings
+  fontSettings,
+  buttonSettings,
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -35,6 +40,10 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
   // Carica dinamicamente il font titolo
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
   useDynamicGoogleFont(fontSettings?.price?.fontFamily);
+
+  // Imposta valori di default se mancano
+  const buttonColor = buttonSettings?.color || "#9b87f5";
+  const buttonIcon = buttonSettings?.icon || "plus";
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
@@ -103,13 +112,16 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                   <Button
                     variant="default"
                     size="icon"
+                    style={{
+                      backgroundColor: buttonColor,
+                    }}
                     onClick={e => {
                       e.stopPropagation();
                       addToCart(product);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
                   >
-                    <Plus size={16} />
+                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
                   </Button>
                 </div>
               )}
@@ -130,13 +142,16 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                   <Button
                     variant="default"
                     size="icon"
+                    style={{
+                      backgroundColor: buttonColor,
+                    }}
                     onClick={e => {
                       e.stopPropagation();
                       addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
                   >
-                    <Plus size={16} />
+                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
                   </Button>
                 </div>
               )}
@@ -157,13 +172,16 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
                   <Button
                     variant="default"
                     size="icon"
+                    style={{
+                      backgroundColor: buttonColor,
+                    }}
                     onClick={e => {
                       e.stopPropagation();
                       addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
                   >
-                    <Plus size={16} />
+                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
                   </Button>
                 </div>
               )}
@@ -185,13 +203,16 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
               <Button
                 variant="default"
                 size="icon"
+                style={{
+                  backgroundColor: buttonColor,
+                }}
                 onClick={e => {
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                className="rounded-full h-8 w-8 shadow-md bg-teal-950 hover:bg-teal-800"
+                className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
               >
-                <Plus size={16} />
+                <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
               </Button>
             </div>
           )}
