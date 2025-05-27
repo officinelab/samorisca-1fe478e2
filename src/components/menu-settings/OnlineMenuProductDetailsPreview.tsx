@@ -6,12 +6,14 @@ interface OnlineMenuProductDetailsPreviewProps {
   selectedLayout: string;
   fontSettings: any;
   exampleProduct: Product;
+  buttonSettings?: { color: string; icon: string }; // <-- Added this
 }
 
 export function OnlineMenuProductDetailsPreview({
   selectedLayout,
   fontSettings,
-  exampleProduct
+  exampleProduct,
+  buttonSettings // <-- Accept the prop, even if not used
 }: OnlineMenuProductDetailsPreviewProps) {
   return (
     <div className="flex justify-center mt-8">
