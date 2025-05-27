@@ -15,7 +15,7 @@ export function OnlineMenuProductDetailsPreview({
   exampleProduct,
   buttonSettings
 }: OnlineMenuProductDetailsPreviewProps) {
-  // QUI: Dettagli prodotto usa sempre i fontSettings custom, compreso il fontSize modificato.
+  // Dettagli prodotto usa sempre i fontSettings custom (adesso uniformati)
   return (
     <div className="flex justify-center mt-8">
       <div
@@ -36,7 +36,7 @@ export function OnlineMenuProductDetailsPreview({
           <ProductDetailsDialogPreview
             product={exampleProduct}
             hideImage={selectedLayout === "custom1"}
-            fontSettings={fontSettings} // Usa sempre il fontSettings personalizzato!
+            fontSettings={fontSettings}
           />
         </div>
       </div>

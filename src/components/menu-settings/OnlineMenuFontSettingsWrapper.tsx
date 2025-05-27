@@ -1,151 +1,85 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
-import { FontSettingsSection } from "./FontSettingsSection";
+import { UnifiedFontSizeSettingsTable } from "./UnifiedFontSizeSettingsTable";
 
 interface OnlineMenuFontSettingsWrapperProps {
   selectedLayout: string;
-  onFontSettingsChange?: (fontSets: {
-    desktop: any;
-    mobile: any;
-    productDetails: any;
-  }) => void;
+  onFontSettingsChange?: (fontSettings: any) => void;
 }
 
-const DEFAULT_FONT_SETTINGS = {
+// Definizione di default
+const DEFAULT_FONT_SIZES = {
+  title: 18,
+  description: 16,
+  price: 18,
+};
+const DEFAULT_FONTS = {
   title: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    fontSize: 18,
   },
   description: {
     fontFamily: "Open Sans",
     fontWeight: "normal",
     fontStyle: "normal",
-    fontSize: 16,
   },
   price: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    fontSize: 18,
   },
 };
 
 export function OnlineMenuFontSettingsWrapper({
   selectedLayout,
-  onFontSettingsChange
+  onFontSettingsChange,
 }: OnlineMenuFontSettingsWrapperProps) {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
 
-  const publicMenuFontSettingsDesktop = siteSettings?.publicMenuFontSettingsDesktop || {};
-  const publicMenuFontSettingsMobile = siteSettings?.publicMenuFontSettingsMobile || {};
-  const publicMenuFontSettingsProductDetails = siteSettings?.publicMenuFontSettingsProductDetails || {};
+  // Recupera da Supabase/fontSettings, oppure fallback default (solo taglia!)
+  const currentFontSizes = siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES;
 
-  // Carica i valori per layout corrente o default
-  const currDesktopFontSettings = {
-    ...DEFAULT_FONT_SETTINGS,
-    ...(publicMenuFontSettingsDesktop?.[selectedLayout] || {})
-  };
-  const currMobileFontSettings = {
-    ...DEFAULT_FONT_SETTINGS,
-    ...(publicMenuFontSettingsMobile?.[selectedLayout] || {})
-  };
-  const currProductDetailsFontSettings = {
-    ...DEFAULT_FONT_SETTINGS,
-    ...(publicMenuFontSettingsProductDetails?.[selectedLayout] || {})
-  };
+  const [fontSizes, setFontSizes] = useState(currentFontSizes);
 
-  // Stati separati
-  const [desktopFontSettings, setDesktopFontSettings] = useState(currDesktopFontSettings);
-  const [mobileFontSettings, setMobileFontSettings] = useState(currMobileFontSettings);
-  const [productDetailsFontSettings, setProductDetailsFontSettings] = useState(currProductDetailsFontSettings);
-
-  // Sync on selectedLayout/settings change
+  // Sincronizza stato locale su cambio layout/settings
   useEffect(() => {
-    setDesktopFontSettings({
-      ...DEFAULT_FONT_SETTINGS,
-      ...(siteSettings?.publicMenuFontSettingsDesktop?.[selectedLayout] || {})
-    });
-    setMobileFontSettings({
-      ...DEFAULT_FONT_SETTINGS,
-      ...(siteSettings?.publicMenuFontSettingsMobile?.[selectedLayout] || {})
-    });
-    setProductDetailsFontSettings({
-      ...DEFAULT_FONT_SETTINGS,
-      ...(siteSettings?.publicMenuFontSettingsProductDetails?.[selectedLayout] || {})
-    });
+    setFontSizes(siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES);
     // eslint-disable-next-line
-  }, [selectedLayout, siteSettings?.publicMenuFontSettingsDesktop, siteSettings?.publicMenuFontSettingsMobile, siteSettings?.publicMenuFontSettingsProductDetails]);
+  }, [selectedLayout, siteSettings?.publicMenuFontSizes]);
 
-  // Salva e notifica
-  const handleFontChange = async (
-    target: 'desktop' | 'mobile' | 'productDetails',
+  // Salva e aggiorna le anteprime
+  const handleFontSizeChange = async (
     key: "title" | "description" | "price",
-    value: any
+    value: number
   ) => {
-    let newSettings, nextFontSettings, toastLabel;
-    if (target === "desktop") {
-      newSettings = { ...desktopFontSettings, [key]: value };
-      setDesktopFontSettings(newSettings);
-      nextFontSettings = {
-        ...publicMenuFontSettingsDesktop,
-        [selectedLayout]: newSettings
-      };
-      await saveSetting("publicMenuFontSettingsDesktop", nextFontSettings);
-      toastLabel = "Desktop";
-    }
-    if (target === "mobile") {
-      newSettings = { ...mobileFontSettings, [key]: value };
-      setMobileFontSettings(newSettings);
-      nextFontSettings = {
-        ...publicMenuFontSettingsMobile,
-        [selectedLayout]: newSettings
-      };
-      await saveSetting("publicMenuFontSettingsMobile", nextFontSettings);
-      toastLabel = "Mobile";
-    }
-    if (target === "productDetails") {
-      newSettings = { ...productDetailsFontSettings, [key]: value };
-      setProductDetailsFontSettings(newSettings);
-      nextFontSettings = {
-        ...publicMenuFontSettingsProductDetails,
-        [selectedLayout]: newSettings
-      };
-      await saveSetting("publicMenuFontSettingsProductDetails", nextFontSettings);
-      toastLabel = "Dettagli prodotto";
-    }
+    const newFontSizes = { ...fontSizes, [key]: value };
+    setFontSizes(newFontSizes);
+    const nextSettings = {
+      ...(siteSettings?.publicMenuFontSizes || {}),
+      [selectedLayout]: newFontSizes,
+    };
+    await saveSetting("publicMenuFontSizes", nextSettings);
     await refetchSettings();
-    toast({ title: "Font aggiornato", description: `Font ${key} salvato per ${toastLabel} (${selectedLayout})` });
-    // Passa fuori se necessario
+    toast({
+      title: "Dimensione del font aggiornata",
+      description: `Font ${key} aggiornato a ${value}px per il layout ${selectedLayout}`,
+    });
     if (onFontSettingsChange) {
-      onFontSettingsChange({
-        desktop: target === "desktop" ? newSettings : desktopFontSettings,
-        mobile: target === "mobile" ? newSettings : mobileFontSettings,
-        productDetails: target === "productDetails" ? newSettings : productDetailsFontSettings,
-      });
+      // Notifica stato aggiornato all'esterno
+      onFontSettingsChange(newFontSizes);
     }
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <FontSettingsSection
-        fontSettings={desktopFontSettings}
-        onFontChange={(key, value) => handleFontChange("desktop", key, value)}
-        label="Font per Anteprima Desktop"
-      />
-      <FontSettingsSection
-        fontSettings={mobileFontSettings}
-        onFontChange={(key, value) => handleFontChange("mobile", key, value)}
-        label="Font per Anteprima Mobile"
-      />
-      <FontSettingsSection
-        fontSettings={productDetailsFontSettings}
-        onFontChange={(key, value) => handleFontChange("productDetails", key, value)}
-        label="Font per Anteprima Finestra dettagli prodotto"
-      />
+    <div>
+      <UnifiedFontSizeSettingsTable fontSizes={fontSizes} onFontSizeChange={handleFontSizeChange} />
+      <div className="text-xs text-muted-foreground mt-2">
+        Modifica la dimensione di <b>titolo</b>, <b>descrizione</b> e <b>prezzo</b>. Le modifiche si applicano a tutte le anteprime.<br/>
+        (Le famiglie di font restano quelle di default.)
+      </div>
     </div>
   );
 }

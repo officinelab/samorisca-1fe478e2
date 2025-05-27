@@ -12,7 +12,7 @@ const layoutLabel: Record<ProductCardLayoutType, string> = {
 
 interface OnlineMenuLayoutPreviewProps {
   selectedLayout: ProductCardLayoutType;
-  fontSettings: { desktop: any; mobile: any };
+  fontSettings: any;
   buttonSettings: { color: string; icon: string };
   exampleProduct: Product;
   truncateText: (text: string | null, maxLength: number) => string;
@@ -25,21 +25,6 @@ export function OnlineMenuLayoutPreview({
   exampleProduct,
   truncateText
 }: OnlineMenuLayoutPreviewProps) {
-  // Valori di default non modificabili per preview desktop
-  const DEFAULT_FONT_SIZES = {
-    title: 18,
-    description: 16,
-    price: 18,
-  };
-
-  // Desktop usa le font setting proprie
-  const fontSettingsForDesktop = {
-    ...fontSettings.desktop,
-    title: { ...fontSettings.desktop.title, fontSize: DEFAULT_FONT_SIZES.title },
-    description: { ...fontSettings.desktop.description, fontSize: DEFAULT_FONT_SIZES.description },
-    price: { ...fontSettings.desktop.price, fontSize: DEFAULT_FONT_SIZES.price },
-  };
-
   return (
     <div className="flex gap-8 flex-wrap justify-center items-start">
       {/* Desktop Preview */}
@@ -62,7 +47,7 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="desktop"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettingsForDesktop}
+              fontSettings={fontSettings}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
@@ -97,7 +82,7 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="mobile"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettings.mobile}
+              fontSettings={fontSettings}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
