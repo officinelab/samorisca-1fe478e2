@@ -37,13 +37,13 @@ export function OnlineMenuAddToCartButtonSettings({ value, onChange }: OnlineMen
   };
 
   return (
-    <div className="flex flex-col gap-4 border rounded-md p-4 bg-muted/50 my-4">
-      <Label className="mb-1">Colore Sfondo Pulsante (mobile)</Label>
-      <Input type="color" value={color} onChange={handleColorChange} className="w-16 h-8 border p-0" />
-      <Label className="mb-2 mt-2">Icona Pulsante</Label>
-      <div className="flex gap-4 flex-wrap">
+    <div className="flex flex-col gap-3 border rounded-md p-3 bg-muted/50 my-2">
+      <Label className="mb-1 text-sm">Colore Sfondo Pulsante (mobile)</Label>
+      <Input type="color" value={color} onChange={handleColorChange} className="w-12 h-8 border p-0" />
+      <Label className="mb-2 mt-2 text-sm">Icona Pulsante</Label>
+      <div className="flex gap-3 flex-nowrap overflow-x-auto">
         {ICONS.map(opt => (
-          <label key={opt.value} className="flex flex-col items-center cursor-pointer">
+          <label key={opt.value} className="flex flex-col items-center cursor-pointer min-w-[55px]">
             <input
               type="radio"
               name="buttonIcon"
@@ -52,7 +52,7 @@ export function OnlineMenuAddToCartButtonSettings({ value, onChange }: OnlineMen
               onChange={handleIconChange}
               className="mb-1 accent-primary"
             />
-            <ProductCardButtonIconsDemo iconName={opt.value} color={color} size={28} selected={icon === opt.value} />
+            <ProductCardButtonIconsDemo iconName={opt.value} color={color} size={20} selected={icon === opt.value} />
             <span className="text-xs mt-1">{opt.label}</span>
           </label>
         ))}
