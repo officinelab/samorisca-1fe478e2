@@ -114,7 +114,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
 
         // Traduzione del titolo
         if (product.title) {
-          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage, true);
+          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage);
           if (isTranslationOutdated(existingTitle, productUpdatedAt)) {
             const result = await translateText(product.title, selectedLanguage, product.id, 'products', 'title');
             if (result.success) successfulTranslations++;
@@ -125,7 +125,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione della descrizione
         if (product.description) {
-          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage, true);
+          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage);
           if (isTranslationOutdated(existingDescription, productUpdatedAt)) {
             const result = await translateText(product.description, selectedLanguage, product.id, 'products', 'description');
             if (result.success) successfulTranslations++;
@@ -136,7 +136,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del suffisso prezzo
         if (product.has_price_suffix && product.price_suffix) {
-          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage, true);
+          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage);
           if (isTranslationOutdated(existingSuffix, productUpdatedAt)) {
             const result = await translateText(product.price_suffix, selectedLanguage, product.id, 'products', 'price_suffix');
             if (result.success) successfulTranslations++;
@@ -147,7 +147,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del nome variante 1
         if (product.has_multiple_prices && product.price_variant_1_name) {
-          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage, true);
+          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage);
           if (isTranslationOutdated(existingVariant1, productUpdatedAt)) {
             const result = await translateText(product.price_variant_1_name, selectedLanguage, product.id, 'products', 'price_variant_1_name');
             if (result.success) successfulTranslations++;
@@ -158,7 +158,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del nome variante 2
         if (product.has_multiple_prices && product.price_variant_2_name) {
-          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage, true);
+          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage);
           if (isTranslationOutdated(existingVariant2, productUpdatedAt)) {
             const result = await translateText(product.price_variant_2_name, selectedLanguage, product.id, 'products', 'price_variant_2_name');
             if (result.success) successfulTranslations++;
