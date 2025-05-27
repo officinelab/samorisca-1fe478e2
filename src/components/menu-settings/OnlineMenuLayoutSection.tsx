@@ -103,7 +103,7 @@ const DEFAULT_BUTTON_SETTINGS = {
 };
 
 export default function OnlineMenuLayoutSection() {
-  const { siteSettings, saveSetting } = useSiteSettings();
+  const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
   // Carica settings font e pulsante per layout attuale
@@ -146,6 +146,7 @@ export default function OnlineMenuLayoutSection() {
       ...(publicMenuButtonSettings?.[newLayout] || {})
     });
     await saveSetting("publicMenuLayoutType", newLayout);
+    await refetchSettings(); // <-- Aggiorna lo stato dopo aver cambiato layout!
     toast({
       title: "Layout applicato",
       description: `Hai selezionato il layout "${newLayout === "default" ? "Classico" : "Custom 1"}"`
@@ -153,25 +154,27 @@ export default function OnlineMenuLayoutSection() {
   };
 
   // Salva SOLO su publicMenuFontSettings
-  const handleFontChange = (key: "title" | "description" | "price", value: any) => {
+  const handleFontChange = async (key: "title" | "description" | "price", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
     setFontSettings(newValue);
     const nextPublicMenuFontSettings = {
       ...publicMenuFontSettings,
       [selectedLayout]: newValue
     };
-    saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
+    await saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
+    await refetchSettings(); // <-- Aggiorna lo stato dopo salvataggio!
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
   };
 
   // Salva su publicMenuButtonSettings
-  const handleButtonChange = (newValue: { color: string; icon: string }) => {
+  const handleButtonChange = async (newValue: { color: string; icon: string }) => {
     setButtonSettings(newValue);
     const nextPublicMenuButtonSettings = {
       ...publicMenuButtonSettings,
       [selectedLayout]: newValue
     };
-    saveSetting("publicMenuButtonSettings", nextPublicMenuButtonSettings);
+    await saveSetting("publicMenuButtonSettings", nextPublicMenuButtonSettings);
+    await refetchSettings(); // <-- Aggiorna lo stato dopo salvataggio!
     toast({ title: "Pulsante aggiornato", description: `Pulsante aggiornato per layout ${selectedLayout}` });
   };
 
