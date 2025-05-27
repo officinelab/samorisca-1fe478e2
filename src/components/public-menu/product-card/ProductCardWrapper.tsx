@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ProductCardMobile } from "./ProductCardMobile";
 import { ProductCardDesktop } from "./ProductCardDesktop";
@@ -61,7 +62,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         addToCart={addToCart}
         truncateText={truncateText}
         fontSettings={fontSettings}
-        buttonSettings={buttonSettings} {/* Passo sempre, anche custom1 */}
+        buttonSettings={buttonSettings} 
       />
     );
   }
@@ -72,7 +73,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
       onProductSelect={onProductSelect}
       addToCart={addToCart}
       fontSettings={fontSettings}
-      buttonSettings={buttonSettings} {/* Passo anche qui per uniformità */}
+      buttonSettings={buttonSettings} 
     />
   );
 };
