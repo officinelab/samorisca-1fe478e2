@@ -1,85 +1,73 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
-import { UnifiedFontSizeSettingsTable } from "./UnifiedFontSizeSettingsTable";
+import { FontSettingsSection } from "./FontSettingsSection";
 
 interface OnlineMenuFontSettingsWrapperProps {
   selectedLayout: string;
-  onFontSettingsChange?: (fontSettings: any) => void;
+  onFontSettingsChange?: (settings: any) => void;
 }
 
-// Definizione di default
-const DEFAULT_FONT_SIZES = {
-  title: 18,
-  description: 16,
-  price: 18,
-};
-const DEFAULT_FONTS = {
+const DEFAULT_FONT_SETTINGS = {
   title: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
+    fontSize: 18,
   },
   description: {
     fontFamily: "Open Sans",
     fontWeight: "normal",
     fontStyle: "normal",
+    fontSize: 16,
   },
   price: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
+    fontSize: 18,
   },
 };
 
 export function OnlineMenuFontSettingsWrapper({
   selectedLayout,
-  onFontSettingsChange,
+  onFontSettingsChange
 }: OnlineMenuFontSettingsWrapperProps) {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
+  const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
+  const currFontSettings = {
+    ...DEFAULT_FONT_SETTINGS,
+    ...(publicMenuFontSettings?.[selectedLayout] || {})
+  };
 
-  // Recupera da Supabase/fontSettings, oppure fallback default (solo taglia!)
-  const currentFontSizes = siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES;
+  const [fontSettings, setFontSettings] = useState(currFontSettings);
 
-  const [fontSizes, setFontSizes] = useState(currentFontSizes);
-
-  // Sincronizza stato locale su cambio layout/settings
   useEffect(() => {
-    setFontSizes(siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES);
-    // eslint-disable-next-line
-  }, [selectedLayout, siteSettings?.publicMenuFontSizes]);
-
-  // Salva e aggiorna le anteprime
-  const handleFontSizeChange = async (
-    key: "title" | "description" | "price",
-    value: number
-  ) => {
-    const newFontSizes = { ...fontSizes, [key]: value };
-    setFontSizes(newFontSizes);
-    const nextSettings = {
-      ...(siteSettings?.publicMenuFontSizes || {}),
-      [selectedLayout]: newFontSizes,
-    };
-    await saveSetting("publicMenuFontSizes", nextSettings);
-    await refetchSettings();
-    toast({
-      title: "Dimensione del font aggiornata",
-      description: `Font ${key} aggiornato a ${value}px per il layout ${selectedLayout}`,
+    setFontSettings({
+      ...DEFAULT_FONT_SETTINGS,
+      ...(siteSettings?.publicMenuFontSettings?.[selectedLayout] || {})
     });
+    // eslint-disable-next-line
+  }, [selectedLayout, siteSettings?.publicMenuFontSettings]);
+
+  const handleFontChange = async (key: "title" | "description" | "price", value: any) => {
+    const newValue = { ...fontSettings, [key]: value };
+    setFontSettings(newValue);
+    const nextPublicMenuFontSettings = {
+      ...publicMenuFontSettings,
+      [selectedLayout]: newValue
+    };
+    await saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
+    await refetchSettings();
+    toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
     if (onFontSettingsChange) {
-      // Notifica stato aggiornato all'esterno
-      onFontSettingsChange(newFontSizes);
+      onFontSettingsChange(newValue);
     }
   };
 
   return (
-    <div>
-      <UnifiedFontSizeSettingsTable fontSizes={fontSizes} onFontSizeChange={handleFontSizeChange} />
-      <div className="text-xs text-muted-foreground mt-2">
-        Modifica la dimensione di <b>titolo</b>, <b>descrizione</b> e <b>prezzo</b>. Le modifiche si applicano a tutte le anteprime.<br/>
-        (Le famiglie di font restano quelle di default.)
-      </div>
-    </div>
+    <FontSettingsSection fontSettings={fontSettings} onFontChange={handleFontChange} />
   );
 }
+

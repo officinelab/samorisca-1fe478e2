@@ -8,31 +8,6 @@ import { OnlineMenuFontSettingsWrapper } from "./OnlineMenuFontSettingsWrapper";
 import { OnlineMenuButtonSettingsWrapper } from "./OnlineMenuButtonSettingsWrapper";
 import { Product } from "@/types/database";
 
-// Definizione default per stile (famiglie/fontStyle: non editabili!)
-const DEFAULT_FONTS = {
-  title: {
-    fontFamily: "Poppins",
-    fontWeight: "bold",
-    fontStyle: "normal",
-  },
-  description: {
-    fontFamily: "Open Sans",
-    fontWeight: "normal",
-    fontStyle: "normal",
-  },
-  price: {
-    fontFamily: "Poppins",
-    fontWeight: "bold",
-    fontStyle: "normal",
-  },
-};
-// Esempio default font size
-const DEFAULT_FONT_SIZES = {
-  title: 18,
-  description: 16,
-  price: 18,
-};
-
 // Esempio prodotto di test
 const exampleProduct: Product = {
   id: "demo-id",
@@ -128,13 +103,13 @@ export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
-  const [fontSizes, setFontSizes] = useState(siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES);
-
-  // Button settings come prima
-  const [buttonSettings, setButtonSettings] = useState(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || {
-    color: "#9b87f5",
-    icon: "plus"
-  });
+  // Stati locali allineati per preview sempre aggiornata
+  const [buttonSettings, setButtonSettings] = useState(
+    siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS
+  );
+  const [fontSettings, setFontSettings] = useState(
+    siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  );
 
   // Sync stati locali a cambio layout e siteSettings
   useEffect(() => {
@@ -142,12 +117,9 @@ export default function OnlineMenuLayoutSection() {
   }, [siteSettings?.publicMenuLayoutType]);
 
   useEffect(() => {
-    setButtonSettings(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || {
-      color: "#9b87f5",
-      icon: "plus"
-    });
-    setFontSizes(siteSettings?.publicMenuFontSizes?.[selectedLayout] || DEFAULT_FONT_SIZES);
-  }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSizes]);
+    setButtonSettings(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS);
+    setFontSettings(siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+  }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettings]);
 
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
@@ -159,27 +131,20 @@ export default function OnlineMenuLayoutSection() {
     });
   };
 
-  // Callback cambiamento taglie
-  const handleFontSettingsChange = (newFontSizes: any) => {
-    setFontSizes(newFontSizes);
-  };
-
+  // Callback passati ai wrapper: aggiornano anche lo stato locale della preview
   const handleButtonSettingsChange = (settings: any) => {
     setButtonSettings(settings);
   };
 
-  // Costruzione fontSettings (famiglie + size)
-  const resolvedFontSettings = {
-    title: { ...DEFAULT_FONTS.title, fontSize: fontSizes.title },
-    description: { ...DEFAULT_FONTS.description, fontSize: fontSizes.description },
-    price: { ...DEFAULT_FONTS.price, fontSize: fontSizes.price },
+  const handleFontSettingsChange = (settings: any) => {
+    setFontSettings(settings);
   };
 
   return (
     <div className="mx-auto p-[10px] space-y-6">
       <h2 className="text-base font-semibold">Layout menu online</h2>
       <p className="text-muted-foreground mb-2 text-sm">
-        Scegli come vengono mostrate le voci del menu pubblico e personalizza la <b>dimensione del font</b> di titolo, descrizione e prezzo per Desktop, Mobile e Finestra dettagli prodotto. Le anteprime sono sincronizzate.
+        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo, descrizione e prezzo.
       </p>
 
       <LayoutTypeSelectorInline
@@ -187,10 +152,11 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
+      {/* Due colonne per impostazioni font e pulsante */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-        {/* Colonna Font Taglie */}
+        {/* Colonna Font */}
         <div className="bg-muted/50 rounded-md p-3">
-          <h3 className="text-base font-semibold mb-2">Dimensioni font</h3>
+          <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
           <OnlineMenuFontSettingsWrapper
             selectedLayout={selectedLayout}
             onFontSettingsChange={handleFontSettingsChange}
@@ -208,7 +174,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={resolvedFontSettings}
+        fontSettings={fontSettings}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
@@ -216,7 +182,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={resolvedFontSettings}
+        fontSettings={fontSettings}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />

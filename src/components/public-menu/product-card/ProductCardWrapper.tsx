@@ -53,9 +53,6 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const LayoutSet = productCardLayouts[layoutType] || productCardLayouts.default;
-  
-  // Gestiamo separatamente le fontSize: solo per mobile passiamo fontSettings (che possono avere size custom)
-  // Per desktop, il componente padre fornisce già fontSize costante!
   if (deviceView === "mobile" || isMobile) {
     const MobileComponent = LayoutSet.Mobile;
     return (
