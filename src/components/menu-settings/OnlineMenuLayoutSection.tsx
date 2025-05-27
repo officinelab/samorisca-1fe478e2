@@ -188,24 +188,40 @@ export default function OnlineMenuLayoutSection() {
     setButtonSettings(settings);
   };
 
-  const handleFontSettingsChange = (settings: any) => {
-    console.log('Font settings change received:', settings);
-    // Garantisce che tutte le chiavi abbiano la struttura completa
-    const completeFontSettings = {
-      title: {
-        ...DEFAULT_FONT_SETTINGS.title,
-        ...settings.title
-      },
-      description: {
-        ...DEFAULT_FONT_SETTINGS.description,
-        ...settings.description
-      },
-      price: {
-        ...DEFAULT_FONT_SETTINGS.price,
-        ...settings.price
-      }
-    };
-    setFontSettings(completeFontSettings);
+  // NUOVA FUNZIONE: deep merge della font property aggiornata
+  const handleFontSettingsChange = (updatedField: any) => {
+    setFontSettings(prevFontSettings => {
+      // updatedField è nella forma { title: { ... }, description: ..., price: ... }
+      // Trova la chiave appena aggiornata tra title/description/price 
+      const key = ["title", "description", "price"].find(
+        k => updatedField[k] !== undefined
+      ) as "title" | "description" | "price";
+      if (!key) return prevFontSettings;
+      // Merge profondo conservando gli altri devices (desktop/mobile/detail)
+      const merged = {
+        ...prevFontSettings,
+        [key]: {
+          ...prevFontSettings[key],
+          ...updatedField[key],
+          // Merge profondo anche sui sotto-oggetti del device (desktop/mobile/detail)
+          desktop: {
+            ...prevFontSettings[key]?.desktop,
+            ...updatedField[key]?.desktop
+          },
+          mobile: {
+            ...prevFontSettings[key]?.mobile,
+            ...updatedField[key]?.mobile
+          },
+          detail: {
+            ...prevFontSettings[key]?.detail,
+            ...updatedField[key]?.detail
+          }
+        },
+      };
+      // DEBUG: verifica il merge
+      console.log('Merged fontSettings (on update):', merged);
+      return merged;
+    });
   };
 
   return (
