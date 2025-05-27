@@ -22,7 +22,7 @@ export default function PublicMenuUrlSection() {
       toast({
         title: "Salvato!",
         description: "Indirizzo menu pubblico aggiornato.",
-        variant: "success",
+        variant: "default", // Corretto qui!
       });
     } else {
       toast({
