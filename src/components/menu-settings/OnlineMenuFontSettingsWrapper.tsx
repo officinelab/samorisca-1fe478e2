@@ -55,7 +55,7 @@ const DEFAULT_FONT_SETTINGS = {
   }
 };
 
-// Funzione di inizializzazione sicura per evitare undefined
+// Funzione di inizializzazione sicura per evitare undefined (copiata anche qui per coerenza)
 const initializeFontSettings = (siteSettings: any, selectedLayout: string) => {
   const saved = siteSettings?.publicMenuFontSettings?.[selectedLayout];
 
@@ -94,6 +94,7 @@ export function OnlineMenuFontSettingsWrapper({
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
 
+  // Usa sempre la funzione di init sicura
   const [fontSettings, setFontSettings] = useState(() => initializeFontSettings(siteSettings, selectedLayout));
 
   useEffect(() => {
@@ -108,6 +109,8 @@ export function OnlineMenuFontSettingsWrapper({
       ...publicMenuFontSettings,
       [selectedLayout]: newValue
     };
+    console.log('Saving font change:', key, value);
+    console.log('New fontSettings:', newValue);
     await saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
     await refetchSettings();
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });

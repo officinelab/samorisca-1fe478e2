@@ -1,3 +1,4 @@
+
 import { ProductCardWrapper, type ProductCardLayoutType } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -87,9 +88,18 @@ export function OnlineMenuLayoutPreview({
               deviceView="mobile"
               layoutType={selectedLayout as ProductCardLayoutType}
               fontSettings={{
-                title: { ...fontSettings.title, fontSize: fontSettings.title?.mobile?.fontSize },
-                description: { ...fontSettings.description, fontSize: fontSettings.description?.mobile?.fontSize },
-                price: { ...fontSettings.price, fontSize: fontSettings.price?.mobile?.fontSize }
+                title: { 
+                  ...fontSettings.title, 
+                  fontSize: fontSettings.title?.mobile?.fontSize || fontSettings.title?.fontSize || 18 
+                },
+                description: { 
+                  ...fontSettings.description, 
+                  fontSize: fontSettings.description?.mobile?.fontSize || fontSettings.description?.fontSize || 14 
+                },
+                price: { 
+                  ...fontSettings.price, 
+                  fontSize: fontSettings.price?.mobile?.fontSize || fontSettings.price?.fontSize || 16 
+                }
               }}
               buttonSettings={buttonSettings}
             />
@@ -100,3 +110,4 @@ export function OnlineMenuLayoutPreview({
     </div>
   );
 }
+

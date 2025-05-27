@@ -76,22 +76,32 @@ function truncateText(text: string | null = "", maxLength: number = 120) {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 }
 
+// DEFAULT_FONT_SETTINGS AGGIORNATO con struttura completa fontSize
 const DEFAULT_FONT_SETTINGS = {
   title: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
+    desktop: { fontSize: 18 },
+    mobile: { fontSize: 18 },
+    detail: { fontSize: 18 }
   },
   description: {
     fontFamily: "Open Sans",
     fontWeight: "normal",
     fontStyle: "normal",
+    desktop: { fontSize: 14 },
+    mobile: { fontSize: 14 },
+    detail: { fontSize: 16 }
   },
   price: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-  },
+    desktop: { fontSize: 16 },
+    mobile: { fontSize: 16 },
+    detail: { fontSize: 18 }
+  }
 };
 
 const DEFAULT_BUTTON_SETTINGS = {
@@ -99,33 +109,69 @@ const DEFAULT_BUTTON_SETTINGS = {
   icon: "plus"
 };
 
+// Helper per inizializzazione completa strutture font
+const initializeCompleteFontSettings = (siteSettings: any, selectedLayout: string) => {
+  const saved = siteSettings?.publicMenuFontSettings?.[selectedLayout];
+
+  return {
+    title: {
+      fontFamily: saved?.title?.fontFamily || "Poppins",
+      fontWeight: saved?.title?.fontWeight || "bold",
+      fontStyle: saved?.title?.fontStyle || "normal",
+      desktop: { fontSize: saved?.title?.desktop?.fontSize || 18 },
+      mobile: { fontSize: saved?.title?.mobile?.fontSize || 18 },
+      detail: { fontSize: saved?.title?.detail?.fontSize || 18 }
+    },
+    description: {
+      fontFamily: saved?.description?.fontFamily || "Open Sans",
+      fontWeight: saved?.description?.fontWeight || "normal",
+      fontStyle: saved?.description?.fontStyle || "normal",
+      desktop: { fontSize: saved?.description?.desktop?.fontSize || 14 },
+      mobile: { fontSize: saved?.description?.mobile?.fontSize || 14 },
+      detail: { fontSize: saved?.description?.detail?.fontSize || 16 }
+    },
+    price: {
+      fontFamily: saved?.price?.fontFamily || "Poppins",
+      fontWeight: saved?.price?.fontWeight || "bold",
+      fontStyle: saved?.price?.fontStyle || "normal",
+      desktop: { fontSize: saved?.price?.desktop?.fontSize || 16 },
+      mobile: { fontSize: saved?.price?.mobile?.fontSize || 16 },
+      detail: { fontSize: saved?.price?.detail?.fontSize || 18 }
+    }
+  };
+};
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
-  // Stati locali allineati per preview sempre aggiornata
+  // Stati locali per preview aggiornate
   const [buttonSettings, setButtonSettings] = useState(
     siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS
   );
-  const [fontSettings, setFontSettings] = useState(
-    siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  const [fontSettings, setFontSettings] = useState(() =>
+    initializeCompleteFontSettings(siteSettings, selectedLayout)
   );
 
-  // Sync stati locali a cambio layout e siteSettings
+  // Aggiorna selectedLayout se cambia nei settings
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
   }, [siteSettings?.publicMenuLayoutType]);
 
+  // Sincronizza i settings font e pulsanti con la struttura completa
   useEffect(() => {
     setButtonSettings(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS);
-    setFontSettings(siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+
+    const newFontSettings = initializeCompleteFontSettings(siteSettings, selectedLayout);
+    setFontSettings(newFontSettings);
+    console.log('Font settings updated:', newFontSettings);
   }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettings]);
 
-  // Aggiunta effetto: sincronizza preview su cambio font settings locali
+  // Effetto per debug stato locale
   useEffect(() => {
-    handleFontSettingsChange(fontSettings);
-    // eslint-disable-next-line
-  }, [fontSettings]);
+    console.log('Current fontSettings state:', fontSettings);
+    console.log('siteSettings.publicMenuFontSettings:', siteSettings?.publicMenuFontSettings);
+  }, [fontSettings, siteSettings?.publicMenuFontSettings]);
 
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
@@ -137,13 +183,29 @@ export default function OnlineMenuLayoutSection() {
     });
   };
 
-  // Callback passati ai wrapper: aggiornano anche lo stato locale della preview
+  // Callback: aggiorna anche stato locale della preview E garantisce la struttura completa
   const handleButtonSettingsChange = (settings: any) => {
     setButtonSettings(settings);
   };
 
   const handleFontSettingsChange = (settings: any) => {
-    setFontSettings(settings);
+    console.log('Font settings change received:', settings);
+    // Garantisce che tutte le chiavi abbiano la struttura completa
+    const completeFontSettings = {
+      title: {
+        ...DEFAULT_FONT_SETTINGS.title,
+        ...settings.title
+      },
+      description: {
+        ...DEFAULT_FONT_SETTINGS.description,
+        ...settings.description
+      },
+      price: {
+        ...DEFAULT_FONT_SETTINGS.price,
+        ...settings.price
+      }
+    };
+    setFontSettings(completeFontSettings);
   };
 
   return (
@@ -178,12 +240,22 @@ export default function OnlineMenuLayoutSection() {
         </div>
       </div>
 
+      {/* Correzione passaggio fontSize alle anteprime */}
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
         fontSettings={{
-          title: { ...fontSettings.title, fontSize: fontSettings.title.desktop?.fontSize },
-          description: { ...fontSettings.description, fontSize: fontSettings.description.desktop?.fontSize },
-          price: { ...fontSettings.price, fontSize: fontSettings.price.desktop?.fontSize }
+          title: { 
+            ...fontSettings.title, 
+            fontSize: fontSettings.title?.desktop?.fontSize || 18 
+          },
+          description: { 
+            ...fontSettings.description, 
+            fontSize: fontSettings.description?.desktop?.fontSize || 14 
+          },
+          price: { 
+            ...fontSettings.price, 
+            fontSize: fontSettings.price?.desktop?.fontSize || 16 
+          }
         }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
@@ -193,9 +265,18 @@ export default function OnlineMenuLayoutSection() {
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
         fontSettings={{
-          title: { ...fontSettings.title, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.title.detail?.fontSize },
-          description: { ...fontSettings.description, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.description.detail?.fontSize },
-          price: { ...fontSettings.price, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.price.detail?.fontSize }
+          title: { 
+            ...fontSettings.title, 
+            fontSize: fontSettings.title?.detail?.fontSize || 18 
+          },
+          description: { 
+            ...fontSettings.description, 
+            fontSize: fontSettings.description?.detail?.fontSize || 16 
+          },
+          price: { 
+            ...fontSettings.price, 
+            fontSize: fontSettings.price?.detail?.fontSize || 18 
+          }
         }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
