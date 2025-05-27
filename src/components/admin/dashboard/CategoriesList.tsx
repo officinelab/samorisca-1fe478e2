@@ -96,11 +96,21 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
           onAddCategory={onAddCategory}
         />
         {isReorderingCategories && (
-          <div className="flex items-center gap-2 px-4 pt-2 pb-1">
-            <span className="inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">
-              Modalità riordino attiva
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 pt-2 pb-1">
+            <span
+              className="
+                inline-block rounded-full px-3 py-1 bg-blue-100 text-blue-800
+                text-xs md:text-sm font-semibold leading-tight
+                whitespace-nowrap shadow-sm
+              "
+              style={{ minWidth: "0" }}
+            >
+              <span className="font-bold">Modalità</span>{" "}
+              riordino <span className="font-bold">attiva</span>
             </span>
-            <span className="text-xs text-gray-400">(puoi usare tastiera e tenere premuti i tasti ↑/↓)</span>
+            <span className="text-xs text-gray-400 md:text-sm truncate">
+              (puoi usare tastiera e tenere premuti i tasti ↑/↓)
+            </span>
           </div>
         )}
         <ScrollArea className="flex-grow">
@@ -129,7 +139,6 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
           </div>
         </ScrollArea>
       </div>
-
       <CategoryDeleteDialog
         isOpen={!!categoryToDelete}
         onClose={handleCloseDeleteDialog}
