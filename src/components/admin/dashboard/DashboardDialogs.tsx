@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
-import ProductFormSafe from "@/components/product/ProductFormSafe";
+import ProductForm from "@/components/product/ProductForm";
 import CategoryForm from "./CategoryForm";
 
 interface DashboardDialogsProps {
