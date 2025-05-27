@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { Product } from "@/types/database";
 import { toast } from "@/hooks/use-toast";
 import { OnlineMenuLayoutPreview } from "./OnlineMenuLayoutPreview";
 import { OnlineMenuProductDetailsPreview } from "./OnlineMenuProductDetailsPreview";
 import { LayoutTypeSelectorInline } from "./LayoutTypeSelectorInline";
-import { FontSettingsSection } from "./FontSettingsSection";
-import { ButtonSettingsSection } from "./ButtonSettingsSection";
+import { OnlineMenuFontSettingsWrapper } from "./OnlineMenuFontSettingsWrapper";
+import { OnlineMenuButtonSettingsWrapper } from "./OnlineMenuButtonSettingsWrapper";
+import { Product } from "@/types/database";
 
 // Esempio prodotto di test
 const exampleProduct: Product = {
@@ -77,105 +77,23 @@ function truncateText(text: string | null = "", maxLength: number = 120) {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 }
 
-// Aggiornato: Aggiungi "price"
-const DEFAULT_FONT_SETTINGS = {
-  title: {
-    fontFamily: "Poppins",
-    fontWeight: "bold",
-    fontStyle: "normal",
-  },
-  description: {
-    fontFamily: "Open Sans",
-    fontWeight: "normal",
-    fontStyle: "normal",
-  },
-  price: {
-    fontFamily: "Poppins",
-    fontWeight: "bold",
-    fontStyle: "normal",
-  },
-};
-
-// Aggiungi default per settings pulsante layout
-const DEFAULT_BUTTON_SETTINGS = {
-  color: "#9b87f5",
-  icon: "plus"
-};
-
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
-  // Carica settings font e pulsante per layout attuale
-  const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
-  const publicMenuButtonSettings = siteSettings?.publicMenuButtonSettings || {};
-
-  const currFontSettings = {
-    ...DEFAULT_FONT_SETTINGS,
-    ...(publicMenuFontSettings?.[selectedLayout] || {})
-  };
-  const currButtonSettings = {
-    ...DEFAULT_BUTTON_SETTINGS,
-    ...(publicMenuButtonSettings?.[selectedLayout] || {})
-  };
-
-  const [fontSettings, setFontSettings] = useState(currFontSettings);
-  const [buttonSettings, setButtonSettings] = useState(currButtonSettings);
-
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
-    setFontSettings({
-      ...DEFAULT_FONT_SETTINGS,
-      ...(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || {})
-    });
-    setButtonSettings({
-      ...DEFAULT_BUTTON_SETTINGS,
-      ...(publicMenuButtonSettings?.[siteSettings?.publicMenuLayoutType || "default"] || {})
-    });
-  }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings, publicMenuButtonSettings]);
+  }, [siteSettings?.publicMenuLayoutType]);
 
-  // Quando cambio il layout, salvo anche globalmente!
+  // Cambia layout e aggiorna anche le anteprime!
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
-    setFontSettings({
-      ...DEFAULT_FONT_SETTINGS,
-      ...(publicMenuFontSettings?.[newLayout] || {})
-    });
-    setButtonSettings({
-      ...DEFAULT_BUTTON_SETTINGS,
-      ...(publicMenuButtonSettings?.[newLayout] || {})
-    });
     await saveSetting("publicMenuLayoutType", newLayout);
-    await refetchSettings(); // <-- Aggiorna lo stato dopo aver cambiato layout!
+    await refetchSettings();
     toast({
       title: "Layout applicato",
       description: `Hai selezionato il layout "${newLayout === "default" ? "Classico" : "Custom 1"}"`
     });
-  };
-
-  // Salva SOLO su publicMenuFontSettings
-  const handleFontChange = async (key: "title" | "description" | "price", value: any) => {
-    const newValue = { ...fontSettings, [key]: value };
-    setFontSettings(newValue);
-    const nextPublicMenuFontSettings = {
-      ...publicMenuFontSettings,
-      [selectedLayout]: newValue
-    };
-    await saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
-    await refetchSettings(); // <-- Aggiorna lo stato dopo salvataggio!
-    toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
-  };
-
-  // Salva su publicMenuButtonSettings
-  const handleButtonChange = async (newValue: { color: string; icon: string }) => {
-    setButtonSettings(newValue);
-    const nextPublicMenuButtonSettings = {
-      ...publicMenuButtonSettings,
-      [selectedLayout]: newValue
-    };
-    await saveSetting("publicMenuButtonSettings", nextPublicMenuButtonSettings);
-    await refetchSettings(); // <-- Aggiorna lo stato dopo salvataggio!
-    toast({ title: "Pulsante aggiornato", description: `Pulsante aggiornato per layout ${selectedLayout}` });
   };
 
   return (
@@ -190,25 +108,23 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      <ButtonSettingsSection
-        value={buttonSettings}
-        onChange={handleButtonChange}
-      />
+      <OnlineMenuButtonSettingsWrapper selectedLayout={selectedLayout} />
 
-      <FontSettingsSection fontSettings={fontSettings} onFontChange={handleFontChange} />
+      <OnlineMenuFontSettingsWrapper selectedLayout={selectedLayout} />
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
-        buttonSettings={buttonSettings}
+        // I dati reali per preview ora vengono passati dai wrapper!
+        fontSettings={siteSettings?.publicMenuFontSettings?.[selectedLayout] || {}}
+        buttonSettings={siteSettings?.publicMenuButtonSettings?.[selectedLayout] || { color: "#9b87f5", icon: "plus" }}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
       />
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
-        buttonSettings={buttonSettings}
+        fontSettings={siteSettings?.publicMenuFontSettings?.[selectedLayout] || {}}
+        buttonSettings={siteSettings?.publicMenuButtonSettings?.[selectedLayout] || { color: "#9b87f5", icon: "plus" }}
         exampleProduct={exampleProduct}
       />
     </div>
