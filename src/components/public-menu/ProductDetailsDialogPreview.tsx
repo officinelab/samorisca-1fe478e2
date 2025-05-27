@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,10 +34,20 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
-  // Usa la dimensione font "detail" se esistente
-  const sizeTitle = fontSettings?.title?.fontSize ?? fontSettings?.title?.detail?.fontSize ?? 18;
-  const sizeDesc = fontSettings?.description?.fontSize ?? fontSettings?.description?.detail?.fontSize ?? 16;
-  const sizePrice = fontSettings?.price?.fontSize ?? fontSettings?.price?.detail?.fontSize ?? 18;
+  // Funzione per gestire sia vecchia che nuova struttura per font size
+  const getFontSize = (fontSetting: any, defaultSize: number): number => {
+    if (fontSetting?.detail?.fontSize) {
+      return fontSetting.detail.fontSize;
+    }
+    if (fontSetting?.fontSize) {
+      return fontSetting.fontSize;
+    }
+    return defaultSize;
+  };
+
+  const sizeTitle = getFontSize(fontSettings?.title, 18);
+  const sizeDesc = getFontSize(fontSettings?.description, 16);
+  const sizePrice = getFontSize(fontSettings?.price, 18);
 
   return (
     <div className="w-full px-4 pb-4">
@@ -207,3 +218,4 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
     </div>
   );
 };
+
