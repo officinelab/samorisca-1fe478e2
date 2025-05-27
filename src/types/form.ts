@@ -59,6 +59,8 @@ export const formValuesToProduct = (values: ProductFormValues, productId?: strin
     price_variant_2_name: values.price_variant_2_name || "",
     price_variant_2_value: values.price_variant_2_value ? parseFloat(values.price_variant_2_value) : null,
     is_active: values.is_active,
+    display_order: 0, // <-- AGGIUNTO: sarà sovrascritto in use-product-submit.ts quando serve
     updated_at: new Date().toISOString(),
   };
 };
+
