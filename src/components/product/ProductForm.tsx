@@ -41,41 +41,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
-  // Nuova funzione handleSave con debug completo
+  // Nuovo handleSave con debug dettagliati
   const handleSave = async (formValues: any) => {
-    console.log('=== FORM SUBMIT DEBUG ===');
-    console.log('1. Raw form values:', formValues);
-    console.log('2. Category ID from props:', categoryId);
-    console.log('3. Form validation errors:', form.formState.errors);
-    console.log('4. Form is valid:', form.formState.isValid);
-    
-    // Verifica campi obbligatori
-    const requiredFields = {
-      title: formValues.title,
-      category_id: formValues.category_id || categoryId,
-      price_standard: formValues.price_standard
-    };
-    
-    console.log('5. Required fields check:', requiredFields);
-    
-    // Se manca category_id, proviamo a prenderla dai props
-    if (!formValues.category_id && categoryId) {
-      console.log('6. Setting category_id from props');
-      formValues.category_id = categoryId;
-    }
-    
-    console.log('7. Final values before submit:', formValues);
-    
+    console.log('=== PRODUCT FORM SAVE DEBUG ===');
+    console.log('1. Starting save with values:', formValues);
+  
     try {
       const result = await handleSubmit(formValues);
-      console.log('8. Submit result:', result);
+      console.log('2. handleSubmit result:', result);
       
-      if (onSave) {
-        console.log('9. Calling onSave callback');
-        onSave();
+      if (result && result.success) {
+        console.log('3. Save successful, calling onSave');
+        if (onSave) {
+          console.log('4. onSave exists, calling it');
+          await onSave();
+          console.log('5. onSave completed');
+        } else {
+          console.log('4. ERROR: onSave is not defined!');
+        }
+      } else {
+        console.log('3. Save failed or no success flag');
       }
     } catch (error) {
-      console.error('10. Submit error:', error);
+      console.error('Save error:', error);
     }
   };
 
@@ -143,4 +131,3 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
-

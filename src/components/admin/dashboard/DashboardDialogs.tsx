@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -73,9 +74,10 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
               <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
                 {productDialogOpen && (
                   <ProductForm
+                    key={memoizedEditingProduct?.id || 'new'}
                     product={memoizedEditingProduct}
                     categoryId={selectedCategoryId || undefined}
-                    onSave={handleProductFormSave}
+                    onSave={handleProductFormSave}  // <-- Prop onSave viene passata sempre
                     onCancel={handleProductFormCancel}
                   />
                 )}
@@ -123,9 +125,10 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
               {productDialogOpen && (
                 <ProductForm
+                  key={memoizedEditingProduct?.id || 'new'}
                   product={memoizedEditingProduct}
                   categoryId={selectedCategoryId || undefined}
-                  onSave={handleProductFormSave}
+                  onSave={handleProductFormSave}   // <-- Prop onSave viene passata sempre
                   onCancel={handleProductFormCancel}
                 />
               )}
