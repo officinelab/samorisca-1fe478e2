@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
-import ProductForm from "@/components/product/ProductForm";
+import ProductFormSafe from "@/components/product/ProductFormSafe";
 import CategoryForm from "./CategoryForm";
 
 interface DashboardDialogsProps {
@@ -72,7 +72,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
               </DialogHeader>
               <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
                 {productDialogOpen && (
-                  <ProductFormSafe
+                  <ProductForm
                     product={memoizedEditingProduct}
                     categoryId={selectedCategoryId || undefined}
                     onSave={handleProductFormSave}
@@ -123,7 +123,7 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({ dashboard, isMobile
             </SheetHeader>
             <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
               {productDialogOpen && (
-                <ProductFormSafe
+                <ProductForm
                   product={memoizedEditingProduct}
                   categoryId={selectedCategoryId || undefined}
                   onSave={handleProductFormSave}
