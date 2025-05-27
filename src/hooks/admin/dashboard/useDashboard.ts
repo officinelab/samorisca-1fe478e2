@@ -57,8 +57,11 @@ export const useDashboard = () => {
     setEditingCategory(null);
   };
 
+  // AGGIORNATO: dopo salvataggio, aggiorna SOLO prodotti della categoria corrente
   const handleProductFormSave = async () => {
-    await dashboardOperations.loadData();
+    if (dashboardOperations.selectedCategoryId && dashboardOperations.loadProducts) {
+      await dashboardOperations.loadProducts(dashboardOperations.selectedCategoryId);
+    }
     setShowAddProduct(false);
     setEditingProduct(null);
   };
@@ -93,4 +96,3 @@ export const useDashboard = () => {
     handleProductFormCancel
   };
 };
-
