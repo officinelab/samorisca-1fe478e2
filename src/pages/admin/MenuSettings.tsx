@@ -10,6 +10,7 @@ import SupervisorSettingsManager from "@/components/menu-settings/SupervisorSett
 import Allergens from "./Allergens";
 import OnlineMenuLayoutSection from "@/components/menu-settings/OnlineMenuLayoutSection";
 import { useUserRoles } from "@/hooks/auth/useUserRoles";
+import UserRolesManager from "@/components/menu-settings/UserRolesManager";
 
 const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
@@ -46,6 +47,7 @@ const MenuSettings = () => {
             <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
           )}
           <TabsTrigger value="publicmenulayout">Layout menu online</TabsTrigger>
+          <TabsTrigger value="userroles">Gestione utenti</TabsTrigger>
         </TabsList>
         
         <TabsContent value="labels" className="space-y-4">
@@ -107,6 +109,10 @@ const MenuSettings = () => {
 
         <TabsContent value="publicmenulayout" className="space-y-4">
           <OnlineMenuLayoutSection />
+        </TabsContent>
+
+        <TabsContent value="userroles" className="space-y-4">
+          <UserRolesManager />
         </TabsContent>
       </Tabs>
     </div>
