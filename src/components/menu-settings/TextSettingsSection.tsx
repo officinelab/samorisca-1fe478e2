@@ -1,12 +1,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+
 import RestaurantNameSection from "./RestaurantNameSection";
 import AdminTitleSection from "./AdminTitleSection";
 import FooterTextSection from "./FooterTextSection";
 import BrowserTitleSection from "./BrowserTitleSection";
 import TokenPackageSection from "./TokenPackageSection";
-import PublicMenuUrlSection from "./PublicMenuUrlSection";
 
 const TextSettingsSection = () => {
   return (
@@ -16,8 +16,6 @@ const TextSettingsSection = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-8">
-          <PublicMenuUrlSection />
-          <Separator className="my-4" />
           <RestaurantNameSection />
           <Separator className="my-4" />
           <AdminTitleSection />
