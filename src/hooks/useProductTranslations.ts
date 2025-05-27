@@ -85,79 +85,184 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
 
   const translateAllProducts = async () => {
     if (!selectedCategoryId || products.length === 0) return;
-    
+
     setTranslatingAll(true);
     const totalProducts = products.length;
     let completedProducts = 0;
     let skippedTranslations = 0;
     let successfulTranslations = 0;
-    
+
     const serviceName = getServiceName();
-    
+
     toast({
       title: "Traduzione in corso",
       description: `Inizio traduzione di ${totalProducts} prodotti con ${serviceName}...`,
     });
-    
+
     try {
       for (const product of products) {
+        // Prepara per confronto badge arancione/rosso
+        const updatedAt = product.updated_at
+          ? new Date(product.updated_at).getTime()
+          : 0;
+
         // Traduzione del titolo
         if (product.title) {
-          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage);
+          const existingTitle = await getExistingTranslation(
+            product.id,
+            'products',
+            'title',
+            selectedLanguage
+          );
+          let needsTranslation = false;
           if (!existingTitle) {
-            const result = await translateText(product.title, selectedLanguage, product.id, 'products', 'title');
+            needsTranslation = true;
+          } else {
+            const translationLastUpdated = existingTitle.last_updated
+              ? new Date(existingTitle.last_updated).getTime()
+              : 0;
+            if (translationLastUpdated < updatedAt) needsTranslation = true;
+          }
+          if (needsTranslation) {
+            const result = await translateText(
+              product.title,
+              selectedLanguage,
+              product.id,
+              'products',
+              'title'
+            );
             if (result.success) successfulTranslations++;
           } else {
             skippedTranslations++;
           }
         }
-        
+
         // Traduzione della descrizione
         if (product.description) {
-          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage);
+          const existingDescription = await getExistingTranslation(
+            product.id,
+            'products',
+            'description',
+            selectedLanguage
+          );
+          let needsTranslation = false;
           if (!existingDescription) {
-            const result = await translateText(product.description, selectedLanguage, product.id, 'products', 'description');
+            needsTranslation = true;
+          } else {
+            const translationLastUpdated = existingDescription.last_updated
+              ? new Date(existingDescription.last_updated).getTime()
+              : 0;
+            if (translationLastUpdated < updatedAt) needsTranslation = true;
+          }
+          if (needsTranslation) {
+            const result = await translateText(
+              product.description,
+              selectedLanguage,
+              product.id,
+              'products',
+              'description'
+            );
             if (result.success) successfulTranslations++;
           } else {
             skippedTranslations++;
           }
         }
-        
+
         // Traduzione del suffisso prezzo
         if (product.has_price_suffix && product.price_suffix) {
-          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage);
+          const existingSuffix = await getExistingTranslation(
+            product.id,
+            'products',
+            'price_suffix',
+            selectedLanguage
+          );
+          let needsTranslation = false;
           if (!existingSuffix) {
-            const result = await translateText(product.price_suffix, selectedLanguage, product.id, 'products', 'price_suffix');
+            needsTranslation = true;
+          } else {
+            const translationLastUpdated = existingSuffix.last_updated
+              ? new Date(existingSuffix.last_updated).getTime()
+              : 0;
+            if (translationLastUpdated < updatedAt) needsTranslation = true;
+          }
+          if (needsTranslation) {
+            const result = await translateText(
+              product.price_suffix,
+              selectedLanguage,
+              product.id,
+              'products',
+              'price_suffix'
+            );
             if (result.success) successfulTranslations++;
           } else {
             skippedTranslations++;
           }
         }
-        
+
         // Traduzione del nome variante 1
         if (product.has_multiple_prices && product.price_variant_1_name) {
-          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage);
+          const existingVariant1 = await getExistingTranslation(
+            product.id,
+            'products',
+            'price_variant_1_name',
+            selectedLanguage
+          );
+          let needsTranslation = false;
           if (!existingVariant1) {
-            const result = await translateText(product.price_variant_1_name, selectedLanguage, product.id, 'products', 'price_variant_1_name');
+            needsTranslation = true;
+          } else {
+            const translationLastUpdated = existingVariant1.last_updated
+              ? new Date(existingVariant1.last_updated).getTime()
+              : 0;
+            if (translationLastUpdated < updatedAt) needsTranslation = true;
+          }
+          if (needsTranslation) {
+            const result = await translateText(
+              product.price_variant_1_name,
+              selectedLanguage,
+              product.id,
+              'products',
+              'price_variant_1_name'
+            );
             if (result.success) successfulTranslations++;
           } else {
             skippedTranslations++;
           }
         }
-        
+
         // Traduzione del nome variante 2
         if (product.has_multiple_prices && product.price_variant_2_name) {
-          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage);
+          const existingVariant2 = await getExistingTranslation(
+            product.id,
+            'products',
+            'price_variant_2_name',
+            selectedLanguage
+          );
+          let needsTranslation = false;
           if (!existingVariant2) {
-            const result = await translateText(product.price_variant_2_name, selectedLanguage, product.id, 'products', 'price_variant_2_name');
+            needsTranslation = true;
+          } else {
+            const translationLastUpdated = existingVariant2.last_updated
+              ? new Date(existingVariant2.last_updated).getTime()
+              : 0;
+            if (translationLastUpdated < updatedAt) needsTranslation = true;
+          }
+          if (needsTranslation) {
+            const result = await translateText(
+              product.price_variant_2_name,
+              selectedLanguage,
+              product.id,
+              'products',
+              'price_variant_2_name'
+            );
             if (result.success) successfulTranslations++;
           } else {
             skippedTranslations++;
           }
         }
-        
+
         completedProducts++;
-        
+
         // Aggiorna lo stato ogni 3 prodotti
         if (completedProducts % 3 === 0 || completedProducts === totalProducts) {
           toast({
@@ -166,12 +271,11 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
           });
         }
       }
-      
+
       toast({
         title: "Traduzione completata",
         description: `Tradotti ${successfulTranslations} campi con ${serviceName}, ${skippedTranslations} campi già tradotti sono stati saltati.`,
       });
-      
     } catch (error) {
       console.error('Error translating all products:', error);
       toast({
