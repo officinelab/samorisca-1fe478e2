@@ -18,11 +18,10 @@ export function OnlineMenuProductDetailsPreview({
   exampleProduct,
   buttonSettings
 }: OnlineMenuProductDetailsPreviewProps) {
-  // Sposto il titolo sopra la card, con margini uniformati
+  // Titolo spostato fuori dalla card, margini uniformati con le altre anteprime
   return (
-    <div className="flex flex-col items-center justify-start pt-1">
-      {/* Titolo spostato all'esterno, come le altre anteprime */}
-      <span className="block text-center text-xs text-muted-foreground mb-1">
+    <div className="flex flex-col items-center" style={{ width: 400 }}>
+      <span className="block text-center text-xs text-muted-foreground mb-1 mt-1">
         Anteprima finestra dettagli prodotto
       </span>
       <div
