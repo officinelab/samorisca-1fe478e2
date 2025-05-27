@@ -152,18 +152,18 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      {/* Due colonne per impostazioni font e pulsante */}
+      {/* Colonna font più larga, button più stretta */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-        {/* Colonna Font - più larga */}
-        <div className="bg-muted/50 rounded-md p-3 md:col-span-2">
-          <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
-          <OnlineMenuFontSettingsWrapper
-            selectedLayout={selectedLayout}
-            onFontSettingsChange={setFontSettings}
-          />
+        <div className="bg-muted/50 rounded-md p-3 md:col-span-2 flex items-start">
+          <div className="flex-1">
+            <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
+            <OnlineMenuFontSettingsWrapper
+              selectedLayout={selectedLayout}
+              onFontSettingsChange={setFontSettings}
+            />
+          </div>
         </div>
-        {/* Colonna Pulsante - più stretta */}
-        <div className="bg-muted/50 rounded-md p-3 md:col-span-1 min-w-[210px] max-w-[250px]">
+        <div className="bg-muted/50 rounded-md p-3 md:col-span-1 min-w-[190px] max-w-[210px]">
           <h3 className="text-base font-semibold mb-2">Pulsante "Aggiungi al carrello"</h3>
           <OnlineMenuButtonSettingsWrapper
             selectedLayout={selectedLayout}

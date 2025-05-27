@@ -36,15 +36,15 @@ export function OnlineMenuFontSettingsWrapper({
     ...DEFAULT_FONT_SETTINGS,
     ...(publicMenuFontSettings?.[selectedLayout]?.baseFontSettings || {})
   };
-  // fontSizes per type and preview column
+  // fontSizes per type e preview column
   const fontSizes = {
     ...DEFAULT_FONT_SIZES,
     ...(publicMenuFontSettings?.[selectedLayout]?.fontSizes || {})
   };
-  // local states
   const [localFontSettings, setLocalFontSettings] = useState(baseFontSettings);
   const [localFontSizes, setLocalFontSizes] = useState(fontSizes);
 
+  // Aggiorna stato su cambio layout/settings
   useEffect(() => {
     setLocalFontSettings({
       ...DEFAULT_FONT_SETTINGS,
@@ -57,7 +57,7 @@ export function OnlineMenuFontSettingsWrapper({
     // eslint-disable-next-line
   }, [selectedLayout, siteSettings?.publicMenuFontSettings]);
 
-  // Handle font family/style changes (for all)
+  // Gestione cambio font family/style
   const handleFontChange = async (key: "title" | "description" | "price", value: any) => {
     const nextFontSettings = { ...localFontSettings, [key]: value };
     setLocalFontSettings(nextFontSettings);
@@ -78,7 +78,7 @@ export function OnlineMenuFontSettingsWrapper({
     });
   };
 
-  // Handle font size cell change
+  // Gestione cambio font size singolo
   const handleFontSizeChange = async (category: "title" | "description" | "price", column: "desktop" | "mobile" | "details", value: number) => {
     const nextFontSizes = {
       ...localFontSizes,
@@ -102,7 +102,7 @@ export function OnlineMenuFontSettingsWrapper({
     });
   };
 
-  // valori da passare alle anteprime
+  // Raggruppa per anteprima
   const fontSettingsForPreview = (type: "desktop" | "mobile" | "details") => ({
     title:   { ...localFontSettings.title, fontSize: localFontSizes.title[type]},
     description: { ...localFontSettings.description, fontSize: localFontSizes.description[type]},
@@ -111,14 +111,17 @@ export function OnlineMenuFontSettingsWrapper({
 
   return (
     <div className="flex flex-row gap-4">
-      <div className="flex-1 min-w-[310px]">
-        <FontSettingsSection fontSettings={localFontSettings} onFontChange={handleFontChange} />
-      </div>
-      <div className="flex-shrink-0" style={{ minWidth: 390 }}>
-        <FontSizeSettingsGrid
+      <div className="flex-1 min-w-[410px]">
+        <FontSettingsSection
+          fontSettings={localFontSettings}
           fontSizes={localFontSizes}
-          onChange={handleFontSizeChange}
+          onFontChange={handleFontChange}
+          onFontSizeChange={handleFontSizeChange}
         />
+      </div>
+      {/* Colonna button più stretta */}
+      <div className="flex-shrink-0" style={{ minWidth: 190, maxWidth: 210 }}>
+        {/* Button settings qui (gestito fuori) */}
       </div>
     </div>
   );
