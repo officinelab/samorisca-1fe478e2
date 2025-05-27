@@ -58,22 +58,21 @@ export const useDashboard = () => {
 
   // AGGIORNATO: ora ricarica tutti i dati della dashboard dopo il salvataggio
   const handleProductFormSave = async () => {
-    console.log('=== DASHBOARD PRODUCT SAVE DEBUG ===');
-    console.log('1. handleProductFormSave called');
-    console.log('2. Available operations:', Object.keys(dashboardOperations));
-    
-    try {
-      console.log('3. Calling loadData...');
-      await dashboardOperations.loadData();
-      console.log('4. loadData completed');
-    } catch (error) {
-      console.error('5. Error loading data:', error);
+    console.log('handleProductFormSave called');
+
+    // Prima cancella il riordino se attivo
+    dashboardOperations.cancelReorderingProducts();
+
+    // Poi ricarica i dati
+    await dashboardOperations.loadData();
+
+    // Riattiva il riordino dopo il caricamento
+    if (dashboardOperations.products && dashboardOperations.products.length > 0) {
+      dashboardOperations.startReorderingProducts();
     }
-    
-    console.log('6. Closing form...');
+
     setShowAddProduct(false);
     setEditingProduct(null);
-    console.log('7. Form closed');
   };
 
   const handleCategoryFormCancel = () => {

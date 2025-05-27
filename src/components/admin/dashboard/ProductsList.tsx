@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Product, Category } from "@/types/database";
@@ -39,6 +38,11 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onDeleteProduct,
   onAddProduct
 }) => {
+  console.log('=== ProductsList RENDER ===');
+  console.log('Products received:', products.length);
+  console.log('Is reordering:', isReorderingProducts);
+  console.log('Reordering list:', reorderingProductsList.length);
+
   const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
   // 1. Usa la lista giusta (quella in riordino se necessario)
@@ -132,4 +136,3 @@ const ProductsList: React.FC<ProductsListProps> = ({
 };
 
 export default ProductsList;
-
