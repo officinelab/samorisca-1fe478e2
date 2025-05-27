@@ -38,11 +38,11 @@ export function FontSettingsTable({ fontSettings, onFontChange, availableFonts, 
     const limits = FONT_SIZE_LIMITS[fontType];
 
     return (
-      <div className="border-b pb-4 mb-4 last:border-b-0">
+      <div className="border-b pb-3 mb-3 last:border-b-0">
         <div className="font-semibold text-sm mb-2">{label}</div>
-        <div className="flex items-center gap-3 mb-3">
-          {/* Font controls */}
-          {onAddFont && (
+        <div className="flex items-center gap-3">
+          {/* Font controls - colonna sinistra */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onAddFont}
@@ -51,106 +51,109 @@ export function FontSettingsTable({ fontSettings, onFontChange, availableFonts, 
             >
               <Plus size={16} />
             </button>
-          )}
-          
-          <Select 
-            value={settings.fontFamily} 
-            onValueChange={v => onFontChange(fontType, { ...settings, fontFamily: v })}
-          >
-            <SelectTrigger className="w-40 h-8 text-sm" style={{ fontFamily: settings.fontFamily }}>
-              <SelectValue>{settings.fontFamily}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {availableFonts.map(f => (
-                <SelectItem key={f} value={f}>
-                  <span style={{ fontFamily: f }}>{f}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            
+            <Select 
+              value={settings.fontFamily} 
+              onValueChange={v => onFontChange(fontType, { ...settings, fontFamily: v })}
+            >
+              <SelectTrigger className="w-36 h-8 text-sm" style={{ fontFamily: settings.fontFamily }}>
+                <SelectValue>{settings.fontFamily}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {availableFonts.map(f => (
+                  <SelectItem key={f} value={f}>
+                    <span style={{ fontFamily: f }}>{f}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <button
-            type="button"
-            onClick={() => onFontChange(fontType, { ...settings, fontWeight: settings.fontWeight === "bold" ? "normal" : "bold" })}
-            className={`p-1.5 rounded border ${settings.fontWeight === "bold" ? "bg-blue-100 border-blue-400" : "border-gray-300"}`}
-          >
-            <Bold size={16} />
-          </button>
+            <button
+              type="button"
+              onClick={() => onFontChange(fontType, { ...settings, fontWeight: settings.fontWeight === "bold" ? "normal" : "bold" })}
+              className={`p-1.5 rounded border ${settings.fontWeight === "bold" ? "bg-blue-100 border-blue-400" : "border-gray-300"}`}
+            >
+              <Bold size={16} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => onFontChange(fontType, { ...settings, fontStyle: settings.fontStyle === "italic" ? "normal" : "italic" })}
-            className={`p-1.5 rounded border ${settings.fontStyle === "italic" ? "bg-blue-100 border-blue-400" : "border-gray-300"}`}
-          >
-            <Italic size={16} />
-          </button>
-        </div>
-
-        {/* Size controls per device */}
-        <div className="grid grid-cols-3 gap-4">
-          {/* Desktop */}
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">DESKTOP</div>
-            <div className="flex items-center justify-center gap-1">
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "desktop", -1)}
-                disabled={desktopSize <= limits.min}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Minus size={14} />
-              </button>
-              <span className="w-10 text-sm">{desktopSize}px</span>
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "desktop", 1)}
-                disabled={desktopSize >= limits.max}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Plus size={14} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => onFontChange(fontType, { ...settings, fontStyle: settings.fontStyle === "italic" ? "normal" : "italic" })}
+              className={`p-1.5 rounded border ${settings.fontStyle === "italic" ? "bg-blue-100 border-blue-400" : "border-gray-300"}`}
+            >
+              <Italic size={16} />
+            </button>
           </div>
 
-          {/* Mobile */}
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">MOBILE</div>
-            <div className="flex items-center justify-center gap-1">
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "mobile", -1)}
-                disabled={mobileSize <= limits.min}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Minus size={14} />
-              </button>
-              <span className="w-10 text-sm">{mobileSize}px</span>
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "mobile", 1)}
-                disabled={mobileSize >= limits.max}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Plus size={14} />
-              </button>
-            </div>
-          </div>
+          {/* Separatore verticale */}
+          <div className="h-8 w-px bg-gray-300 mx-2" />
 
-          {/* Detail */}
-          <div className="text-center">
-            <div className="text-xs text-gray-500 mb-1">DETTAGLI</div>
-            <div className="flex items-center justify-center gap-1">
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "detail", -1)}
-                disabled={detailSize <= limits.min}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Minus size={14} />
-              </button>
-              <span className="w-10 text-sm">{detailSize}px</span>
-              <button
-                onClick={() => handleDeviceSizeChange(fontType, "detail", 1)}
-                disabled={detailSize >= limits.max}
-                className="p-0.5 disabled:opacity-30"
-              >
-                <Plus size={14} />
-              </button>
+          {/* Size controls - sulla stessa riga */}
+          <div className="flex items-center gap-6">
+            {/* Desktop */}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">DESKTOP</div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "desktop", -1)}
+                  disabled={desktopSize <= limits.min}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-10 text-sm text-center">{desktopSize}px</span>
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "desktop", 1)}
+                  disabled={desktopSize >= limits.max}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile */}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">MOBILE</div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "mobile", -1)}
+                  disabled={mobileSize <= limits.min}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-10 text-sm text-center">{mobileSize}px</span>
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "mobile", 1)}
+                  disabled={mobileSize >= limits.max}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Detail */}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-gray-500 mb-1">DETTAGLI</div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "detail", -1)}
+                  disabled={detailSize <= limits.min}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-10 text-sm text-center">{detailSize}px</span>
+                <button
+                  onClick={() => handleDeviceSizeChange(fontType, "detail", 1)}
+                  disabled={detailSize >= limits.max}
+                  className="p-0.5 disabled:opacity-30 hover:bg-gray-100 rounded"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
