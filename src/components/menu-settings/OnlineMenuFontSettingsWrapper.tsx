@@ -14,20 +14,26 @@ const DEFAULT_FONT_SETTINGS = {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    fontSize: 18,
+    desktop: { fontSize: 18 },
+    mobile: { fontSize: 18 },
+    detail: { fontSize: 18 }
   },
   description: {
     fontFamily: "Open Sans",
     fontWeight: "normal",
     fontStyle: "normal",
-    fontSize: 16,
+    desktop: { fontSize: 16 },
+    mobile: { fontSize: 16 },
+    detail: { fontSize: 16 }
   },
   price: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    fontSize: 18,
-  },
+    desktop: { fontSize: 18 },
+    mobile: { fontSize: 17 },
+    detail: { fontSize: 17 }
+  }
 };
 
 export function OnlineMenuFontSettingsWrapper({

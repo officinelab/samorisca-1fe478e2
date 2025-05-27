@@ -24,6 +24,7 @@ export function OnlineMenuLayoutPreview({
   exampleProduct,
   truncateText
 }: OnlineMenuLayoutPreviewProps) {
+  // Rende desktop e mobile preview con la fontSize opportuna
   return (
     <div className="flex gap-8 flex-wrap justify-center items-start">
       {/* Desktop Preview */}
@@ -46,7 +47,11 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="desktop"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettings}
+              fontSettings={{
+                title: { ...fontSettings.title, fontSize: fontSettings.title?.fontSize },
+                description: { ...fontSettings.description, fontSize: fontSettings.description?.fontSize },
+                price: { ...fontSettings.price, fontSize: fontSettings.price?.fontSize }
+              }}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
@@ -81,7 +86,11 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="mobile"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettings}
+              fontSettings={{
+                title: { ...fontSettings.title, fontSize: fontSettings.title?.mobile?.fontSize },
+                description: { ...fontSettings.description, fontSize: fontSettings.description?.mobile?.fontSize },
+                price: { ...fontSettings.price, fontSize: fontSettings.price?.mobile?.fontSize }
+              }}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>

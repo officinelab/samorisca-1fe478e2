@@ -33,10 +33,10 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
-  // Usa la dimensione font se specificata, fallback default
-  const sizeTitle = fontSettings?.title?.fontSize ?? 18;
-  const sizeDesc = fontSettings?.description?.fontSize ?? 16;
-  const sizePrice = fontSettings?.price?.fontSize ?? 18;
+  // Usa la dimensione font "detail" se esistente
+  const sizeTitle = fontSettings?.title?.fontSize ?? fontSettings?.title?.detail?.fontSize ?? 18;
+  const sizeDesc = fontSettings?.description?.fontSize ?? fontSettings?.description?.detail?.fontSize ?? 16;
+  const sizePrice = fontSettings?.price?.fontSize ?? fontSettings?.price?.detail?.fontSize ?? 18;
 
   return (
     <div className="w-full px-4 pb-4">

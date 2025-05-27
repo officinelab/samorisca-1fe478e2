@@ -6,15 +6,16 @@ interface OnlineMenuProductDetailsPreviewProps {
   selectedLayout: string;
   fontSettings: any;
   exampleProduct: Product;
-  buttonSettings?: { color: string; icon: string }; // <-- Added this
+  buttonSettings?: { color: string; icon: string };
 }
 
 export function OnlineMenuProductDetailsPreview({
   selectedLayout,
   fontSettings,
   exampleProduct,
-  buttonSettings // <-- Accept the prop, even if not used
+  buttonSettings
 }: OnlineMenuProductDetailsPreviewProps) {
+  // fontSettings già ricevuto con solo fontSize = detail nella prop
   return (
     <div className="flex justify-center mt-8">
       <div
@@ -35,7 +36,11 @@ export function OnlineMenuProductDetailsPreview({
           <ProductDetailsDialogPreview
             product={exampleProduct}
             hideImage={selectedLayout === "custom1"}
-            fontSettings={fontSettings}
+            fontSettings={{
+              title: { ...fontSettings.title, fontSize: fontSettings.title?.fontSize },
+              description: { ...fontSettings.description, fontSize: fontSettings.description?.fontSize },
+              price: { ...fontSettings.price, fontSize: fontSettings.price?.fontSize }
+            }}
           />
         </div>
       </div>

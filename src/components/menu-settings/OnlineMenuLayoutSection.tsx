@@ -153,7 +153,7 @@ export default function OnlineMenuLayoutSection() {
       />
 
       {/* Due colonne per impostazioni font e pulsante */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4 mt-3">
         {/* Colonna Font */}
         <div className="bg-muted/50 rounded-md p-3">
           <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
@@ -174,7 +174,11 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={{
+          title: { ...fontSettings.title, fontSize: fontSettings.title.desktop?.fontSize },
+          description: { ...fontSettings.description, fontSize: fontSettings.description.desktop?.fontSize },
+          price: { ...fontSettings.price, fontSize: fontSettings.price.desktop?.fontSize }
+        }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
@@ -182,7 +186,11 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={{
+          title: { ...fontSettings.title, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.title.detail?.fontSize },
+          description: { ...fontSettings.description, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.description.detail?.fontSize },
+          price: { ...fontSettings.price, detail: undefined, desktop: undefined, mobile: undefined, fontSize: fontSettings.price.detail?.fontSize }
+        }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />
