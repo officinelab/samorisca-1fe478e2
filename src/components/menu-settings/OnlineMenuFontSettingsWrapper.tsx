@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
@@ -125,4 +124,4 @@ export function OnlineMenuFontSettingsWrapper({
   );
 }
 
-export { fontSizes: DEFAULT_FONT_SIZES, DEFAULT_FONT_SETTINGS };
+export { DEFAULT_FONT_SIZES as fontSizes, DEFAULT_FONT_SETTINGS };
