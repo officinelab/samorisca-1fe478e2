@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { HandPlatter } from "lucide-react";
@@ -41,6 +40,29 @@ export const Header: React.FC<HeaderProps> = ({
       </div>;
   const showName = siteSettings?.showRestaurantNameInMenuBar !== false;
 
+  // Lingue custom: italiano sempre presente
+  const ALL_LANGS = [
+    { code: "it", label: "Italiano" },
+    { code: "en", label: "English" },
+    { code: "fr", label: "Français" },
+    { code: "de", label: "Deutsch" },
+    { code: "es", label: "Español" }
+  ];
+  let enabledLanguages: string[] = ["it"];
+  if (
+    siteSettings &&
+    Array.isArray(siteSettings.enabledPublicMenuLanguages) &&
+    siteSettings.enabledPublicMenuLanguages.every((lang: any) => typeof lang === "string")
+  ) {
+    enabledLanguages = ["it", ...siteSettings.enabledPublicMenuLanguages.filter((code: string) =>
+      ["en", "fr", "de", "es"].includes(code)
+    )];
+  }
+  // fallback: tutte le lingue se non impostato niente
+  if (!siteSettings || !Array.isArray(siteSettings.enabledPublicMenuLanguages)) {
+    enabledLanguages = ["it", "en", "fr", "de", "es"];
+  }
+
   return <>
       {/* Prima riga: barra menu con logo "rettangolare", selettore lingua e carrello */}
       <header className="sticky top-0 bg-white shadow-sm z-30">
@@ -56,11 +78,11 @@ export const Header: React.FC<HeaderProps> = ({
                 <SelectValue placeholder="Lingua" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="it">Italiano</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
+                {ALL_LANGS.filter(l => enabledLanguages.includes(l.code)).map(lang => (
+                  <SelectItem value={lang.code} key={lang.code}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             
