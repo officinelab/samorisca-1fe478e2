@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { HandPlatter } from "lucide-react";
@@ -41,6 +40,27 @@ export const Header: React.FC<HeaderProps> = ({
       </div>;
   const showName = siteSettings?.showRestaurantNameInMenuBar !== false;
 
+  // Lingue supportate
+  const ALL_LANGUAGE_OPTIONS = [
+    { value: "it", label: "Italiano" },
+    { value: "en", label: "English" },
+    { value: "fr", label: "Français" },
+    { value: "de", label: "Deutsch" },
+    { value: "es", label: "Español" }
+  ];
+
+  // Prendi la lista delle lingue abilitate dalle impostazioni (fallback tutte disponibili)
+  const enabledCodes = Array.isArray(siteSettings?.enabledPublicMenuLanguages)
+    ? Array.from(new Set(["it", ...siteSettings.enabledPublicMenuLanguages.filter((c: string) =>
+        ["it", "en", "fr", "de", "es"].includes(c)
+      )]))
+    : ["it", "en", "fr", "de", "es"];
+
+  // Filtra le lingue visibili basandosi sulle impostazioni attive
+  const visibleLanguages = ALL_LANGUAGE_OPTIONS.filter(opt =>
+    enabledCodes.includes(opt.value)
+  );
+
   return <>
       {/* Prima riga: barra menu con logo "rettangolare", selettore lingua e carrello */}
       <header className="sticky top-0 bg-white shadow-sm z-30">
@@ -56,11 +76,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <SelectValue placeholder="Lingua" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="it">Italiano</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
+                {visibleLanguages.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             
