@@ -121,6 +121,12 @@ export default function OnlineMenuLayoutSection() {
     setFontSettings(siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
   }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettings]);
 
+  // Aggiunta effetto: sincronizza preview su cambio font settings locali
+  useEffect(() => {
+    handleFontSettingsChange(fontSettings);
+    // eslint-disable-next-line
+  }, [fontSettings]);
+
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
     await saveSetting("publicMenuLayoutType", newLayout);

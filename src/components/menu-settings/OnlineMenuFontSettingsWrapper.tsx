@@ -9,30 +9,49 @@ interface OnlineMenuFontSettingsWrapperProps {
   onFontSettingsChange?: (settings: any) => void;
 }
 
+// Nuove costanti base size ±4pt
+export const FONT_BASE_SIZES = {
+  title: {
+    desktop: 18,
+    mobile: 18,
+    detail: 18
+  },
+  description: {
+    desktop: 14,
+    mobile: 14,
+    detail: 16
+  },
+  price: {
+    desktop: 16,
+    mobile: 16,
+    detail: 18
+  }
+};
+
 const DEFAULT_FONT_SETTINGS = {
   title: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    desktop: { fontSize: 18 },
-    mobile: { fontSize: 18 },
-    detail: { fontSize: 18 }
+    desktop: { fontSize: FONT_BASE_SIZES.title.desktop },
+    mobile: { fontSize: FONT_BASE_SIZES.title.mobile },
+    detail: { fontSize: FONT_BASE_SIZES.title.detail }
   },
   description: {
     fontFamily: "Open Sans",
     fontWeight: "normal",
     fontStyle: "normal",
-    desktop: { fontSize: 16 },
-    mobile: { fontSize: 16 },
-    detail: { fontSize: 16 }
+    desktop: { fontSize: FONT_BASE_SIZES.description.desktop },
+    mobile: { fontSize: FONT_BASE_SIZES.description.mobile },
+    detail: { fontSize: FONT_BASE_SIZES.description.detail }
   },
   price: {
     fontFamily: "Poppins",
     fontWeight: "bold",
     fontStyle: "normal",
-    desktop: { fontSize: 18 },
-    mobile: { fontSize: 17 },
-    detail: { fontSize: 17 }
+    desktop: { fontSize: FONT_BASE_SIZES.price.desktop },
+    mobile: { fontSize: FONT_BASE_SIZES.price.mobile },
+    detail: { fontSize: FONT_BASE_SIZES.price.detail }
   }
 };
 
@@ -73,7 +92,10 @@ export function OnlineMenuFontSettingsWrapper({
   };
 
   return (
-    <FontSettingsSection fontSettings={fontSettings} onFontChange={handleFontChange} />
+    <FontSettingsSection
+      fontSettings={fontSettings}
+      onFontChange={handleFontChange}
+      baseSizes={FONT_BASE_SIZES}
+    />
   );
 }
-
