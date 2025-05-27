@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -31,7 +32,7 @@ const ProductAllergensCheckboxes: React.FC<Props> = ({
     });
   };
   return <div className="my-[20px] mx-[20px]">
-      <Label className="block text-xs mb-2">Allergeni</Label>
+      <Label className="block text-lg font-semibold mb-2">Allergeni</Label>
       <div className="grid grid-cols-2 gap-2">
         {allergens.map(allergen => {
         const checked = Array.isArray(selectedAllergenIds) && selectedAllergenIds.includes(allergen.id);

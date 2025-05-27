@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -32,7 +33,7 @@ const ProductFeaturesCheckboxes: React.FC<Props> = ({
     });
   };
   return <div className="px-0 mx-[20px] my-[20px]">
-      <Label className="block text-xs mb-2">Caratteristiche</Label>
+      <Label className="block text-lg font-semibold mb-2">Caratteristiche</Label>
       <div className="grid grid-cols-2 gap-2">
         {features.map(feature => <label key={feature.id} className={cn("flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors", selectedFeatureIds.includes(feature.id) ? "border-primary bg-muted/50" : "border-input")}>
             <Checkbox checked={selectedFeatureIds.includes(feature.id)} onCheckedChange={checked => handleChange(feature.id, checked as boolean)} />
