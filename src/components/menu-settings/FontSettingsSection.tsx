@@ -95,8 +95,9 @@ export function FontSettingsSection({
       </div>
 
       {/* Tabella Header */}
-      <div className="grid grid-cols-[200px,1fr,1fr,1fr] gap-4 items-center">
+      <div className="grid grid-cols-[140px,auto,1fr,1fr,1fr] gap-4 items-center border-b border-gray-200 pb-3">
         <div></div> {/* Spazio per labels */}
+        <div></div> {/* Spazio per font controls */}
         <div className="text-center">
           <div className="bg-gray-50 rounded-lg py-2 px-3">
             <span className="text-sm font-medium text-gray-700">DESKTOP</span>
@@ -114,14 +115,17 @@ export function FontSettingsSection({
         </div>
       </div>
 
-      {/* Righe per ogni campo font */}
+      {/* Righe per ogni campo font - TUTTO SULLA STESSA RIGA */}
       {fontFields.map((field) => {
         const font = fontSettings?.[field] || {};
         return (
-          <div key={field} className="space-y-3">
-            {/* Riga Font Family e Style Controls */}
-            <div className="grid grid-cols-[200px,1fr] gap-4 items-center">
+          <div key={field}>
+            {/* UNA SOLA RIGA con Label + Font Controls + Size Controls */}
+            <div className="grid grid-cols-[140px,auto,1fr,1fr,1fr] gap-4 items-center py-3">
+              {/* Label */}
               <div className="font-medium text-gray-900">{fieldLabels[field]}</div>
+              
+              {/* Font Controls */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -131,7 +135,7 @@ export function FontSettingsSection({
                   <Plus size={16} />
                 </button>
                 <select
-                  className="flex-1 max-w-[180px] h-9 border rounded px-3 text-sm"
+                  className="w-[150px] h-9 border rounded px-3 text-sm"
                   value={font.fontFamily || ""}
                   onChange={e => onFontChange(field, { ...font, fontFamily: e.target.value })}
                   style={{ fontFamily: font.fontFamily }}
@@ -157,11 +161,7 @@ export function FontSettingsSection({
                   <Italic size={16} />
                 </button>
               </div>
-            </div>
 
-            {/* Riga Font Size Controls */}
-            <div className="grid grid-cols-[200px,1fr,1fr,1fr] gap-4 items-center">
-              <div></div> {/* Spazio vuoto */}
               {/* Desktop Size */}
               <div className="flex justify-center">
                 <FontSizeControl
@@ -179,6 +179,7 @@ export function FontSettingsSection({
                   }}
                 />
               </div>
+              
               {/* Mobile Size */}
               <div className="flex justify-center">
                 <FontSizeControl
@@ -196,6 +197,7 @@ export function FontSettingsSection({
                   }}
                 />
               </div>
+              
               {/* Detail Size */}
               <div className="flex justify-center">
                 <FontSizeControl
@@ -217,7 +219,7 @@ export function FontSettingsSection({
 
             {/* Separatore tra i campi (tranne l'ultimo) */}
             {field !== 'price' && (
-              <div className="border-t border-gray-200 my-4"></div>
+              <div className="border-t border-gray-200"></div>
             )}
           </div>
         );
