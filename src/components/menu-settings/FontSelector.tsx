@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Bold, Italic, Plus, ExternalLink } from "lucide-react";
+import { Bold, Italic, Plus, Minus, ExternalLink } from "lucide-react"; // Importa Minus
 
 export const DEFAULT_GOOGLE_FONTS = [
   "Roboto",
@@ -20,20 +20,28 @@ interface FontSelectorProps {
     fontFamily: string;
     fontWeight: "normal" | "bold";
     fontStyle: "normal" | "italic";
+    fontSize?: number; // pixel (opzionale per retrocompatibilità)
   };
-  onChange: (value: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" }) => void;
+  onChange: (value: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic"; fontSize?: number }) => void;
   allowCustomFont?: boolean;
   label?: string;
+  defaultFontSize?: number; // per sapere il valore base in questo contesto
 }
+
+const FONT_SIZE_LIMITS = { 
+  title: { min: 14, max: 22, default: 18 }, 
+  description: { min: 12, max: 20, default: 16 }, 
+  price: { min: 14, max: 22, default: 18 }
+};
 
 export function FontSelector({
   value,
   onChange,
   allowCustomFont = true,
-  label = "Font"
+  label = "Font",
+  defaultFontSize = 16 // fallback: description
 }: FontSelectorProps) {
   const [availableFonts, setAvailableFonts] = useState<string[]>(() => {
-    // Recupera da localStorage o usa default all'avvio
     const customFontsJson = localStorage.getItem("publicMenuCustomFonts");
     const customFonts = customFontsJson ? JSON.parse(customFontsJson) as string[] : [];
     return [...DEFAULT_GOOGLE_FONTS, ...customFonts];
@@ -43,7 +51,6 @@ export function FontSelector({
   const [fontToAdd, setFontToAdd] = useState("");
 
   useEffect(() => {
-    // Al caricamento inserisci i link dei font selezionabili
     availableFonts.forEach(font => {
       addGoogleFontToHead(font);
     });
@@ -54,7 +61,6 @@ export function FontSelector({
     if (availableFonts.includes(fontToAdd)) return;
     setAvailableFonts(prev => {
       const newArr = [...prev, fontToAdd];
-      // Salva custom font su localStorage
       localStorage.setItem("publicMenuCustomFonts", JSON.stringify(newArr.filter(f => !DEFAULT_GOOGLE_FONTS.includes(f))));
       return newArr;
     });
@@ -84,12 +90,30 @@ export function FontSelector({
     onChange(next);
   }
 
+  // Determina limiti effettivi in base a label
+  let min = defaultFontSize - 2, max = defaultFontSize + 4, base = defaultFontSize;
+  if (label?.toLowerCase().includes("titolo")) {
+    min = FONT_SIZE_LIMITS.title.min; max = FONT_SIZE_LIMITS.title.max; base = FONT_SIZE_LIMITS.title.default;
+  } else if (label?.toLowerCase().includes("descrizione")) {
+    min = FONT_SIZE_LIMITS.description.min; max = FONT_SIZE_LIMITS.description.max; base = FONT_SIZE_LIMITS.description.default;
+  } else if (label?.toLowerCase().includes("prezzo")) {
+    min = FONT_SIZE_LIMITS.price.min; max = FONT_SIZE_LIMITS.price.max; base = FONT_SIZE_LIMITS.price.default;
+  }
+  const fontSize = typeof value.fontSize === 'number' ? value.fontSize : base;
+
+  const decrementFontSize = () => {
+    if (fontSize > min) onChange({ ...value, fontSize: fontSize - 1 });
+  };
+  const incrementFontSize = () => {
+    if (fontSize < max) onChange({ ...value, fontSize: fontSize + 1 });
+  };
+
   return (
     <div className="flex flex-col gap-1">
-      {label && <span className="mb-1 ml-1 text-sm">{label}</span>}
+      {label && <span className="mb-1 ml-1 text-xs font-semibold">{label}</span>}
       <div className="flex items-center gap-2">
         <Select value={value.fontFamily} onValueChange={v => onChange({ ...value, fontFamily: v })}>
-          <SelectTrigger className="w-56 h-9" style={{ fontFamily: value.fontFamily }}>
+          <SelectTrigger className="w-48 h-8 text-sm" style={{ fontFamily: value.fontFamily }}>
             <SelectValue placeholder="Seleziona font" style={{ fontFamily: value.fontFamily }}>{value.fontFamily}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -107,7 +131,7 @@ export function FontSelector({
           className={`bg-gray-100 p-1 rounded hover:bg-gray-200 border ${value.fontWeight === "bold" ? "text-blue-600 border-blue-400" : "text-gray-400 border-gray-300"}`}
           style={{ fontFamily: value.fontFamily }}
         >
-          <Bold size={20} />
+          <Bold size={16} />
         </button>
         <button
           type="button"
@@ -116,8 +140,30 @@ export function FontSelector({
           className={`bg-gray-100 p-1 rounded hover:bg-gray-200 border ${value.fontStyle === "italic" ? "text-blue-600 border-blue-400" : "text-gray-400 border-gray-300"}`}
           style={{ fontFamily: value.fontFamily }}
         >
-          <Italic size={20} />
+          <Italic size={16} />
         </button>
+        {/* Font size controls */}
+        <div className="flex items-center ml-2 gap-1 bg-gray-50 rounded px-1 border border-gray-200">
+          <button
+            type="button"
+            className="p-0.5 rounded disabled:text-gray-300"
+            title="Riduci grandezza testo"
+            onClick={decrementFontSize}
+            disabled={fontSize <= min}
+            style={{ background: "transparent" }}>
+            <Minus size={15} />
+          </button>
+          <span className="w-6 text-xs text-center" style={{ fontFamily: value.fontFamily }}>{fontSize}px</span>
+          <button
+            type="button"
+            className="p-0.5 rounded disabled:text-gray-300"
+            title="Aumenta grandezza testo"
+            onClick={incrementFontSize}
+            disabled={fontSize >= max}
+            style={{ background: "transparent" }}>
+            <Plus size={15} />
+          </button>
+        </div>
         {allowCustomFont && (
           <button
             type="button"

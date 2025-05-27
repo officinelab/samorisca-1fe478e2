@@ -13,9 +13,9 @@ interface ProductDetailsDialogPreviewProps {
   hideImage?: boolean;
   language?: string;
   fontSettings?: {
-    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
   };
 }
 
@@ -29,23 +29,25 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
   if (!product) return null;
 
   const { t } = usePublicMenuUiStrings(language);
-
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
   const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
 
-  // Carica i font dinamicamente (in questo caso prezzo)
-  // (Si può fare qui o nel componente padre)
-  // Iniettato direttamente nello style dove serve
+  // Usa la dimensione font se specificata, fallback default
+  const sizeTitle = fontSettings?.title?.fontSize ?? 18;
+  const sizeDesc = fontSettings?.description?.fontSize ?? 16;
+  const sizePrice = fontSettings?.price?.fontSize ?? 18;
+
   return (
     <div className="w-full px-4 pb-4">
       <div className="py-4">
         <h3
-          className="text-2xl font-semibold"
+          className="font-semibold"
           style={{
             fontFamily: fontSettings?.title?.fontFamily,
             fontWeight: fontSettings?.title?.fontWeight,
             fontStyle: fontSettings?.title?.fontStyle,
+            fontSize: sizeTitle
           }}
         >
           {title}
@@ -78,6 +80,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               fontFamily: fontSettings?.description?.fontFamily,
               fontWeight: fontSettings?.description?.fontWeight,
               fontStyle: fontSettings?.description?.fontStyle,
+              fontSize: sizeDesc
             }}
           >
             {description || t("description") + "..."}
@@ -108,7 +111,6 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
           <h4 className="font-semibold mb-1">{t("price")}</h4>
           {product.has_multiple_prices ? (
             <div className="space-y-2">
-              {/* Prezzo standard SOLO con suffisso */}
               {typeof product.price_standard === "number" && (
                 <div className="flex justify-between items-center gap-2">
                   <span
@@ -116,6 +118,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: sizePrice
                     }}
                   >
                     {product.price_standard?.toFixed(2)} €
@@ -130,7 +133,6 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                   </Button>
                 </div>
               )}
-              {/* Variante 1 */}
               {product.price_variant_1_name && product.price_variant_1_value !== null && (
                 <div className="flex justify-between items-center gap-2">
                   <span
@@ -138,6 +140,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: sizePrice
                     }}
                   >
                     {product.price_variant_1_value?.toFixed(2)} €
@@ -152,7 +155,6 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                   </Button>
                 </div>
               )}
-              {/* Variante 2 */}
               {product.price_variant_2_name && product.price_variant_2_value !== null && (
                 <div className="flex justify-between items-center gap-2">
                   <span
@@ -160,6 +162,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: sizePrice
                     }}
                   >
                     {product.price_variant_2_value?.toFixed(2)} €
@@ -182,6 +185,7 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
                 fontFamily: fontSettings?.price?.fontFamily,
                 fontWeight: fontSettings?.price?.fontWeight,
                 fontStyle: fontSettings?.price?.fontStyle,
+                fontSize: sizePrice
               }}
             >
               {typeof product.price_standard === "number" && (
