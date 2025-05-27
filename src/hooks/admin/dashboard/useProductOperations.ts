@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -13,6 +12,14 @@ export const useProductOperations = (
   const [isReorderingProducts, setIsReorderingProducts] = useState(false);
   const [reorderingProductsList, setReorderingProductsList] = useState<Product[]>([]);
   const [isSaving, setIsSaving] = useState(false); // Previeni salvataggi multipli
+
+  // Aggiorna reorderingProductsList quando products viene aggiornato durante la modalità riordino
+  useEffect(() => {
+    if (isReorderingProducts && products.length > 0) {
+      console.log('=== Updating reorderingProductsList with new products ===');
+      setReorderingProductsList([...products]);
+    }
+  }, [products, isReorderingProducts]);
 
   // DEBUG added to startReorderingProducts
   const startReorderingProducts = useCallback(() => {
