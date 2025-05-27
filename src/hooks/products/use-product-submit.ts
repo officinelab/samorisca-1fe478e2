@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
@@ -35,6 +34,19 @@ export const useProductSubmit = () => {
         productId = existingProductId;
         console.log("Prodotto aggiornato:", savedProduct);
       } else {
+        // Prima di inserire, trova il display_order più alto per questa categoria
+        const { data: lastProduct } = await supabase
+          .from("products")
+          .select("display_order")
+          .eq("category_id", productData.category_id)
+          .order("display_order", { ascending: false })
+          .limit(1)
+          .single();
+
+        // Imposta il display_order del nuovo prodotto
+        const newDisplayOrder = lastProduct ? lastProduct.display_order + 1 : 1;
+        productData.display_order = newDisplayOrder;
+
         // Inserisce un nuovo prodotto
         const { data, error } = await supabase
           .from("products")
