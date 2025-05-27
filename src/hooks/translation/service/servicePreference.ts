@@ -27,15 +27,15 @@ export const loadServicePreference = async (): Promise<TranslationServiceType> =
         await saveServicePreference(serviceType);
         return serviceType;
       }
-      // Default se non trova nulla
-      return 'perplexity';
+      // Default se non trova nulla  
+      return 'openai';
     } else {
       // Usa il valore da Supabase
       return data.value as TranslationServiceType;
     }
   } catch (error) {
     console.error('Errore nel caricamento delle preferenze del servizio di traduzione:', error);
-    return 'perplexity'; // Default in caso di errore
+    return 'openai'; // Default in caso di errore
   }
 };
 

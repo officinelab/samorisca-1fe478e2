@@ -4,7 +4,7 @@ import { TranslationServiceType } from '@/types/translation';
 import { loadServicePreference } from './service/servicePreference';
 
 export const useTranslationServiceState = () => {
-  const [currentService, setCurrentService] = useState<TranslationServiceType>('perplexity');
+  const [currentService, setCurrentService] = useState<TranslationServiceType>('openai');
   const [isLoading, setIsLoading] = useState(true);
 
   // Carica la preferenza del servizio
