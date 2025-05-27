@@ -152,45 +152,29 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      {/* Colonna font più larga, button più stretta */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-        <div className="bg-muted/50 rounded-md p-3 md:col-span-2 flex items-start">
-          <div className="flex-1">
-            <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
-            <OnlineMenuFontSettingsWrapper
-              selectedLayout={selectedLayout}
-              onFontSettingsChange={setFontSettings}
-            />
-          </div>
+      {/* Due colonne per impostazioni font e pulsante */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+        {/* Colonna Font */}
+        <div className="bg-muted/50 rounded-md p-3">
+          <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
+          <OnlineMenuFontSettingsWrapper
+            selectedLayout={selectedLayout}
+            onFontSettingsChange={handleFontSettingsChange}
+          />
         </div>
-        <div className="bg-muted/50 rounded-md p-3 md:col-span-1 min-w-[190px] max-w-[210px]">
+        {/* Colonna Pulsante */}
+        <div className="bg-muted/50 rounded-md p-3">
           <h3 className="text-base font-semibold mb-2">Pulsante "Aggiungi al carrello"</h3>
           <OnlineMenuButtonSettingsWrapper
             selectedLayout={selectedLayout}
-            onButtonSettingsChange={setButtonSettings}
+            onButtonSettingsChange={handleButtonSettingsChange}
           />
         </div>
       </div>
 
-      {/* Passa settings specifici alle anteprime */}
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={{
-          desktop: fontSettings?.fontSizes
-            ? {
-                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.desktop },
-                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.desktop },
-                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.desktop },
-              }
-            : fontSettings, // fallback
-          mobile: fontSettings?.fontSizes
-            ? {
-                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.mobile },
-                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.mobile },
-                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.mobile },
-              }
-            : fontSettings,
-        }}
+        fontSettings={fontSettings}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
@@ -198,15 +182,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={
-          fontSettings?.fontSizes
-            ? {
-                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.details },
-                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.details },
-                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.details },
-              }
-            : fontSettings
-        }
+        fontSettings={fontSettings}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />
