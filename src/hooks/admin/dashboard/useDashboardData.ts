@@ -70,6 +70,7 @@ export const useDashboardData = () => {
   };
 
   const loadProducts = async (categoryId: string) => {
+    console.log('=== loadProducts START for category:', categoryId);
     try {
       const { data: productsData, error: productsError } = await supabase
         .from('products')
@@ -127,7 +128,7 @@ export const useDashboardData = () => {
           } as Product;
         })
       );
-      
+      console.log('=== loadProducts: Setting products:', productsWithDetails.length, 'items');
       setProducts(productsWithDetails);
       setSelectedProductId(null);
     } catch (error) {
@@ -137,13 +138,16 @@ export const useDashboardData = () => {
   };
 
   const loadData = async () => {
+    console.log('=== loadData START ===');
     setIsLoading(true);
     try {
+      console.log('Loading categories, allergens, labels...');
       await Promise.all([
         loadCategories(),
         loadAllergens(),
         loadLabels()
       ]);
+      console.log('=== loadData COMPLETED ===');
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast.error("Errore nel caricamento dei dati. Riprova più tardi.");
