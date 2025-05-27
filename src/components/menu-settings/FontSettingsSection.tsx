@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DEFAULT_GOOGLE_FONTS } from "./FontSelector";
 import { Button } from "@/components/ui/button";
@@ -94,10 +93,9 @@ export function FontSettingsSection({
         <h3 className="text-lg font-semibold mb-4">Font titolo, descrizione, prezzo</h3>
       </div>
 
-      {/* Tabella Header */}
-      <div className="grid grid-cols-[140px,auto,1fr,1fr,1fr] gap-4 items-center border-b border-gray-200 pb-3">
-        <div></div> {/* Spazio per labels */}
-        <div></div> {/* Spazio per font controls */}
+      {/* Tabella Header: solo tre colonne per desktop/mobile/dettagli */}
+      <div className="grid grid-cols-[240px,1fr,1fr,1fr] gap-4 items-center border-b border-gray-200 pb-3">
+        <div></div>
         <div className="text-center">
           <div className="bg-gray-50 rounded-lg py-2 px-3">
             <span className="text-sm font-medium text-gray-700">DESKTOP</span>
@@ -115,18 +113,16 @@ export function FontSettingsSection({
         </div>
       </div>
 
-      {/* Righe per ogni campo font - TUTTO SULLA STESSA RIGA */}
+      {/* Righe per ogni campo font, su quattro colonne per allineamento perfetto */}
       {fontFields.map((field) => {
         const font = fontSettings?.[field] || {};
         return (
           <div key={field}>
-            {/* UNA SOLA RIGA con Label + Font Controls + Size Controls */}
-            <div className="grid grid-cols-[140px,auto,1fr,1fr,1fr] gap-4 items-center py-3">
-              {/* Label */}
-              <div className="font-medium text-gray-900">{fieldLabels[field]}</div>
-              
-              {/* Font Controls */}
+            {/* 4 colonne: colonna 1 = controlli font, altre 3 = dimensionamento */}
+            <div className="grid grid-cols-[240px,1fr,1fr,1fr] gap-4 items-center py-3">
+              {/* Label + controlli font */}
               <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900 w-[90px]">{fieldLabels[field]}</span>
                 <button
                   type="button"
                   className="p-1.5 rounded border border-gray-300 hover:bg-gray-100"
@@ -135,7 +131,7 @@ export function FontSettingsSection({
                   <Plus size={16} />
                 </button>
                 <select
-                  className="w-[150px] h-9 border rounded px-3 text-sm"
+                  className="w-[120px] h-9 border rounded px-3 text-sm"
                   value={font.fontFamily || ""}
                   onChange={e => onFontChange(field, { ...font, fontFamily: e.target.value })}
                   style={{ fontFamily: font.fontFamily }}
@@ -150,6 +146,7 @@ export function FontSettingsSection({
                   type="button"
                   onClick={() => onFontChange(field, { ...font, fontWeight: font.fontWeight === "bold" ? "normal" : "bold" })}
                   className={`p-2 rounded border ${font.fontWeight === "bold" ? "bg-blue-100 border-blue-400 text-blue-700" : "border-gray-300 hover:bg-gray-50"}`}
+                  style={{ width: 32, height: 36 }}
                 >
                   <Bold size={16} />
                 </button>
@@ -157,6 +154,7 @@ export function FontSettingsSection({
                   type="button"
                   onClick={() => onFontChange(field, { ...font, fontStyle: font.fontStyle === "italic" ? "normal" : "italic" })}
                   className={`p-2 rounded border ${font.fontStyle === "italic" ? "bg-blue-100 border-blue-400 text-blue-700" : "border-gray-300 hover:bg-gray-50"}`}
+                  style={{ width: 32, height: 36 }}
                 >
                   <Italic size={16} />
                 </button>
@@ -197,7 +195,7 @@ export function FontSettingsSection({
                   }}
                 />
               </div>
-              
+
               {/* Detail Size */}
               <div className="flex justify-center">
                 <FontSizeControl
@@ -216,7 +214,6 @@ export function FontSettingsSection({
                 />
               </div>
             </div>
-
             {/* Separatore tra i campi (tranne l'ultimo) */}
             {field !== 'price' && (
               <div className="border-t border-gray-200"></div>
