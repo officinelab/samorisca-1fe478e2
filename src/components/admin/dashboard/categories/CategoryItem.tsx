@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -70,7 +69,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     return c;
   };
 
-  // Render aggiornato: layout a 2 colonne, icone impilate, titolo che va a capo
+  // Nuovo layout come richiesto: 2 colonne, titolo con wrap, icone impilate, no truncate/max-w
   return (
     <div
       className={getItemClass()}
@@ -178,4 +177,3 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
 };
 
 export default CategoryItem;
-
