@@ -40,6 +40,35 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
 }) => {
   const [categoryToDelete, setCategoryToDelete] = React.useState<string | null>(null);
 
+  // Rende la lista usata effettiva
+  const displayCategories = isReorderingCategories ? reorderingCategoriesList : categories;
+
+  // --- Tastiera: sposta la categoria selezionata con ↑↓ ---
+  React.useEffect(() => {
+    if (!isReorderingCategories || !selectedCategoryId) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp") {
+        const idx = displayCategories.findIndex(c => c.id === selectedCategoryId);
+        if (idx > 0) {
+          onMoveCategory(selectedCategoryId, "up");
+          e.preventDefault();
+        }
+      }
+      if (e.key === "ArrowDown") {
+        const idx = displayCategories.findIndex(c => c.id === selectedCategoryId);
+        if (idx < displayCategories.length - 1) {
+          onMoveCategory(selectedCategoryId, "down");
+          e.preventDefault();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isReorderingCategories, selectedCategoryId, displayCategories, onMoveCategory]);
+
   const handleDeleteClick = (categoryId: string) => {
     setCategoryToDelete(categoryId);
   };
@@ -55,8 +84,7 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
     setCategoryToDelete(null);
   };
 
-  const displayCategories = isReorderingCategories ? reorderingCategoriesList : categories;
-
+  // Visual feedback: bordo attivo + badge modalità
   return (
     <>
       <div className="h-full flex flex-col">
@@ -67,7 +95,14 @@ const CategoriesList: React.FC<CategoriesListProps> = ({
           onSaveReorder={onSaveReorder}
           onAddCategory={onAddCategory}
         />
-        
+        {isReorderingCategories && (
+          <div className="flex items-center gap-2 px-4 pt-2 pb-1">
+            <span className="inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">
+              Modalità riordino attiva
+            </span>
+            <span className="text-xs text-gray-400">(puoi usare tastiera e tenere premuti i tasti ↑/↓)</span>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="p-2">
             {categories.length === 0 ? (
