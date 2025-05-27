@@ -14,7 +14,7 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
   const [translatingAll, setTranslatingAll] = useState(false);
   const { translateText, getExistingTranslation, currentService, getServiceName } = useTranslationService();
 
-  // NUOVA FUNZIONE: Controlla se un campo necessita traduzione (mancante O obsoleto)
+  // FUNZIONE CORRETTA: Tipizzazione precisa per Supabase con sintassi aggiornata
   const checkIfNeedsTranslation = async (
     entityId: string, 
     entityType: string, 
@@ -22,9 +22,9 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     language: SupportedLanguage
   ): Promise<boolean> => {
     try {
-      // 1. Query specifica per products - tipo corretto
+      // 1. Query per products (senza generic type)
       const { data: entity, error: entityError } = await supabase
-        .from<Database["public"]["Tables"]["products"]["Row"]>("products")
+        .from('products')
         .select('updated_at')
         .eq('id', entityId)
         .single();
@@ -34,9 +34,9 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         return false;
       }
 
-      // 2. Query per translations - tipo corretto  
+      // 2. Query per translations (senza generic type)
       const { data: translation, error: translationError } = await supabase
-        .from<Database["public"]["Tables"]["translations"]["Row"]>("translations")
+        .from('translations')
         .select('last_updated')
         .eq('entity_id', entityId)
         .eq('entity_type', entityType)
