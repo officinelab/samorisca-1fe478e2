@@ -1,14 +1,21 @@
 
 import { FontSelector } from "./FontSelector";
 
+interface SingleFontSetting {
+  fontFamily: string;
+  fontWeight: "normal" | "bold";
+  fontStyle: "normal" | "italic";
+}
+
 interface FontSettings {
-  title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
-  description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+  title: SingleFontSetting;
+  description: SingleFontSetting;
+  price: SingleFontSetting;
 }
 
 interface OnlineMenuFontSelectorsProps {
   fontSettings: FontSettings;
-  onFontChange: (key: "title" | "description", value: any) => void;
+  onFontChange: (key: "title" | "description" | "price", value: SingleFontSetting) => void;
 }
 
 export function OnlineMenuFontSelectors({ fontSettings, onFontChange }: OnlineMenuFontSelectorsProps) {
@@ -24,6 +31,12 @@ export function OnlineMenuFontSelectors({ fontSettings, onFontChange }: OnlineMe
         value={fontSettings.description}
         onChange={val => onFontChange("description", val)}
       />
+      <FontSelector
+        label="Font Prezzo"
+        value={fontSettings.price}
+        onChange={val => onFontChange("price", val)}
+      />
     </div>
   );
 }
+

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
@@ -75,6 +76,7 @@ function truncateText(text: string | null = "", maxLength: number = 120) {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 }
 
+// Aggiornato: Aggiungi "price"
 const DEFAULT_FONT_SETTINGS = {
   title: {
     fontFamily: "Poppins",
@@ -86,6 +88,11 @@ const DEFAULT_FONT_SETTINGS = {
     fontWeight: "normal",
     fontStyle: "normal",
   },
+  price: {
+    fontFamily: "Poppins",
+    fontWeight: "bold",
+    fontStyle: "normal",
+  },
 };
 
 export default function OnlineMenuLayoutSection() {
@@ -94,22 +101,29 @@ export default function OnlineMenuLayoutSection() {
 
   // Carica settings font per layout attuale
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
-  const currFontSettings = publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS;
+  // fallback: se manca uno dei tre, completa sempre con default
+  const currFontSettings = {
+    ...DEFAULT_FONT_SETTINGS,
+    ...(publicMenuFontSettings?.[selectedLayout] || {})
+  };
 
   const [fontSettings, setFontSettings] = useState(currFontSettings);
 
-  // Mantieni sincronizzati font selezionati con il layout/cambi
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
-    setFontSettings(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || DEFAULT_FONT_SETTINGS);
+    setFontSettings({
+      ...DEFAULT_FONT_SETTINGS,
+      ...(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || {})
+    });
   }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings]);
 
   // Quando cambio il layout, salvo anche globalmente!
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
-    // Aggiorno i font secondo le impostazioni già salvate
-    setFontSettings(publicMenuFontSettings?.[newLayout] || DEFAULT_FONT_SETTINGS);
-    // Salva il layout selezionato tra le impostazioni del sito
+    setFontSettings({
+      ...DEFAULT_FONT_SETTINGS,
+      ...(publicMenuFontSettings?.[newLayout] || {})
+    });
     await saveSetting("publicMenuLayoutType", newLayout);
     toast({
       title: "Layout applicato",
@@ -117,8 +131,8 @@ export default function OnlineMenuLayoutSection() {
     });
   };
 
-  // Salva SOLO su publicMenuFontSettings, NON più sulle chiavi singole
-  const handleFontChange = (key: "title" | "description", value: any) => {
+  // Salva SOLO su publicMenuFontSettings, anche per il font prezzo
+  const handleFontChange = (key: "title" | "description" | "price", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
     setFontSettings(newValue);
     // Salva nelle impostazioni SOLO per layout attivo nell'oggetto aggregato
@@ -127,7 +141,6 @@ export default function OnlineMenuLayoutSection() {
       [selectedLayout]: newValue
     };
     saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
-    // ... toast come prima ...
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
   };
 
@@ -135,7 +148,7 @@ export default function OnlineMenuLayoutSection() {
     <div className="max-w-4xl space-y-8 mx-auto">
       <h2 className="text-xl font-semibold">Layout menu online</h2>
       <p className="text-muted-foreground mb-2">
-        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo e descrizione.
+        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo, descrizione e prezzo.
       </p>
 
       <OnlineMenuLayoutSelector
@@ -143,8 +156,10 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
+      {/* ⬇️ Tre selettori: titolo, descrizione e prezzo */}
       <OnlineMenuFontSelectors fontSettings={fontSettings} onFontChange={handleFontChange} />
 
+      {/* Passa fontSettings anche ai preview */}
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
         fontSettings={fontSettings}
@@ -160,3 +175,4 @@ export default function OnlineMenuLayoutSection() {
     </div>
   );
 }
+
