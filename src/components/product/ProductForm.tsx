@@ -1,8 +1,15 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Product } from "@/types/database";
 import { useProductForm } from "@/hooks/products/useProductForm";
+import ProductBasicInfo from "./sections/ProductBasicInfo";
+import ProductActionButtons from "./sections/ProductActionButtons";
 import ProductFeaturesCheckboxes from "./ProductFeaturesCheckboxes";
+import ProductAllergensCheckboxes from "./ProductAllergensCheckboxes";
+import ProductPriceSection from "./sections/ProductPriceSection";
 
 interface ProductFormProps {
   product?: Product;
@@ -17,8 +24,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  console.log('ProductForm WITH FEATURES render', product?.id);
-  
   const {
     form,
     isSubmitting,
@@ -36,20 +41,62 @@ const ProductForm: React.FC<ProductFormProps> = ({
     loadingAllergens,
   } = useProductForm(product, categoryId);
 
+  const handleSave = async (formValues: any) => {
+    await handleSubmit(formValues);
+    if (onSave) onSave();
+  };
+
   return (
-    <div>
-      <h1>TEST FORM con Features - Product ID: {product?.id || 'NEW'}</h1>
+    <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
       <Form {...form}>
-        <form>
-          <ProductFeaturesCheckboxes
-            features={features}
-            selectedFeatureIds={selectedFeatureIds}
-            setSelectedFeatureIds={setSelectedFeatureIds}
-            loading={loadingFeatures}
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          {/* Informazioni Base */}
+          <Card className="overflow-visible">
+            <CardHeader>
+              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductBasicInfo form={form} />
+              <ProductPriceSection
+                form={form}
+                labels={labels}
+                hasPriceSuffix={hasPriceSuffix}
+                hasMultiplePrices={hasMultiplePrices}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Sezione caratteristiche */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductFeaturesCheckboxes
+                features={features}
+                selectedFeatureIds={selectedFeatureIds}
+                setSelectedFeatureIds={setSelectedFeatureIds}
+                loading={loadingFeatures}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Sezione allergeni */}
+          <Card>
+            <CardContent className="p-0 border-0 shadow-none">
+              <ProductAllergensCheckboxes
+                allergens={allergens}
+                selectedAllergenIds={selectedAllergenIds}
+                setSelectedAllergenIds={setSelectedAllergenIds}
+                loading={loadingAllergens}
+              />
+            </CardContent>
+          </Card>
+
+          <Separator className="my-4" />
+          <ProductActionButtons
+            isSubmitting={isSubmitting}
+            onCancel={onCancel}
           />
         </form>
       </Form>
-      <button onClick={onCancel}>Cancel</button>
     </div>
   );
 };
