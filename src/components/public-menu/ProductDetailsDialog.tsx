@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +16,13 @@ interface ProductDetailsDialogProps {
   hideImage?: boolean;
   language?: string;
   fontSettings?: {
-    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
-    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+    title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic"; fontSize?: number };
+    description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic"; fontSize?: number };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+  };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
   };
 }
 
@@ -30,10 +33,21 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   addToCart,
   hideImage = false,
   language = "it",
-  fontSettings
+  fontSettings,
+  buttonSettings
 }) => {
   const handleClose = () => onClose();
   const { t } = usePublicMenuUiStrings(language);
+
+  // Helper: render icona custom (fallback Plus)
+  const renderAddIcon = () => {
+    if (buttonSettings?.icon === "plus" || !buttonSettings?.icon) {
+      return <Plus className="ml-2" size={16} />;
+    }
+    // Usa la demo icona dello stesso sistema delle anteprime
+    const { ProductCardButtonIconsDemo } = require("@/components/menu-settings/ProductCardButtonIconsDemo");
+    return <ProductCardButtonIconsDemo iconName={buttonSettings.icon} color={buttonSettings.color || "#9b87f5"} size={20} />;
+  };
 
   if (!product) return null;
 
@@ -50,6 +64,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
               fontFamily: fontSettings?.title?.fontFamily,
               fontWeight: fontSettings?.title?.fontWeight,
               fontStyle: fontSettings?.title?.fontStyle,
+              fontSize: fontSettings?.title?.fontSize,
             }}
           >
             {title}
@@ -82,6 +97,7 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 fontFamily: fontSettings?.description?.fontFamily,
                 fontWeight: fontSettings?.description?.fontWeight,
                 fontStyle: fontSettings?.description?.fontStyle,
+                fontSize: fontSettings?.description?.fontSize
               }}
             >
               {description || t("description") + "..."}
@@ -115,7 +131,12 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 {/* Prezzo standard SOLO con suffisso */}
                 {typeof product.price_standard === "number" && (
                   <div className="flex justify-between items-center gap-2">
-                    <span>
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
                       {product.price_standard?.toFixed(2)} €
                       {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
                     </span>
@@ -126,15 +147,22 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         addToCart(product);
                         onClose();
                       }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
                     >
-                      {t("add")} <Plus className="ml-2" size={16} />
+                      {t("add")} {renderAddIcon()}
                     </Button>
                   </div>
                 )}
                 {/* Variante 1 */}
                 {product.price_variant_1_name && product.price_variant_1_value !== null && (
                   <div className="flex justify-between items-center gap-2">
-                    <span>
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
                       {product.price_variant_1_value?.toFixed(2)} €
                       {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
                     </span>
@@ -145,15 +173,22 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                         onClose();
                       }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
                     >
-                      {t("add")} <Plus className="ml-2" size={16} />
+                      {t("add")} {renderAddIcon()}
                     </Button>
                   </div>
                 )}
                 {/* Variante 2 */}
                 {product.price_variant_2_name && product.price_variant_2_value !== null && (
                   <div className="flex justify-between items-center gap-2">
-                    <span>
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
                       {product.price_variant_2_value?.toFixed(2)} €
                       {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
                     </span>
@@ -164,14 +199,21 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                         addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                         onClose();
                       }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
                     >
-                      {t("add")} <Plus className="ml-2" size={16} />
+                      {t("add")} {renderAddIcon()}
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="font-medium">
+              <p className="font-medium" style={{
+                fontFamily: fontSettings?.price?.fontFamily,
+                fontWeight: fontSettings?.price?.fontWeight,
+                fontStyle: fontSettings?.price?.fontStyle,
+                fontSize: fontSettings?.price?.fontSize
+              }}>
                 {typeof product.price_standard === "number" && (
                   <>
                     {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
@@ -188,8 +230,10 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 addToCart(product);
                 onClose();
               }}
+              style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+              className={buttonSettings?.color ? "" : undefined}
             >
-              {t("add_to_cart")} <Plus className="ml-2" size={16} />
+              {t("add_to_cart")} {renderAddIcon()}
             </Button>
           )}
         </div>
@@ -197,4 +241,3 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     </Dialog>
   );
 };
-

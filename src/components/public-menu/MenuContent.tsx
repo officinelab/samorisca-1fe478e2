@@ -26,6 +26,10 @@ interface MenuContentProps {
     title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
   };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
+  };
 }
 
 export const MenuContent: React.FC<MenuContentProps> = ({
@@ -43,7 +47,8 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   language,
   serviceCoverCharge = 0,
   productCardLayoutType = "default",
-  fontSettings
+  fontSettings,
+  buttonSettings
 }) => {
   // Raccogli tutte le features usate nei prodotti del menu
   const allFeatures: ProductFeature[] = React.useMemo(() => {
@@ -87,6 +92,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
               language={language}
               productCardLayoutType={productCardLayoutType}
               fontSettings={fontSettings}
+              buttonSettings={buttonSettings}
             />
             {/* Mostra il prezzo Servizio e Coperto tra categorie, tranne dopo l'ultima */}
             {(serviceCoverCharge && serviceCoverCharge > 0 && idx < categories.length - 1) && (
