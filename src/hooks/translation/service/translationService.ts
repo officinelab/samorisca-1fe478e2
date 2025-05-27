@@ -1,4 +1,3 @@
-
 import { SupportedLanguage, TranslationServiceType } from '@/types/translation';
 import { toast } from '@/components/ui/sonner';
 import { TranslationResult } from '../types';
@@ -27,7 +26,7 @@ export const translateText = async (
 
   console.log(`translateText: Avvio traduzione con servizio: ${currentService}`);
   try {
-    // Nuovo controllo: TOT token disponibili (non solo mensili)
+    // Verifica token rimanenti prima della traduzione
     const tokensData = await checkRemainingTokens();
 
     if (tokensData === null) {
@@ -39,11 +38,11 @@ export const translateText = async (
     }
 
     if (tokensData <= 0) {
-      toast.error('Token esauriti. Acquista altri token oppure riprova il prossimo mese.');
+      toast.error('Token mensili esauriti. Riprova il prossimo mese.');
       return {
         success: false,
         translatedText: '',
-        message: 'Token esauriti. Acquista altri token oppure riprova il prossimo mese.'
+        message: 'Token mensili esauriti. Riprova il prossimo mese.'
       };
     }
 
@@ -72,7 +71,7 @@ export const translateText = async (
         duration: 2000 // Mostra il toast solo per 2 secondi
       });
 
-      // Forza il refresh dei token (se disponibile)
+      // Prova a forzare il refresh dei token (se disponibile in contesto globale)
       if (typeof window !== "undefined" && window.dispatchEvent) {
         window.dispatchEvent(new CustomEvent("refresh-tokens"));
       }
