@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ProductCardMobile } from "./ProductCardMobile";
 import { ProductCardDesktop } from "./ProductCardDesktop";
@@ -21,6 +20,10 @@ interface ProductCardWrapperProps {
     title?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     price?: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
+  };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
   };
 }
 
@@ -45,6 +48,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
   truncateText,
   layoutType = 'default',
   fontSettings,
+  buttonSettings,
 }) => {
   const isMobile = useIsMobile();
   const LayoutSet = productCardLayouts[layoutType] || productCardLayouts.default;
@@ -57,6 +61,7 @@ export const ProductCardWrapper: React.FC<ProductCardWrapperProps> = ({
         addToCart={addToCart}
         truncateText={truncateText}
         fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
       />
     );
   }

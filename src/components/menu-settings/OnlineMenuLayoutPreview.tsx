@@ -12,6 +12,7 @@ const layoutLabel: Record<ProductCardLayoutType, string> = {
 interface OnlineMenuLayoutPreviewProps {
   selectedLayout: ProductCardLayoutType;
   fontSettings: any;
+  buttonSettings: { color: string; icon: string };
   exampleProduct: Product;
   truncateText: (text: string | null, maxLength: number) => string;
 }
@@ -19,6 +20,7 @@ interface OnlineMenuLayoutPreviewProps {
 export function OnlineMenuLayoutPreview({
   selectedLayout,
   fontSettings,
+  buttonSettings,
   exampleProduct,
   truncateText
 }: OnlineMenuLayoutPreviewProps) {
@@ -79,6 +81,7 @@ export function OnlineMenuLayoutPreview({
               deviceView="mobile"
               layoutType={selectedLayout as ProductCardLayoutType}
               fontSettings={fontSettings}
+              buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
           </div>

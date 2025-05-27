@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Product } from "@/types/database";
@@ -7,6 +6,7 @@ import { OnlineMenuLayoutSelector } from "./OnlineMenuLayoutSelector";
 import { OnlineMenuFontSelectors } from "./OnlineMenuFontSelectors";
 import { OnlineMenuLayoutPreview } from "./OnlineMenuLayoutPreview";
 import { OnlineMenuProductDetailsPreview } from "./OnlineMenuProductDetailsPreview";
+import { OnlineMenuAddToCartButtonSettings } from "./OnlineMenuAddToCartButtonSettings";
 
 // Esempio prodotto di test
 const exampleProduct: Product = {
@@ -95,19 +95,31 @@ const DEFAULT_FONT_SETTINGS = {
   },
 };
 
+// Aggiungi default per settings pulsante layout
+const DEFAULT_BUTTON_SETTINGS = {
+  color: "#9b87f5",
+  icon: "plus"
+};
+
 export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
-  // Carica settings font per layout attuale
+  // Carica settings font e pulsante per layout attuale
   const publicMenuFontSettings = siteSettings?.publicMenuFontSettings || {};
-  // fallback: se manca uno dei tre, completa sempre con default
+  const publicMenuButtonSettings = siteSettings?.publicMenuButtonSettings || {};
+
   const currFontSettings = {
     ...DEFAULT_FONT_SETTINGS,
     ...(publicMenuFontSettings?.[selectedLayout] || {})
   };
+  const currButtonSettings = {
+    ...DEFAULT_BUTTON_SETTINGS,
+    ...(publicMenuButtonSettings?.[selectedLayout] || {})
+  };
 
   const [fontSettings, setFontSettings] = useState(currFontSettings);
+  const [buttonSettings, setButtonSettings] = useState(currButtonSettings);
 
   useEffect(() => {
     setSelectedLayout(siteSettings?.publicMenuLayoutType || "default");
@@ -115,7 +127,11 @@ export default function OnlineMenuLayoutSection() {
       ...DEFAULT_FONT_SETTINGS,
       ...(publicMenuFontSettings?.[siteSettings?.publicMenuLayoutType || "default"] || {})
     });
-  }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings]);
+    setButtonSettings({
+      ...DEFAULT_BUTTON_SETTINGS,
+      ...(publicMenuButtonSettings?.[siteSettings?.publicMenuLayoutType || "default"] || {})
+    });
+  }, [siteSettings?.publicMenuLayoutType, publicMenuFontSettings, publicMenuButtonSettings]);
 
   // Quando cambio il layout, salvo anche globalmente!
   const handleLayoutChange = async (newLayout: string) => {
@@ -124,6 +140,10 @@ export default function OnlineMenuLayoutSection() {
       ...DEFAULT_FONT_SETTINGS,
       ...(publicMenuFontSettings?.[newLayout] || {})
     });
+    setButtonSettings({
+      ...DEFAULT_BUTTON_SETTINGS,
+      ...(publicMenuButtonSettings?.[newLayout] || {})
+    });
     await saveSetting("publicMenuLayoutType", newLayout);
     toast({
       title: "Layout applicato",
@@ -131,17 +151,27 @@ export default function OnlineMenuLayoutSection() {
     });
   };
 
-  // Salva SOLO su publicMenuFontSettings, anche per il font prezzo
+  // Salva SOLO su publicMenuFontSettings
   const handleFontChange = (key: "title" | "description" | "price", value: any) => {
     const newValue = { ...fontSettings, [key]: value };
     setFontSettings(newValue);
-    // Salva nelle impostazioni SOLO per layout attivo nell'oggetto aggregato
     const nextPublicMenuFontSettings = {
       ...publicMenuFontSettings,
       [selectedLayout]: newValue
     };
     saveSetting("publicMenuFontSettings", nextPublicMenuFontSettings);
     toast({ title: "Font aggiornato", description: `Font ${key} salvato per layout ${selectedLayout}` });
+  };
+
+  // Salva su publicMenuButtonSettings
+  const handleButtonChange = (newValue: { color: string; icon: string }) => {
+    setButtonSettings(newValue);
+    const nextPublicMenuButtonSettings = {
+      ...publicMenuButtonSettings,
+      [selectedLayout]: newValue
+    };
+    saveSetting("publicMenuButtonSettings", nextPublicMenuButtonSettings);
+    toast({ title: "Pulsante aggiornato", description: `Pulsante aggiornato per layout ${selectedLayout}` });
   };
 
   return (
@@ -156,13 +186,17 @@ export default function OnlineMenuLayoutSection() {
         onSelect={handleLayoutChange}
       />
 
-      {/* ⬇️ Tre selettori: titolo, descrizione e prezzo */}
+      <OnlineMenuAddToCartButtonSettings
+        value={buttonSettings}
+        onChange={handleButtonChange}
+      />
+
       <OnlineMenuFontSelectors fontSettings={fontSettings} onFontChange={handleFontChange} />
 
-      {/* Passa fontSettings anche ai preview */}
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
         fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
       />
@@ -170,9 +204,9 @@ export default function OnlineMenuLayoutSection() {
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
         fontSettings={fontSettings}
+        buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />
     </div>
   );
 }
-

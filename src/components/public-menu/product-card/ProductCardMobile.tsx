@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// Sostituisco Plus con CirclePlus
-import { CirclePlus } from "lucide-react";
+import { BookmarkPlus, CirclePlus, Plus, BadgePlus, CircleCheckBig } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
@@ -20,6 +18,10 @@ interface ProductCardMobileProps {
     description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
     price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
   };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
+  };
 }
 
 export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
@@ -27,7 +29,8 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   onProductSelect,
   addToCart,
   truncateText,
-  fontSettings
+  fontSettings,
+  buttonSettings
 }) => {
   const title = product.displayTitle || product.title;
   const description = product.displayDescription || product.description;
@@ -36,6 +39,17 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   // Carica dinamicamente il font titolo
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
   useDynamicGoogleFont(fontSettings?.price?.fontFamily);
+
+  // Map icon string to component
+  const iconsMap: Record<string, React.ComponentType<any>> = {
+    "bookmark-plus": BookmarkPlus,
+    "circle-plus": CirclePlus,
+    "plus": Plus,
+    "badge-plus": BadgePlus,
+    "circle-check-big": CircleCheckBig,
+  };
+  const ButtonIcon = iconsMap[buttonSettings?.icon || "plus"] || Plus;
+  const btnColor = buttonSettings?.color || "#9b87f5";
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
@@ -111,9 +125,10 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
+                    style={{ backgroundColor: btnColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
                   >
-                    <CirclePlus size={18} />
+                    <ButtonIcon size={18} color="#fff" />
                   </Button>
                 </div>
               )}
@@ -138,9 +153,10 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
+                    style={{ backgroundColor: btnColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
                   >
-                    <CirclePlus size={18} />
+                    <ButtonIcon size={18} color="#fff" />
                   </Button>
                 </div>
               )}
@@ -165,9 +181,10 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       e.stopPropagation();
                       addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
                     }}
-                    className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
+                    style={{ backgroundColor: btnColor }}
+                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
                   >
-                    <CirclePlus size={18} />
+                    <ButtonIcon size={18} color="#fff" />
                   </Button>
                 </div>
               )}
@@ -193,9 +210,10 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                className="rounded-full h-8 w-8 shadow-md bg-[#9b87f5] hover:bg-[#7E69AB] focus:ring-2 focus:ring-[#7E69AB] focus:outline-none transition"
+                style={{ backgroundColor: btnColor }}
+                className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
               >
-                <CirclePlus size={18} />
+                <ButtonIcon size={18} color="#fff" />
               </Button>
             </div>
           )}
