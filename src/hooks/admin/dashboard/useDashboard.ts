@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -57,8 +56,11 @@ export const useDashboard = () => {
     setEditingCategory(null);
   };
 
+  // AGGIORNATO: ora ricarica i prodotti dopo il salvataggio
   const handleProductFormSave = async () => {
-    await dashboardOperations.loadData();
+    if (dashboardOperations.selectedCategoryId && dashboardOperations.loadProducts) {
+      await dashboardOperations.loadProducts(dashboardOperations.selectedCategoryId);
+    }
     setShowAddProduct(false);
     setEditingProduct(null);
   };
@@ -93,4 +95,3 @@ export const useDashboard = () => {
     handleProductFormCancel
   };
 };
-
