@@ -1,3 +1,4 @@
+
 import { ProductCardWrapper, type ProductCardLayoutType } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,22 @@ export function OnlineMenuLayoutPreview({
   exampleProduct,
   truncateText
 }: OnlineMenuLayoutPreviewProps) {
+  // Valori di default non modificabili per preview desktop
+  const DEFAULT_FONT_SIZES = {
+    title: 18,
+    description: 16,
+    price: 18,
+  };
+
+  // Solo nella preview MOBILE passiamo il fontSettings PERSONALIZZATO (incluso fontSize utente)
+  // In quella desktop, manteniamo sempre le grandezze fisse default
+  const fontSettingsForDesktop = {
+    ...fontSettings,
+    title: { ...fontSettings.title, fontSize: DEFAULT_FONT_SIZES.title },
+    description: { ...fontSettings.description, fontSize: DEFAULT_FONT_SIZES.description },
+    price: { ...fontSettings.price, fontSize: DEFAULT_FONT_SIZES.price },
+  };
+
   return (
     <div className="flex gap-8 flex-wrap justify-center items-start">
       {/* Desktop Preview */}
@@ -46,7 +63,7 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="desktop"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettings}
+              fontSettings={fontSettingsForDesktop}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
