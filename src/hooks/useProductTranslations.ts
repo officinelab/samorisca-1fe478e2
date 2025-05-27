@@ -25,8 +25,8 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
       // 1. Query specifica per products - tipo corretto
       const { data: entity, error: entityError } = await supabase
         .from<Database["public"]["Tables"]["products"]["Row"]>("products")
-        .select("updated_at")
-        .eq("id", entityId)
+        .select('updated_at')
+        .eq('id', entityId)
         .single();
 
       if (entityError || !entity) {
@@ -37,11 +37,11 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
       // 2. Query per translations - tipo corretto  
       const { data: translation, error: translationError } = await supabase
         .from<Database["public"]["Tables"]["translations"]["Row"]>("translations")
-        .select("last_updated")
-        .eq("entity_id", entityId)
-        .eq("entity_type", entityType)
-        .eq("field", fieldName)
-        .eq("language", language)
+        .select('last_updated')
+        .eq('entity_id', entityId)
+        .eq('entity_type', entityType)
+        .eq('field', fieldName)
+        .eq('language', language)
         .single();
 
       // Se non esiste traduzione = MANCANTE (badge rosso)
