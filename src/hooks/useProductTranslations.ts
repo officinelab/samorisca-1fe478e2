@@ -1,4 +1,4 @@
-
+import type { Database } from "@/integrations/supabase/types";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -22,23 +22,26 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     language: SupportedLanguage
   ): Promise<boolean> => {
     try {
-      // 1. Ottieni l'entità originale per la data di aggiornamento
+      // 1. Query specifica per products - tipo corretto
       const { data: entity, error: entityError } = await supabase
-        .from(entityType)
-        .select('updated_at')
-        .eq('id', entityId)
+        .from<Database["public"]["Tables"]["products"]["Row"]>("products")
+        .select("updated_at")
+        .eq("id", entityId)
         .single();
 
-      if (entityError || !entity) return false;
+      if (entityError || !entity) {
+        console.error('Error fetching product:', entityError);
+        return false;
+      }
 
-      // 2. Controlla se esiste una traduzione
+      // 2. Query per translations - tipo corretto  
       const { data: translation, error: translationError } = await supabase
-        .from('translations')
-        .select('last_updated')
-        .eq('entity_id', entityId)
-        .eq('entity_type', entityType)
-        .eq('field', fieldName)
-        .eq('language', language)
+        .from<Database["public"]["Tables"]["translations"]["Row"]>("translations")
+        .select("last_updated")
+        .eq("entity_id", entityId)
+        .eq("entity_type", entityType)
+        .eq("field", fieldName)
+        .eq("language", language)
         .single();
 
       // Se non esiste traduzione = MANCANTE (badge rosso)
@@ -46,9 +49,15 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         return true;
       }
 
-      // Se esiste, controlla se è obsoleta confrontando le date
-      const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
-      const translationUpdatedAt = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
+      // 3. Controllo null safety sui campi timestamp
+      if (!entity.updated_at || !translation.last_updated) {
+        // Se mancano le date, considera come da tradurre
+        return true;
+      }
+
+      // 4. Confronto date con parsing sicuro
+      const entityUpdatedAt = new Date(entity.updated_at).getTime();
+      const translationUpdatedAt = new Date(translation.last_updated).getTime();
       
       // Se la traduzione è più vecchia dell'entità = OBSOLETA (badge arancione)
       return translationUpdatedAt < entityUpdatedAt;
