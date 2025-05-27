@@ -40,6 +40,11 @@ const DashboardDesktop: React.FC<DashboardDesktopProps> = ({ dashboard }) => {
     handleAddProduct
   } = dashboard;
 
+  // DEBUG before ProductsList
+  console.log('=== Dashboard rendering ProductsList ===');
+  console.log('Passing products:', products.length);
+  console.log('Passing reorderingProductsList:', reorderingProductsList.length);
+
   return (
     <div className={dashboardStyles.desktopGrid}>
       <div className={dashboardStyles.categoriesColumn}>

@@ -38,17 +38,22 @@ const ProductsList: React.FC<ProductsListProps> = ({
   onDeleteProduct,
   onAddProduct
 }) => {
+  // DEBUG LOGS
   console.log('=== ProductsList RENDER ===');
-  console.log('Products received:', products.length);
-  console.log('Is reordering:', isReorderingProducts);
-  console.log('Reordering list:', reorderingProductsList.length);
-
-  const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
+  console.log('1. Products from props:', products.length);
+  console.log('2. Is reordering:', isReorderingProducts);
+  console.log('3. Reordering list length:', reorderingProductsList.length);
+  console.log('4. Selected category:', selectedCategory?.id);
 
   // 1. Usa la lista giusta (quella in riordino se necessario)
   const baseProductList = isReorderingProducts
     ? reorderingProductsList
     : products;
+  // DEBUG
+  console.log('5. Using list:', isReorderingProducts ? 'reorderingProductsList' : 'products');
+  console.log('6. Base product list length:', baseProductList.length);
+
+  const [productToDelete, setProductToDelete] = React.useState<string | null>(null);
 
   // 2. Filtra per categoria selezionata
   const categoryFilteredProducts = selectedCategory

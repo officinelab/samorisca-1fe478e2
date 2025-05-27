@@ -14,9 +14,13 @@ export const useProductOperations = (
   const [reorderingProductsList, setReorderingProductsList] = useState<Product[]>([]);
   const [isSaving, setIsSaving] = useState(false); // Previeni salvataggi multipli
 
+  // DEBUG added to startReorderingProducts
   const startReorderingProducts = useCallback(() => {
+    console.log('=== startReorderingProducts ===');
+    console.log('Current products:', products.length);
     setIsReorderingProducts(true);
     setReorderingProductsList([...products]);
+    console.log('Set reordering list with:', products.length, 'products');
   }, [products]);
 
   const cancelReorderingProducts = () => {

@@ -78,6 +78,11 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
   }
 
   if (currentView === 'products') {
+    // DEBUG before ProductsList
+    console.log('=== Dashboard rendering ProductsList ===');
+    console.log('Passing products:', products.length);
+    console.log('Passing reorderingProductsList:', reorderingProductsList.length);
+
     return (
       <div className="h-full">
         <div className="flex items-center p-4 border-b">
