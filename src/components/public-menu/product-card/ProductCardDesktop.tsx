@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardImage } from "@/components/ui/card";
@@ -14,9 +15,9 @@ interface ProductCardDesktopProps {
   onProductSelect: (product: Product) => void;
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   fontSettings?: {
-    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
   };
 }
 
@@ -53,11 +54,12 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
         <div className="flex justify-between items-start mb-1">
           <div>
             <h3
-              className="text-lg mb-0"
+              className="mb-0"
               style={{
                 fontFamily: fontSettings?.title?.fontFamily,
                 fontWeight: fontSettings?.title?.fontWeight,
                 fontStyle: fontSettings?.title?.fontStyle,
+                fontSize: fontSettings?.title?.fontSize || 18,
               }}
             >
               {title}
@@ -74,12 +76,13 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
           </div>
           {!product.has_multiple_prices ? (
             <span
-              className="font-medium flex items-center"
               style={{
                 fontFamily: fontSettings?.price?.fontFamily,
                 fontWeight: fontSettings?.price?.fontWeight,
                 fontStyle: fontSettings?.price?.fontStyle,
+                fontSize: fontSettings?.price?.fontSize || 16,
               }}
+              className="font-medium flex items-center"
             >
               {product.price_standard?.toFixed(2)} €
               {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
@@ -88,11 +91,12 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
         </div>
         {description && (
           <p
-            className="text-gray-600 text-sm mb-2"
+            className="text-gray-600 mb-2"
             style={{
               fontFamily: fontSettings?.description?.fontFamily,
               fontWeight: fontSettings?.description?.fontWeight,
               fontStyle: fontSettings?.description?.fontStyle,
+              fontSize: fontSettings?.description?.fontSize || 14,
             }}
           >
             {description}
@@ -127,6 +131,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
                     fontFamily: fontSettings?.price?.fontFamily,
                     fontWeight: fontSettings?.price?.fontWeight,
                     fontStyle: fontSettings?.price?.fontStyle,
+                    fontSize: fontSettings?.price?.fontSize || 16,
                   }}
                 >
                   {product.price_standard?.toFixed(2)} €
@@ -150,6 +155,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
                     fontFamily: fontSettings?.price?.fontFamily,
                     fontWeight: fontSettings?.price?.fontWeight,
                     fontStyle: fontSettings?.price?.fontStyle,
+                    fontSize: fontSettings?.price?.fontSize || 16,
                   }}
                 >
                   {product.price_variant_1_value?.toFixed(2)} €
@@ -173,6 +179,7 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
                     fontFamily: fontSettings?.price?.fontFamily,
                     fontWeight: fontSettings?.price?.fontWeight,
                     fontStyle: fontSettings?.price?.fontStyle,
+                    fontSize: fontSettings?.price?.fontSize || 16,
                   }}
                 >
                   {product.price_variant_2_value?.toFixed(2)} €

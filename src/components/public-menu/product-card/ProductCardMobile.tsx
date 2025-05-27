@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -14,9 +15,9 @@ interface ProductCardMobileProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   fontSettings?: {
-    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
-    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic" };
+    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
   };
   buttonSettings?: {
     color?: string;
@@ -57,11 +58,12 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
         <div className="flex">
           <div className="flex-1 pr-4">
             <h3
-              className="text-lg font-bold mb-1"
+              className="font-bold mb-1"
               style={{
                 fontFamily: fontSettings?.title?.fontFamily,
                 fontWeight: fontSettings?.title?.fontWeight,
                 fontStyle: fontSettings?.title?.fontStyle,
+                fontSize: fontSettings?.title?.fontSize || 18,
               }}
             >
               {title}
@@ -76,11 +78,12 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
               </div>
             )}
             <p
-              className="text-gray-600 text-sm mb-2"
+              className="text-gray-600 mb-2"
               style={{
                 fontFamily: fontSettings?.description?.fontFamily,
                 fontWeight: fontSettings?.description?.fontWeight,
                 fontStyle: fontSettings?.description?.fontStyle,
+                fontSize: fontSettings?.description?.fontSize || 14,
               }}
             >
               {truncateText(description, 110)}
@@ -114,6 +117,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: fontSettings?.price?.fontSize || 16,
                     }}
                   >
                     {product.price_standard.toFixed(2)} €{priceSuffix}
@@ -141,6 +145,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: fontSettings?.price?.fontSize || 16,
                     }}
                   >
                     {product.price_variant_1_value?.toFixed(2)} €
@@ -169,6 +174,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                       fontFamily: fontSettings?.price?.fontFamily,
                       fontWeight: fontSettings?.price?.fontWeight,
                       fontStyle: fontSettings?.price?.fontStyle,
+                      fontSize: fontSettings?.price?.fontSize || 16,
                     }}
                   >
                     {product.price_variant_2_value?.toFixed(2)} €
@@ -197,6 +203,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                   fontFamily: fontSettings?.price?.fontFamily,
                   fontWeight: fontSettings?.price?.fontWeight,
                   fontStyle: fontSettings?.price?.fontStyle,
+                  fontSize: fontSettings?.price?.fontSize || 16,
                 }}
               >
                 {product.price_standard !== null && product.price_standard !== undefined
