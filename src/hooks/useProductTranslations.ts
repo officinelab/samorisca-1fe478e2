@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
@@ -83,6 +82,15 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     }
   };
 
+  // Funzione di utility per capire se la traduzione va aggiornata
+  function isTranslationOutdated(existingTranslation: any, productUpdatedAt: string | undefined) {
+    if (!existingTranslation) return true; // non c'è -> va tradotta
+    if (typeof existingTranslation === "string") return false; // se stringa senza info, non la aggiorniamo
+    if (!existingTranslation.last_updated || !productUpdatedAt) return false; // sicurezza
+    // Confronta timestamp
+    return new Date(existingTranslation.last_updated).getTime() < new Date(productUpdatedAt).getTime();
+  }
+
   const translateAllProducts = async () => {
     if (!selectedCategoryId || products.length === 0) return;
     
@@ -101,10 +109,13 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
     
     try {
       for (const product of products) {
+        // Trasla updated_at a ISO string. Alcune query potrebbero non restituire updated_at → fallback null.
+        const productUpdatedAt = product.updated_at ?? null;
+
         // Traduzione del titolo
         if (product.title) {
-          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage);
-          if (!existingTitle) {
+          const existingTitle = await getExistingTranslation(product.id, 'products', 'title', selectedLanguage, true);
+          if (isTranslationOutdated(existingTitle, productUpdatedAt)) {
             const result = await translateText(product.title, selectedLanguage, product.id, 'products', 'title');
             if (result.success) successfulTranslations++;
           } else {
@@ -114,8 +125,8 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione della descrizione
         if (product.description) {
-          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage);
-          if (!existingDescription) {
+          const existingDescription = await getExistingTranslation(product.id, 'products', 'description', selectedLanguage, true);
+          if (isTranslationOutdated(existingDescription, productUpdatedAt)) {
             const result = await translateText(product.description, selectedLanguage, product.id, 'products', 'description');
             if (result.success) successfulTranslations++;
           } else {
@@ -125,8 +136,8 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del suffisso prezzo
         if (product.has_price_suffix && product.price_suffix) {
-          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage);
-          if (!existingSuffix) {
+          const existingSuffix = await getExistingTranslation(product.id, 'products', 'price_suffix', selectedLanguage, true);
+          if (isTranslationOutdated(existingSuffix, productUpdatedAt)) {
             const result = await translateText(product.price_suffix, selectedLanguage, product.id, 'products', 'price_suffix');
             if (result.success) successfulTranslations++;
           } else {
@@ -136,8 +147,8 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del nome variante 1
         if (product.has_multiple_prices && product.price_variant_1_name) {
-          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage);
-          if (!existingVariant1) {
+          const existingVariant1 = await getExistingTranslation(product.id, 'products', 'price_variant_1_name', selectedLanguage, true);
+          if (isTranslationOutdated(existingVariant1, productUpdatedAt)) {
             const result = await translateText(product.price_variant_1_name, selectedLanguage, product.id, 'products', 'price_variant_1_name');
             if (result.success) successfulTranslations++;
           } else {
@@ -147,8 +158,8 @@ export const useProductTranslations = (selectedLanguage: SupportedLanguage) => {
         
         // Traduzione del nome variante 2
         if (product.has_multiple_prices && product.price_variant_2_name) {
-          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage);
-          if (!existingVariant2) {
+          const existingVariant2 = await getExistingTranslation(product.id, 'products', 'price_variant_2_name', selectedLanguage, true);
+          if (isTranslationOutdated(existingVariant2, productUpdatedAt)) {
             const result = await translateText(product.price_variant_2_name, selectedLanguage, product.id, 'products', 'price_variant_2_name');
             if (result.success) successfulTranslations++;
           } else {
