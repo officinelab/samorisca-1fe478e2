@@ -103,12 +103,20 @@ export default function OnlineMenuLayoutSection() {
   const { siteSettings, saveSetting, refetchSettings } = useSiteSettings();
   const [selectedLayout, setSelectedLayout] = useState(siteSettings?.publicMenuLayoutType || "default");
 
+  // Font settings per preview (desktop, mobile, dettagli prodotto)
+  const [desktopFontSettings, setDesktopFontSettings] = useState(
+    siteSettings?.publicMenuFontSettingsDesktop?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  );
+  const [mobileFontSettings, setMobileFontSettings] = useState(
+    siteSettings?.publicMenuFontSettingsMobile?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  );
+  const [productDetailsFontSettings, setProductDetailsFontSettings] = useState(
+    siteSettings?.publicMenuFontSettingsProductDetails?.[selectedLayout] || DEFAULT_FONT_SETTINGS
+  );
+
   // Stati locali allineati per preview sempre aggiornata
   const [buttonSettings, setButtonSettings] = useState(
     siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS
-  );
-  const [fontSettings, setFontSettings] = useState(
-    siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS
   );
 
   // Sync stati locali a cambio layout e siteSettings
@@ -118,8 +126,10 @@ export default function OnlineMenuLayoutSection() {
 
   useEffect(() => {
     setButtonSettings(siteSettings?.publicMenuButtonSettings?.[selectedLayout] || DEFAULT_BUTTON_SETTINGS);
-    setFontSettings(siteSettings?.publicMenuFontSettings?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
-  }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettings]);
+    setDesktopFontSettings(siteSettings?.publicMenuFontSettingsDesktop?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+    setMobileFontSettings(siteSettings?.publicMenuFontSettingsMobile?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+    setProductDetailsFontSettings(siteSettings?.publicMenuFontSettingsProductDetails?.[selectedLayout] || DEFAULT_FONT_SETTINGS);
+  }, [selectedLayout, siteSettings?.publicMenuButtonSettings, siteSettings?.publicMenuFontSettingsDesktop, siteSettings?.publicMenuFontSettingsMobile, siteSettings?.publicMenuFontSettingsProductDetails]);
 
   const handleLayoutChange = async (newLayout: string) => {
     setSelectedLayout(newLayout);
@@ -132,19 +142,21 @@ export default function OnlineMenuLayoutSection() {
   };
 
   // Callback passati ai wrapper: aggiornano anche lo stato locale della preview
-  const handleButtonSettingsChange = (settings: any) => {
-    setButtonSettings(settings);
+  const handleFontSettingsChange = (fontSets: { desktop: any; mobile: any; productDetails: any }) => {
+    setDesktopFontSettings(fontSets.desktop || DEFAULT_FONT_SETTINGS);
+    setMobileFontSettings(fontSets.mobile || DEFAULT_FONT_SETTINGS);
+    setProductDetailsFontSettings(fontSets.productDetails || DEFAULT_FONT_SETTINGS);
   };
 
-  const handleFontSettingsChange = (settings: any) => {
-    setFontSettings(settings);
+  const handleButtonSettingsChange = (settings: any) => {
+    setButtonSettings(settings);
   };
 
   return (
     <div className="mx-auto p-[10px] space-y-6">
       <h2 className="text-base font-semibold">Layout menu online</h2>
       <p className="text-muted-foreground mb-2 text-sm">
-        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo, descrizione e prezzo.
+        Scegli come vengono mostrate le voci del menu pubblico e personalizza il font di titolo, descrizione e prezzo per ciascuna anteprima: Desktop, Mobile e Finestra dettagli prodotto.
       </p>
 
       <LayoutTypeSelectorInline
@@ -174,7 +186,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={{ desktop: desktopFontSettings, mobile: mobileFontSettings }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
@@ -182,7 +194,7 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={productDetailsFontSettings}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />

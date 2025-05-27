@@ -12,7 +12,7 @@ const layoutLabel: Record<ProductCardLayoutType, string> = {
 
 interface OnlineMenuLayoutPreviewProps {
   selectedLayout: ProductCardLayoutType;
-  fontSettings: any;
+  fontSettings: { desktop: any; mobile: any };
   buttonSettings: { color: string; icon: string };
   exampleProduct: Product;
   truncateText: (text: string | null, maxLength: number) => string;
@@ -32,13 +32,12 @@ export function OnlineMenuLayoutPreview({
     price: 18,
   };
 
-  // Solo nella preview MOBILE passiamo il fontSettings PERSONALIZZATO (incluso fontSize utente)
-  // In quella desktop, manteniamo sempre le grandezze fisse default
+  // Desktop usa le font setting proprie
   const fontSettingsForDesktop = {
-    ...fontSettings,
-    title: { ...fontSettings.title, fontSize: DEFAULT_FONT_SIZES.title },
-    description: { ...fontSettings.description, fontSize: DEFAULT_FONT_SIZES.description },
-    price: { ...fontSettings.price, fontSize: DEFAULT_FONT_SIZES.price },
+    ...fontSettings.desktop,
+    title: { ...fontSettings.desktop.title, fontSize: DEFAULT_FONT_SIZES.title },
+    description: { ...fontSettings.desktop.description, fontSize: DEFAULT_FONT_SIZES.description },
+    price: { ...fontSettings.desktop.price, fontSize: DEFAULT_FONT_SIZES.price },
   };
 
   return (
@@ -98,7 +97,7 @@ export function OnlineMenuLayoutPreview({
               truncateText={truncateText}
               deviceView="mobile"
               layoutType={selectedLayout as ProductCardLayoutType}
-              fontSettings={fontSettings}
+              fontSettings={fontSettings.mobile}
               buttonSettings={buttonSettings}
             />
             <Label className="block text-center mt-2">{layoutLabel[selectedLayout]}</Label>
