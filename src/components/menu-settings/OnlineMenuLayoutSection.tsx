@@ -153,28 +153,44 @@ export default function OnlineMenuLayoutSection() {
       />
 
       {/* Due colonne per impostazioni font e pulsante */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-        {/* Colonna Font */}
-        <div className="bg-muted/50 rounded-md p-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+        {/* Colonna Font - più larga */}
+        <div className="bg-muted/50 rounded-md p-3 md:col-span-2">
           <h3 className="text-base font-semibold mb-2">Font titolo, descrizione, prezzo</h3>
           <OnlineMenuFontSettingsWrapper
             selectedLayout={selectedLayout}
-            onFontSettingsChange={handleFontSettingsChange}
+            onFontSettingsChange={setFontSettings}
           />
         </div>
-        {/* Colonna Pulsante */}
-        <div className="bg-muted/50 rounded-md p-3">
+        {/* Colonna Pulsante - più stretta */}
+        <div className="bg-muted/50 rounded-md p-3 md:col-span-1 min-w-[210px] max-w-[250px]">
           <h3 className="text-base font-semibold mb-2">Pulsante "Aggiungi al carrello"</h3>
           <OnlineMenuButtonSettingsWrapper
             selectedLayout={selectedLayout}
-            onButtonSettingsChange={handleButtonSettingsChange}
+            onButtonSettingsChange={setButtonSettings}
           />
         </div>
       </div>
 
+      {/* Passa settings specifici alle anteprime */}
       <OnlineMenuLayoutPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={{
+          desktop: fontSettings?.fontSizes
+            ? {
+                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.desktop },
+                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.desktop },
+                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.desktop },
+              }
+            : fontSettings, // fallback
+          mobile: fontSettings?.fontSizes
+            ? {
+                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.mobile },
+                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.mobile },
+                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.mobile },
+              }
+            : fontSettings,
+        }}
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
         truncateText={truncateText}
@@ -182,7 +198,15 @@ export default function OnlineMenuLayoutSection() {
 
       <OnlineMenuProductDetailsPreview
         selectedLayout={selectedLayout}
-        fontSettings={fontSettings}
+        fontSettings={
+          fontSettings?.fontSizes
+            ? {
+                title:   { ...fontSettings.title, fontSize: fontSettings.fontSizes.title.details },
+                description: { ...fontSettings.description, fontSize: fontSettings.fontSizes.description.details },
+                price:   { ...fontSettings.price, fontSize: fontSettings.fontSizes.price.details },
+              }
+            : fontSettings
+        }
         buttonSettings={buttonSettings}
         exampleProduct={exampleProduct}
       />
