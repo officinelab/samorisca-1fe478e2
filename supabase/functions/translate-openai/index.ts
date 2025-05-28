@@ -103,6 +103,35 @@ serve(async (req) => {
       );
     }
 
+    // === INCREMENTO TOKEN USANDO LA FUNZIONE increment_tokens === 
+    try {
+      console.log('[OPENAI][TOKEN] Tentativo di incrementare i token usando increment_tokens...');
+      const { data: incrementResult, error: incrementError } = await supabase.rpc('increment_tokens', { token_count: 1 });
+      
+      if (incrementError) {
+        console.error('[OPENAI][TOKEN] Errore increment_tokens:', incrementError);
+        return new Response(
+          JSON.stringify({ error: "Errore nell'incremento dei token" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else if (incrementResult === false) {
+        console.warn('[OPENAI][TOKEN] increment_tokens ha restituito false - token insufficienti');
+        return new Response(
+          JSON.stringify({ error: "Token insufficienti per completare la traduzione" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
+        console.log('[OPENAI][TOKEN] Token incrementato con successo usando increment_tokens');
+      }
+    } catch (tokErr) {
+      console.error('[OPENAI][TOKEN] Errore inatteso increment_tokens:', tokErr);
+      return new Response(
+        JSON.stringify({ error: "Errore inatteso nell'incremento dei token" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    // === /INCREMENTO TOKEN ===
+
     // Prompt e traduzione
     const targetLangName = mapLanguageCode(targetLanguage);
     const systemPrompt = getSystemPrompt(targetLangName);
@@ -167,23 +196,6 @@ serve(async (req) => {
     } catch (saveErr) {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
-
-    // === INCREMENTO TOKEN USANDO LA FUNZIONE increment_tokens === 
-    try {
-      console.log('[OPENAI][TOKEN] Tentativo di incrementare i token usando increment_tokens...');
-      const { data: incrementResult, error: incrementError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-      
-      if (incrementError) {
-        console.error('[OPENAI][TOKEN] Errore increment_tokens:', incrementError);
-      } else if (incrementResult === false) {
-        console.warn('[OPENAI][TOKEN] increment_tokens ha restituito false - token insufficienti');
-      } else {
-        console.log('[OPENAI][TOKEN] Token incrementato con successo usando increment_tokens');
-      }
-    } catch (tokErr) {
-      console.error('[OPENAI][TOKEN] Errore inatteso increment_tokens:', tokErr);
-    }
-    // === /INCREMENTO TOKEN ===
 
     return new Response(
       JSON.stringify({ translatedText }),
