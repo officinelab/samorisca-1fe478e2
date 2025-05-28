@@ -1,5 +1,6 @@
 
 import { useTokenManager } from "@/hooks/useTokenManager";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
@@ -7,6 +8,7 @@ import { getNextMonthFirstDay, formatDateInItalian } from "@/utils/dateUtils";
 
 export const TokenStatus = () => {
   const { tokenUsage, isLoading, error } = useTokenManager();
+  const { siteSettings } = useSiteSettings();
 
   if (isLoading) {
     return <div className="text-sm text-muted-foreground">Caricamento token...</div>;
@@ -31,6 +33,9 @@ export const TokenStatus = () => {
   const nextRenewalDate = getNextMonthFirstDay();
   const formattedRenewalDate = formatDateInItalian(nextRenewalDate);
 
+  // Usa il limite dalle impostazioni del sito per il tooltip del prossimo mese
+  const nextMonthTokensLimit = parseInt(siteSettings.monthlyTokensLimit || "300");
+
   return (
     <TooltipProvider>
       <div className="w-64">
@@ -53,7 +58,7 @@ export const TokenStatus = () => {
                     I tuoi token si rinnoveranno il {formattedRenewalDate}
                   </div>
                   <div className="text-xs">
-                    Riceverai {tokenUsage.tokensLimit} token gratuiti
+                    Riceverai {nextMonthTokensLimit} token gratuiti
                   </div>
                 </div>
               </TooltipContent>
