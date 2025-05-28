@@ -4,9 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { getNextMonthFirstDay, formatDateInItalian } from "@/utils/dateUtils";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export const TokenStatus = () => {
   const { tokenUsage, isLoading, error } = useTokenManager();
+  const { siteSettings } = useSiteSettings();
 
   if (isLoading) {
     return <div className="text-sm text-muted-foreground">Caricamento token...</div>;
@@ -20,11 +22,16 @@ export const TokenStatus = () => {
     return <div className="text-sm text-muted-foreground">Informazioni sui token non disponibili</div>;
   }
 
+  // Usa il limite dalle impostazioni del sito se disponibile, altrimenti quello dal database
+  const currentMonthlyLimit = siteSettings.monthlyTokensLimit ? 
+    parseInt(siteSettings.monthlyTokensLimit) : 
+    tokenUsage.tokensLimit;
+
   // Calcola token rimanenti: mensili + acquistati rimanenti
-  const monthlyRemaining = Math.max(0, tokenUsage.tokensLimit - (tokenUsage.tokensUsed || 0));
+  const monthlyRemaining = Math.max(0, currentMonthlyLimit - (tokenUsage.tokensUsed || 0));
   const purchasedRemaining = Math.max(0, (tokenUsage.purchasedTokensTotal ?? 0) - (tokenUsage.purchasedTokensUsed ?? 0));
   const totalRemaining = monthlyRemaining + purchasedRemaining;
-  const totalLimit = tokenUsage.tokensLimit + (tokenUsage.purchasedTokensTotal ?? 0);
+  const totalLimit = currentMonthlyLimit + (tokenUsage.purchasedTokensTotal ?? 0);
   const percentage = totalLimit > 0 ? (totalRemaining / totalLimit) * 100 : 0;
 
   // Calcola la data di rinnovo
@@ -53,7 +60,7 @@ export const TokenStatus = () => {
                     I tuoi token si rinnoveranno il {formattedRenewalDate}
                   </div>
                   <div className="text-xs">
-                    Riceverai {tokenUsage.tokensLimit} token gratuiti
+                    Riceverai {currentMonthlyLimit} token gratuiti
                   </div>
                 </div>
               </TooltipContent>
