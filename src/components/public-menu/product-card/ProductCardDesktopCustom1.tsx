@@ -1,12 +1,14 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
-import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
-import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
+import { ProductMultiplePrices } from "./ProductMultiplePrices";
+import { ProductHeader } from "./ProductHeader";
+import { useProductCardLogic } from "@/hooks/useProductCardLogic";
 
 interface ProductCardDesktopCustom1Props {
   product: Product;
@@ -25,65 +27,18 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
   addToCart,
   fontSettings
 }) => {
-  const title = product.displayTitle || product.title;
-  const description = product.displayDescription || product.description;
-  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
-
-  // Carica dinamicamente il font titolo
-  useDynamicGoogleFont(fontSettings?.title?.fontFamily);
-  useDynamicGoogleFont(fontSettings?.price?.fontFamily);
-
-  // Ordina allergeni per numero crescente
-  const sortedAllergens = product.allergens 
-    ? [...product.allergens].sort((a, b) => a.number - b.number)
-    : [];
-
-  // Ordina caratteristiche per display_order crescente
-  const sortedFeatures = product.features 
-    ? [...product.features].sort((a, b) => a.display_order - b.display_order)
-    : [];
+  const { title, description, priceSuffix, sortedAllergens, sortedFeatures } = useProductCardLogic(product, fontSettings);
 
   return (
     <Card className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
       <CardContent className="flex-1 p-4">
-        <div className="flex justify-between items-start mb-1">
-          <div>
-            <h3
-              className=""
-              style={{
-                fontFamily: fontSettings?.title?.fontFamily,
-                fontWeight: fontSettings?.title?.fontWeight,
-                fontStyle: fontSettings?.title?.fontStyle,
-                fontSize: fontSettings?.title?.fontSize || 18,
-              }}
-            >
-              {title}
-            </h3>
-            {product.label && (
-              <div className="mb-1">
-                <LabelBadge
-                  title={product.label.displayTitle || product.label.title}
-                  color={product.label.color}
-                  textColor={product.label.text_color}
-                />
-              </div>
-            )}
-          </div>
-          {!product.has_multiple_prices ? (
-            <span
-              style={{
-                fontFamily: fontSettings?.price?.fontFamily,
-                fontWeight: fontSettings?.price?.fontWeight,
-                fontStyle: fontSettings?.price?.fontStyle,
-                fontSize: fontSettings?.price?.fontSize || 16,
-              }}
-              className="font-medium flex items-center"
-            >
-              {product.price_standard?.toFixed(2)} €
-              {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
-            </span>
-          ) : null}
-        </div>
+        <ProductHeader 
+          product={product} 
+          title={title} 
+          fontSettings={fontSettings} 
+          showPrice={true}
+          priceSuffix={priceSuffix}
+        />
         {description && (
           <p
             className="text-gray-600 mb-2"
@@ -110,80 +65,13 @@ export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props>
           <ProductFeaturesIcons features={sortedFeatures} />
         )}
         {product.has_multiple_prices ? (
-          <div className="space-y-2 mt-3">
-            {product.price_standard !== null && product.price_standard !== undefined && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-between flex items-center"
-                onClick={e => {
-                  e.stopPropagation();
-                  addToCart(product);
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: fontSettings?.price?.fontFamily,
-                    fontWeight: fontSettings?.price?.fontWeight,
-                    fontStyle: fontSettings?.price?.fontStyle,
-                    fontSize: fontSettings?.price?.fontSize || 16,
-                  }}
-                >
-                  {product.price_standard?.toFixed(2)} €
-                  {priceSuffix && <span className="ml-1">{priceSuffix}</span>}
-                </span>
-                <Plus size={16} />
-              </Button>
-            )}
-            {product.price_variant_1_name && product.price_variant_1_value !== null && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-between flex items-center"
-                onClick={e => {
-                  e.stopPropagation();
-                  addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: fontSettings?.price?.fontFamily,
-                    fontWeight: fontSettings?.price?.fontWeight,
-                    fontStyle: fontSettings?.price?.fontStyle,
-                    fontSize: fontSettings?.price?.fontSize || 16,
-                  }}
-                >
-                  {product.price_variant_1_value?.toFixed(2)} €
-                  {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
-                </span>
-                <Plus size={16} />
-              </Button>
-            )}
-            {product.price_variant_2_name && product.price_variant_2_value !== null && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-between flex items-center"
-                onClick={e => {
-                  e.stopPropagation();
-                  addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: fontSettings?.price?.fontFamily,
-                    fontWeight: fontSettings?.price?.fontWeight,
-                    fontStyle: fontSettings?.price?.fontStyle,
-                    fontSize: fontSettings?.price?.fontSize || 16,
-                  }}
-                >
-                  {product.price_variant_2_value?.toFixed(2)} €
-                  {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
-                </span>
-                <Plus size={16} />
-              </Button>
-            )}
-          </div>
+          <ProductMultiplePrices
+            product={product}
+            priceSuffix={priceSuffix}
+            addToCart={addToCart}
+            fontSettings={fontSettings}
+            variant="desktop"
+          />
         ) : (
           <Button
             variant="outline"

@@ -3,11 +3,12 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookmarkPlus, CirclePlus, Plus, BadgePlus, CircleCheckBig } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
-import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
-import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
+import { ProductMultiplePrices } from "./ProductMultiplePrices";
+import { ProductHeader } from "./ProductHeader";
+import { useProductCardLogic } from "@/hooks/useProductCardLogic";
 
 interface ProductCardMobileProps {
   product: Product;
@@ -33,60 +34,30 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   fontSettings,
   buttonSettings
 }) => {
-  const title = product.displayTitle || product.title;
-  const description = product.displayDescription || product.description;
-  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+  const { title, description, priceSuffix, sortedAllergens, sortedFeatures } = useProductCardLogic(product, fontSettings);
+  const buttonColor = buttonSettings?.color || "#9b87f5";
+  const buttonIcon = buttonSettings?.icon || "plus";
 
-  // Carica dinamicamente il font titolo
-  useDynamicGoogleFont(fontSettings?.title?.fontFamily);
-  useDynamicGoogleFont(fontSettings?.price?.fontFamily);
-
-  // Map icon string to component
   const iconsMap: Record<string, React.ComponentType<any>> = {
-    "bookmark-plus": BookmarkPlus,
-    "circle-plus": CirclePlus,
+    "bookmark-plus": require("lucide-react").BookmarkPlus,
+    "circle-plus": require("lucide-react").CirclePlus,
     "plus": Plus,
-    "badge-plus": BadgePlus,
-    "circle-check-big": CircleCheckBig,
+    "badge-plus": require("lucide-react").BadgePlus,
+    "circle-check-big": require("lucide-react").CircleCheckBig,
   };
-  const ButtonIcon = iconsMap[buttonSettings?.icon || "plus"] || Plus;
-  const btnColor = buttonSettings?.color || "#9b87f5";
-
-  // Ordina allergeni per numero crescente
-  const sortedAllergens = product.allergens 
-    ? [...product.allergens].sort((a, b) => a.number - b.number)
-    : [];
-
-  // Ordina caratteristiche per display_order crescente
-  const sortedFeatures = product.features 
-    ? [...product.features].sort((a, b) => a.display_order - b.display_order)
-    : [];
+  const ButtonIcon = iconsMap[buttonIcon] || Plus;
 
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
       <div className="p-4">
         <div className="flex">
           <div className="flex-1 pr-4">
-            <h3
-              className="font-bold mb-1"
-              style={{
-                fontFamily: fontSettings?.title?.fontFamily,
-                fontWeight: fontSettings?.title?.fontWeight,
-                fontStyle: fontSettings?.title?.fontStyle,
-                fontSize: fontSettings?.title?.fontSize || 18,
-              }}
-            >
-              {title}
-            </h3>
-            {product.label && (
-              <div className="mb-1">
-                <LabelBadge
-                  title={product.label.displayTitle || product.label.title}
-                  color={product.label.color}
-                  textColor={product.label.text_color}
-                />
-              </div>
-            )}
+            <ProductHeader 
+              product={product} 
+              title={title} 
+              fontSettings={fontSettings} 
+              className="font-bold"
+            />
             <p
               className="text-gray-600 mb-2"
               style={{
@@ -117,94 +88,14 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
         </div>
         <div className="mt-4">
           {product.has_multiple_prices ? (
-            <div className="flex flex-col gap-2">
-              {/* Standard price row */}
-              {product.price_standard !== null && product.price_standard !== undefined && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_standard.toFixed(2)} €{priceSuffix}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product);
-                    }}
-                    style={{ backgroundColor: btnColor }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
-                  >
-                    <ButtonIcon size={18} color="#fff" />
-                  </Button>
-                </div>
-              )}
-              {/* Variante 1 */}
-              {product.price_variant_1_name && product.price_variant_1_value !== null && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_variant_1_value?.toFixed(2)} €
-                    {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
-                    }}
-                    style={{ backgroundColor: btnColor }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
-                  >
-                    <ButtonIcon size={18} color="#fff" />
-                  </Button>
-                </div>
-              )}
-              {/* Variante 2 */}
-              {product.price_variant_2_name && product.price_variant_2_value !== null && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_variant_2_value?.toFixed(2)} €
-                    {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
-                    }}
-                    style={{ backgroundColor: btnColor }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
-                  >
-                    <ButtonIcon size={18} color="#fff" />
-                  </Button>
-                </div>
-              )}
-            </div>
+            <ProductMultiplePrices
+              product={product}
+              priceSuffix={priceSuffix}
+              addToCart={addToCart}
+              fontSettings={fontSettings}
+              buttonSettings={buttonSettings}
+              variant="mobile"
+            />
           ) : (
             <div className="flex items-center justify-between w-full">
               <span
@@ -227,7 +118,7 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
                   e.stopPropagation();
                   addToCart(product);
                 }}
-                style={{ backgroundColor: btnColor }}
+                style={{ backgroundColor: buttonColor }}
                 className="rounded-full h-8 w-8 shadow-md hover:opacity-90 focus:ring-2 focus:outline-none transition"
               >
                 <ButtonIcon size={18} color="#fff" />
