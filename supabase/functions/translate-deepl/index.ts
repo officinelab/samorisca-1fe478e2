@@ -13,8 +13,8 @@ interface TranslateRequest {
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const DEEPL_API_KEY = Deno.env.get('DEEPL_API_KEY') || '';
 
@@ -89,38 +89,25 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
-      // === AGGIORNAMENTO TOKEN CON LOG ===
+      // === AGGIORNAMENTO TOKEN CON increment_tokens ===
       try {
-        const month = (new Date()).toISOString().slice(0, 7);
-        const { data: beforeRow, error: beforeError } = await supabase
-          .from('translation_tokens')
-          .select('month,tokens_used')
-          .eq('month', month)
-          .maybeSingle();
-        console.log('[DEEPL][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
-
-        // Incr. tokens_used di 1
-        const { error: upError } = await supabase
-          .from('translation_tokens')
-          .update({
-            tokens_used: (beforeRow?.tokens_used || 0) + 1,
-            last_updated: new Date().toISOString()
-          })
-          .eq('month', month);
-        if (upError) {
-          console.error('[DEEPL][TOKEN] Errore update token:', upError);
+        console.log('[DEEPL][TOKEN] Chiamando increment_tokens con 1 token...');
+        const { data: incrementResult, error: incrementError } = await supabase
+          .rpc('increment_tokens', { token_count: 1 });
+        
+        console.log('[DEEPL][TOKEN] Risultato increment_tokens:', {
+          incrementResult,
+          incrementError
+        });
+        
+        if (incrementError) {
+          console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
+          console.error('[DEEPL][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
         } else {
-          console.log('[DEEPL][TOKEN] Token incrementato di 1 via update diretto');
+          console.log('[DEEPL][TOKEN] Token incrementato con successo');
         }
-
-        const { data: afterRow, error: afterError } = await supabase
-          .from('translation_tokens')
-          .select('month,tokens_used')
-          .eq('month', month)
-          .maybeSingle();
-        console.log('[DEEPL][DEBUG][TOKEN][DOPO]', afterRow, afterError);
       } catch (tokErr) {
-        console.error('[DEEPL][TOKEN] Errore inatteso update token:', tokErr);
+        console.error('[DEEPL][TOKEN] Errore inatteso incremento token:', tokErr);
       }
       // === /AGGIORNAMENTO TOKEN ===
 

@@ -14,8 +14,8 @@ interface TranslateRequest {
 
 // Client Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY') || '';
 
@@ -127,38 +127,25 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // === AGGIORNAMENTO TOKEN CON LOG ===
+    // === AGGIORNAMENTO TOKEN CON increment_tokens ===
     try {
-      const month = (new Date()).toISOString().slice(0, 7);
-      const { data: beforeRow, error: beforeError } = await supabase
-        .from('translation_tokens')
-        .select('month,tokens_used')
-        .eq('month', month)
-        .maybeSingle();
-      console.log('[PERPLEXITY][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
-
-      // Incr. tokens_used di 1
-      const { error: upError } = await supabase
-        .from('translation_tokens')
-        .update({
-          tokens_used: (beforeRow?.tokens_used || 0) + 1,
-          last_updated: new Date().toISOString()
-        })
-        .eq('month', month);
-      if (upError) {
-        console.error('[PERPLEXITY][TOKEN] Errore update token:', upError);
+      console.log('[PERPLEXITY][TOKEN] Chiamando increment_tokens con 1 token...');
+      const { data: incrementResult, error: incrementError } = await supabase
+        .rpc('increment_tokens', { token_count: 1 });
+      
+      console.log('[PERPLEXITY][TOKEN] Risultato increment_tokens:', {
+        incrementResult,
+        incrementError
+      });
+      
+      if (incrementError) {
+        console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
+        console.error('[PERPLEXITY][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
       } else {
-        console.log('[PERPLEXITY][TOKEN] Token incrementato di 1 via update diretto');
+        console.log('[PERPLEXITY][TOKEN] Token incrementato con successo');
       }
-
-      const { data: afterRow, error: afterError } = await supabase
-        .from('translation_tokens')
-        .select('month,tokens_used')
-        .eq('month', month)
-        .maybeSingle();
-      console.log('[PERPLEXITY][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.error('[PERPLEXITY][TOKEN] Errore inatteso update token:', tokErr);
+      console.error('[PERPLEXITY][TOKEN] Errore inatteso incremento token:', tokErr);
     }
     // === /AGGIORNAMENTO TOKEN ===
     
