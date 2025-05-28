@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFontSettings } from "@/hooks/useFontSettings";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { preloadCommonFonts } from "@/hooks/useDynamicGoogleFont";
 
 // Import hooks
 import { usePublicMenuData } from "@/hooks/public-menu/usePublicMenuData";
@@ -34,12 +35,18 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const isMobile = useIsMobile();
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
 
+  // Precarica font comuni al mount per migliorare le performance
+  useEffect(() => {
+    preloadCommonFonts();
+  }, []);
+
   const { 
     categories, 
     products, 
     allergens,
     categoryNotes,
     isLoading, 
+    error,
     language, 
     setLanguage 
   } = usePublicMenuData(isPreview, previewLanguage);
@@ -82,6 +89,24 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         <div className="w-1/3 h-10 bg-gray-200 rounded mb-2"></div>
         <div className="w-1/2 h-8 bg-gray-100 rounded mb-6"></div>
         <div className="w-[90%] h-48 bg-gray-100 rounded"></div>
+      </div>
+    );
+  }
+
+  // Mostra errore se presente
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen justify-center items-center bg-gray-50">
+        <div className="text-center p-8">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Errore nel caricamento</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Riprova
+          </button>
+        </div>
       </div>
     );
   }
