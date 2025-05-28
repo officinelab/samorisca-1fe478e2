@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Edit, Trash2, GripVertical } from "lucide-react";
 import { useCategoryNotes } from "@/hooks/useCategoryNotes";
 import { CategoryNoteFormDialog } from "./category-notes/CategoryNoteFormDialog";
+import CategoryNoteDeleteDialog from "./category-notes/CategoryNoteDeleteDialog";
 import { CategoryNote } from "@/types/categoryNotes";
 import { Category } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,15 @@ const CategoryNotesManager: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<CategoryNote | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    noteId: string;
+    noteTitle: string;
+  }>({
+    isOpen: false,
+    noteId: "",
+    noteTitle: ""
+  });
 
   // Carica le categorie
   React.useEffect(() => {
@@ -42,10 +51,29 @@ const CategoryNotesManager: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDeleteNote = async (id: string) => {
-    if (window.confirm("Sei sicuro di voler eliminare questa nota?")) {
-      await deleteCategoryNote(id);
-    }
+  const handleDeleteNote = (note: CategoryNote) => {
+    setDeleteDialog({
+      isOpen: true,
+      noteId: note.id,
+      noteTitle: note.title
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    await deleteCategoryNote(deleteDialog.noteId);
+    setDeleteDialog({
+      isOpen: false,
+      noteId: "",
+      noteTitle: ""
+    });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({
+      isOpen: false,
+      noteId: "",
+      noteTitle: ""
+    });
   };
 
   const getCategoryNames = (categoryIds: string[]) => {
@@ -108,7 +136,7 @@ const CategoryNotesManager: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteNote(note.id)}
+                      onClick={() => handleDeleteNote(note)}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -143,6 +171,13 @@ const CategoryNotesManager: React.FC = () => {
         onSubmit={editingNote ? updateCategoryNote : createCategoryNote}
         categories={categories}
         initialData={editingNote}
+      />
+
+      <CategoryNoteDeleteDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        noteTitle={deleteDialog.noteTitle}
       />
     </div>
   );
