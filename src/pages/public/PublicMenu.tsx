@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFontSettings } from "@/hooks/useFontSettings";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { preloadCommonFonts } from "@/hooks/useDynamicGoogleFont";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 // Import hooks
 import { usePublicMenuData } from "@/hooks/public-menu/usePublicMenuData";
@@ -77,9 +77,10 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     clearCart, 
     submitOrder,
     getCartItemsCount 
-  } = useCart();
+  } = useCart(language);
 
   const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
+  const { t } = usePublicMenuUiStrings(language);
 
   // Mostra uno skeleton o loader se le impostazioni sono ancora in caricamento
   if (isLoadingSiteSettings) {
@@ -98,13 +99,13 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     return (
       <div className="flex flex-col min-h-screen justify-center items-center bg-gray-50">
         <div className="text-center p-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Errore nel caricamento</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">{t("error_loading_menu")}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
-            Riprova
+            {t("error_loading_retry")}
           </button>
         </div>
       </div>
@@ -207,6 +208,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onSubmitOrder={submitOrder}
         calculateTotal={calculateTotal}
         showPricesInOrder={showPricesInOrder}
+        language={language}
       />
       
       {/* Footer */}

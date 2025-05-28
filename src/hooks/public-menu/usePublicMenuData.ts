@@ -1,9 +1,9 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Allergen, Category, Product } from "@/types/database";
 import { CategoryNote } from "@/types/categoryNotes";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 import { fetchMenuDataOptimized, clearMenuDataCache } from "./usePublicMenuData/fetchMenuDataOptimized";
 
 export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => {
@@ -21,6 +21,9 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
 
   // Usa uno state per il debouncing invece di un ref
   const [debouncedLanguage, setDebouncedLanguage] = useState(language);
+  
+  // Get translations for UI strings
+  const { t } = usePublicMenuUiStrings(debouncedLanguage);
 
   // Verifica se la lingua corrente è ancora abilitata
   useEffect(() => {
@@ -64,7 +67,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     // Timeout di sicurezza per richieste troppo lente
     loadingTimeoutRef.current = setTimeout(() => {
       console.warn('Menu loading taking too long, showing warning...');
-      toast.warning("Il caricamento sta richiedendo più tempo del solito...");
+      toast.warning(t("loading_taking_long"));
     }, 3000);
 
     try {
@@ -92,7 +95,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       
       // Mostra toast solo se il caricamento è stato molto lento
       if (loadTime > 2000) {
-        toast.success(`Menu caricato in ${(loadTime / 1000).toFixed(1)}s`);
+        toast.success(`${t("menu_loaded_in_seconds")} ${(loadTime / 1000).toFixed(1)}s`);
       }
 
     } catch (error: any) {
@@ -103,8 +106,8 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       }
 
       console.error('❌ Errore nel caricamento dei dati:', error);
-      setError("Errore nel caricamento del menu. Riprova più tardi.");
-      toast.error("Errore nel caricamento del menu. Riprova più tardi.");
+      setError(t("error_loading_menu"));
+      toast.error(t("error_loading_menu"));
     } finally {
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
@@ -114,7 +117,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
         setIsLoading(false);
       }
     }
-  }, []);
+  }, [t]);
 
   // Effect principale per caricare i dati quando cambia la lingua debounced
   useEffect(() => {

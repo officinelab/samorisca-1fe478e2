@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
+import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 export interface CartItem {
   id: string;
@@ -12,9 +13,10 @@ export interface CartItem {
   quantity: number;
 }
 
-export const useCart = () => {
+export const useCart = (language: string = "it") => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { t } = usePublicMenuUiStrings(language);
   
   // Adds a product to the cart
   const addToCart = (product: Product, variantName?: string, variantPrice?: number) => {
@@ -39,7 +41,7 @@ export const useCart = () => {
         quantity: 1
       }]);
     }
-    toast.success(`${product.title} aggiunto all'ordine`);
+    toast.success(`${product.title} ${t("item_added_to_cart")}`);
   };
 
   // Removes a product from the cart
@@ -72,13 +74,13 @@ export const useCart = () => {
   // Clears the cart
   const clearCart = () => {
     setCart([]);
-    toast.success("Ordine annullato");
+    toast.success(t("order_cancelled"));
   };
 
   // Submits the order
   const submitOrder = () => {
     // In a real implementation, we might save the order to a database here
-    toast.success("Ordine pronto! Mostralo al cameriere.");
+    toast.success(t("order_ready_show_waiter"));
     setIsCartOpen(false);
   };
 

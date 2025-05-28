@@ -18,7 +18,17 @@ export type PublicMenuUiStringKey =
   | "total"
   | "cancel"
   | "confirm"
-  | "product_features"; // Aggiornato qui
+  | "product_features"
+  | "item_added_to_cart"
+  | "order_cancelled"
+  | "order_ready_show_waiter"
+  | "loading_taking_long"
+  | "menu_loaded_in_seconds"
+  | "error_loading_menu"
+  | "error_loading_retry"
+  | "loading"
+  | "no_elements_found"
+  | "retry";
 
 const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>> = {
   it: {
@@ -38,7 +48,17 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Totale",
     cancel: "Annulla",
     confirm: "Conferma",
-    product_features: "Caratteristiche dei prodotti"
+    product_features: "Caratteristiche dei prodotti",
+    item_added_to_cart: "aggiunto all'ordine",
+    order_cancelled: "Ordine annullato",
+    order_ready_show_waiter: "Ordine pronto! Mostralo al cameriere.",
+    loading_taking_long: "Il caricamento sta richiedendo più tempo del solito...",
+    menu_loaded_in_seconds: "Menu caricato in",
+    error_loading_menu: "Errore nel caricamento del menu. Riprova più tardi.",
+    error_loading_retry: "Riprova",
+    loading: "Caricamento in corso...",
+    no_elements_found: "Nessun elemento trovato",
+    retry: "Riprova"
   },
   en: {
     service_and_cover: "Service and cover",
@@ -57,7 +77,17 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Cancel",
     confirm: "Confirm",
-    product_features: "Product features"
+    product_features: "Product features",
+    item_added_to_cart: "added to order",
+    order_cancelled: "Order cancelled",
+    order_ready_show_waiter: "Order ready! Show it to the waiter.",
+    loading_taking_long: "Loading is taking longer than usual...",
+    menu_loaded_in_seconds: "Menu loaded in",
+    error_loading_menu: "Error loading menu. Please try again later.",
+    error_loading_retry: "Try again",
+    loading: "Loading...",
+    no_elements_found: "No items found",
+    retry: "Retry"
   },
   es: {
     service_and_cover: "Servicio y cubierto",
@@ -76,7 +106,17 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Cancelar",
     confirm: "Confirmar",
-    product_features: "Características del producto"
+    product_features: "Características del producto",
+    item_added_to_cart: "añadido al pedido",
+    order_cancelled: "Pedido cancelado",
+    order_ready_show_waiter: "¡Pedido listo! Muéstraselo al camarero.",
+    loading_taking_long: "La carga está tardando más de lo habitual...",
+    menu_loaded_in_seconds: "Menú cargado en",
+    error_loading_menu: "Error al cargar el menú. Inténtalo de nuevo más tarde.",
+    error_loading_retry: "Intentar de nuevo",
+    loading: "Cargando...",
+    no_elements_found: "No se encontraron elementos",
+    retry: "Reintentar"
   },
   fr: {
     service_and_cover: "Service et couvert",
@@ -95,7 +135,17 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Total",
     cancel: "Annuler",
     confirm: "Confirmer",
-    product_features: "Caractéristiques du produit"
+    product_features: "Caractéristiques du produit",
+    item_added_to_cart: "ajouté à la commande",
+    order_cancelled: "Commande annulée",
+    order_ready_show_waiter: "Commande prête ! Montrez-la au serveur.",
+    loading_taking_long: "Le chargement prend plus de temps que d'habitude...",
+    menu_loaded_in_seconds: "Menu chargé en",
+    error_loading_menu: "Erreur lors du chargement du menu. Veuillez réessayer plus tard.",
+    error_loading_retry: "Réessayer",
+    loading: "Chargement en cours...",
+    no_elements_found: "Aucun élément trouvé",
+    retry: "Réessayer"
   },
   de: {
     service_and_cover: "Service und Gedeck",
@@ -114,7 +164,17 @@ const uiStrings: Record<PublicMenuUiLang, Record<PublicMenuUiStringKey, string>>
     total: "Gesamt",
     cancel: "Abbrechen",
     confirm: "Bestätigen",
-    product_features: "Produkteigenschaften"
+    product_features: "Produkteigenschaften",
+    item_added_to_cart: "zur Bestellung hinzugefügt",
+    order_cancelled: "Bestellung storniert",
+    order_ready_show_waiter: "Bestellung bereit! Zeigen Sie sie dem Kellner.",
+    loading_taking_long: "Das Laden dauert länger als gewöhnlich...",
+    menu_loaded_in_seconds: "Menü geladen in",
+    error_loading_menu: "Fehler beim Laden des Menüs. Bitte versuchen Sie es später erneut.",
+    error_loading_retry: "Erneut versuchen",
+    loading: "Wird geladen...",
+    no_elements_found: "Keine Elemente gefunden",
+    retry: "Wiederholen"
   }
 };
 
