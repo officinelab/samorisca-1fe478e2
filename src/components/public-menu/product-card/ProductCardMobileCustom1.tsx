@@ -1,14 +1,10 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
-import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
-import { useDynamicGoogleFont } from "@/hooks/useDynamicGoogleFont";
-import { ProductCardButtonIconsDemo } from "@/components/menu-settings/ProductCardButtonIconsDemo";
 
 interface ProductCardMobileCustom1Props {
   product: Product;
@@ -16,9 +12,24 @@ interface ProductCardMobileCustom1Props {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   fontSettings?: {
-    title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
-    description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
-    price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+    title?: { 
+      fontFamily?: string; 
+      fontWeight?: "normal" | "bold"; 
+      fontStyle?: "normal" | "italic";
+      fontSize?: number;
+    };
+    description?: { 
+      fontFamily?: string; 
+      fontWeight?: "normal" | "bold"; 
+      fontStyle?: "normal" | "italic";
+      fontSize?: number;
+    };
+    price?: { 
+      fontFamily?: string; 
+      fontWeight?: "normal" | "bold"; 
+      fontStyle?: "normal" | "italic";
+      fontSize?: number;
+    };
   };
   buttonSettings?: {
     color?: string;
@@ -34,197 +45,113 @@ export const ProductCardMobileCustom1: React.FC<ProductCardMobileCustom1Props> =
   fontSettings,
   buttonSettings,
 }) => {
-  const title = product.displayTitle || product.title;
-  const description = product.displayDescription || product.description;
-  const priceSuffix = product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : "";
+  const displayTitle = product.displayTitle || product.title;
+  const displayDescription = product.displayDescription || product.description;
 
-  // Carica dinamicamente il font titolo
-  useDynamicGoogleFont(fontSettings?.title?.fontFamily);
-  useDynamicGoogleFont(fontSettings?.price?.fontFamily);
+  // Ordina gli allergeni per numero crescente
+  const sortedAllergens = product.allergens ? 
+    [...product.allergens].sort((a, b) => (a.number || 0) - (b.number || 0)) : 
+    [];
 
-  // Imposta valori di default se mancano
+  // Ordina le caratteristiche per display_order crescente
+  const sortedFeatures = product.features ? 
+    [...product.features].sort((a, b) => (a.display_order || 0) - (b.display_order || 0)) : 
+    [];
+
+  const titleStyle = {
+    fontFamily: fontSettings?.title?.fontFamily || "Poppins",
+    fontWeight: fontSettings?.title?.fontWeight || "bold",
+    fontStyle: fontSettings?.title?.fontStyle || "normal",
+    fontSize: `${fontSettings?.title?.fontSize || 18}px`,
+  };
+
+  const descriptionStyle = {
+    fontFamily: fontSettings?.description?.fontFamily || "Open Sans",
+    fontWeight: fontSettings?.description?.fontWeight || "normal",
+    fontStyle: fontSettings?.description?.fontStyle || "normal",
+    fontSize: `${fontSettings?.description?.fontSize || 14}px`,
+  };
+
+  const priceStyle = {
+    fontFamily: fontSettings?.price?.fontFamily || "Poppins",
+    fontWeight: fontSettings?.price?.fontWeight || "bold",
+    fontStyle: fontSettings?.price?.fontStyle || "normal",
+    fontSize: `${fontSettings?.price?.fontSize || 16}px`,
+  };
+
   const buttonColor = buttonSettings?.color || "#9b87f5";
-  const buttonIcon = buttonSettings?.icon || "plus";
 
   return (
-    <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
-      <div className="p-4">
-        <div className="flex">
-          <div className="flex-1 pr-4">
-            <h3
-              className="font-bold mb-1"
-              style={{
-                fontFamily: fontSettings?.title?.fontFamily,
-                fontWeight: fontSettings?.title?.fontWeight,
-                fontStyle: fontSettings?.title?.fontStyle,
-                fontSize: fontSettings?.title?.fontSize || 18,
-              }}
-            >
-              {title}
+    <Card className="mb-3 border-l-4 border-l-blue-500 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onProductSelect(product)}>
+      <CardContent className="p-3">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1 mr-2">
+            <h3 style={titleStyle} className="mb-1 leading-tight">
+              {displayTitle}
             </h3>
-            {product.label && (
-              <div className="mb-1">
-                <LabelBadge
-                  title={product.label.displayTitle || product.label.title}
-                  color={product.label.color}
-                  textColor={product.label.text_color}
-                />
-              </div>
-            )}
-            <p
-              className="text-gray-600 mb-2"
-              style={{
-                fontFamily: fontSettings?.description?.fontFamily,
-                fontWeight: fontSettings?.description?.fontWeight,
-                fontStyle: fontSettings?.description?.fontStyle,
-                fontSize: fontSettings?.description?.fontSize || 14,
-              }}
-            >
-              {truncateText(description, 110)}
-            </p>
-            {product.allergens && product.allergens.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {product.allergens.map(allergen => (
-                  <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
-                    {allergen.number}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            {product.features && product.features.length > 0 && (
-              <ProductFeaturesIcons features={product.features} />
+            
+            {displayDescription && (
+              <p style={descriptionStyle} className="text-gray-600 leading-relaxed text-sm">
+                {truncateText(displayDescription, 80)}
+              </p>
             )}
           </div>
-        </div>
-        <div className="mt-4">
-          {product.has_multiple_prices ? (
-            <div className="flex flex-col gap-2">
-              {/* Standard price row */}
-              {product.price_standard !== null && product.price_standard !== undefined && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_standard.toFixed(2)} €{priceSuffix}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    style={{
-                      backgroundColor: buttonColor,
-                    }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product);
-                    }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
-                  >
-                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
-                  </Button>
-                </div>
-              )}
-              {/* Variante 1 */}
-              {product.price_variant_1_name && product.price_variant_1_value !== null && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_variant_1_value?.toFixed(2)} €
-                    {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    style={{
-                      backgroundColor: buttonColor,
-                    }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
-                    }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
-                  >
-                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
-                  </Button>
-                </div>
-              )}
-              {/* Variante 2 */}
-              {product.price_variant_2_name && product.price_variant_2_value !== null && (
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className="font-medium"
-                    style={{
-                      fontFamily: fontSettings?.price?.fontFamily,
-                      fontWeight: fontSettings?.price?.fontWeight,
-                      fontStyle: fontSettings?.price?.fontStyle,
-                      fontSize: fontSettings?.price?.fontSize || 16,
-                    }}
-                  >
-                    {product.price_variant_2_value?.toFixed(2)} €
-                    {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
-                  </span>
-                  <Button
-                    variant="default"
-                    size="icon"
-                    style={{
-                      backgroundColor: buttonColor,
-                    }}
-                    onClick={e => {
-                      e.stopPropagation();
-                      addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
-                    }}
-                    className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
-                  >
-                    <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
-                  </Button>
-                </div>
+          
+          <div className="text-right flex-shrink-0">
+            <div style={priceStyle} className="text-base">
+              € {product.price_standard}
+              {product.price_suffix && (
+                <span className="text-xs ml-1">{product.price_suffix}</span>
               )}
             </div>
-          ) : (
-            <div className="flex items-center justify-between w-full">
-              <span
-                className="font-medium"
-                style={{
-                  fontFamily: fontSettings?.price?.fontFamily,
-                  fontWeight: fontSettings?.price?.fontWeight,
-                  fontStyle: fontSettings?.price?.fontStyle,
-                  fontSize: fontSettings?.price?.fontSize || 16,
-                }}
-              >
-                {product.price_standard !== null && product.price_standard !== undefined
-                  ? `${product.price_standard.toFixed(2)} €${priceSuffix}`
-                  : ""}
-              </span>
-              <Button
-                variant="default"
-                size="icon"
-                style={{
-                  backgroundColor: buttonColor,
-                }}
-                onClick={e => {
-                  e.stopPropagation();
-                  addToCart(product);
-                }}
-                className="rounded-full h-8 w-8 shadow-md hover:opacity-90"
-              >
-                <ProductCardButtonIconsDemo iconName={buttonIcon} color={buttonColor} size={16} />
-              </Button>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-xs">
+            {/* Allergeni ordinati */}
+            {sortedAllergens.length > 0 && (
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-500">All:</span>
+                <span className="font-medium">
+                  {sortedAllergens.map(allergen => allergen.number).join(", ")}
+                </span>
+              </div>
+            )}
+            
+            {/* Caratteristiche ordinate */}
+            {sortedFeatures.length > 0 && (
+              <ProductFeaturesIcons features={sortedFeatures} size="small" />
+            )}
+          </div>
+          
+          <Button
+            size="sm"
+            className="ml-2 h-6 w-6 p-0 rounded-full"
+            style={{ backgroundColor: buttonColor }}
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(product);
+            }}
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+        </div>
+        
+        {product.label && (
+          <div className="mt-2">
+            <span
+              className="inline-block px-2 py-0.5 text-xs rounded-full"
+              style={{
+                backgroundColor: product.label.color || "#e5e7eb",
+                color: product.label.text_color || "#374151"
+              }}
+            >
+              {product.label.displayTitle || product.label.title}
+            </span>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 };
