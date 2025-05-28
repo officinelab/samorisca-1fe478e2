@@ -136,7 +136,7 @@ serve(async (req) => {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
 
-    // === INCREMENTO TOKEN === 
+    // === INCREMENTO TOKEN CORRETTO === 
     try {
       // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
       const { data: success, error: incrementError } = await supabase
@@ -146,14 +146,13 @@ serve(async (req) => {
         console.error('[OPENAI][TOKEN] Errore incremento token:', incrementError);
       } else if (success === false) {
         console.error('[OPENAI][TOKEN] Token insufficienti');
-        // Non dovrebbe accadere perché già controllato prima
       } else {
         console.log('[OPENAI][TOKEN] Token consumato correttamente (mensili o acquistati)');
       }
     } catch (tokErr) {
       console.error('[OPENAI][TOKEN] Errore inatteso:', tokErr);
     }
-    // === /INCREMENTO TOKEN ===
+    // === /INCREMENTO TOKEN CORRETTO ===
 
     return new Response(
       JSON.stringify({ translatedText }),

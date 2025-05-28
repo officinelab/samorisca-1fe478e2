@@ -137,7 +137,6 @@ Return only the translated result as if it would go inside a printed menu, with 
         console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
       } else if (success === false) {
         console.error('[PERPLEXITY][TOKEN] Token insufficienti');
-        // Non dovrebbe accadere perché già controllato prima
       } else {
         console.log('[PERPLEXITY][TOKEN] Token consumato correttamente (mensili o acquistati)');
       }

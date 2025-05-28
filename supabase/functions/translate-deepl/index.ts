@@ -99,7 +99,6 @@ serve(async (req) => {
           console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
         } else if (success === false) {
           console.error('[DEEPL][TOKEN] Token insufficienti');
-          // Non dovrebbe accadere perché già controllato prima
         } else {
           console.log('[DEEPL][TOKEN] Token consumato correttamente (mensili o acquistati)');
         }
