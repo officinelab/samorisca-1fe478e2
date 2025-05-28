@@ -1,10 +1,11 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
-import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
+import { ProductFeaturesWithText } from "./product-card/ProductFeaturesWithText";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 interface ProductDetailsDialogPreviewProps {
@@ -107,13 +108,13 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               ))}
             </div>
             {product.features && product.features.length > 0 && (
-              <ProductFeaturesIcons features={product.features} />
+              <ProductFeaturesWithText features={product.features} />
             )}
           </div>
         )}
         {!product.allergens?.length && product.features && product.features.length > 0 && (
           <div>
-            <ProductFeaturesIcons features={product.features} />
+            <ProductFeaturesWithText features={product.features} />
           </div>
         )}
 
