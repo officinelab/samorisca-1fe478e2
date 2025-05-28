@@ -1,4 +1,3 @@
-
 import { fetchCategoriesOptimized } from "./fetchCategoriesOptimized";
 import { fetchCategoryNotesOptimized } from "./fetchCategoryNotesOptimized";
 import { fetchProductsOptimized } from "./fetchProductsOptimized";
@@ -18,10 +17,10 @@ export const fetchMenuDataOptimized = async (
       throw new DOMException('Aborted', 'AbortError');
     }
 
-    // 1. Carica categorie e note in parallelo
+    // 1. Carica categorie e note in parallelo (ora con supporto lingua per le note)
     const [categories, categoryNotes] = await Promise.all([
       fetchCategoriesOptimized(language, signal),
-      fetchCategoryNotesOptimized(signal)
+      fetchCategoryNotesOptimized(language, signal)
     ]);
 
     console.log('📂 Categories loaded:', categories.length);

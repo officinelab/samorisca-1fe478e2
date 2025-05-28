@@ -45,12 +45,39 @@ serve(async (req) => {
     });
   }
 
+  // 1.1 Category Notes
+  const { data: categoryNotes, error: categoryNotesError } = await supabase
+    .from("category_notes")
+    .select(`
+      id,
+      title,
+      text,
+      icon_url,
+      display_order,
+      created_at,
+      updated_at,
+      category_notes_categories!inner(category_id)
+    `)
+    .order("display_order", { ascending: true });
+
+  if (categoryNotesError) {
+    return new Response(JSON.stringify({ error: categoryNotesError.message }), {
+      status: 500,
+      headers: corsHeaders
+    });
+  }
+
   // batch collect all IDs
   const languageSupported = ["en", "fr", "de", "es"];
   const categoriesList = (categories || []);
   const categoryIds = categoriesList.map((c: any) => c.id);
+  const categoryNotesList = (categoryNotes || []).map(note => ({
+    ...note,
+    categories: note.category_notes_categories?.map((cnc: any) => cnc.category_id) || []
+  }));
+  
   if (!categoryIds.length)
-    return new Response(JSON.stringify({ categories: [], products: {}, allergens: [] }), { headers: corsHeaders });
+    return new Response(JSON.stringify({ categories: [], products: {}, allergens: [], categoryNotes: [] }), { headers: corsHeaders });
 
   // 2. All products with label
   const { data: allProducts, error: productsError } = await supabase
@@ -105,12 +132,14 @@ serve(async (req) => {
   // 5. Traduzioni batch (se richiesto)
   let translations: Record<string, Record<string, any[]>> = {};
   if (needsTranslation) {
+    const categoryNotesIds = categoryNotesList.map(note => note.id);
     const toTranslate = [
       ...categoryIds.map(id => ({ entity_type: "categories", id })),
       ...productIds.map(id => ({ entity_type: "products", id })),
       ...featureIds.map(id => ({ entity_type: "product_features", id })),
       ...labelIds.map(id => ({ entity_type: "product_labels", id })),
       ...allergenIds.map(id => ({ entity_type: "allergens", id })),
+      ...categoryNotesIds.map(id => ({ entity_type: "category_notes", id })),
     ];
     const allTrans = toTranslate.map(t => ({ entity_type: t.entity_type, entity_id: t.id }));
     if (allTrans.length > 0) {
@@ -142,6 +171,13 @@ serve(async (req) => {
     ...cat,
     displayTitle: translateField(cat, "categories", "title", cat.id),
     displayDescription: translateField(cat, "categories", "description", cat.id),
+  }));
+
+  // *********** NEW: Category Notes con displayTitle e displayText
+  const categoryNotesWithDisplay = categoryNotesList.map((note: any) => ({
+    ...note,
+    displayTitle: translateField(note, "category_notes", "title", note.id),
+    displayText: translateField(note, "category_notes", "text", note.id),
   }));
 
   // Costruzione delle mappe id -> oggetto
@@ -210,9 +246,10 @@ serve(async (req) => {
 
   return new Response(
     JSON.stringify({
-      categories: categoriesWithDisplayTitle, // <-- ora con displayTitle corretto
+      categories: categoriesWithDisplayTitle,
       products: productsByCategory,
       allergens: allAllergens,
+      categoryNotes: categoryNotesWithDisplay, // <-- ora con traduzioni
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );

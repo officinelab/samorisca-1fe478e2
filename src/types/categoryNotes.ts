@@ -1,4 +1,3 @@
-
 export interface CategoryNote {
   id: string;
   title: string;
@@ -8,6 +7,8 @@ export interface CategoryNote {
   created_at?: string;
   updated_at?: string;
   categories?: string[]; // Array di category_id per le categorie selezionate
+  displayTitle?: string; // Campo per il titolo tradotto
+  displayText?: string; // Campo per il testo tradotto
 }
 
 export interface CategoryNoteCategory {

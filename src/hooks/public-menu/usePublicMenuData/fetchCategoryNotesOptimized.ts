@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { CategoryNote } from "@/types/categoryNotes";
 import { getCachedData, setCachedData } from "./cacheUtils";
 
-export const fetchCategoryNotesOptimized = async (signal?: AbortSignal): Promise<CategoryNote[]> => {
-  const cacheKey = 'categoryNotes';
+export const fetchCategoryNotesOptimized = async (language: string = 'it', signal?: AbortSignal): Promise<CategoryNote[]> => {
+  const cacheKey = `categoryNotes_${language}`;
   const cached = getCachedData<CategoryNote[]>(cacheKey);
   if (cached) {
     return cached;
@@ -40,10 +40,47 @@ export const fetchCategoryNotesOptimized = async (signal?: AbortSignal): Promise
       return [];
     }
 
-    const notesWithCategories = data?.map(note => ({
+    let notesWithCategories = data?.map(note => ({
       ...note,
       categories: note.category_notes_categories?.map((cnc: any) => cnc.category_id) || []
     })) || [];
+
+    // Se la lingua è diversa dall'italiano, recupera le traduzioni
+    if (language !== 'it' && notesWithCategories.length > 0) {
+      const noteIds = notesWithCategories.map(note => note.id);
+      
+      const { data: translations, error: translationsError } = await supabase
+        .from('translations')
+        .select('entity_id, field, translated_text')
+        .eq('entity_type', 'category_notes')
+        .eq('language', language)
+        .in('entity_id', noteIds);
+
+      if (!translationsError && translations) {
+        // Crea una mappa delle traduzioni
+        const translationsMap: Record<string, Record<string, string>> = {};
+        translations.forEach(translation => {
+          if (!translationsMap[translation.entity_id]) {
+            translationsMap[translation.entity_id] = {};
+          }
+          translationsMap[translation.entity_id][translation.field] = translation.translated_text;
+        });
+
+        // Aggiungi le traduzioni alle note
+        notesWithCategories = notesWithCategories.map(note => ({
+          ...note,
+          displayTitle: translationsMap[note.id]?.title || note.title,
+          displayText: translationsMap[note.id]?.text || note.text,
+        }));
+      }
+    } else {
+      // Per l'italiano, usa i campi originali come display
+      notesWithCategories = notesWithCategories.map(note => ({
+        ...note,
+        displayTitle: note.title,
+        displayText: note.text,
+      }));
+    }
 
     setCachedData(cacheKey, notesWithCategories);
     return notesWithCategories;
