@@ -6,6 +6,7 @@ import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge
 
 interface FontSettings {
   title?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
+  price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
 }
 
 interface ProductHeaderProps {
@@ -52,10 +53,10 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
       {showPrice && !product.has_multiple_prices && (
         <span
           style={{
-            fontFamily: fontSettings?.title?.fontFamily,
-            fontWeight: fontSettings?.title?.fontWeight,
-            fontStyle: fontSettings?.title?.fontStyle,
-            fontSize: fontSettings?.title?.fontSize || 16,
+            fontFamily: fontSettings?.price?.fontFamily || fontSettings?.title?.fontFamily,
+            fontWeight: fontSettings?.price?.fontWeight || fontSettings?.title?.fontWeight,
+            fontStyle: fontSettings?.price?.fontStyle || fontSettings?.title?.fontStyle,
+            fontSize: fontSettings?.price?.fontSize || 16,
           }}
           className="font-medium flex items-center"
         >
