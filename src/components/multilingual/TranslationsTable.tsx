@@ -9,7 +9,8 @@ interface TranslatableItem {
   id: string;
   title: string;
   description?: string | null;
-  type: "categories" | "allergens" | "product_features" | "product_labels";
+  text?: string | null;
+  type: "categories" | "allergens" | "product_features" | "product_labels" | "category_notes";
 }
 
 interface TranslationsTableProps {
@@ -73,6 +74,28 @@ export const TranslationsTable: React.FC<TranslationsTableProps> = ({
                     entityType={item.type}
                     fieldName="description"
                     originalText={item.description}
+                    language={language}
+                    multiline
+                  />
+                </TableCell>
+              </TableRow>
+            )}
+
+            {/* Riga testo SOLO per category_notes se esiste */}
+            {(item.type === "category_notes" && item.text !== undefined && item.text !== null && item.text !== "") && (
+              <TableRow>
+                <TableCell className="align-top border-t-0 flex items-center gap-2">
+                  <div className="text-sm text-muted-foreground">
+                    Testo: {item.text}
+                  </div>
+                  <CopyButton text={item.text} label="Copia testo originale" />
+                </TableCell>
+                <TableCell className="border-t-0">
+                  <TranslationField
+                    id={item.id}
+                    entityType={item.type}
+                    fieldName="text"
+                    originalText={item.text}
                     language={language}
                     multiline
                   />
