@@ -12,10 +12,10 @@ interface TranslateRequest {
   fieldName: string;
 }
 
-// Client Supabase con service role per le operazioni sui token
+// Client Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY') || '';
 
@@ -44,35 +44,6 @@ serve(async (req) => {
         }
       );
     }
-    
-    // --- Check token availability prima di traduzione
-    console.log('[PERPLEXITY][TOKEN] Verifico token disponibili prima della traduzione...');
-    const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
-      .rpc('get_remaining_tokens');
-    
-    console.log('[PERPLEXITY][TOKEN] Risposta get_remaining_tokens PRIMA:', { 
-      tokensDataBefore, 
-      tokensErrorBefore,
-      supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
-      serviceKey: supabaseServiceKey ? 'SET' : 'NOT SET'
-    });
-    
-    if (tokensErrorBefore) {
-      console.error('[PERPLEXITY][TOKEN] Errore nel controllo dei token PRIMA:', tokensErrorBefore);
-      return new Response(
-        JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    if (tokensDataBefore <= 0) {
-      console.log('[PERPLEXITY][TOKEN] Token esauriti, esco subito');
-      return new Response(
-        JSON.stringify({ error: "Token mensili esauriti" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`[PERPLEXITY][TOKEN] Token disponibili PRIMA della traduzione: ${tokensDataBefore}`);
     
     const languageMap: Record<string, string> = {
       'en': 'English',
@@ -156,67 +127,40 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // === VERIFICA STATO TOKENS PRIMA DI INCREMENTARE ===
-    console.log('[PERPLEXITY][TOKEN] Verifico lo stato dei token nella tabella PRIMA di incrementare...');
-    const { data: tableStateBefore, error: tableStateErrorBefore } = await supabase
-      .from('translation_tokens')
-      .select('*')
-      .eq('month', (await supabase.rpc('get_current_month')).data);
-    
-    console.log('[PERPLEXITY][TOKEN] Stato tabella PRIMA:', { tableStateBefore, tableStateErrorBefore });
-
-    // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO ===
+    // === AGGIORNAMENTO TOKEN CON LOG ===
     try {
-      console.log('[PERPLEXITY][TOKEN] Chiamando increment_tokens con 1 token...');
-      
-      const { data: incrementResult, error: incrementError } = await supabase
-        .rpc('increment_tokens', { token_count: 1 });
-      
-      console.log('[PERPLEXITY][TOKEN] Risultato increment_tokens:', { 
-        incrementResult, 
-        incrementError,
-        type: typeof incrementResult,
-        value: incrementResult
-      });
-      
-      if (incrementError) {
-        console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
-        console.error('[PERPLEXITY][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
-        console.error('[PERPLEXITY][TOKEN] Codice errore:', incrementError.code);
-        console.error('[PERPLEXITY][TOKEN] Messaggio errore:', incrementError.message);
+      const month = (new Date()).toISOString().slice(0, 7);
+      const { data: beforeRow, error: beforeError } = await supabase
+        .from('translation_tokens')
+        .select('month,tokens_used')
+        .eq('month', month)
+        .maybeSingle();
+      console.log('[PERPLEXITY][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
+
+      // Incr. tokens_used di 1
+      const { error: upError } = await supabase
+        .from('translation_tokens')
+        .update({
+          tokens_used: (beforeRow?.tokens_used || 0) + 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', month);
+      if (upError) {
+        console.error('[PERPLEXITY][TOKEN] Errore update token:', upError);
       } else {
-        console.log('[PERPLEXITY][TOKEN] ✅ increment_tokens completato senza errori');
-        console.log(`[PERPLEXITY][TOKEN] Risultato ricevuto: ${incrementResult} (tipo: ${typeof incrementResult})`);
-        
-        if (incrementResult === false) {
-          console.error('[PERPLEXITY][TOKEN] ⚠️ Token insufficienti (ritornato false)');
-        } else if (incrementResult === true) {
-          console.log('[PERPLEXITY][TOKEN] ✅ Token consumato correttamente');
-        } else {
-          console.log(`[PERPLEXITY][TOKEN] ⚠️ Risultato inaspettato: ${incrementResult}`);
-        }
+        console.log('[PERPLEXITY][TOKEN] Token incrementato di 1 via update diretto');
       }
+
+      const { data: afterRow, error: afterError } = await supabase
+        .from('translation_tokens')
+        .select('month,tokens_used')
+        .eq('month', month)
+        .maybeSingle();
+      console.log('[PERPLEXITY][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.error('[PERPLEXITY][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
-      console.error('[PERPLEXITY][TOKEN] Stack trace:', tokErr.stack);
+      console.error('[PERPLEXITY][TOKEN] Errore inatteso update token:', tokErr);
     }
-
-    // === VERIFICA STATO TOKENS DOPO INCREMENTO ===
-    console.log('[PERPLEXITY][TOKEN] Verifico lo stato dei token nella tabella DOPO incremento...');
-    const { data: tableStateAfter, error: tableStateErrorAfter } = await supabase
-      .from('translation_tokens')
-      .select('*')
-      .eq('month', (await supabase.rpc('get_current_month')).data);
-    
-    console.log('[PERPLEXITY][TOKEN] Stato tabella DOPO:', { tableStateAfter, tableStateErrorAfter });
-
-    // === VERIFICA TOKEN RIMANENTI DOPO ===
-    console.log('[PERPLEXITY][TOKEN] Verifico token rimanenti DOPO...');
-    const { data: tokensDataAfter, error: tokensErrorAfter } = await supabase
-      .rpc('get_remaining_tokens');
-    
-    console.log('[PERPLEXITY][TOKEN] Token rimanenti DOPO:', { tokensDataAfter, tokensErrorAfter });
-    // === /INCREMENTO TOKEN ===
+    // === /AGGIORNAMENTO TOKEN ===
     
     return new Response(
       JSON.stringify({ 

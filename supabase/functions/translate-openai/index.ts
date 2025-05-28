@@ -10,10 +10,10 @@ import { logDetailedError } from "./utils.ts";
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const MODEL = "gpt-4o-mini";
 
-// Client Supabase con service role per le operazioni sui token
+// Client Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -55,33 +55,21 @@ serve(async (req) => {
     console.log(`[OPENAI] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
     // --- Check token availability prima di traduzione
-    console.log('[OPENAI][TOKEN] Verifico token disponibili prima della traduzione...');
     const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
       .rpc('get_remaining_tokens');
-    
-    console.log('[OPENAI][TOKEN] Risposta get_remaining_tokens PRIMA:', { 
-      tokensDataBefore, 
-      tokensErrorBefore,
-      supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
-      serviceKey: supabaseServiceKey ? 'SET' : 'NOT SET'
-    });
-    
     if (tokensErrorBefore) {
-      console.error('[OPENAI][TOKEN] Errore nel controllo dei token PRIMA:', tokensErrorBefore);
+      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensErrorBefore);
       return new Response(
         JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     if (tokensDataBefore <= 0) {
-      console.log('[OPENAI][TOKEN] Token esauriti, esco subito');
       return new Response(
         JSON.stringify({ error: "Token mensili esauriti" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    console.log(`[OPENAI][TOKEN] Token disponibili PRIMA della traduzione: ${tokensDataBefore}`);
 
     // Prompt e traduzione
     const targetLangName = mapLanguageCode(targetLanguage);
@@ -148,67 +136,40 @@ serve(async (req) => {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
 
-    // === VERIFICA STATO TOKENS PRIMA DI INCREMENTARE ===
-    console.log('[OPENAI][TOKEN] Verifico lo stato dei token nella tabella PRIMA di incrementare...');
-    const { data: tableStateBefore, error: tableStateErrorBefore } = await supabase
-      .from('translation_tokens')
-      .select('*')
-      .eq('month', (await supabase.rpc('get_current_month')).data);
-    
-    console.log('[OPENAI][TOKEN] Stato tabella PRIMA:', { tableStateBefore, tableStateErrorBefore });
-
-    // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO === 
+    // === INCREMENTO TOKEN === 
     try {
-      console.log('[OPENAI][TOKEN] Chiamando increment_tokens con 1 token...');
-      
-      const { data: incrementResult, error: incrementError } = await supabase
-        .rpc('increment_tokens', { token_count: 1 });
-      
-      console.log('[OPENAI][TOKEN] Risultato increment_tokens:', { 
-        incrementResult, 
-        incrementError,
-        type: typeof incrementResult,
-        value: incrementResult
-      });
-      
-      if (incrementError) {
-        console.error('[OPENAI][TOKEN] Errore incremento token:', incrementError);
-        console.error('[OPENAI][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
-        console.error('[OPENAI][TOKEN] Codice errore:', incrementError.code);
-        console.error('[OPENAI][TOKEN] Messaggio errore:', incrementError.message);
+      // Loggo valore tokens_used prima
+      const { data: beforeRow, error: beforeError } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+      console.log('[OPENAI][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
+
+      // INCREMENTO con update diretto: tokens_used + 1
+      const { error: upError } = await supabase
+        .from('translation_tokens')
+        .update({
+          tokens_used: (beforeRow?.tokens_used || 0) + 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', (new Date()).toISOString().slice(0, 7));
+      if (upError) {
+        console.error('[OPENAI][TOKEN] Errore update token:', upError);
       } else {
-        console.log('[OPENAI][TOKEN] ✅ increment_tokens completato senza errori');
-        console.log(`[OPENAI][TOKEN] Risultato ricevuto: ${incrementResult} (tipo: ${typeof incrementResult})`);
-        
-        if (incrementResult === false) {
-          console.error('[OPENAI][TOKEN] ⚠️ Token insufficienti (ritornato false)');
-        } else if (incrementResult === true) {
-          console.log('[OPENAI][TOKEN] ✅ Token consumato correttamente');
-        } else {
-          console.log(`[OPENAI][TOKEN] ⚠️ Risultato inaspettato: ${incrementResult}`);
-        }
+        console.log('[OPENAI][TOKEN] Token incrementato di 1 via update diretto');
       }
+
+      // Loggo valore tokens_used dopo
+      const { data: afterRow, error: afterError } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+      console.log('[OPENAI][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.error('[OPENAI][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
-      console.error('[OPENAI][TOKEN] Stack trace:', tokErr.stack);
+      console.error('[OPENAI][TOKEN] Errore inatteso update token:', tokErr);
     }
-
-    // === VERIFICA STATO TOKENS DOPO INCREMENTO ===
-    console.log('[OPENAI][TOKEN] Verifico lo stato dei token nella tabella DOPO incremento...');
-    const { data: tableStateAfter, error: tableStateErrorAfter } = await supabase
-      .from('translation_tokens')
-      .select('*')
-      .eq('month', (await supabase.rpc('get_current_month')).data);
-    
-    console.log('[OPENAI][TOKEN] Stato tabella DOPO:', { tableStateAfter, tableStateErrorAfter });
-
-    // === VERIFICA TOKEN RIMANENTI DOPO ===
-    console.log('[OPENAI][TOKEN] Verifico token rimanenti DOPO...');
-    const { data: tokensDataAfter, error: tokensErrorAfter } = await supabase
-      .rpc('get_remaining_tokens');
-    
-    console.log('[OPENAI][TOKEN] Token rimanenti DOPO:', { tokensDataAfter, tokensErrorAfter });
-
     // === /INCREMENTO TOKEN ===
 
     return new Response(
