@@ -22,7 +22,7 @@ const CategoryNotesManager: React.FC = () => {
     const fetchCategories = async () => {
       const { data } = await supabase
         .from('categories')
-        .select('id, title')
+        .select('id, title, description, image_url, is_active, display_order')
         .eq('is_active', true)
         .order('display_order');
       
@@ -52,6 +52,14 @@ const CategoryNotesManager: React.FC = () => {
     return categoryIds
       .map(id => categories.find(cat => cat.id === id)?.title)
       .filter(Boolean);
+  };
+
+  const handleFormSubmit = async (data: any) => {
+    if (editingNote) {
+      await updateCategoryNote(editingNote.id, data);
+    } else {
+      await createCategoryNote(data);
+    }
   };
 
   if (isLoading) {
@@ -140,7 +148,7 @@ const CategoryNotesManager: React.FC = () => {
       <CategoryNoteFormDialog
         open={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        onSubmit={editingNote ? updateCategoryNote : createCategoryNote}
+        onSubmit={handleFormSubmit}
         categories={categories}
         initialData={editingNote}
       />
