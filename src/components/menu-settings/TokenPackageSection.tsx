@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,15 @@ import MonthlyTokensLimitSection from "./MonthlyTokensLimitSection";
 
 const TokenPackageSection = () => {
   const { siteSettings, saveSetting } = useSiteSettings();
-  const [tokenPrice, setTokenPrice] = useState(siteSettings.tokenPackagePrice || "");
-  const [tokenAmount, setTokenAmount] = useState(siteSettings.tokenPackageAmount || "");
+  const [tokenPrice, setTokenPrice] = useState("");
+  const [tokenAmount, setTokenAmount] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Aggiorna i valori locali quando cambiano i siteSettings
+  useEffect(() => {
+    setTokenPrice(siteSettings.tokenPackagePrice || "");
+    setTokenAmount(siteSettings.tokenPackageAmount || "");
+  }, [siteSettings.tokenPackagePrice, siteSettings.tokenPackageAmount]);
 
   const handleSave = async () => {
     setIsSaving(true);
