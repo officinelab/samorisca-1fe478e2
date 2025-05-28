@@ -52,7 +52,7 @@ export const fetchMenuDataOptimized = async (language: string) => {
       allergens,
       categoryNotes
     ] = await Promise.all([
-      fetchCategories(language),
+      fetchCategories(),
       fetchProductFeatures(language),
       fetchProductLabels(language),
       fetchAllergens(),
