@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ImageUploader } from "@/components/ImageUploader";
 import { CategoryNoteFormData, CategoryNote } from "@/types/categoryNotes";
 import { Category } from "@/types/database";
 
@@ -47,6 +48,7 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
   });
 
   const selectedCategories = watch("categories") || [];
+  const currentIconUrl = watch("icon_url");
 
   React.useEffect(() => {
     if (open) {
@@ -92,9 +94,13 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
     }
   };
 
+  const handleImageUploaded = (url: string) => {
+    setValue("icon_url", url);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Modifica Nota" : "Nuova Nota"}
@@ -128,11 +134,16 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="icon_url">URL Icona</Label>
-            <Input
-              id="icon_url"
-              {...register("icon_url")}
-              placeholder="https://esempio.com/icona.png"
+            <Label>Icona</Label>
+            <ImageUploader
+              onImageUploaded={handleImageUploaded}
+              currentImage={currentIconUrl}
+              bucketName="category-note-icons"
+              folderPath="icons"
+              label="Carica icona"
+              maxSizeInMB={2}
+              allowedTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
+              id="category-note-icon"
             />
           </div>
 
