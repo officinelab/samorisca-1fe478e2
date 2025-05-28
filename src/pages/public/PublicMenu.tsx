@@ -3,13 +3,13 @@ import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFontSettings } from "@/hooks/useFontSettings";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 // Import hooks
 import { usePublicMenuData } from "@/hooks/public-menu/usePublicMenuData";
 import { useMenuNavigation } from "@/hooks/public-menu/useMenuNavigation";
 import { useProductDetails } from "@/hooks/public-menu/useProductDetails";
 import { useCart } from "@/hooks/useCart";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 // Import components
 import { Header } from "@/components/public-menu/Header";

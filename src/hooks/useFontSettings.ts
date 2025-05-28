@@ -1,4 +1,6 @@
 
+import { SiteSettings } from "@/hooks/site-settings/types";
+
 interface FontConfigItem {
   fontFamily: string;
   fontWeight: "normal" | "bold";
@@ -12,10 +14,6 @@ interface FontConfig {
   title: FontConfigItem;
   description: FontConfigItem;
   price: FontConfigItem;
-}
-
-interface SiteSettings {
-  publicMenuFontSettings?: Record<string, FontConfig>;
 }
 
 export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: string) => {
