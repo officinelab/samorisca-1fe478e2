@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ImageUploader } from "@/components/ImageUploader";
 import { CategoryNoteFormData, CategoryNote } from "@/types/categoryNotes";
 import { Category } from "@/types/database";
@@ -100,101 +101,109 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle>
             {initialData ? "Modifica Nota" : "Nuova Nota"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="title">Titolo *</Label>
-              <Input
-                id="title"
-                {...register("title", { required: "Il titolo è obbligatorio" })}
-                placeholder="Inserisci il titolo"
-              />
-              {errors.title && (
-                <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-              )}
-            </div>
+        <div className="flex-1 overflow-hidden">
+          <form onSubmit={handleSubmit(handleFormSubmit)} className="h-full flex flex-col">
+            <div className="flex-1 px-6 py-4 space-y-4 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Label htmlFor="title">Titolo *</Label>
+                  <Input
+                    id="title"
+                    {...register("title", { required: "Il titolo è obbligatorio" })}
+                    placeholder="Inserisci il titolo"
+                  />
+                  {errors.title && (
+                    <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+                  )}
+                </div>
 
-            <div className="md:col-span-2">
-              <Label htmlFor="text">Testo *</Label>
-              <Textarea
-                id="text"
-                {...register("text", { required: "Il testo è obbligatorio" })}
-                placeholder="Inserisci il testo della nota"
-                rows={3}
-              />
-              {errors.text && (
-                <p className="text-sm text-red-500 mt-1">{errors.text.message}</p>
-              )}
-            </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="text">Testo *</Label>
+                  <Textarea
+                    id="text"
+                    {...register("text", { required: "Il testo è obbligatorio" })}
+                    placeholder="Inserisci il testo della nota"
+                    rows={3}
+                  />
+                  {errors.text && (
+                    <p className="text-sm text-red-500 mt-1">{errors.text.message}</p>
+                  )}
+                </div>
 
-            <div className="md:col-span-1">
-              <Label>Icona</Label>
-              <div className="max-w-[120px]">
-                <ImageUploader
-                  onImageUploaded={handleImageUploaded}
-                  currentImage={currentIconUrl}
-                  bucketName="category-note-icons"
-                  folderPath="icons"
-                  label="Carica icona"
-                  maxSizeInMB={2}
-                  allowedTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
-                  id="category-note-icon"
-                />
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <Label className="text-base font-medium">Categorie *</Label>
-              <p className="text-sm text-muted-foreground mb-3">
-                Seleziona le categorie in cui mostrare questa nota
-              </p>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-3 bg-gray-50">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`category-${category.id}`}
-                      checked={selectedCategories.includes(category.id)}
-                      onCheckedChange={(checked) =>
-                        handleCategoryChange(category.id, checked as boolean)
-                      }
+                <div className="md:col-span-1">
+                  <Label>Icona</Label>
+                  <div className="max-w-[120px]">
+                    <ImageUploader
+                      onImageUploaded={handleImageUploaded}
+                      currentImage={currentIconUrl}
+                      bucketName="category-note-icons"
+                      folderPath="icons"
+                      label="Carica icona"
+                      maxSizeInMB={2}
+                      allowedTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
+                      id="category-note-icon"
                     />
-                    <Label
-                      htmlFor={`category-${category.id}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {category.title}
-                    </Label>
                   </div>
-                ))}
-              </div>
-              {selectedCategories.length === 0 && (
-                <p className="text-sm text-red-500 mt-1">
-                  Seleziona almeno una categoria
-                </p>
-              )}
-            </div>
-          </div>
+                </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t bg-gray-50 -mx-6 px-6 py-4 mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Annulla
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || selectedCategories.length === 0}
-              className="min-w-[100px]"
-            >
-              {isSubmitting ? "Salvataggio..." : initialData ? "Aggiorna" : "Crea"}
-            </Button>
-          </div>
-        </form>
+                <div className="md:col-span-2">
+                  <Label className="text-base font-medium">Categorie *</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Seleziona le categorie in cui mostrare questa nota
+                  </p>
+                  <div className="border rounded-md bg-gray-50">
+                    <ScrollArea className="h-40 p-3">
+                      <div className="space-y-2">
+                        {categories.map((category) => (
+                          <div key={category.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${category.id}`}
+                              checked={selectedCategories.includes(category.id)}
+                              onCheckedChange={(checked) =>
+                                handleCategoryChange(category.id, checked as boolean)
+                              }
+                            />
+                            <Label
+                              htmlFor={`category-${category.id}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {category.title}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                  {selectedCategories.length === 0 && (
+                    <p className="text-sm text-red-500 mt-1">
+                      Seleziona almeno una categoria
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Annulla
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || selectedCategories.length === 0}
+                className="min-w-[100px]"
+              >
+                {isSubmitting ? "Salvataggio..." : initialData ? "Aggiorna" : "Crea"}
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
