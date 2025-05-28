@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Category, Product } from "@/types/database";
 import { useDashboardOperations } from "./useDashboardOperations";
@@ -56,19 +57,13 @@ export const useDashboard = () => {
     setEditingCategory(null);
   };
 
-  // AGGIORNATO: ora ricarica tutti i dati della dashboard dopo il salvataggio
+  // AGGIORNATO: ora ricarica solo i prodotti della categoria corrente, NON tutto il riordino
   const handleProductFormSave = async () => {
     console.log('handleProductFormSave called');
 
-    // Prima cancella il riordino se attivo
-    dashboardOperations.cancelReorderingProducts();
-
-    // Poi ricarica i dati
-    await dashboardOperations.loadData();
-
-    // Riattiva il riordino dopo il caricamento
-    if (dashboardOperations.products && dashboardOperations.products.length > 0) {
-      dashboardOperations.startReorderingProducts();
+    // Solo ricarica i dati della categoria corrente, senza toccare il riordino
+    if (dashboardOperations.selectedCategoryId && dashboardOperations.loadProducts) {
+      await dashboardOperations.loadProducts(dashboardOperations.selectedCategoryId);
     }
 
     setShowAddProduct(false);

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { Product } from "@/types/database";
@@ -13,8 +14,26 @@ export const useProductSubmit = () => {
     existingProductId?: string
   ) => {
     try {
-      // Converte i valori del form in dati del prodotto
-      const productData = formValuesToProduct(values, existingProductId);
+      let existingProduct = null;
+      
+      // Se stiamo modificando un prodotto esistente, recupera prima i suoi dati
+      if (existingProductId) {
+        const { data: productData, error: fetchError } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", existingProductId)
+          .single();
+          
+        if (fetchError) {
+          console.error("Errore nel recupero del prodotto esistente:", fetchError);
+        } else {
+          existingProduct = productData;
+          console.log("Prodotto esistente recuperato:", existingProduct);
+        }
+      }
+      
+      // Converte i valori del form in dati del prodotto PRESERVANDO il display_order
+      const productData = formValuesToProduct(values, existingProductId, existingProduct);
       
       // Inserisce o aggiorna il prodotto
       let savedProduct;
@@ -32,7 +51,7 @@ export const useProductSubmit = () => {
         if (error) throw error;
         savedProduct = data;
         productId = existingProductId;
-        console.log("Prodotto aggiornato:", savedProduct);
+        console.log("Prodotto aggiornato con display_order preservato:", savedProduct);
       } else {
         // Prima di inserire, trova il display_order più alto per questa categoria
         const { data: lastProduct } = await supabase
@@ -43,7 +62,7 @@ export const useProductSubmit = () => {
           .limit(1)
           .single();
 
-        // Imposta il display_order del nuovo prodotto
+        // Imposta il display_order del nuovo prodotto (parte da 1)
         const newDisplayOrder = lastProduct ? lastProduct.display_order + 1 : 1;
         productData.display_order = newDisplayOrder;
 
@@ -57,7 +76,7 @@ export const useProductSubmit = () => {
         if (error) throw error;
         savedProduct = data;
         productId = savedProduct?.id;
-        console.log("Nuovo prodotto creato:", savedProduct);
+        console.log("Nuovo prodotto creato con display_order:", newDisplayOrder);
       }
       
       if (!productId) throw new Error("Impossibile ottenere l'ID del prodotto");

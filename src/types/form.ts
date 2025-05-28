@@ -42,7 +42,7 @@ export const productToFormValues = (product: any): ProductFormValues => {
 };
 
 // Funzione di utilità per convertire i valori del form a un formato adatto per il DB
-export const formValuesToProduct = (values: ProductFormValues, productId?: string) => {
+export const formValuesToProduct = (values: ProductFormValues, productId?: string, existingProduct?: any) => {
   return {
     ...(productId && { id: productId }),
     title: values.title,
@@ -59,8 +59,8 @@ export const formValuesToProduct = (values: ProductFormValues, productId?: strin
     price_variant_2_name: values.price_variant_2_name || "",
     price_variant_2_value: values.price_variant_2_value ? parseFloat(values.price_variant_2_value) : null,
     is_active: values.is_active,
-    display_order: 0, // <-- AGGIUNTO: sarà sovrascritto in use-product-submit.ts quando serve
+    // PRESERVA il display_order esistente se stiamo modificando un prodotto
+    display_order: existingProduct?.display_order || 1, // Default a 1 invece di 0
     updated_at: new Date().toISOString(),
   };
 };
-

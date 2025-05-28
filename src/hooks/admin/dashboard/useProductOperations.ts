@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,7 +52,6 @@ export const useProductOperations = (
     setReorderingProductsList(updatedList);
 
     // Salva l'ordine immediatamente DOPO il setState
-    // Per usare il valore aggiornato, aspetta il prossimo tick con setTimeout 0
     setIsSaving(true);
     setTimeout(async () => {
       await saveReorderProducts(updatedList);
@@ -64,7 +64,7 @@ export const useProductOperations = (
     try {
       const updates = (customList || reorderingProductsList).map((product, index) => ({
         id: product.id,
-        display_order: index + 1,
+        display_order: index + 1, // Parte da 1 invece di 0
         title: product.title,
         category_id: product.category_id,
         description: product.description,
