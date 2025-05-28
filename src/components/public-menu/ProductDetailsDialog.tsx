@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
 import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
+import { ProductCardButtonIconsDemo } from "@/components/menu-settings/ProductCardButtonIconsDemo";
 
 interface ProductDetailsDialogProps {
   product: Product | null;
@@ -45,7 +47,6 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
       return <Plus className="ml-2" size={16} />;
     }
     // Usa la demo icona dello stesso sistema delle anteprime
-    const { ProductCardButtonIconsDemo } = require("@/components/menu-settings/ProductCardButtonIconsDemo");
     return <ProductCardButtonIconsDemo iconName={buttonSettings.icon} color={buttonSettings.color || "#9b87f5"} size={20} />;
   };
 
