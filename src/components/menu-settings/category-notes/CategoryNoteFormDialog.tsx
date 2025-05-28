@@ -100,7 +100,7 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Modifica Nota" : "Nuova Nota"}
@@ -108,83 +108,88 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Titolo *</Label>
-            <Input
-              id="title"
-              {...register("title", { required: "Il titolo è obbligatorio" })}
-              placeholder="Inserisci il titolo"
-            />
-            {errors.title && (
-              <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="text">Testo *</Label>
-            <Textarea
-              id="text"
-              {...register("text", { required: "Il testo è obbligatorio" })}
-              placeholder="Inserisci il testo della nota"
-              rows={3}
-            />
-            {errors.text && (
-              <p className="text-sm text-red-500 mt-1">{errors.text.message}</p>
-            )}
-          </div>
-
-          <div>
-            <Label>Icona</Label>
-            <ImageUploader
-              onImageUploaded={handleImageUploaded}
-              currentImage={currentIconUrl}
-              bucketName="category-note-icons"
-              folderPath="icons"
-              label="Carica icona"
-              maxSizeInMB={2}
-              allowedTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
-              id="category-note-icon"
-            />
-          </div>
-
-          <div>
-            <Label className="text-base font-medium">Categorie *</Label>
-            <p className="text-sm text-muted-foreground mb-3">
-              Seleziona le categorie in cui mostrare questa nota
-            </p>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {categories.map((category) => (
-                <div key={category.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`category-${category.id}`}
-                    checked={selectedCategories.includes(category.id)}
-                    onCheckedChange={(checked) =>
-                      handleCategoryChange(category.id, checked as boolean)
-                    }
-                  />
-                  <Label
-                    htmlFor={`category-${category.id}`}
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {category.title}
-                  </Label>
-                </div>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label htmlFor="title">Titolo *</Label>
+              <Input
+                id="title"
+                {...register("title", { required: "Il titolo è obbligatorio" })}
+                placeholder="Inserisci il titolo"
+              />
+              {errors.title && (
+                <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+              )}
             </div>
-            {selectedCategories.length === 0 && (
-              <p className="text-sm text-red-500 mt-1">
-                Seleziona almeno una categoria
+
+            <div className="md:col-span-2">
+              <Label htmlFor="text">Testo *</Label>
+              <Textarea
+                id="text"
+                {...register("text", { required: "Il testo è obbligatorio" })}
+                placeholder="Inserisci il testo della nota"
+                rows={3}
+              />
+              {errors.text && (
+                <p className="text-sm text-red-500 mt-1">{errors.text.message}</p>
+              )}
+            </div>
+
+            <div className="md:col-span-1">
+              <Label>Icona</Label>
+              <div className="max-w-[120px]">
+                <ImageUploader
+                  onImageUploaded={handleImageUploaded}
+                  currentImage={currentIconUrl}
+                  bucketName="category-note-icons"
+                  folderPath="icons"
+                  label="Carica icona"
+                  maxSizeInMB={2}
+                  allowedTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
+                  id="category-note-icon"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <Label className="text-base font-medium">Categorie *</Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Seleziona le categorie in cui mostrare questa nota
               </p>
-            )}
+              <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-3 bg-gray-50">
+                {categories.map((category) => (
+                  <div key={category.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`category-${category.id}`}
+                      checked={selectedCategories.includes(category.id)}
+                      onCheckedChange={(checked) =>
+                        handleCategoryChange(category.id, checked as boolean)
+                      }
+                    />
+                    <Label
+                      htmlFor={`category-${category.id}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {category.title}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedCategories.length === 0 && (
+                <p className="text-sm text-red-500 mt-1">
+                  Seleziona almeno una categoria
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t bg-gray-50 -mx-6 px-6 py-4 mt-6">
             <Button type="button" variant="outline" onClick={onClose}>
               Annulla
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || selectedCategories.length === 0}
+              className="min-w-[100px]"
             >
               {isSubmitting ? "Salvataggio..." : initialData ? "Aggiorna" : "Crea"}
             </Button>
