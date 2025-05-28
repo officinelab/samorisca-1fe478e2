@@ -1,18 +1,13 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Product } from "@/types/database";
+import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
+import { ProductFeaturesWithText } from "./ProductFeaturesWithText";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
-
-// Import the new focused components
-import { ProductDetailsHeader } from "./product-details-dialog/ProductDetailsHeader";
-import { ProductDetailsImage } from "./product-details-dialog/ProductDetailsImage";
-import { ProductDetailsDescription } from "./product-details-dialog/ProductDetailsDescription";
-import { ProductDetailsFeatures } from "./product-details-dialog/ProductDetailsFeatures";
-import { ProductDetailsAllergens } from "./product-details-dialog/ProductDetailsAllergens";
-import { ProductDetailsPricing } from "./product-details-dialog/ProductDetailsPricing";
 
 interface ProductDetailsDialogProps {
   product: Product | null;
@@ -55,11 +50,6 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     return <ProductCardButtonIconsDemo iconName={buttonSettings.icon} color={buttonSettings.color || "#9b87f5"} size={20} />;
   };
 
-  const handleAddToCart = (product: Product, variantName?: string, variantPrice?: number) => {
-    addToCart(product, variantName, variantPrice);
-    onClose();
-  };
-
   if (!product) return null;
 
   const title = product.displayTitle || product.title;
@@ -69,51 +59,179 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
-        <ProductDetailsHeader 
-          product={product}
-          title={title}
-          fontSettings={fontSettings}
-        />
-        
+        <DialogHeader>
+          <DialogTitle
+            style={{
+              fontFamily: fontSettings?.title?.fontFamily,
+              fontWeight: fontSettings?.title?.fontWeight,
+              fontStyle: fontSettings?.title?.fontStyle,
+              fontSize: fontSettings?.title?.fontSize,
+            }}
+          >
+            {title}
+          </DialogTitle>
+          {product.label && (
+            <div className="mt-2">
+              <LabelBadge
+                title={product.label.displayTitle || product.label.title}
+                color={product.label.color}
+                textColor={product.label.text_color}
+              />
+            </div>
+          )}
+        </DialogHeader>
         <div className="grid gap-4 py-4">
-          <ProductDetailsImage 
-            imageUrl={product.image_url}
-            title={title}
-            hideImage={hideImage}
-          />
+          {!hideImage && product.image_url && (
+            <div className="w-full h-48 relative rounded-md overflow-hidden">
+              <img
+                src={product.image_url}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <div>
+            <h4 className="font-semibold mb-1">{t("description")}</h4>
+            <p
+              className="text-gray-600"
+              style={{
+                fontFamily: fontSettings?.description?.fontFamily,
+                fontWeight: fontSettings?.description?.fontWeight,
+                fontStyle: fontSettings?.description?.fontStyle,
+                fontSize: fontSettings?.description?.fontSize
+              }}
+            >
+              {description || t("description") + "..."}
+            </p>
+          </div>
           
-          <ProductDetailsDescription 
-            description={description}
-            descriptionLabel={t("description")}
-            fontSettings={fontSettings}
-          />
-          
-          <ProductDetailsFeatures 
-            features={product.features}
-            featuresLabel={t("product_features")}
-          />
+          {/* Sezione caratteristiche del prodotto */}
+          {product.features && product.features.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-3">{t("product_features")}</h4>
+              <ProductFeaturesWithText features={product.features} />
+            </div>
+          )}
 
-          <ProductDetailsAllergens 
-            allergens={product.allergens}
-            allergensLabel={t("allergens")}
-          />
+          {/* Sezione allergeni */}
+          {product.allergens && product.allergens.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-1">{t("allergens")}</h4>
+              <div className="flex flex-wrap gap-2">
+                {product.allergens.map(allergen => (
+                  <Badge key={allergen.id} variant="outline">
+                    {allergen.number} - {allergen.displayTitle || allergen.title}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
-          <ProductDetailsPricing 
-            product={product}
-            priceSuffix={priceSuffix}
-            priceLabel={t("price")}
-            addLabel={t("add")}
-            fontSettings={fontSettings}
-            buttonSettings={buttonSettings}
-            onAddToCart={handleAddToCart}
-            renderAddIcon={renderAddIcon}
-          />
+          <div>
+            <h4 className="font-semibold mb-1">{t("price")}</h4>
+            {product.has_multiple_prices ? (
+              <div className="space-y-2">
+                {/* Prezzo standard SOLO con suffisso */}
+                {typeof product.price_standard === "number" && (
+                  <div className="flex justify-between items-center gap-2">
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
+                      {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        addToCart(product);
+                        onClose();
+                      }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
+                    >
+                      {t("add")} {renderAddIcon()}
+                    </Button>
+                  </div>
+                )}
+                {/* Variante 1 */}
+                {product.price_variant_1_name && product.price_variant_1_value !== null && (
+                  <div className="flex justify-between items-center gap-2">
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
+                      {product.price_variant_1_value?.toFixed(2)} €
+                      {product.price_variant_1_name ? ` ${product.price_variant_1_name}` : ""}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        addToCart(product, product.price_variant_1_name!, product.price_variant_1_value!);
+                        onClose();
+                      }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
+                    >
+                      {t("add")} {renderAddIcon()}
+                    </Button>
+                  </div>
+                )}
+                {/* Variante 2 */}
+                {product.price_variant_2_name && product.price_variant_2_value !== null && (
+                  <div className="flex justify-between items-center gap-2">
+                    <span style={{
+                        fontFamily: fontSettings?.price?.fontFamily,
+                        fontWeight: fontSettings?.price?.fontWeight,
+                        fontStyle: fontSettings?.price?.fontStyle,
+                        fontSize: fontSettings?.price?.fontSize
+                      }}>
+                      {product.price_variant_2_value?.toFixed(2)} €
+                      {product.price_variant_2_name ? ` ${product.price_variant_2_name}` : ""}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        addToCart(product, product.price_variant_2_name!, product.price_variant_2_value!);
+                        onClose();
+                      }}
+                      style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
+                      className={buttonSettings?.color ? "" : undefined}
+                    >
+                      {t("add")} {renderAddIcon()}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="font-medium" style={{
+                fontFamily: fontSettings?.price?.fontFamily,
+                fontWeight: fontSettings?.price?.fontWeight,
+                fontStyle: fontSettings?.price?.fontStyle,
+                fontSize: fontSettings?.price?.fontSize
+              }}>
+                {typeof product.price_standard === "number" && (
+                  <>
+                    {product.price_standard?.toFixed(2)} €{priceSuffix && <span className="ml-1">{priceSuffix}</span>}
+                  </>
+                )}
+              </p>
+            )}
+          </div>
         </div>
-        
         <div className="flex justify-end">
           {!product.has_multiple_prices && (
             <Button
-              onClick={() => handleAddToCart(product)}
+              onClick={() => {
+                addToCart(product);
+                onClose();
+              }}
               style={buttonSettings?.color ? { backgroundColor: buttonSettings.color, color: "#fff", border: "none" } : undefined}
               className={buttonSettings?.color ? "" : undefined}
             >
