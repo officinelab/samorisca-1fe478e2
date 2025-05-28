@@ -16,27 +16,6 @@ export const checkRemainingTokens = async (): Promise<number | null> => {
       return null;
     }
 
-    // Recupera il limite mensile dalle impostazioni
-    const { data: settingsData, error: settingsError } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'monthlyTokensLimit')
-      .maybeSingle();
-
-    let monthlyLimit = 300; // Default fallback
-    if (!settingsError && settingsData?.value) {
-      // Gestisce correttamente il valore che può essere sia stringa che numero
-      const rawValue = settingsData.value;
-      if (typeof rawValue === 'string') {
-        monthlyLimit = parseInt(rawValue) || 300;
-      } else if (typeof rawValue === 'number') {
-        monthlyLimit = rawValue;
-      } else {
-        // Se è un oggetto, prova a convertirlo a stringa e poi a numero
-        monthlyLimit = parseInt(String(rawValue)) || 300;
-      }
-    }
-
     // Prende il record dei token del mese
     const { data: tokensData, error: tokensError } = await supabase
       .from('translation_tokens')
@@ -55,12 +34,29 @@ export const checkRemainingTokens = async (): Promise<number | null> => {
     }
 
     if (!tokensData) {
-      // Nessun record trovato → usa il limite dinamico invece del default 300
+      // Nessun record trovato → usa il limite dalle impostazioni per il mese corrente
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'monthlyTokensLimit')
+        .maybeSingle();
+
+      let monthlyLimit = 300; // Default fallback
+      if (!settingsError && settingsData?.value) {
+        const rawValue = settingsData.value;
+        if (typeof rawValue === 'string') {
+          monthlyLimit = parseInt(rawValue) || 300;
+        } else if (typeof rawValue === 'number') {
+          monthlyLimit = rawValue;
+        } else {
+          monthlyLimit = parseInt(String(rawValue)) || 300;
+        }
+      }
       return monthlyLimit;
     }
 
-    // Calcola token disponibili usando il limite effettivo o quello dalle impostazioni
-    const effectiveLimit = tokensData.tokens_limit || monthlyLimit;
+    // Usa il limite già presente nel record, NON quello dalle impostazioni
+    const effectiveLimit = tokensData.tokens_limit || 300;
     const monthlyRemaining = Math.max(0, effectiveLimit - (tokensData.tokens_used ?? 0));
     const purchasedRemaining = Math.max(0, (tokensData.purchased_tokens_total ?? 0) - (tokensData.purchased_tokens_used ?? 0));
     const totalRemaining = monthlyRemaining + purchasedRemaining;

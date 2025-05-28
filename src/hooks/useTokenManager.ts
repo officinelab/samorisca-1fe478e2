@@ -13,30 +13,11 @@ export const useTokenManager = () => {
     setError(null);
 
     try {
-      const { data: remaining, error: remainingError } = await supabase
-        .rpc('get_remaining_tokens');
-      
-      if (remainingError) {
-        throw new Error(`Errore nel recupero dei token rimanenti: ${remainingError.message}`);
-      }
-
       const { data: monthData, error: monthError } = await supabase
         .rpc('get_current_month');
       
       if (monthError) {
         throw new Error(`Errore nel recupero del mese corrente: ${monthError.message}`);
-      }
-
-      // Recupera il limite mensile dalle impostazioni
-      const { data: settingsData, error: settingsError } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'monthlyTokensLimit')
-        .maybeSingle();
-
-      let monthlyLimit = 300; // Default fallback
-      if (!settingsError && settingsData?.value) {
-        monthlyLimit = parseInt(settingsData.value.toString()) || 300;
       }
 
       const { data: tokensData, error: tokensDataError } = await supabase
@@ -49,8 +30,20 @@ export const useTokenManager = () => {
         throw new Error(`Errore nel recupero dei dati sui token: ${tokensDataError.message}`);
       }
 
-      // If no data found, default values
+      // If no data found, create with current limit from settings
       if (!tokensData) {
+        // Recupera il limite mensile dalle impostazioni SOLO per nuovi record
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'monthlyTokensLimit')
+          .maybeSingle();
+
+        let monthlyLimit = 300; // Default fallback
+        if (!settingsError && settingsData?.value) {
+          monthlyLimit = parseInt(settingsData.value.toString()) || 300;
+        }
+
         setTokenUsage({
           tokensUsed: 0,
           tokensRemaining: monthlyLimit,
@@ -61,13 +54,15 @@ export const useTokenManager = () => {
           month: monthData
         });
       } else {
-        const tokensRemaining = tokensData.tokens_limit - tokensData.tokens_used;
+        // Per record esistenti, usa il limite già presente nel record
+        const effectiveLimit = tokensData.tokens_limit || 300;
+        const tokensRemaining = effectiveLimit - tokensData.tokens_used;
         const purchasedTokensTotal = tokensData.purchased_tokens_total ?? 0;
         const purchasedTokensUsed = tokensData.purchased_tokens_used ?? 0;
         setTokenUsage({
           tokensUsed: tokensData.tokens_used || 0,
           tokensRemaining: tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed),
-          tokensLimit: tokensData.tokens_limit || monthlyLimit,
+          tokensLimit: effectiveLimit,
           purchasedTokensTotal,
           purchasedTokensUsed,
           lastUpdated: tokensData.last_updated,
@@ -104,16 +99,12 @@ export const useTokenManager = () => {
     };
     window.addEventListener("refresh-tokens", onRefresh);
 
-    // Ascolta anche i cambiamenti delle impostazioni del sito
-    const onSettingsUpdate = () => {
-      fetchTokenUsage();
-    };
-    window.addEventListener("siteSettingsUpdated", onSettingsUpdate);
+    // NON ascoltare più i cambiamenti delle impostazioni del sito
+    // perché non devono influenzare il mese corrente
 
     return () => {
       supabase.removeChannel(channel);
       window.removeEventListener("refresh-tokens", onRefresh);
-      window.removeEventListener("siteSettingsUpdated", onSettingsUpdate);
     };
   }, []);
 
