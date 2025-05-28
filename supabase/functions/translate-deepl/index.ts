@@ -44,6 +44,35 @@ serve(async (req) => {
       );
     }
     
+    // --- Check token availability prima di traduzione
+    console.log('[DEEPL][TOKEN] Verifico token disponibili prima della traduzione...');
+    const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
+      .rpc('get_remaining_tokens');
+    
+    console.log('[DEEPL][TOKEN] Risposta get_remaining_tokens PRIMA:', { 
+      tokensDataBefore, 
+      tokensErrorBefore,
+      supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
+      serviceKey: supabaseServiceKey ? 'SET' : 'NOT SET'
+    });
+    
+    if (tokensErrorBefore) {
+      console.error('[DEEPL][TOKEN] Errore nel controllo dei token PRIMA:', tokensErrorBefore);
+      return new Response(
+        JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (tokensDataBefore <= 0) {
+      console.log('[DEEPL][TOKEN] Token esauriti, esco subito');
+      return new Response(
+        JSON.stringify({ error: "Token mensili esauriti" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[DEEPL][TOKEN] Token disponibili PRIMA della traduzione: ${tokensDataBefore}`);
+    
     const languageMap: Record<string, string> = {
       'en': 'EN-US',
       'es': 'ES',
@@ -90,6 +119,15 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
+      // === VERIFICA STATO TOKENS PRIMA DI INCREMENTARE ===
+      console.log('[DEEPL][TOKEN] Verifico lo stato dei token nella tabella PRIMA di incrementare...');
+      const { data: tableStateBefore, error: tableStateErrorBefore } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', (await supabase.rpc('get_current_month')).data);
+      
+      console.log('[DEEPL][TOKEN] Stato tabella PRIMA:', { tableStateBefore, tableStateErrorBefore });
+
       // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO ===
       try {
         console.log('[DEEPL][TOKEN] Chiamando increment_tokens con 1 token...');
@@ -97,22 +135,50 @@ serve(async (req) => {
         const { data: incrementResult, error: incrementError } = await supabase
           .rpc('increment_tokens', { token_count: 1 });
         
-        console.log('[DEEPL][TOKEN] Risultato increment_tokens:', { incrementResult, incrementError });
+        console.log('[DEEPL][TOKEN] Risultato increment_tokens:', { 
+          incrementResult, 
+          incrementError,
+          type: typeof incrementResult,
+          value: incrementResult
+        });
         
         if (incrementError) {
           console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
           console.error('[DEEPL][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
-        } else if (incrementResult === false) {
-          console.error('[DEEPL][TOKEN] Token insufficienti (ritornato false)');
-        } else if (incrementResult === true) {
-          console.log('[DEEPL][TOKEN] Token consumato correttamente');
+          console.error('[DEEPL][TOKEN] Codice errore:', incrementError.code);
+          console.error('[DEEPL][TOKEN] Messaggio errore:', incrementError.message);
         } else {
-          console.log('[DEEPL][TOKEN] Risultato inaspettato:', incrementResult);
+          console.log('[DEEPL][TOKEN] ✅ increment_tokens completato senza errori');
+          console.log(`[DEEPL][TOKEN] Risultato ricevuto: ${incrementResult} (tipo: ${typeof incrementResult})`);
+          
+          if (incrementResult === false) {
+            console.error('[DEEPL][TOKEN] ⚠️ Token insufficienti (ritornato false)');
+          } else if (incrementResult === true) {
+            console.log('[DEEPL][TOKEN] ✅ Token consumato correttamente');
+          } else {
+            console.log(`[DEEPL][TOKEN] ⚠️ Risultato inaspettato: ${incrementResult}`);
+          }
         }
       } catch (tokErr) {
         console.error('[DEEPL][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
         console.error('[DEEPL][TOKEN] Stack trace:', tokErr.stack);
       }
+
+      // === VERIFICA STATO TOKENS DOPO INCREMENTO ===
+      console.log('[DEEPL][TOKEN] Verifico lo stato dei token nella tabella DOPO incremento...');
+      const { data: tableStateAfter, error: tableStateErrorAfter } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', (await supabase.rpc('get_current_month')).data);
+      
+      console.log('[DEEPL][TOKEN] Stato tabella DOPO:', { tableStateAfter, tableStateErrorAfter });
+
+      // === VERIFICA TOKEN RIMANENTI DOPO ===
+      console.log('[DEEPL][TOKEN] Verifico token rimanenti DOPO...');
+      const { data: tokensDataAfter, error: tokensErrorAfter } = await supabase
+        .rpc('get_remaining_tokens');
+      
+      console.log('[DEEPL][TOKEN] Token rimanenti DOPO:', { tokensDataAfter, tokensErrorAfter });
       // === /INCREMENTO TOKEN ===
 
       return new Response(

@@ -45,6 +45,35 @@ serve(async (req) => {
       );
     }
     
+    // --- Check token availability prima di traduzione
+    console.log('[PERPLEXITY][TOKEN] Verifico token disponibili prima della traduzione...');
+    const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
+      .rpc('get_remaining_tokens');
+    
+    console.log('[PERPLEXITY][TOKEN] Risposta get_remaining_tokens PRIMA:', { 
+      tokensDataBefore, 
+      tokensErrorBefore,
+      supabaseUrl: supabaseUrl ? 'SET' : 'NOT SET',
+      serviceKey: supabaseServiceKey ? 'SET' : 'NOT SET'
+    });
+    
+    if (tokensErrorBefore) {
+      console.error('[PERPLEXITY][TOKEN] Errore nel controllo dei token PRIMA:', tokensErrorBefore);
+      return new Response(
+        JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (tokensDataBefore <= 0) {
+      console.log('[PERPLEXITY][TOKEN] Token esauriti, esco subito');
+      return new Response(
+        JSON.stringify({ error: "Token mensili esauriti" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[PERPLEXITY][TOKEN] Token disponibili PRIMA della traduzione: ${tokensDataBefore}`);
+    
     const languageMap: Record<string, string> = {
       'en': 'English',
       'es': 'Spanish',
@@ -127,6 +156,15 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
+    // === VERIFICA STATO TOKENS PRIMA DI INCREMENTARE ===
+    console.log('[PERPLEXITY][TOKEN] Verifico lo stato dei token nella tabella PRIMA di incrementare...');
+    const { data: tableStateBefore, error: tableStateErrorBefore } = await supabase
+      .from('translation_tokens')
+      .select('*')
+      .eq('month', (await supabase.rpc('get_current_month')).data);
+    
+    console.log('[PERPLEXITY][TOKEN] Stato tabella PRIMA:', { tableStateBefore, tableStateErrorBefore });
+
     // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO ===
     try {
       console.log('[PERPLEXITY][TOKEN] Chiamando increment_tokens con 1 token...');
@@ -134,22 +172,50 @@ Return only the translated result as if it would go inside a printed menu, with 
       const { data: incrementResult, error: incrementError } = await supabase
         .rpc('increment_tokens', { token_count: 1 });
       
-      console.log('[PERPLEXITY][TOKEN] Risultato increment_tokens:', { incrementResult, incrementError });
+      console.log('[PERPLEXITY][TOKEN] Risultato increment_tokens:', { 
+        incrementResult, 
+        incrementError,
+        type: typeof incrementResult,
+        value: incrementResult
+      });
       
       if (incrementError) {
         console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
         console.error('[PERPLEXITY][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
-      } else if (incrementResult === false) {
-        console.error('[PERPLEXITY][TOKEN] Token insufficienti (ritornato false)');
-      } else if (incrementResult === true) {
-        console.log('[PERPLEXITY][TOKEN] Token consumato correttamente');
+        console.error('[PERPLEXITY][TOKEN] Codice errore:', incrementError.code);
+        console.error('[PERPLEXITY][TOKEN] Messaggio errore:', incrementError.message);
       } else {
-        console.log('[PERPLEXITY][TOKEN] Risultato inaspettato:', incrementResult);
+        console.log('[PERPLEXITY][TOKEN] ✅ increment_tokens completato senza errori');
+        console.log(`[PERPLEXITY][TOKEN] Risultato ricevuto: ${incrementResult} (tipo: ${typeof incrementResult})`);
+        
+        if (incrementResult === false) {
+          console.error('[PERPLEXITY][TOKEN] ⚠️ Token insufficienti (ritornato false)');
+        } else if (incrementResult === true) {
+          console.log('[PERPLEXITY][TOKEN] ✅ Token consumato correttamente');
+        } else {
+          console.log(`[PERPLEXITY][TOKEN] ⚠️ Risultato inaspettato: ${incrementResult}`);
+        }
       }
     } catch (tokErr) {
       console.error('[PERPLEXITY][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
       console.error('[PERPLEXITY][TOKEN] Stack trace:', tokErr.stack);
     }
+
+    // === VERIFICA STATO TOKENS DOPO INCREMENTO ===
+    console.log('[PERPLEXITY][TOKEN] Verifico lo stato dei token nella tabella DOPO incremento...');
+    const { data: tableStateAfter, error: tableStateErrorAfter } = await supabase
+      .from('translation_tokens')
+      .select('*')
+      .eq('month', (await supabase.rpc('get_current_month')).data);
+    
+    console.log('[PERPLEXITY][TOKEN] Stato tabella DOPO:', { tableStateAfter, tableStateErrorAfter });
+
+    // === VERIFICA TOKEN RIMANENTI DOPO ===
+    console.log('[PERPLEXITY][TOKEN] Verifico token rimanenti DOPO...');
+    const { data: tokensDataAfter, error: tokensErrorAfter } = await supabase
+      .rpc('get_remaining_tokens');
+    
+    console.log('[PERPLEXITY][TOKEN] Token rimanenti DOPO:', { tokensDataAfter, tokensErrorAfter });
     // === /INCREMENTO TOKEN ===
     
     return new Response(
