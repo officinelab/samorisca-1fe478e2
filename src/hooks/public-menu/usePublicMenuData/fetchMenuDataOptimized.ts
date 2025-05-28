@@ -76,13 +76,13 @@ export const fetchMenuDataOptimized = async (language: string) => {
     ] = await Promise.all([
       fetchCategories(language),
       fetchFeaturesAndLabels(language),
-      fetchAllergens(language),
+      fetchAllergens(), // No arguments needed
       fetchCategoryNotes()
     ]);
 
     // Fetch dei prodotti per categoria
     const productsPromises = categories.map(category =>
-      fetchProductsForCategories([category.id], language, features, labels, allergens)
+      fetchProductsForCategories([category.id]) // Only category IDs needed
         .then(results => results[category.id] || [])
     );
 
