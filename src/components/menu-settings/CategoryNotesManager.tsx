@@ -22,7 +22,7 @@ const CategoryNotesManager: React.FC = () => {
     const fetchCategories = async () => {
       const { data } = await supabase
         .from('categories')
-        .select('id, title')
+        .select('*')
         .eq('is_active', true)
         .order('display_order');
       

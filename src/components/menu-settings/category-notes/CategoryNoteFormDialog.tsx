@@ -18,7 +18,7 @@ import { Category } from "@/types/database";
 interface CategoryNoteFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (id: string, data: CategoryNoteFormData) => Promise<any> | ((data: CategoryNoteFormData) => Promise<any>);
+  onSubmit: ((data: CategoryNoteFormData) => Promise<any>) | ((id: string, data: CategoryNoteFormData) => Promise<any>);
   categories: Category[];
   initialData?: CategoryNote | null;
 }
@@ -71,9 +71,11 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
   const handleFormSubmit = async (data: CategoryNoteFormData) => {
     try {
       if (initialData) {
-        await (onSubmit as any)(initialData.id, data);
+        // Update case - pass ID as first parameter
+        await (onSubmit as (id: string, data: CategoryNoteFormData) => Promise<any>)(initialData.id, data);
       } else {
-        await (onSubmit as any)(data);
+        // Create case - pass only data
+        await (onSubmit as (data: CategoryNoteFormData) => Promise<any>)(data);
       }
       onClose();
     } catch (error) {

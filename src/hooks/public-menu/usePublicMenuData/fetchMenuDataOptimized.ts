@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Category, Product, Allergen } from "@/types/database";
 import { CategoryNote } from "@/types/categoryNotes";
 import { fetchCategories } from "./fetchCategories";
-import { fetchProductsByCategory } from "./fetchProductsByCategory";
+import { fetchProductsForCategories } from "./fetchProductsByCategory";
 import { fetchAllergens } from "./fetchAllergens";
-import { fetchFeaturesAndLabels } from "./fetchFeaturesAndLabels";
+import { fetchProductFeatures, fetchProductLabels } from "./fetchFeaturesAndLabels";
 
 // Funzione per recuperare le note categorie
 const fetchCategoryNotes = async (): Promise<CategoryNote[]> => {
@@ -47,27 +47,60 @@ export const fetchMenuDataOptimized = async (language: string) => {
     // Fetch parallelo di tutti i dati necessari
     const [
       categories,
-      { features, labels },
+      features,
+      labels,
       allergens,
       categoryNotes
     ] = await Promise.all([
-      fetchCategories(language),
-      fetchFeaturesAndLabels(language),
-      fetchAllergens(language),
+      fetchCategories(),
+      fetchProductFeatures(language),
+      fetchProductLabels(language),
+      fetchAllergens(),
       fetchCategoryNotes()
     ]);
 
-    // Fetch dei prodotti per categoria
-    const productsPromises = categories.map(category =>
-      fetchProductsByCategory(category.id, language, features, labels, allergens)
-    );
+    // Prepara le traduzioni per features e labels
+    let featuresTranslations: Record<string, any[]> = {};
+    let labelsTranslations: Record<string, any[]> = {};
 
-    const productsArrays = await Promise.all(productsPromises);
+    if (language !== 'it') {
+      // Fetch traduzioni features
+      if (features.length > 0) {
+        const { data: featureTrans } = await supabase
+          .from('translations')
+          .select('*')
+          .in('entity_id', features.map(f => f.id))
+          .eq('entity_type', 'product_features')
+          .eq('language', language);
+        
+        (featureTrans || []).forEach(tr => {
+          if (!featuresTranslations[tr.entity_id]) featuresTranslations[tr.entity_id] = [];
+          featuresTranslations[tr.entity_id].push(tr);
+        });
+      }
 
-    // Organizza i prodotti per categoria
-    const products: Record<string, Product[]> = {};
-    categories.forEach((category, index) => {
-      products[category.id] = productsArrays[index];
+      // Fetch traduzioni labels
+      if (labels.length > 0) {
+        const { data: labelTrans } = await supabase
+          .from('translations')
+          .select('*')
+          .in('entity_id', labels.map(l => l.id))
+          .eq('entity_type', 'product_labels')
+          .eq('language', language);
+        
+        (labelTrans || []).forEach(tr => {
+          if (!labelsTranslations[tr.entity_id]) labelsTranslations[tr.entity_id] = [];
+          labelsTranslations[tr.entity_id].push(tr);
+        });
+      }
+    }
+
+    // Fetch dei prodotti per tutte le categorie
+    const products = await fetchProductsForCategories({
+      categories,
+      featuresTranslations,
+      labelsTranslations,
+      language
     });
 
     return {
