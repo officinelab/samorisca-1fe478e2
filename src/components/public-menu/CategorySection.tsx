@@ -15,7 +15,7 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: 'default' | 'compact';
+  productCardLayoutType?: string;
   fontSettings?: {
     title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
@@ -25,6 +25,12 @@ interface CategorySectionProps {
     icon?: string;
   };
 }
+
+// Funzione helper per validare il layout type
+const validateLayoutType = (layoutType?: string): 'default' | 'compact' => {
+  if (layoutType === 'compact') return 'compact';
+  return 'default';
+};
 
 // Componente per lazy loading dei prodotti
 const LazyProductList: React.FC<{
@@ -100,7 +106,7 @@ const LazyProductList: React.FC<{
               addToCart={addToCart}
               deviceView={deviceView}
               truncateText={truncateText}
-              layoutType={productCardLayoutType}
+              layoutType={validateLayoutType(productCardLayoutType)}
               fontSettings={fontSettings}
               buttonSettings={buttonSettings}
             />

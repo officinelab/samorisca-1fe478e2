@@ -69,7 +69,7 @@ const fetchAllProductsOptimized = async (categoryIds: string[], language: string
     language !== 'it' 
       ? supabase.from('translations').select('*').in('entity_id', productIds).eq('entity_type', 'products').eq('language', language)
       : Promise.resolve({ data: null }),
-    language !== 'it' && productsData.some(p => p.allergens?.length > 0)
+    language !== 'it'
       ? supabase.from('translations').select('*').eq('entity_type', 'allergens').eq('language', language)
       : Promise.resolve({ data: null }),
     language !== 'it'
