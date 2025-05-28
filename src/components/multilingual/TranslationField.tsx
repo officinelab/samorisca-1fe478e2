@@ -9,7 +9,7 @@ import { TranslationFieldError } from "./translation-field/TranslationFieldError
 
 interface TranslationFieldProps {
   id: string;
-  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels";
+  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels" | "category_notes";
   fieldName: string;
   originalText: string;
   language: SupportedLanguage;

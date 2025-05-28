@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 
-export type EntityType = "categories" | "products" | "allergens" | "product_features" | "product_labels";
+export type EntityType = "categories" | "products" | "allergens" | "product_features" | "product_labels" | "category_notes";
 export interface MissingOrOutdatedField {
   id: string;
   entityType: EntityType;
@@ -18,7 +18,9 @@ const translatableFields: Record<EntityType, string[]> = {
   allergens: ["title", "description"],
   product_features: ["title"],
   product_labels: ["title"],
+  category_notes: ["title", "text"],
 };
+
 const principalFields: Record<EntityType, string[]> = {
   products: [
     "title", "description", "price_suffix",
@@ -28,6 +30,7 @@ const principalFields: Record<EntityType, string[]> = {
   allergens: ["title", "description"],
   product_features: ["title"],
   product_labels: ["title"],
+  category_notes: ["title", "text"],
 };
 
 export const useMissingTranslations = (language: SupportedLanguage) => {
@@ -50,7 +53,8 @@ export const useMissingTranslations = (language: SupportedLanguage) => {
           entityType === "categories" ||
           entityType === "allergens" ||
           entityType === "product_features" ||
-          entityType === "product_labels"
+          entityType === "product_labels" ||
+          entityType === "category_notes"
         ) {
           selectFields.push("title");
         }
@@ -143,4 +147,3 @@ export const useMissingTranslations = (language: SupportedLanguage) => {
 
   return { fieldsToTranslate, isLoading, entitiesMap };
 };
-

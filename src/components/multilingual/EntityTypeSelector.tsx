@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface EntityOption {
   value: string;
   label: string;
-  type: 'categories' | 'allergens' | 'product_features' | 'product_labels';
+  type: 'categories' | 'allergens' | 'product_features' | 'product_labels' | 'category_notes';
 }
 
 const entityOptions: EntityOption[] = [
@@ -13,6 +13,7 @@ const entityOptions: EntityOption[] = [
   { value: 'allergens', label: 'Allergeni', type: 'allergens' },
   { value: 'product_features', label: 'Caratteristiche', type: 'product_features' },
   { value: 'product_labels', label: 'Etichette', type: 'product_labels' },
+  { value: 'category_notes', label: 'Note Categorie', type: 'category_notes' },
 ];
 
 interface EntityTypeSelectorProps {

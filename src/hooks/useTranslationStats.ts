@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage, TranslationStats } from '@/types/translation';
@@ -9,6 +10,7 @@ const translatableFieldsMap = {
   allergens: ["title", "description"],
   product_features: ["title"],
   product_labels: ["title"],
+  category_notes: ["title", "text"],
 };
 
 export const useTranslationStats = (language: SupportedLanguage) => {
@@ -44,7 +46,7 @@ export const useTranslationStats = (language: SupportedLanguage) => {
           for (const entity of entities as any[]) {
             translatableFieldsMap[entityType].forEach(field => {
               const value = entity[field];
-              // Campo valido solo se non vuoto/null (come in tab “Voci da tradurre”)
+              // Campo valido solo se non vuoto/null (come in tab "Voci da tradurre")
               if (
                 value !== undefined &&
                 value !== null &&

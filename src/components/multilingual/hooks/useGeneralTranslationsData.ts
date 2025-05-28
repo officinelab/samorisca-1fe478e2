@@ -6,16 +6,18 @@ import { SupportedLanguage } from "@/types/translation";
 interface EntityOption {
   value: string;
   label: string;
-  type: 'categories' | 'allergens' | 'product_features' | 'product_labels';
+  type: 'categories' | 'allergens' | 'product_features' | 'product_labels' | 'category_notes';
 }
 
 interface TranslatableItem {
   id: string;
   title: string;
   description?: string | null;
-  type: "categories" | "allergens" | "product_features" | "product_labels";
+  text?: string | null;
+  type: "categories" | "allergens" | "product_features" | "product_labels" | "category_notes";
   translationTitle?: string;
   translationDescription?: string | null;
+  translationText?: string | null;
 }
 
 export const useGeneralTranslationsData = (
@@ -34,12 +36,16 @@ export const useGeneralTranslationsData = (
         if (selectedEntityType.type === "categories" || selectedEntityType.type === "allergens") {
           selectString += ", description";
         }
+        if (selectedEntityType.type === "category_notes") {
+          selectString += ", text";
+        }
         let query = supabase.from(selectedEntityType.type).select(selectString);
         if (
           selectedEntityType.type === "categories" ||
           selectedEntityType.type === "allergens" ||
           selectedEntityType.type === "product_features" ||
-          selectedEntityType.type === "product_labels"
+          selectedEntityType.type === "product_labels" ||
+          selectedEntityType.type === "category_notes"
         ) {
           query = query.order("display_order", { ascending: true });
         }
@@ -68,9 +74,11 @@ export const useGeneralTranslationsData = (
             id: item.id,
             title: item.title ?? "",
             description: item.description !== undefined ? item.description : null,
+            text: item.text !== undefined ? item.text : null,
             type: selectedEntityType.type,
             translationTitle: translationsMap[item.id]?.title ?? "",
             translationDescription: translationsMap[item.id]?.description ?? "",
+            translationText: translationsMap[item.id]?.text ?? "",
           }))
         );
       } catch (error) {

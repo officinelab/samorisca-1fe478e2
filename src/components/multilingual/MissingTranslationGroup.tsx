@@ -26,6 +26,7 @@ const principalFields: Record<string, string[]> = {
   allergens: ["title", "description"],
   product_features: ["title"],
   product_labels: ["title"],
+  category_notes: ["title", "text"],
 };
 
 const translatableFields: Record<string, string[]> = {
@@ -34,11 +35,13 @@ const translatableFields: Record<string, string[]> = {
   allergens: ["title", "description"],
   product_features: ["title"],
   product_labels: ["title"],
+  category_notes: ["title", "text"],
 };
 
 const fieldLabels: Record<string, string> = {
   title: "Nome",
   description: "Descrizione",
+  text: "Testo",
   price_suffix: "Suffisso prezzo",
   price_variant_1_name: "Variante 1 nome",
   price_variant_2_name: "Variante 2 nome"
@@ -67,7 +70,7 @@ export const MissingTranslationGroup = ({
       fieldName,
       original: entity[fieldName] !== undefined && entity[fieldName] !== null ? String(entity[fieldName]) : "",
       translationField: true,
-      multiline: fieldName === "description",
+      multiline: fieldName === "description" || fieldName === "text",
       isMissing: toBeTranslatedFields.includes(fieldName),
       badgeType: badgeMap[fieldName],
     }));
@@ -78,7 +81,7 @@ export const MissingTranslationGroup = ({
     <TableTranslationLayout
       key={groupKey}
       title={entity.title || "(senza titolo)"}
-      subtitle={entity.description || ""}
+      subtitle={entity.description || entity.text || ""}
       rows={rows}
       language={language}
       entityType={entityType}

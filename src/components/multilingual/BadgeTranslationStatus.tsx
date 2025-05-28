@@ -11,7 +11,7 @@ type EntityWithUpdatedAt = { updated_at: string };
 
 interface BadgeTranslationStatusProps {
   entityId: string;
-  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels";
+  entityType: "products" | "categories" | "allergens" | "product_features" | "product_labels" | "category_notes";
   fieldName: string;
   language: SupportedLanguage;
   refreshKey?: number;
@@ -43,7 +43,8 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       entityType === "categories" ||
       entityType === "allergens" ||
       entityType === "product_features" ||
-      entityType === "product_labels"
+      entityType === "product_labels" ||
+      entityType === "category_notes"
     ) {
       sourceTable = entityType;
     }
