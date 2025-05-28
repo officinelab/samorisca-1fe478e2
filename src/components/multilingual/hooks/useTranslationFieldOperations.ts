@@ -39,9 +39,22 @@ export function useTranslationFieldOperations({
   const { translateText, saveTranslation, currentService } = useTranslationService();
 
   const emitTranslationRefreshEvent = () => {
+    console.log(`[TranslationFieldOperations] Emitting refresh event for ${entityType}:${id}:${fieldName}`);
     if (typeof window !== "undefined" && window.dispatchEvent) {
-      window.dispatchEvent(new CustomEvent("refresh-translation-status"));
+      const event = new CustomEvent("refresh-translation-status", {
+        detail: { entityType, entityId: id, fieldName, language }
+      });
+      window.dispatchEvent(event);
     }
+    // Aggiungiamo anche un piccolo delay per assicurarci che l'evento venga processato
+    setTimeout(() => {
+      if (typeof window !== "undefined" && window.dispatchEvent) {
+        const delayedEvent = new CustomEvent("refresh-translation-status", {
+          detail: { entityType, entityId: id, fieldName, language }
+        });
+        window.dispatchEvent(delayedEvent);
+      }
+    }, 100);
   };
 
   const handleTranslate = async () => {

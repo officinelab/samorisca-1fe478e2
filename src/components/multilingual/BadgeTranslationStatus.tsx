@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { CircleX, CircleCheck, CircleAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,75 +33,82 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
 }) => {
   const [status, setStatus] = useState<Status>("loading");
 
-  useEffect(() => {
-    let active = true;
-    async function fetchStatus() {
-      setStatus("loading");
-      let updatedAt: string | null = null;
+  const fetchStatus = async () => {
+    setStatus("loading");
+    let updatedAt: string | null = null;
 
-      let sourceTable = null;
-      if (
-        entityType === "products" ||
-        entityType === "categories" ||
-        entityType === "allergens" ||
-        entityType === "product_features" ||
-        entityType === "product_labels"
-      ) {
-        sourceTable = entityType;
-      }
-      if (!sourceTable) {
-        setStatus("error");
-        return;
-      }
-
-      // Add query select type explicitly
-      const { data: entity, error } = await supabase
-        .from(sourceTable)
-        .select("updated_at")
-        .eq("id", entityId)
-        .maybeSingle<EntityWithUpdatedAt>();
-
-      if (!active) return;
-      if (error || !entity) {
-        setStatus("error");
-        return;
-      }
-      updatedAt = entity.updated_at;
-
-      // Fetch traduzione dalla tabella centralized translations
-      const { data: translation, error: translationError } = await supabase
-        .from("translations")
-        .select("last_updated")
-        .eq("entity_id", entityId)
-        .eq("entity_type", entityType)
-        .eq("field", fieldName)
-        .eq("language", language)
-        .maybeSingle();
-
-      if (!active) return;
-
-      if (!translation || translationError) {
-        setStatus("missing");
-        return;
-      }
-
-      const entityUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
-      const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
-
-      if (translationUpdated >= entityUpdated) {
-        setStatus("updated");
-      } else if (translationUpdated < entityUpdated) {
-        setStatus("outdated");
-      } else {
-        setStatus("error");
-      }
+    let sourceTable = null;
+    if (
+      entityType === "products" ||
+      entityType === "categories" ||
+      entityType === "allergens" ||
+      entityType === "product_features" ||
+      entityType === "product_labels"
+    ) {
+      sourceTable = entityType;
+    }
+    if (!sourceTable) {
+      setStatus("error");
+      return;
     }
 
+    // Add query select type explicitly
+    const { data: entity, error } = await supabase
+      .from(sourceTable)
+      .select("updated_at")
+      .eq("id", entityId)
+      .maybeSingle<EntityWithUpdatedAt>();
+
+    if (error || !entity) {
+      setStatus("error");
+      return;
+    }
+    updatedAt = entity.updated_at;
+
+    // Fetch traduzione dalla tabella centralized translations
+    const { data: translation, error: translationError } = await supabase
+      .from("translations")
+      .select("last_updated")
+      .eq("entity_id", entityId)
+      .eq("entity_type", entityType)
+      .eq("field", fieldName)
+      .eq("language", language)
+      .maybeSingle();
+
+    if (!translation || translationError) {
+      setStatus("missing");
+      return;
+    }
+
+    const entityUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
+    const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
+
+    if (translationUpdated >= entityUpdated) {
+      setStatus("updated");
+    } else if (translationUpdated < entityUpdated) {
+      setStatus("outdated");
+    } else {
+      setStatus("error");
+    }
+  };
+
+  useEffect(() => {
     fetchStatus();
-    return () => {
-      active = false;
-    };
   }, [entityId, entityType, fieldName, language, refreshKey]);
+
+  // Aggiungiamo un listener per l'evento globale di refresh
+  useEffect(() => {
+    const handleRefresh = () => {
+      console.log(`[BadgeTranslationStatus] Received refresh event for ${entityType}:${entityId}:${fieldName}`);
+      fetchStatus();
+    };
+
+    window.addEventListener("refresh-translation-status", handleRefresh);
+    
+    return () => {
+      window.removeEventListener("refresh-translation-status", handleRefresh);
+    };
+  }, [entityId, entityType, fieldName, language]);
 
   // Badge UI
   if (status === "loading") {
