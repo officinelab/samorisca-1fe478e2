@@ -18,7 +18,7 @@ import { Category } from "@/types/database";
 interface CategoryNoteFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CategoryNoteFormData) => Promise<any>;
+  onSubmit: (id: string, data: CategoryNoteFormData) => Promise<any> | ((data: CategoryNoteFormData) => Promise<any>);
   categories: Category[];
   initialData?: CategoryNote | null;
 }
@@ -70,7 +70,11 @@ export const CategoryNoteFormDialog: React.FC<CategoryNoteFormDialogProps> = ({
 
   const handleFormSubmit = async (data: CategoryNoteFormData) => {
     try {
-      await onSubmit(data);
+      if (initialData) {
+        await (onSubmit as any)(initialData.id, data);
+      } else {
+        await (onSubmit as any)(data);
+      }
       onClose();
     } catch (error) {
       console.error("Errore nel salvataggio:", error);
