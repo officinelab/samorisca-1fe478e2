@@ -12,9 +12,10 @@ interface TranslateRequest {
   fieldName: string;
 }
 
+// Client Supabase con service role per le operazioni sui token
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const DEEPL_API_KEY = Deno.env.get('DEEPL_API_KEY') || '';
 
@@ -89,23 +90,30 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
-      // === AGGIORNAMENTO TOKEN CORRETTO ===
+      // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO ===
       try {
-        // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
-        const { data: success, error: incrementError } = await supabase
+        console.log('[DEEPL][TOKEN] Chiamando increment_tokens con 1 token...');
+        
+        const { data: incrementResult, error: incrementError } = await supabase
           .rpc('increment_tokens', { token_count: 1 });
+        
+        console.log('[DEEPL][TOKEN] Risultato increment_tokens:', { incrementResult, incrementError });
         
         if (incrementError) {
           console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
-        } else if (success === false) {
-          console.error('[DEEPL][TOKEN] Token insufficienti');
+          console.error('[DEEPL][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
+        } else if (incrementResult === false) {
+          console.error('[DEEPL][TOKEN] Token insufficienti (ritornato false)');
+        } else if (incrementResult === true) {
+          console.log('[DEEPL][TOKEN] Token consumato correttamente');
         } else {
-          console.log('[DEEPL][TOKEN] Token consumato correttamente (mensili o acquistati)');
+          console.log('[DEEPL][TOKEN] Risultato inaspettato:', incrementResult);
         }
       } catch (tokErr) {
-        console.error('[DEEPL][TOKEN] Errore inatteso:', tokErr);
+        console.error('[DEEPL][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
+        console.error('[DEEPL][TOKEN] Stack trace:', tokErr.stack);
       }
-      // === /AGGIORNAMENTO TOKEN ===
+      // === /INCREMENTO TOKEN ===
 
       return new Response(
         JSON.stringify({ 

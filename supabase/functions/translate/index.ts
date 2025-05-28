@@ -12,10 +12,10 @@ interface TranslateRequest {
   fieldName: string;
 }
 
-// Client Supabase
+// Client Supabase con service role per le operazioni sui token
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY') || '';
 
@@ -127,23 +127,30 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // === AGGIORNAMENTO TOKEN CORRETTO ===
+    // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO ===
     try {
-      // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
-      const { data: success, error: incrementError } = await supabase
+      console.log('[PERPLEXITY][TOKEN] Chiamando increment_tokens con 1 token...');
+      
+      const { data: incrementResult, error: incrementError } = await supabase
         .rpc('increment_tokens', { token_count: 1 });
+      
+      console.log('[PERPLEXITY][TOKEN] Risultato increment_tokens:', { incrementResult, incrementError });
       
       if (incrementError) {
         console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
-      } else if (success === false) {
-        console.error('[PERPLEXITY][TOKEN] Token insufficienti');
+        console.error('[PERPLEXITY][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
+      } else if (incrementResult === false) {
+        console.error('[PERPLEXITY][TOKEN] Token insufficienti (ritornato false)');
+      } else if (incrementResult === true) {
+        console.log('[PERPLEXITY][TOKEN] Token consumato correttamente');
       } else {
-        console.log('[PERPLEXITY][TOKEN] Token consumato correttamente (mensili o acquistati)');
+        console.log('[PERPLEXITY][TOKEN] Risultato inaspettato:', incrementResult);
       }
     } catch (tokErr) {
-      console.error('[PERPLEXITY][TOKEN] Errore inatteso:', tokErr);
+      console.error('[PERPLEXITY][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
+      console.error('[PERPLEXITY][TOKEN] Stack trace:', tokErr.stack);
     }
-    // === /AGGIORNAMENTO TOKEN ===
+    // === /INCREMENTO TOKEN ===
     
     return new Response(
       JSON.stringify({ 

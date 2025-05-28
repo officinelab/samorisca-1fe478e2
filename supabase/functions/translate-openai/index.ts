@@ -10,10 +10,10 @@ import { logDetailedError } from "./utils.ts";
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const MODEL = "gpt-4o-mini";
 
-// Client Supabase
+// Client Supabase con service role per le operazioni sui token
 const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -136,23 +136,30 @@ serve(async (req) => {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
 
-    // === INCREMENTO TOKEN CORRETTO === 
+    // === INCREMENTO TOKEN CON CONTROLLO DETTAGLIATO === 
     try {
-      // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
-      const { data: success, error: incrementError } = await supabase
+      console.log('[OPENAI][TOKEN] Chiamando increment_tokens con 1 token...');
+      
+      const { data: incrementResult, error: incrementError } = await supabase
         .rpc('increment_tokens', { token_count: 1 });
+      
+      console.log('[OPENAI][TOKEN] Risultato increment_tokens:', { incrementResult, incrementError });
       
       if (incrementError) {
         console.error('[OPENAI][TOKEN] Errore incremento token:', incrementError);
-      } else if (success === false) {
-        console.error('[OPENAI][TOKEN] Token insufficienti');
+        console.error('[OPENAI][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
+      } else if (incrementResult === false) {
+        console.error('[OPENAI][TOKEN] Token insufficienti (ritornato false)');
+      } else if (incrementResult === true) {
+        console.log('[OPENAI][TOKEN] Token consumato correttamente');
       } else {
-        console.log('[OPENAI][TOKEN] Token consumato correttamente (mensili o acquistati)');
+        console.log('[OPENAI][TOKEN] Risultato inaspettato:', incrementResult);
       }
     } catch (tokErr) {
-      console.error('[OPENAI][TOKEN] Errore inatteso:', tokErr);
+      console.error('[OPENAI][TOKEN] Errore nella chiamata increment_tokens:', tokErr);
+      console.error('[OPENAI][TOKEN] Stack trace:', tokErr.stack);
     }
-    // === /INCREMENTO TOKEN CORRETTO ===
+    // === /INCREMENTO TOKEN ===
 
     return new Response(
       JSON.stringify({ translatedText }),
