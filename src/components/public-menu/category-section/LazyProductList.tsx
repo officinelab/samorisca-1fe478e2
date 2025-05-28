@@ -33,9 +33,8 @@ export const LazyProductList: React.FC<LazyProductListProps> = ({
   const { siteSettings } = useSiteSettings();
 
   // Funzione helper per validare il layout type
-  const validateLayoutType = (layoutType?: string): 'default' | 'compact' | 'custom1' => {
+  const validateLayoutType = (layoutType?: string): 'default' | 'compact' => {
     if (layoutType === 'compact') return 'compact';
-    if (layoutType === 'custom1') return 'custom1';
     return 'default';
   };
 
