@@ -99,6 +99,72 @@ export type Database = {
         }
         Relationships: []
       }
+      category_notes: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon_url: string | null
+          id: string
+          text: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon_url?: string | null
+          id?: string
+          text: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon_url?: string | null
+          id?: string
+          text?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      category_notes_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          note_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          note_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          note_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_notes_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_notes_categories_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "category_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_layouts: {
         Row: {
           allergens: Json

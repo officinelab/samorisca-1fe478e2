@@ -1,198 +1,83 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { Allergen, Category, Product, ProductFeature, ProductLabel } from "@/types/database";
+import { Category, Product, Allergen } from "@/types/database";
+import { CategoryNote } from "@/types/categoryNotes";
+import { fetchCategories } from "./fetchCategories";
+import { fetchProductsByCategory } from "./fetchProductsByCategory";
+import { fetchAllergens } from "./fetchAllergens";
+import { fetchFeaturesAndLabels } from "./fetchFeaturesAndLabels";
 
-export async function fetchMenuDataOptimized(language: string) {
-  // 1. Categorie
-  const { data: categoriesData, error: categoriesError } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("is_active", true)
-    .order("display_order", { ascending: true });
-  if (categoriesError) throw categoriesError;
-  const categories: Category[] = categoriesData || [];
+// Funzione per recuperare le note categorie
+const fetchCategoryNotes = async (): Promise<CategoryNote[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('category_notes')
+      .select(`
+        id,
+        title,
+        text,
+        icon_url,
+        display_order,
+        created_at,
+        updated_at,
+        category_notes_categories!inner(category_id)
+      `)
+      .order('display_order', { ascending: true });
 
-  const categoryIds = categories.map((cat) => cat.id);
-  if (!categoryIds.length) return { categories: [], products: {}, allergens: [] };
-
-  // 2. Prodotti di tutte le categorie (con label join)
-  const { data: allProducts, error: productsError } = await supabase
-    .from("products")
-    .select("*, label:label_id(*)")
-    .in("category_id", categoryIds)
-    .eq("is_active", true)
-    .order("display_order", { ascending: true });
-  if (productsError) throw productsError;
-
-  // 3. Relazioni prodotti-features e prodotti-allergeni, tutte in batch
-  const productIds = (allProducts || []).map(p => p.id);
-
-  // Features per prodotti
-  const { data: productFeaturesRels } = await supabase
-    .from("product_to_features")
-    .select("product_id, feature_id")
-    .in("product_id", productIds);
-
-  // Allergeni per prodotti
-  const { data: productAllergensRels } = await supabase
-    .from("product_allergens")
-    .select("product_id, allergen_id")
-    .in("product_id", productIds);
-
-  // 4. Features, Labels, Allergeni: carica tutti quelli collegati almeno a un prodotto in menu
-  const featureIds = Array.from(new Set((productFeaturesRels || []).map(r => r.feature_id)));
-  const labelIds = Array.from(new Set((allProducts || []).map(p => p.label_id).filter(Boolean)));
-  const allergenIds = Array.from(new Set((productAllergensRels || []).map(r => r.allergen_id)));
-
-  // Features
-  let features: ProductFeature[] = [];
-  if (featureIds.length > 0) {
-    const { data: featuresData } = await supabase
-      .from("product_features")
-      .select("*")
-      .in("id", featureIds)
-      .order("display_order", { ascending: true });
-    features = featuresData || [];
-  }
-  // Labels
-  let labels: ProductLabel[] = [];
-  if (labelIds.length > 0) {
-    const { data: labelsData } = await supabase
-      .from("product_labels")
-      .select("*")
-      .in("id", labelIds)
-      .order("display_order", { ascending: true });
-    labels = labelsData || [];
-  }
-  // Allergeni
-  let allergens: Allergen[] = [];
-  if (allergenIds.length > 0) {
-    const { data: allergensData } = await supabase
-      .from("allergens")
-      .select("*")
-      .in("id", allergenIds)
-      .order("number", { ascending: true });
-    allergens = allergensData || [];
-  }
-
-  // 5. Traduzioni batch (per opzioni multilingua)
-  const needsTranslation = language !== "it";
-  let translations: Record<string, Record<string, any[]>> = {};
-  if (needsTranslation) {
-    const toTranslate = [
-      ...productIds.map(id => ({ entity_type: "products", id })),
-      ...featureIds.map(id => ({ entity_type: "product_features", id })),
-      ...labelIds.map(id => ({ entity_type: "product_labels", id })),
-      ...allergenIds.map(id => ({ entity_type: "allergens", id })),
-      ...categories.map(cat => ({ entity_type: "categories", id: cat.id })), // ⬅️ aggiungi categorie qui!
-    ];
-
-    // Batch query su translations
-    const allTrans = [];
-    for (const { entity_type, id } of toTranslate) {
-      allTrans.push({ entity_type, entity_id: id });
+    if (error) {
+      console.error('Errore nel caricamento delle note categorie:', error);
+      return [];
     }
-    if (allTrans.length > 0) {
-      const { data: translationsData } = await supabase
-        .from("translations")
-        .select("*")
-        .in("entity_type", allTrans.map(t => t.entity_type))
-        .in("entity_id", allTrans.map(t => t.entity_id))
-        .eq("language", language);
-      (translationsData || []).forEach(tr => {
-        if (!translations[tr.entity_type]) translations[tr.entity_type] = {};
-        if (!translations[tr.entity_type][tr.entity_id]) translations[tr.entity_type][tr.entity_id] = [];
-        translations[tr.entity_type][tr.entity_id].push(tr);
-      });
-    }
+
+    // Trasforma i dati per includere l'array di categorie
+    const notesWithCategories = data?.map(note => ({
+      ...note,
+      categories: note.category_notes_categories?.map((cnc: any) => cnc.category_id) || []
+    })) || [];
+
+    return notesWithCategories;
+  } catch (error) {
+    console.error('Errore nel fetch delle note categorie:', error);
+    return [];
   }
+};
 
-  // Utility helper per traduzioni
-  function translateField(base, entity_type: string, field: string, id: string) {
-    if (!needsTranslation) return base[field];
-    const entityTranslations = translations[entity_type]?.[id];
-    if (!entityTranslations) return base[field];
-    const tr = entityTranslations.find(t => t.field === field && t.translated_text);
-    return tr?.translated_text ?? base[field];
-  }
+export const fetchMenuDataOptimized = async (language: string) => {
+  try {
+    // Fetch parallelo di tutti i dati necessari
+    const [
+      categories,
+      { features, labels },
+      allergens,
+      categoryNotes
+    ] = await Promise.all([
+      fetchCategories(language),
+      fetchFeaturesAndLabels(language),
+      fetchAllergens(language),
+      fetchCategoryNotes()
+    ]);
 
-  // Crea le mappe di lookup per features, allergens, labels
-  const allergensMap = Object.fromEntries((allergens || []).map(a => [a.id, a]));
-  const featuresMap = Object.fromEntries((features || []).map(f => [f.id, f]));
-  const labelsMap = Object.fromEntries((labels || []).map(l => [l.id, l]));
+    // Fetch dei prodotti per categoria
+    const productsPromises = categories.map(category =>
+      fetchProductsByCategory(category.id, language, features, labels, allergens)
+    );
 
-  // ⬇️ Applichiamo le traduzioni anche alle categorie
-  const categoriesWithDisplay = categories.map((cat) => ({
-    ...cat,
-    displayTitle: translateField(cat, "categories", "title", cat.id),
-    displayDescription: translateField(cat, "categories", "description", cat.id),
-  }));
+    const productsArrays = await Promise.all(productsPromises);
 
-  // Raggruppa i prodotti per categorie (usando categoriesWithDisplay)
-  const productsByCategory: Record<string, Product[]> = {};
-  for (const category of categoriesWithDisplay) {
-    const catProducts = (allProducts || []).filter(p => p.category_id === category.id);
-    productsByCategory[category.id] = catProducts.map((product: Product) => {
-      const displayTitle = translateField(product, "products", "title", product.id);
-      const displayDescription = translateField(product, "products", "description", product.id);
-      const displayPriceSuffix = translateField(product, "products", "price_suffix", product.id);
-      const displayVariant1Name = translateField(product, "products", "price_variant_1_name", product.id);
-      const displayVariant2Name = translateField(product, "products", "price_variant_2_name", product.id);
-
-      // Allergeni per questo prodotto
-      const myAllergenRels = (productAllergensRels || []).filter(r => r.product_id === product.id);
-      const productAllergens = myAllergenRels.map(r => {
-        const base = allergensMap[r.allergen_id];
-        if (!base) return null;
-        const displayTitle = translateField(base, "allergens", "title", base.id);
-        const displayDescription = translateField(base, "allergens", "description", base.id);
-        return { ...base, displayTitle, displayDescription };
-      }).filter(Boolean);
-
-      // Features per questo prodotto
-      const myFeatureRels = (productFeaturesRels || []).filter(r => r.product_id === product.id);
-      const productFeatures = myFeatureRels.map(r => {
-        const feat = featuresMap[r.feature_id];
-        if (!feat) return null;
-        const displayTitle = translateField(feat, "product_features", "title", feat.id);
-        // Assegna il campo displayTitle all'oggetto feature
-        return { ...feat, displayTitle };
-      }).filter(Boolean);
-
-      // Label
-      let label: ProductLabel | null = null;
-      const label_base = labelsMap[product.label_id ?? ""];
-      if (label_base) {
-        label = { ...label_base };
-      }
-      if (label) {
-        label.displayTitle = translateField(label, "product_labels", "title", label.id);
-      }
-
-      return {
-        ...product,
-        allergens: productAllergens,
-        features: productFeatures,
-        label, // <-- ora con displayTitle valorizzato se serviva
-        displayTitle,
-        displayDescription,
-        price_suffix: displayPriceSuffix,
-        price_variant_1_name: displayVariant1Name,
-        price_variant_2_name: displayVariant2Name,
-      };
+    // Organizza i prodotti per categoria
+    const products: Record<string, Product[]> = {};
+    categories.forEach((category, index) => {
+      products[category.id] = productsArrays[index];
     });
+
+    return {
+      categories,
+      products,
+      allergens,
+      categoryNotes
+    };
+  } catch (error) {
+    console.error('Errore nel caricamento ottimizzato dei dati menu:', error);
+    throw error;
   }
-
-  // Allergen list con traduzione
-  const allAllergens = (allergens || []).map((a) => ({
-    ...a,
-    displayTitle: translateField(a, "allergens", "title", a.id),
-    displayDescription: translateField(a, "allergens", "description", a.id),
-  }));
-
-  // ⬇️ Qui restituiamo le categorie già arricchite!
-  return {
-    categories: categoriesWithDisplay,
-    products: productsByCategory,
-    allergens: allAllergens,
-  };
-}
+};

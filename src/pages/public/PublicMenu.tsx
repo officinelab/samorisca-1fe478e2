@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,6 +36,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     categories, 
     products, 
     allergens,
+    categoryNotes,
     isLoading, 
     language, 
     setLanguage 
@@ -222,6 +222,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
             categories={categories}
             products={products}
             allergens={allergens}
+            categoryNotes={categoryNotes}
             isLoading={isLoading}
             deviceView={deviceView}
             showAllergensInfo={showAllergensInfo}

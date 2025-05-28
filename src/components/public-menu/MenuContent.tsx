@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Category, Product, ProductFeature } from "@/types/database";
+import { CategoryNote } from "@/types/categoryNotes";
 import { CategorySection, CategorySectionSkeleton } from "@/components/public-menu/CategorySection";
 import { ProductFeaturesSection } from "./ProductFeaturesSection";
+import { CategoryNoteItem } from "./CategoryNoteItem";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 import { Info } from "lucide-react";
@@ -12,6 +15,7 @@ interface MenuContentProps {
   categories: Category[];
   products: Record<string, Product[]>;
   allergens: any[];
+  categoryNotes?: CategoryNote[];
   isLoading: boolean;
   deviceView: 'mobile' | 'desktop';
   showAllergensInfo: boolean;
@@ -37,6 +41,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
   categories,
   products,
   allergens,
+  categoryNotes = [],
   isLoading,
   deviceView,
   showAllergensInfo,
@@ -64,6 +69,13 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     });
     return Array.from(featuresMap.values());
   }, [products]);
+
+  // Funzione per ottenere le note di una categoria specifica
+  const getCategoryNotes = (categoryId: string) => {
+    return categoryNotes.filter(note => 
+      note.categories && note.categories.includes(categoryId)
+    );
+  };
 
   const [expandedAccordion, setExpandedAccordion] = React.useState<string | undefined>(undefined);
   const { t } = usePublicMenuUiStrings(language);
@@ -94,6 +106,16 @@ export const MenuContent: React.FC<MenuContentProps> = ({
               fontSettings={fontSettings}
               buttonSettings={buttonSettings}
             />
+            
+            {/* Mostra le note della categoria corrente */}
+            {getCategoryNotes(category.id).map(note => (
+              <CategoryNoteItem 
+                key={note.id}
+                note={note}
+                deviceView={deviceView}
+              />
+            ))}
+            
             {/* Mostra il prezzo Servizio e Coperto tra categorie, tranne dopo l'ultima */}
             {(serviceCoverCharge && serviceCoverCharge > 0 && idx < categories.length - 1) && (
               <div className="flex justify-end mt-2">

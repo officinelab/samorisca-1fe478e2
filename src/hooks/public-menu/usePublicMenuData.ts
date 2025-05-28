@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Allergen, Category, Product } from "@/types/database";
+import { CategoryNote } from "@/types/categoryNotes";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { fetchMenuDataOptimized } from "./usePublicMenuData/fetchMenuDataOptimized";
 
@@ -9,6 +10,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Record<string, Product[]>>({});
   const [allergens, setAllergens] = useState<Allergen[]>([]);
+  const [categoryNotes, setCategoryNotes] = useState<CategoryNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [language, setLanguage] = useState(previewLanguage);
 
@@ -24,10 +26,11 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const { categories, products, allergens } = await fetchMenuDataOptimized(language);
+        const { categories, products, allergens, categoryNotes } = await fetchMenuDataOptimized(language);
         setCategories(categories);
         setProducts(products);
         setAllergens(allergens);
+        setCategoryNotes(categoryNotes || []);
       } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
         toast.error("Errore nel caricamento del menu. Riprova più tardi.");
@@ -43,6 +46,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     categories,
     products,
     allergens,
+    categoryNotes,
     isLoading,
     language,
     setLanguage

@@ -7,6 +7,7 @@ import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesMa
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import SiteSettingsManager from "@/components/menu-settings/SiteSettingsManager";
 import SupervisorSettingsManager from "@/components/menu-settings/SupervisorSettingsManager";
+import CategoryNotesManager from "@/components/menu-settings/CategoryNotesManager";
 import Allergens from "./Allergens";
 import OnlineMenuLayoutSection from "@/components/menu-settings/OnlineMenuLayoutSection";
 import { useUserRoles } from "@/hooks/auth/useUserRoles";
@@ -40,6 +41,7 @@ const MenuSettings = () => {
           <TabsTrigger value="labels">Etichette Prodotto</TabsTrigger>
           <TabsTrigger value="features">Caratteristiche Prodotto</TabsTrigger>
           <TabsTrigger value="allergens">Allergeni</TabsTrigger>
+          <TabsTrigger value="categorynotes">Note categorie</TabsTrigger>
           <TabsTrigger value="layouts">Layouts di Stampa</TabsTrigger>
           <TabsTrigger value="settings">Settaggi</TabsTrigger>
           {/* Supervisor: visibile solo ad admin_supervisor */}
@@ -75,6 +77,15 @@ const MenuSettings = () => {
           </p>
           <Separator className="my-4" />
           <Allergens />
+        </TabsContent>
+
+        <TabsContent value="categorynotes" className="space-y-4">
+          <h2 className="text-xl font-semibold">Note Categorie</h2>
+          <p className="text-muted-foreground">
+            Gestisci le note che verranno mostrate nel menu pubblico dopo l'ultimo prodotto delle categorie selezionate.
+          </p>
+          <Separator className="my-4" />
+          <CategoryNotesManager />
         </TabsContent>
 
         <TabsContent value="layouts" className="space-y-4">
