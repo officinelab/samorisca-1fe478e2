@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Product } from "@/types/database";
 import { LabelBadge } from "@/components/menu-settings/product-labels/LabelBadge";
-import { ProductFeaturesWithText } from "./ProductFeaturesWithText";
+import { ProductFeaturesIcons } from "./product-card/ProductFeaturesIcons";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 
 interface ProductDetailsDialogProps {
@@ -104,26 +103,24 @@ export const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
               {description || t("description") + "..."}
             </p>
           </div>
-          
-          {/* Sezione caratteristiche del prodotto */}
-          {product.features && product.features.length > 0 && (
-            <div>
-              <h4 className="font-semibold mb-3">{t("product_features")}</h4>
-              <ProductFeaturesWithText features={product.features} />
-            </div>
-          )}
-
-          {/* Sezione allergeni */}
           {product.allergens && product.allergens.length > 0 && (
             <div>
               <h4 className="font-semibold mb-1">{t("allergens")}</h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {product.allergens.map(allergen => (
                   <Badge key={allergen.id} variant="outline">
                     {allergen.number} - {allergen.displayTitle || allergen.title}
                   </Badge>
                 ))}
               </div>
+              {product.features && product.features.length > 0 && (
+                <ProductFeaturesIcons features={product.features} />
+              )}
+            </div>
+          )}
+          {!product.allergens?.length && product.features && product.features.length > 0 && (
+            <div>
+              <ProductFeaturesIcons features={product.features} />
             </div>
           )}
 
