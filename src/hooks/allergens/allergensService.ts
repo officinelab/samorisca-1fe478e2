@@ -17,7 +17,10 @@ export const fetchAllergens = async (): Promise<Allergen[]> => {
     return data || [];
   } catch (error) {
     console.error('Errore nel recupero degli allergeni:', error);
-    toast.error("Non è stato possibile caricare gli allergeni. Riprova più tardi.");
+    toast.error("Non è stato possibile caricare gli allergeni. Riprova più tardi.", {
+      duration: 4000,
+      dismissible: true
+    });
     return [];
   }
 };
@@ -33,7 +36,10 @@ export const addAllergen = async (allergenData: Partial<Allergen>, allergens: Al
     
     // Ensure title is provided (required by the database)
     if (!allergenData.title) {
-      toast.error("Il titolo è obbligatorio");
+      toast.error("Il titolo è obbligatorio", {
+        duration: 4000,
+        dismissible: true
+      });
       return null;
     }
     
@@ -50,13 +56,19 @@ export const addAllergen = async (allergenData: Partial<Allergen>, allergens: Al
     if (error) throw error;
     
     if (data) {
-      toast.success("Allergene aggiunto con successo!");
+      toast.success("Allergene aggiunto con successo!", {
+        duration: 3000,
+        dismissible: true
+      });
       return data[0];
     }
     return null;
   } catch (error) {
     console.error('Errore nell\'aggiunta dell\'allergene:', error);
-    toast.error("Errore nell'aggiunta dell'allergene. Riprova più tardi.");
+    toast.error("Errore nell'aggiunta dell'allergene. Riprova più tardi.", {
+      duration: 4000,
+      dismissible: true
+    });
     return null;
   }
 };
@@ -71,11 +83,17 @@ export const updateAllergen = async (allergenId: string, allergenData: Partial<A
     
     if (error) throw error;
     
-    toast.success("Allergene aggiornato con successo!");
+    toast.success("Allergene aggiornato con successo!", {
+      duration: 3000,
+      dismissible: true
+    });
     return true;
   } catch (error) {
     console.error('Errore nell\'aggiornamento dell\'allergene:', error);
-    toast.error("Errore nell'aggiornamento dell'allergene. Riprova più tardi.");
+    toast.error("Errore nell'aggiornamento dell'allergene. Riprova più tardi.", {
+      duration: 4000,
+      dismissible: true
+    });
     return false;
   }
 };
@@ -90,11 +108,17 @@ export const deleteAllergen = async (allergenId: string): Promise<boolean> => {
     
     if (error) throw error;
     
-    toast.success("Allergene eliminato con successo!");
+    toast.success("Allergene eliminato con successo!", {
+      duration: 3000,
+      dismissible: true
+    });
     return true;
   } catch (error) {
     console.error('Errore nell\'eliminazione dell\'allergene:', error);
-    toast.error("Errore nell'eliminazione dell'allergene. Riprova più tardi.");
+    toast.error("Errore nell'eliminazione dell'allergene. Riprova più tardi.", {
+      duration: 4000,
+      dismissible: true
+    });
     return false;
   }
 };
@@ -115,11 +139,17 @@ export const updateAllergensOrder = async (updatedAllergens: Allergen[]): Promis
       if (error) throw error;
     }
     
-    toast.success("Allergeni riordinati con successo!");
+    toast.success("Allergeni riordinati con successo!", {
+      duration: 3000,
+      dismissible: true
+    });
     return true;
   } catch (error) {
     console.error('Errore nel riordinamento degli allergeni:', error);
-    toast.error("Errore nel riordinamento degli allergeni. Riprova più tardi.");
+    toast.error("Errore nel riordinamento degli allergeni. Riprova più tardi.", {
+      duration: 4000,
+      dismissible: true
+    });
     return false;
   }
 };
