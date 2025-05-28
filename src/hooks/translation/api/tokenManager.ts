@@ -25,7 +25,16 @@ export const checkRemainingTokens = async (): Promise<number | null> => {
 
     let monthlyLimit = 300; // Default fallback
     if (!settingsError && settingsData?.value) {
-      monthlyLimit = parseInt(settingsData.value.toString()) || 300;
+      // Gestisce correttamente il valore che può essere sia stringa che numero
+      const rawValue = settingsData.value;
+      if (typeof rawValue === 'string') {
+        monthlyLimit = parseInt(rawValue) || 300;
+      } else if (typeof rawValue === 'number') {
+        monthlyLimit = rawValue;
+      } else {
+        // Se è un oggetto, prova a convertirlo a stringa e poi a numero
+        monthlyLimit = parseInt(String(rawValue)) || 300;
+      }
     }
 
     // Prende il record dei token del mese

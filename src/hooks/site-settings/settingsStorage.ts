@@ -18,6 +18,13 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
     settings[key] = value;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 
+    // Per il campo monthlyTokensLimit, assicurati che venga salvato come numero
+    let finalValue = value;
+    if (key === 'monthlyTokensLimit') {
+      // Converti sempre a numero per questo campo specifico
+      finalValue = parseInt(value) || 300;
+    }
+
     // Verify if the setting exists already
     const { data: existingSettings } = await supabase
       .from('site_settings')
@@ -29,7 +36,7 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
       const { error } = await supabase
         .from('site_settings')
         .update({ 
-          value, 
+          value: finalValue, 
           updated_at: new Date().toISOString()
         })
         .eq('key', key);
@@ -41,7 +48,7 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
     } else {
       const { error } = await supabase
         .from('site_settings')
-        .insert([{ key, value }]);
+        .insert([{ key, value: finalValue }]);
         
       if (error) {
         console.error(`Error inserting setting ${key}:`, error);
@@ -51,7 +58,7 @@ export const saveSetting = async (key: string, value: any): Promise<boolean> => 
     
     // Trigger an event after successful save to Supabase
     window.dispatchEvent(new CustomEvent('siteSettingsSaved', {
-      detail: { key, value }
+      detail: { key, value: finalValue }
     }));
     
     return true;
