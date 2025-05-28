@@ -512,6 +512,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_monthly_tokens_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_remaining_tokens: {
         Args: Record<PropertyKey, never>
         Returns: number

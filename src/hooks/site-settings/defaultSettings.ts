@@ -1,3 +1,4 @@
+
 import { SiteSettings } from "./types";
 
 /**
@@ -12,5 +13,6 @@ export const defaultSettings: SiteSettings = {
   defaultProductImage: null,
   siteName: "Sa Morisca",
   siteDescription: "Ristorante Sa Morisca",
-  showRestaurantNameInMenuBar: true, // di default visibile!
+  showRestaurantNameInMenuBar: true,
+  monthlyTokensLimit: "300", // Nuovo campo per il limite mensile dei token
 };

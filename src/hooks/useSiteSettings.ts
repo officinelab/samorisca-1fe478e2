@@ -10,7 +10,7 @@ import {
   updateFooterText,
   updateDefaultProductImage,
   updateAdminTitle,
-  updateShowRestaurantNameInMenuBar, // aggiunto!
+  updateShowRestaurantNameInMenuBar,
 } from "./site-settings/updateFunctions";
 
 /**
@@ -33,6 +33,20 @@ export const useSiteSettings = () => {
       setIsLoading(false);
     }
   }, []);
+
+  // Funzione per aggiornare il limite mensile dei token
+  const updateMonthlyTokensLimit = async (limit: string): Promise<boolean> => {
+    const success = await saveSetting("monthlyTokensLimit", limit);
+    if (success) {
+      setSiteSettings(prev => ({
+        ...prev,
+        monthlyTokensLimit: limit
+      }));
+      // Trigger refresh dei token per aggiornare i valori nel sistema
+      window.dispatchEvent(new CustomEvent("refresh-tokens"));
+    }
+    return success;
+  };
 
   // Load settings on component mount
   useEffect(() => {
@@ -66,7 +80,8 @@ export const useSiteSettings = () => {
     updateFooterText,
     updateDefaultProductImage,
     updateAdminTitle,
-    updateShowRestaurantNameInMenuBar, // aggiunto qui!
+    updateShowRestaurantNameInMenuBar,
+    updateMonthlyTokensLimit, // Nuova funzione per gestire il limite mensile
   };
 };
 

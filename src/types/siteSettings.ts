@@ -1,3 +1,4 @@
+
 /**
  * Type definition for site settings
  */
@@ -27,6 +28,7 @@ export interface SiteSettings {
   browserTitle?: string;
   tokenPackagePrice?: string;
   tokenPackageAmount?: string;
+  monthlyTokensLimit?: string; // Nuovo campo per il limite mensile dei token
   [key: string]: any;
 }
 

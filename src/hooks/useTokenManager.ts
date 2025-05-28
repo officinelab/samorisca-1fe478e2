@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { TokenUsage } from '@/types/translation';
@@ -26,6 +27,18 @@ export const useTokenManager = () => {
         throw new Error(`Errore nel recupero del mese corrente: ${monthError.message}`);
       }
 
+      // Recupera il limite mensile dalle impostazioni
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'monthlyTokensLimit')
+        .maybeSingle();
+
+      let monthlyLimit = 300; // Default fallback
+      if (!settingsError && settingsData?.value) {
+        monthlyLimit = parseInt(settingsData.value.toString()) || 300;
+      }
+
       const { data: tokensData, error: tokensDataError } = await supabase
         .from('translation_tokens')
         .select('*')
@@ -40,8 +53,8 @@ export const useTokenManager = () => {
       if (!tokensData) {
         setTokenUsage({
           tokensUsed: 0,
-          tokensRemaining: 300,
-          tokensLimit: 300,
+          tokensRemaining: monthlyLimit,
+          tokensLimit: monthlyLimit,
           purchasedTokensTotal: 0,
           purchasedTokensUsed: 0,
           lastUpdated: new Date().toISOString(),
@@ -54,7 +67,7 @@ export const useTokenManager = () => {
         setTokenUsage({
           tokensUsed: tokensData.tokens_used || 0,
           tokensRemaining: tokensRemaining + (purchasedTokensTotal - purchasedTokensUsed),
-          tokensLimit: tokensData.tokens_limit,
+          tokensLimit: tokensData.tokens_limit || monthlyLimit,
           purchasedTokensTotal,
           purchasedTokensUsed,
           lastUpdated: tokensData.last_updated,
@@ -91,9 +104,16 @@ export const useTokenManager = () => {
     };
     window.addEventListener("refresh-tokens", onRefresh);
 
+    // Ascolta anche i cambiamenti delle impostazioni del sito
+    const onSettingsUpdate = () => {
+      fetchTokenUsage();
+    };
+    window.addEventListener("siteSettingsUpdated", onSettingsUpdate);
+
     return () => {
       supabase.removeChannel(channel);
       window.removeEventListener("refresh-tokens", onRefresh);
+      window.removeEventListener("siteSettingsUpdated", onSettingsUpdate);
     };
   }, []);
 

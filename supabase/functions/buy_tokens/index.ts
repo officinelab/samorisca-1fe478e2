@@ -1,159 +1,185 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from "../_shared/cors.ts";
 
-import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js";
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+const paypalClientId = Deno.env.get('PAYPAL_CLIENT_ID');
+const paypalSecretKey = Deno.env.get('PAYPAL_SECRET_KEY');
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Funzione helper per ottenere il limite mensile dalle impostazioni
+const getMonthlyTokensLimit = async (): Promise<number> => {
+  try {
+    const { data: settingsData, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'monthlyTokensLimit')
+      .maybeSingle();
+
+    if (error || !settingsData?.value) {
+      console.log('Limite mensile non trovato, usando default 300');
+      return 300;
+    }
+
+    const limit = parseInt(settingsData.value.toString()) || 300;
+    console.log(`Limite mensile recuperato dalle impostazioni: ${limit}`);
+    return limit;
+  } catch (error) {
+    console.error('Errore nel recupero del limite mensile:', error);
+    return 300;
+  }
 };
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID")!;
-const PAYPAL_SECRET_KEY = Deno.env.get("PAYPAL_SECRET_KEY")!;
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
-  }
-
-  let body;
   try {
-    body = await req.json();
-  } catch {
-    return new Response(JSON.stringify({ success: false, error: "Payload non valido" }), {
-      status: 400,
-      headers: corsHeaders,
-    });
-  }
+    const { orderId, tokens } = await req.json();
+    
+    console.log(`Processing token purchase - OrderID: ${orderId}, Tokens: ${tokens}`);
 
-  const { orderId } = body;
-  if (!orderId) {
-    return new Response(JSON.stringify({ success: false, error: "Order ID mancante" }), {
-      status: 400,
-      headers: corsHeaders,
-    });
-  }
-
-  // Recupera JWT utente dalla request per sapere chi è
-  const token = req.headers.get("authorization")?.replace(/^Bearer /, "");
-  let userId = null;
-  if (token) {
-    try {
-      const { data: user } = await supabase.auth.getUser(token);
-      userId = user?.user?.id;
-    } catch {
-      return new Response(JSON.stringify({ success: false, error: "Utente non autenticato" }), {
-        status: 401,
-        headers: corsHeaders,
-      });
-    }
-    if (!userId) {
-      return new Response(JSON.stringify({ success: false, error: "Utente non trovato" }), {
-        status: 401,
-        headers: corsHeaders,
-      });
-    }
-  } else {
-    return new Response(JSON.stringify({ success: false, error: "Nessun token di autenticazione" }), {
-      status: 401,
-      headers: corsHeaders,
-    });
-  }
-
-  // Verifica pagamento PayPal
-  try {
-    // Ottieni token accesso da PayPal
-    const authRes = await fetch("https://api.paypal.com/v1/oauth2/token", {
-      method: "POST",
-      headers: {
-        "Authorization": "Basic " + btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET_KEY}`),
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "grant_type=client_credentials",
-    });
-    const authData = await authRes.json();
-    if (!authRes.ok || !authData.access_token) {
-      return new Response(JSON.stringify({ success: false, error: "Errore autenticazione PayPal" }), { status: 500, headers: corsHeaders });
+    if (!orderId || !tokens) {
+      return new Response(
+        JSON.stringify({ error: "OrderID e tokens sono richiesti" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Recupera dettagli ordine PayPal
-    const orderRes = await fetch(`https://api.paypal.com/v2/checkout/orders/${orderId}`, {
-      headers: {
-        "Authorization": `Bearer ${authData.access_token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    const orderData = await orderRes.json();
-    if (!orderRes.ok || orderData.status !== "COMPLETED") {
-      return new Response(JSON.stringify({ success: false, error: "Pagamento non completato o errore PayPal" }), { status: 400, headers: corsHeaders });
+    // Verifica pagamento PayPal
+    const paypalAccessToken = await getPayPalAccessToken();
+    const paymentDetails = await verifyPayPalPayment(orderId, paypalAccessToken);
+    
+    if (!paymentDetails.verified) {
+      return new Response(
+        JSON.stringify({ error: "Pagamento non verificato" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Prendi il prezzo pagato (per sicurezza)
-    const paidAmount = parseFloat(orderData.purchase_units?.[0]?.amount?.value || "0");
+    // Ottieni il limite mensile corrente
+    const monthlyLimit = await getMonthlyTokensLimit();
 
-    // Recupera prezzo e quantità pacchetto token dalla tabella site_settings
-    const { data: settings } = await supabase
-      .from("site_settings")
-      .select("*")
-      .in("key", ["tokenPackagePrice", "tokenPackageAmount"]);
-
-    // Calcolo proporzionale
-    const packagePrice = parseFloat(settings?.find((s: any) => s.key === "tokenPackagePrice")?.value ?? "9.90");
-    const packageAmount = parseInt(settings?.find((s: any) => s.key === "tokenPackageAmount")?.value ?? "1000", 10);
-
-    // Calcola quanti token spettano in base all'importo pagato
-    let tokensToCredit = 0;
-    if (packagePrice > 0 && packageAmount > 0 && paidAmount > 0) {
-      tokensToCredit = Math.floor((paidAmount / packagePrice) * packageAmount);
-    }
-    if (tokensToCredit <= 0) {
-      return new Response(JSON.stringify({ success: false, error: "Importo del pagamento non valido" }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+    // Ottieni il mese corrente
+    const { data: currentMonth, error: monthError } = await supabase
+      .rpc('get_current_month');
+    
+    if (monthError) {
+      console.error('Errore nel recupero del mese corrente:', monthError);
+      return new Response(
+        JSON.stringify({ error: "Errore nel recupero del mese corrente" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Aggiorna la riga translation_tokens per il mese corrente, oppure crea se non esiste
-    const { data: monthData } = await supabase.rpc("get_current_month");
-    let { data: tokensData } = await supabase
-      .from("translation_tokens")
-      .select("*")
-      .eq("month", monthData)
+    // Inserisci o aggiorna i token acquistati
+    const { data: existingTokens, error: fetchError } = await supabase
+      .from('translation_tokens')
+      .select('*')
+      .eq('month', currentMonth)
       .maybeSingle();
 
-    // Se non esiste, crea la riga nuova
-    if (!tokensData) {
-      const { data: newRow } = await supabase
-        .from("translation_tokens")
-        .insert([{
-          month: monthData,
-          tokens_used: 0,
-          tokens_limit: 300,
-          purchased_tokens_total: tokensToCredit,
-          purchased_tokens_used: 0,
-        }])
-        .select("*")
-        .single();
-      tokensData = newRow;
-    } else {
-      // Altrimenti aggiorna il saldo acquistato
-      await supabase
-        .from("translation_tokens")
-        .update({
-          purchased_tokens_total: (tokensData.purchased_tokens_total ?? 0) + tokensToCredit
-        })
-        .eq("id", tokensData.id);
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Errore nel recupero dei token esistenti:', fetchError);
+      return new Response(
+        JSON.stringify({ error: "Errore nel recupero dei dati" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    return new Response(JSON.stringify({ success: true, tokensCredited: tokensToCredit }), { headers: corsHeaders });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ success: false, error: err?.message || String(err) }), { status: 500, headers: corsHeaders });
+    if (existingTokens) {
+      // Aggiorna record esistente
+      const { error: updateError } = await supabase
+        .from('translation_tokens')
+        .update({
+          purchased_tokens_total: (existingTokens.purchased_tokens_total || 0) + tokens,
+          tokens_limit: monthlyLimit, // Aggiorna anche il limite nel caso sia cambiato
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', currentMonth);
+
+      if (updateError) {
+        console.error('Errore nell\'aggiornamento dei token:', updateError);
+        return new Response(
+          JSON.stringify({ error: "Errore nell'aggiornamento dei token" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      // Crea nuovo record
+      const { error: insertError } = await supabase
+        .from('translation_tokens')
+        .insert([{
+          month: currentMonth,
+          tokens_used: 0,
+          tokens_limit: monthlyLimit,
+          purchased_tokens_total: tokens,
+          purchased_tokens_used: 0
+        }]);
+
+      if (insertError) {
+        console.error('Errore nell\'inserimento dei token:', insertError);
+        return new Response(
+          JSON.stringify({ error: "Errore nell'inserimento dei token" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    console.log(`Token acquistati con successo: ${tokens} token aggiunti per il mese ${currentMonth}`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `${tokens} token aggiunti con successo!`,
+        monthlyLimit: monthlyLimit
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error('Errore generale:', error);
+    return new Response(
+      JSON.stringify({ error: "Errore interno del server" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
+
+async function getPayPalAccessToken() {
+  const response = await fetch('https://api-m.sandbox.paypal.com/v1/oauth2/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${btoa(`${paypalClientId}:${paypalSecretKey}`)}`
+    },
+    body: 'grant_type=client_credentials'
+  });
+  
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function verifyPayPalPayment(orderId: string, accessToken: string) {
+  const response = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  const orderData = await response.json();
+  
+  return {
+    verified: orderData.status === 'COMPLETED',
+    amount: orderData.purchase_units?.[0]?.amount?.value,
+    currency: orderData.purchase_units?.[0]?.amount?.currency_code
+  };
+}
