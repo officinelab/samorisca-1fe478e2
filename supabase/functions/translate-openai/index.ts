@@ -54,83 +54,22 @@ serve(async (req) => {
 
     console.log(`[OPENAI] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
-    // --- CALCOLO COMPLETO DEI TOKEN (mensili + acquistati) ---
-    console.log('[OPENAI][TOKEN] Inizio controllo token completi...');
-    
-    const { data: currentMonth, error: monthError } = await supabase.rpc('get_current_month');
-    if (monthError) {
-      console.error('[OPENAI][TOKEN] Errore nel recupero del mese corrente:', monthError);
+    // --- Check token availability prima di traduzione
+    const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
+      .rpc('get_remaining_tokens');
+    if (tokensErrorBefore) {
+      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensErrorBefore);
       return new Response(
         JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const { data: tokenData, error: tokenError } = await supabase
-      .from('translation_tokens')
-      .select('tokens_used, tokens_limit, purchased_tokens_total, purchased_tokens_used')
-      .eq('month', currentMonth)
-      .single();
-    
-    if (tokenError && tokenError.code !== 'PGRST116') {
-      console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokenError);
+    if (tokensDataBefore <= 0) {
       return new Response(
-        JSON.stringify({ error: "Errore nel controllo dei token disponibili" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Se non ci sono dati, usa valori di default
-    const tokenInfo = tokenData || {
-      tokens_used: 0,
-      tokens_limit: 300,
-      purchased_tokens_total: 0,
-      purchased_tokens_used: 0
-    };
-
-    // Calcola token rimanenti mensili e acquistati
-    const monthlyRemaining = Math.max(0, (tokenInfo.tokens_limit || 300) - (tokenInfo.tokens_used || 0));
-    const purchasedRemaining = Math.max(0, (tokenInfo.purchased_tokens_total || 0) - (tokenInfo.purchased_tokens_used || 0));
-    const totalRemaining = monthlyRemaining + purchasedRemaining;
-    
-    console.log(`[OPENAI][TOKEN] Calcolo token: Mensili=${monthlyRemaining}, Acquistati=${purchasedRemaining}, Totale=${totalRemaining}`);
-
-    if (totalRemaining <= 0) {
-      console.log('[OPENAI][TOKEN] Tutti i token sono esauriti');
-      return new Response(
-        JSON.stringify({ error: "Tutti i token sono esauriti" }),
+        JSON.stringify({ error: "Token mensili esauriti" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // === INCREMENTO TOKEN USANDO LA FUNZIONE increment_tokens === 
-    try {
-      console.log('[OPENAI][TOKEN] Tentativo di incrementare i token usando increment_tokens...');
-      const { data: incrementResult, error: incrementError } = await supabase.rpc('increment_tokens', { token_count: 1 });
-      
-      if (incrementError) {
-        console.error('[OPENAI][TOKEN] Errore increment_tokens:', incrementError);
-        return new Response(
-          JSON.stringify({ error: "Errore nell'incremento dei token" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } else if (incrementResult === false) {
-        console.warn('[OPENAI][TOKEN] increment_tokens ha restituito false - token insufficienti');
-        return new Response(
-          JSON.stringify({ error: "Token insufficienti per completare la traduzione" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } else {
-        console.log('[OPENAI][TOKEN] Token incrementato con successo usando increment_tokens');
-      }
-    } catch (tokErr) {
-      console.error('[OPENAI][TOKEN] Errore inatteso increment_tokens:', tokErr);
-      return new Response(
-        JSON.stringify({ error: "Errore inatteso nell'incremento dei token" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    // === /INCREMENTO TOKEN ===
 
     // Prompt e traduzione
     const targetLangName = mapLanguageCode(targetLanguage);
@@ -196,6 +135,42 @@ serve(async (req) => {
     } catch (saveErr) {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
+
+    // === INCREMENTO TOKEN === 
+    try {
+      // Loggo valore tokens_used prima
+      const { data: beforeRow, error: beforeError } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+      console.log('[OPENAI][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
+
+      // INCREMENTO con update diretto: tokens_used + 1
+      const { error: upError } = await supabase
+        .from('translation_tokens')
+        .update({
+          tokens_used: (beforeRow?.tokens_used || 0) + 1,
+          last_updated: new Date().toISOString()
+        })
+        .eq('month', (new Date()).toISOString().slice(0, 7));
+      if (upError) {
+        console.error('[OPENAI][TOKEN] Errore update token:', upError);
+      } else {
+        console.log('[OPENAI][TOKEN] Token incrementato di 1 via update diretto');
+      }
+
+      // Loggo valore tokens_used dopo
+      const { data: afterRow, error: afterError } = await supabase
+        .from('translation_tokens')
+        .select('month, tokens_used')
+        .eq('month', (new Date()).toISOString().slice(0, 7))
+        .maybeSingle();
+      console.log('[OPENAI][DEBUG][TOKEN][DOPO]', afterRow, afterError);
+    } catch (tokErr) {
+      console.error('[OPENAI][TOKEN] Errore inatteso update token:', tokErr);
+    }
+    // === /INCREMENTO TOKEN ===
 
     return new Response(
       JSON.stringify({ translatedText }),
