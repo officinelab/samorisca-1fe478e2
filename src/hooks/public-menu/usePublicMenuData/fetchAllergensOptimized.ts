@@ -3,11 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Allergen } from "@/types/database";
 import { getCachedData, setCachedData } from "./cacheUtils";
 
-export const fetchAllergensOptimized = async (language: string): Promise<Allergen[]> => {
+export const fetchAllergensOptimized = async (
+  language: string,
+  signal?: AbortSignal
+): Promise<Allergen[]> => {
   const cacheKey = `allergens-${language}`;
   const cached = getCachedData<Allergen[]>(cacheKey);
+  
   if (cached) {
+    console.log(`📦 Allergens loaded from cache for language: ${language}`);
     return cached;
+  }
+
+  // Controlla abort signal all'inizio
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
   }
 
   const [allergensResult, translationsResult] = await Promise.all([
@@ -16,6 +26,11 @@ export const fetchAllergensOptimized = async (language: string): Promise<Allerge
       ? supabase.from('translations').select('*').eq('entity_type', 'allergens').eq('language', language)
       : Promise.resolve({ data: null })
   ]);
+
+  // Controlla abort signal dopo le query
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
 
   if (allergensResult.error) throw allergensResult.error;
 

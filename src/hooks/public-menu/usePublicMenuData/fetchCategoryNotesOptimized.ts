@@ -3,11 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { CategoryNote } from "@/types/categoryNotes";
 import { getCachedData, setCachedData } from "./cacheUtils";
 
-export const fetchCategoryNotesOptimized = async (): Promise<CategoryNote[]> => {
+export const fetchCategoryNotesOptimized = async (signal?: AbortSignal): Promise<CategoryNote[]> => {
   const cacheKey = 'categoryNotes';
   const cached = getCachedData<CategoryNote[]>(cacheKey);
   if (cached) {
     return cached;
+  }
+
+  // Controlla abort signal all'inizio
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
   }
 
   try {
@@ -25,6 +30,11 @@ export const fetchCategoryNotesOptimized = async (): Promise<CategoryNote[]> => 
       `)
       .order('display_order', { ascending: true });
 
+    // Controlla abort signal dopo la query
+    if (signal?.aborted) {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+
     if (error) {
       console.error('Errore nel caricamento delle note categorie:', error);
       return [];
@@ -38,6 +48,9 @@ export const fetchCategoryNotesOptimized = async (): Promise<CategoryNote[]> => 
     setCachedData(cacheKey, notesWithCategories);
     return notesWithCategories;
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
+    }
     console.error('Errore nel fetch delle note categorie:', error);
     return [];
   }

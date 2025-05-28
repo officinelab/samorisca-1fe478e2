@@ -19,34 +19,35 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
   const loadingTimeoutRef = useRef<NodeJS.Timeout>();
   const abortControllerRef = useRef<AbortController>();
 
-  // Debounce language changes per evitare ricaricamenti multipli
-  const debouncedLanguage = useRef(language);
-  const languageTimeoutRef = useRef<NodeJS.Timeout>();
+  // Usa uno state per il debouncing invece di un ref
+  const [debouncedLanguage, setDebouncedLanguage] = useState(language);
+
+  // Verifica se la lingua corrente è ancora abilitata
+  useEffect(() => {
+    if (siteSettings?.enabledPublicMenuLanguages) {
+      const enabledLanguages = ["it", ...siteSettings.enabledPublicMenuLanguages];
+      if (!enabledLanguages.includes(language) && language !== 'it') {
+        console.log(`Language ${language} is no longer enabled, switching to Italian`);
+        setLanguage('it');
+        setDebouncedLanguage('it');
+      }
+    }
+  }, [siteSettings?.enabledPublicMenuLanguages, language]);
 
   useEffect(() => {
     if (isPreview) {
       setLanguage(previewLanguage);
+      setDebouncedLanguage(previewLanguage);
     }
   }, [isPreview, previewLanguage]);
 
-  // Debounce language changes
+  // Effetto per gestire il debouncing della lingua
   useEffect(() => {
-    if (languageTimeoutRef.current) {
-      clearTimeout(languageTimeoutRef.current);
-    }
-
-    languageTimeoutRef.current = setTimeout(() => {
-      if (debouncedLanguage.current !== language) {
-        debouncedLanguage.current = language;
-        clearMenuDataCache(); // Pulisci cache quando cambia lingua
-      }
+    const timeoutId = setTimeout(() => {
+      setDebouncedLanguage(language);
     }, 300);
 
-    return () => {
-      if (languageTimeoutRef.current) {
-        clearTimeout(languageTimeoutRef.current);
-      }
-    };
+    return () => clearTimeout(timeoutId);
   }, [language]);
 
   const loadData = useCallback(async (targetLanguage: string) => {
@@ -68,10 +69,16 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
 
     try {
       const startTime = Date.now();
-      const { categories, products, allergens, categoryNotes } = await fetchMenuDataOptimized(targetLanguage);
+      console.log(`🔄 Loading menu data for language: ${targetLanguage}`);
+      
+      const { categories, products, allergens, categoryNotes } = await fetchMenuDataOptimized(
+        targetLanguage,
+        abortControllerRef.current.signal
+      );
       
       // Controlla se la richiesta è stata cancellata
       if (abortControllerRef.current?.signal.aborted) {
+        console.log('❌ Request aborted for language:', targetLanguage);
         return;
       }
 
@@ -81,7 +88,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       setCategoryNotes(categoryNotes || []);
 
       const loadTime = Date.now() - startTime;
-      console.log(`📊 Menu loaded successfully in ${loadTime}ms`);
+      console.log(`✅ Menu loaded successfully for ${targetLanguage} in ${loadTime}ms`);
       
       // Mostra toast solo se il caricamento è stato molto lento
       if (loadTime > 2000) {
@@ -91,6 +98,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     } catch (error: any) {
       // Non mostrare errori se la richiesta è stata cancellata
       if (error.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
+        console.log('Request was aborted, ignoring error');
         return;
       }
 
@@ -101,13 +109,19 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
       }
-      setIsLoading(false);
+      // Solo se non è stato abortito
+      if (!abortControllerRef.current?.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
-  // Effect principale per caricare i dati
+  // Effect principale per caricare i dati quando cambia la lingua debounced
   useEffect(() => {
-    loadData(debouncedLanguage.current);
+    console.log(`🌐 Language changed to: ${debouncedLanguage}`);
+    // Pulisci la cache prima di caricare i nuovi dati
+    clearMenuDataCache();
+    loadData(debouncedLanguage);
 
     return () => {
       if (abortControllerRef.current) {
@@ -117,7 +131,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
         clearTimeout(loadingTimeoutRef.current);
       }
     };
-  }, [loadData, debouncedLanguage.current, isPreview, previewLanguage]);
+  }, [debouncedLanguage, loadData]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -127,9 +141,6 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       }
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
-      }
-      if (languageTimeoutRef.current) {
-        clearTimeout(languageTimeoutRef.current);
       }
     };
   }, []);

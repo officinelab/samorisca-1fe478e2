@@ -3,8 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/database";
 import { createTranslationsMap, applyTranslations } from "./translationUtils";
 
-export const fetchProductsOptimized = async (categoryIds: string[], language: string) => {
+export const fetchProductsOptimized = async (
+  categoryIds: string[], 
+  language: string,
+  signal?: AbortSignal
+) => {
   console.log('🚀 Fetching products for categories:', categoryIds.length);
+  
+  // Controlla abort signal all'inizio
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
   
   // 1. Carica tutti i prodotti in una query
   const { data: productsData, error: productsError } = await supabase
@@ -19,6 +28,11 @@ export const fetchProductsOptimized = async (categoryIds: string[], language: st
 
   const productIds = productsData.map(p => p.id);
   console.log('📦 Loaded products:', productIds.length);
+
+  // Controlla abort signal dopo il primo caricamento
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
 
   // 2. Carica tutte le relazioni in parallelo
   const [
@@ -53,6 +67,11 @@ export const fetchProductsOptimized = async (categoryIds: string[], language: st
       ? supabase.from('translations').select('*').eq('entity_type', 'product_labels').eq('language', language)
       : Promise.resolve({ data: null })
   ]);
+
+  // Controlla abort signal dopo il caricamento delle relazioni
+  if (signal?.aborted) {
+    throw new DOMException('Aborted', 'AbortError');
+  }
 
   console.log('🔗 Loaded relations and translations');
 
