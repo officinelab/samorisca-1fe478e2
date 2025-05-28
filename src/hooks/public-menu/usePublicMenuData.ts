@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Allergen, Category, Product } from "@/types/database";
