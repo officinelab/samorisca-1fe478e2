@@ -1,4 +1,5 @@
 
+
 -- Fix per la funzione increment_tokens - risolve l'ambiguità dei riferimenti alle colonne
 CREATE OR REPLACE FUNCTION public.increment_tokens(token_count integer)
  RETURNS boolean
@@ -76,3 +77,4 @@ BEGIN
   RETURN TRUE;
 END;
 $function$
+
