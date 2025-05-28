@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, BookmarkPlus, CirclePlus, BadgePlus, CircleCheckBig } from "lucide-react";
 import { Product } from "@/types/database";
 import { ProductFeaturesIcons } from "./ProductFeaturesIcons";
 import { ProductMultiplePrices } from "./ProductMultiplePrices";
@@ -39,11 +39,11 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   const buttonIcon = buttonSettings?.icon || "plus";
 
   const iconsMap: Record<string, React.ComponentType<any>> = {
-    "bookmark-plus": require("lucide-react").BookmarkPlus,
-    "circle-plus": require("lucide-react").CirclePlus,
+    "bookmark-plus": BookmarkPlus,
+    "circle-plus": CirclePlus,
     "plus": Plus,
-    "badge-plus": require("lucide-react").BadgePlus,
-    "circle-check-big": require("lucide-react").CircleCheckBig,
+    "badge-plus": BadgePlus,
+    "circle-check-big": CircleCheckBig,
   };
   const ButtonIcon = iconsMap[buttonIcon] || Plus;
 
