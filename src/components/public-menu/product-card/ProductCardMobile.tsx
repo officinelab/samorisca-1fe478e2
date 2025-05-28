@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardImage } from "@/components/ui/card";
@@ -51,6 +52,16 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
   const ButtonIcon = iconsMap[buttonSettings?.icon || "plus"] || Plus;
   const btnColor = buttonSettings?.color || "#9b87f5";
 
+  // Ordina allergeni per numero crescente
+  const sortedAllergens = product.allergens 
+    ? [...product.allergens].sort((a, b) => a.number - b.number)
+    : [];
+
+  // Ordina caratteristiche per display_order crescente
+  const sortedFeatures = product.features 
+    ? [...product.features].sort((a, b) => a.display_order - b.display_order)
+    : [];
+
   return (
     <Card className="mb-4" clickable onClick={() => onProductSelect(product)}>
       <div className="p-4">
@@ -87,17 +98,17 @@ export const ProductCardMobile: React.FC<ProductCardMobileProps> = ({
             >
               {truncateText(description, 110)}
             </p>
-            {product.allergens && product.allergens.length > 0 && (
+            {sortedAllergens.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
-                {product.allergens.map(allergen => (
+                {sortedAllergens.map(allergen => (
                   <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
                     {allergen.number}
                   </Badge>
                 ))}
               </div>
             )}
-            {product.features && product.features.length > 0 && (
-              <ProductFeaturesIcons features={product.features} />
+            {sortedFeatures.length > 0 && (
+              <ProductFeaturesIcons features={sortedFeatures} />
             )}
           </div>
           <div className="relative">

@@ -35,6 +35,16 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   useDynamicGoogleFont(fontSettings?.title?.fontFamily);
   useDynamicGoogleFont(fontSettings?.price?.fontFamily);
 
+  // Ordina allergeni per numero crescente
+  const sortedAllergens = product.allergens 
+    ? [...product.allergens].sort((a, b) => a.number - b.number)
+    : [];
+
+  // Ordina caratteristiche per display_order crescente
+  const sortedFeatures = product.features 
+    ? [...product.features].sort((a, b) => a.display_order - b.display_order)
+    : [];
+
   return (
     <Card horizontal className="overflow-hidden h-full" clickable onClick={() => onProductSelect(product)}>
       {product.image_url ? (
@@ -100,17 +110,17 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
             {description}
           </p>
         )}
-        {product.allergens && product.allergens.length > 0 && (
+        {sortedAllergens.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {product.allergens.map(allergen => (
+            {sortedAllergens.map(allergen => (
               <Badge key={allergen.id} variant="outline" className="text-xs px-1 py-0">
                 {allergen.number}
               </Badge>
             ))}
           </div>
         )}
-        {product.features && product.features.length > 0 && (
-          <ProductFeaturesIcons features={product.features} />
+        {sortedFeatures.length > 0 && (
+          <ProductFeaturesIcons features={sortedFeatures} />
         )}
         {product.has_multiple_prices ? (
           <div className="space-y-2 mt-3">
