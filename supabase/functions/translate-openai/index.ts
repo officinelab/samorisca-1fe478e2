@@ -138,37 +138,20 @@ serve(async (req) => {
 
     // === INCREMENTO TOKEN === 
     try {
-      // Loggo valore tokens_used prima
-      const { data: beforeRow, error: beforeError } = await supabase
-        .from('translation_tokens')
-        .select('month, tokens_used')
-        .eq('month', (new Date()).toISOString().slice(0, 7))
-        .maybeSingle();
-      console.log('[OPENAI][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
-
-      // INCREMENTO con update diretto: tokens_used + 1
-      const { error: upError } = await supabase
-        .from('translation_tokens')
-        .update({
-          tokens_used: (beforeRow?.tokens_used || 0) + 1,
-          last_updated: new Date().toISOString()
-        })
-        .eq('month', (new Date()).toISOString().slice(0, 7));
-      if (upError) {
-        console.error('[OPENAI][TOKEN] Errore update token:', upError);
+      // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
+      const { data: success, error: incrementError } = await supabase
+        .rpc('increment_tokens', { token_count: 1 });
+      
+      if (incrementError) {
+        console.error('[OPENAI][TOKEN] Errore incremento token:', incrementError);
+      } else if (success === false) {
+        console.error('[OPENAI][TOKEN] Token insufficienti');
+        // Non dovrebbe accadere perché già controllato prima
       } else {
-        console.log('[OPENAI][TOKEN] Token incrementato di 1 via update diretto');
+        console.log('[OPENAI][TOKEN] Token consumato correttamente (mensili o acquistati)');
       }
-
-      // Loggo valore tokens_used dopo
-      const { data: afterRow, error: afterError } = await supabase
-        .from('translation_tokens')
-        .select('month, tokens_used')
-        .eq('month', (new Date()).toISOString().slice(0, 7))
-        .maybeSingle();
-      console.log('[OPENAI][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.error('[OPENAI][TOKEN] Errore inatteso update token:', tokErr);
+      console.error('[OPENAI][TOKEN] Errore inatteso:', tokErr);
     }
     // === /INCREMENTO TOKEN ===
 

@@ -127,38 +127,22 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // === AGGIORNAMENTO TOKEN CON LOG ===
+    // === AGGIORNAMENTO TOKEN CORRETTO ===
     try {
-      const month = (new Date()).toISOString().slice(0, 7);
-      const { data: beforeRow, error: beforeError } = await supabase
-        .from('translation_tokens')
-        .select('month,tokens_used')
-        .eq('month', month)
-        .maybeSingle();
-      console.log('[PERPLEXITY][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
-
-      // Incr. tokens_used di 1
-      const { error: upError } = await supabase
-        .from('translation_tokens')
-        .update({
-          tokens_used: (beforeRow?.tokens_used || 0) + 1,
-          last_updated: new Date().toISOString()
-        })
-        .eq('month', month);
-      if (upError) {
-        console.error('[PERPLEXITY][TOKEN] Errore update token:', upError);
+      // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
+      const { data: success, error: incrementError } = await supabase
+        .rpc('increment_tokens', { token_count: 1 });
+      
+      if (incrementError) {
+        console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
+      } else if (success === false) {
+        console.error('[PERPLEXITY][TOKEN] Token insufficienti');
+        // Non dovrebbe accadere perché già controllato prima
       } else {
-        console.log('[PERPLEXITY][TOKEN] Token incrementato di 1 via update diretto');
+        console.log('[PERPLEXITY][TOKEN] Token consumato correttamente (mensili o acquistati)');
       }
-
-      const { data: afterRow, error: afterError } = await supabase
-        .from('translation_tokens')
-        .select('month,tokens_used')
-        .eq('month', month)
-        .maybeSingle();
-      console.log('[PERPLEXITY][DEBUG][TOKEN][DOPO]', afterRow, afterError);
     } catch (tokErr) {
-      console.error('[PERPLEXITY][TOKEN] Errore inatteso update token:', tokErr);
+      console.error('[PERPLEXITY][TOKEN] Errore inatteso:', tokErr);
     }
     // === /AGGIORNAMENTO TOKEN ===
     

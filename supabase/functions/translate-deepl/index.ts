@@ -89,38 +89,22 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
-      // === AGGIORNAMENTO TOKEN CON LOG ===
+      // === AGGIORNAMENTO TOKEN CORRETTO ===
       try {
-        const month = (new Date()).toISOString().slice(0, 7);
-        const { data: beforeRow, error: beforeError } = await supabase
-          .from('translation_tokens')
-          .select('month,tokens_used')
-          .eq('month', month)
-          .maybeSingle();
-        console.log('[DEEPL][DEBUG][TOKEN][PRIMA]', beforeRow, beforeError);
-
-        // Incr. tokens_used di 1
-        const { error: upError } = await supabase
-          .from('translation_tokens')
-          .update({
-            tokens_used: (beforeRow?.tokens_used || 0) + 1,
-            last_updated: new Date().toISOString()
-          })
-          .eq('month', month);
-        if (upError) {
-          console.error('[DEEPL][TOKEN] Errore update token:', upError);
+        // Usa la funzione increment_tokens che gestisce correttamente mensili e acquistati
+        const { data: success, error: incrementError } = await supabase
+          .rpc('increment_tokens', { token_count: 1 });
+        
+        if (incrementError) {
+          console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
+        } else if (success === false) {
+          console.error('[DEEPL][TOKEN] Token insufficienti');
+          // Non dovrebbe accadere perché già controllato prima
         } else {
-          console.log('[DEEPL][TOKEN] Token incrementato di 1 via update diretto');
+          console.log('[DEEPL][TOKEN] Token consumato correttamente (mensili o acquistati)');
         }
-
-        const { data: afterRow, error: afterError } = await supabase
-          .from('translation_tokens')
-          .select('month,tokens_used')
-          .eq('month', month)
-          .maybeSingle();
-        console.log('[DEEPL][DEBUG][TOKEN][DOPO]', afterRow, afterError);
       } catch (tokErr) {
-        console.error('[DEEPL][TOKEN] Errore inatteso update token:', tokErr);
+        console.error('[DEEPL][TOKEN] Errore inatteso:', tokErr);
       }
       // === /AGGIORNAMENTO TOKEN ===
 
