@@ -127,9 +127,18 @@ Return only the translated result as if it would go inside a printed menu, with 
     console.log(`[PERPLEXITY] <== Tradotto come: "${translatedText}"`);
     console.log("[PERPLEXITY] Traduzione completata con successo");
 
-    // === AGGIORNAMENTO TOKEN CON increment_tokens ===
+    // === AGGIORNAMENTO TOKEN CON LOGGING DETTAGLIATO ===
     try {
       console.log('[PERPLEXITY][TOKEN] Chiamando increment_tokens con 1 token...');
+      
+      // Controlla lo stato prima dell'incremento
+      const { data: beforeState } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', '2025-05')
+        .single();
+      console.log('[PERPLEXITY][TOKEN] Stato prima incremento:', beforeState);
+      
       const { data: incrementResult, error: incrementError } = await supabase
         .rpc('increment_tokens', { token_count: 1 });
       
@@ -138,11 +147,19 @@ Return only the translated result as if it would go inside a printed menu, with 
         incrementError
       });
       
+      // Controlla lo stato dopo l'incremento
+      const { data: afterState } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', '2025-05')
+        .single();
+      console.log('[PERPLEXITY][TOKEN] Stato dopo incremento:', afterState);
+      
       if (incrementError) {
         console.error('[PERPLEXITY][TOKEN] Errore incremento token:', incrementError);
         console.error('[PERPLEXITY][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
       } else {
-        console.log('[PERPLEXITY][TOKEN] Token incrementato con successo');
+        console.log('[PERPLEXITY][TOKEN] Token incrementato con successo. Risultato:', incrementResult);
       }
     } catch (tokErr) {
       console.error('[PERPLEXITY][TOKEN] Errore inatteso incremento token:', tokErr);

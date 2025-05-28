@@ -89,9 +89,18 @@ serve(async (req) => {
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 
-      // === AGGIORNAMENTO TOKEN CON increment_tokens ===
+      // === AGGIORNAMENTO TOKEN CON LOGGING DETTAGLIATO ===
       try {
         console.log('[DEEPL][TOKEN] Chiamando increment_tokens con 1 token...');
+        
+        // Controlla lo stato prima dell'incremento
+        const { data: beforeState } = await supabase
+          .from('translation_tokens')
+          .select('*')
+          .eq('month', '2025-05')
+          .single();
+        console.log('[DEEPL][TOKEN] Stato prima incremento:', beforeState);
+        
         const { data: incrementResult, error: incrementError } = await supabase
           .rpc('increment_tokens', { token_count: 1 });
         
@@ -100,11 +109,19 @@ serve(async (req) => {
           incrementError
         });
         
+        // Controlla lo stato dopo l'incremento
+        const { data: afterState } = await supabase
+          .from('translation_tokens')
+          .select('*')
+          .eq('month', '2025-05')
+          .single();
+        console.log('[DEEPL][TOKEN] Stato dopo incremento:', afterState);
+        
         if (incrementError) {
           console.error('[DEEPL][TOKEN] Errore incremento token:', incrementError);
           console.error('[DEEPL][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
         } else {
-          console.log('[DEEPL][TOKEN] Token incrementato con successo');
+          console.log('[DEEPL][TOKEN] Token incrementato con successo. Risultato:', incrementResult);
         }
       } catch (tokErr) {
         console.error('[DEEPL][TOKEN] Errore inatteso incremento token:', tokErr);

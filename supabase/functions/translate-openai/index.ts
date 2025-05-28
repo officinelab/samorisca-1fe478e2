@@ -55,8 +55,12 @@ serve(async (req) => {
     console.log(`[OPENAI] ==> Traduzione di: "${text}" in ${targetLanguage}`);
 
     // --- Check token availability prima di traduzione
+    console.log('[OPENAI][TOKEN] Controllo token disponibili...');
     const { data: tokensDataBefore, error: tokensErrorBefore } = await supabase
       .rpc('get_remaining_tokens');
+    
+    console.log('[OPENAI][TOKEN] Token disponibili prima traduzione:', tokensDataBefore);
+    
     if (tokensErrorBefore) {
       console.error('[OPENAI][TOKEN] Errore nel controllo dei token:', tokensErrorBefore);
       return new Response(
@@ -136,9 +140,18 @@ serve(async (req) => {
       console.error('[OPENAI][DB] Impossibile salvare la traduzione nel database:', saveErr);
     }
 
-    // === INCREMENTO TOKEN === 
+    // === INCREMENTO TOKEN CON LOGGING DETTAGLIATO === 
     try {
       console.log('[OPENAI][TOKEN] Chiamando increment_tokens con 1 token...');
+      
+      // Controlla lo stato prima dell'incremento
+      const { data: beforeState } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', '2025-05')
+        .single();
+      console.log('[OPENAI][TOKEN] Stato prima incremento:', beforeState);
+      
       const { data: incrementResult, error: incrementError } = await supabase
         .rpc('increment_tokens', { token_count: 1 });
       
@@ -147,11 +160,19 @@ serve(async (req) => {
         incrementError
       });
       
+      // Controlla lo stato dopo l'incremento
+      const { data: afterState } = await supabase
+        .from('translation_tokens')
+        .select('*')
+        .eq('month', '2025-05')
+        .single();
+      console.log('[OPENAI][TOKEN] Stato dopo incremento:', afterState);
+      
       if (incrementError) {
         console.error('[OPENAI][TOKEN] Errore incremento token:', incrementError);
         console.error('[OPENAI][TOKEN] Dettagli errore:', JSON.stringify(incrementError));
       } else {
-        console.log('[OPENAI][TOKEN] Token incrementato con successo');
+        console.log('[OPENAI][TOKEN] Token incrementato con successo. Risultato:', incrementResult);
       }
     } catch (tokErr) {
       console.error('[OPENAI][TOKEN] Errore inatteso incremento token:', tokErr);
