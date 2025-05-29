@@ -1,6 +1,6 @@
 
 import { useRef, useCallback } from "react";
-import { waitForImages, calculateStickyOffset } from "./utils/domCalculations";
+import { waitForDOMReady, calculateStickyOffset } from "./utils/domCalculations";
 
 export const useScrollHighlighting = (
   isManualScroll: boolean,
@@ -14,10 +14,10 @@ export const useScrollHighlighting = (
       observerRef.current.disconnect();
     }
 
-    // Aspetta che tutto sia renderizzato prima di configurare l'observer
+    // Setup dell'observer più veloce
     const setupObserver = async () => {
-      // Aspetta le immagini
-      await waitForImages();
+      // Aspetta che il DOM sia pronto
+      await waitForDOMReady();
       
       // Calcola l'offset dinamico
       const dynamicOffset = await calculateStickyOffset();
@@ -27,7 +27,11 @@ export const useScrollHighlighting = (
       // Create new intersection observer
       const observer = new IntersectionObserver(
         (entries) => {
-          if (isManualScroll) return;
+          // Blocca l'observer durante lo scroll manuale in modo più aggressivo
+          if (isManualScroll) {
+            console.log('Blocking observer during manual scroll');
+            return;
+          }
           
           // Trova tutte le categorie visibili
           const visibleEntries = entries
@@ -70,8 +74,8 @@ export const useScrollHighlighting = (
       });
     };
 
-    // Delay più lungo per essere sicuri
-    setTimeout(setupObserver, 500);
+    // Delay ridotto per essere più reattivo
+    setTimeout(setupObserver, 200);
 
     return () => {
       if (observerRef.current) {

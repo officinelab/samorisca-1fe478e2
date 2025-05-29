@@ -69,7 +69,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
 
   // MOBILE: barra orizzontale con auto-scroll, full width
   return (
-    <div className="sticky top-[76px] z-50 w-full bg-white border-b border-gray-200">
+    <div 
+      id="mobile-category-sidebar"
+      className="sticky top-[76px] z-50 w-full bg-white border-b border-gray-200"
+      data-sidebar="mobile"
+    >
       <div className="relative">
         <div 
           ref={scrollContainerRef}

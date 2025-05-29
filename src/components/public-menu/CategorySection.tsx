@@ -47,6 +47,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
       id={`category-${category.id}`} 
       className="scroll-mt-40"
       data-category-id={category.id}
+      data-category-name={category.title}
     >
       <CategorySectionHeader 
         category={category} 

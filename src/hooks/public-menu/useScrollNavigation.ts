@@ -1,6 +1,6 @@
 
 import { useRef } from "react";
-import { waitForImages, calculateStickyOffset } from "./utils/domCalculations";
+import { waitForDOMReady, calculateStickyOffset } from "./utils/domCalculations";
 
 export const useScrollNavigation = (
   setSelectedCategory: (categoryId: string) => void,
@@ -20,11 +20,11 @@ export const useScrollNavigation = (
       return;
     }
 
-    // Funzione di scroll con retry
-    const performScroll = async (attempt: number = 1): Promise<void> => {
+    // Funzione di scroll migliorata
+    const performScroll = async (): Promise<void> => {
       try {
-        // Aspetta che tutto sia pronto
-        await waitForImages();
+        // Aspetta che il DOM sia pronto (più veloce di waitForImages)
+        await waitForDOMReady();
         
         // Calcola l'offset dinamicamente
         const dynamicOffset = await calculateStickyOffset();
@@ -32,9 +32,9 @@ export const useScrollNavigation = (
         // Calcola la posizione finale
         const elementRect = element.getBoundingClientRect();
         const absoluteElementTop = elementRect.top + window.pageYOffset;
-        const scrollToPosition = absoluteElementTop - dynamicOffset;
+        const scrollToPosition = Math.max(0, absoluteElementTop - dynamicOffset);
         
-        console.log(`Scroll attempt ${attempt}:`, {
+        console.log('Scroll calculation:', {
           elementTop: elementRect.top,
           pageYOffset: window.pageYOffset,
           dynamicOffset,
@@ -42,41 +42,28 @@ export const useScrollNavigation = (
           elementId: element.id
         });
         
-        // Scroll con animazione
+        // Scroll immediato e preciso
         window.scrollTo({
           top: scrollToPosition,
           behavior: 'smooth'
         });
-        
-        // Verifica se lo scroll è andato a buon fine dopo l'animazione
-        setTimeout(async () => {
-          const newScrollPosition = window.pageYOffset;
-          const tolerance = 50; // tolleranza di 50px
-          
-          if (Math.abs(newScrollPosition - scrollToPosition) > tolerance && attempt < 3) {
-            console.log(`Scroll attempt ${attempt} failed, retrying...`);
-            await performScroll(attempt + 1);
-          } else {
-            console.log(`Scroll completed after ${attempt} attempt(s)`);
-          }
-        }, 1000); // Aspetta che l'animazione finisca
         
       } catch (error) {
         console.error('Error during scroll:', error);
       }
     };
     
-    // Avvia lo scroll con un piccolo delay
-    setTimeout(() => performScroll(), 150);
+    // Avvia lo scroll con un delay minimo
+    setTimeout(() => performScroll(), 50);
     
-    // Reset manual scroll flag dopo più tempo per permettere i retry
+    // Reset manual scroll flag con timeout ridotto
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 3000); // Aumentato per permettere i retry
+    }, 1500); // Ridotto da 3000ms a 1500ms
   };
 
   const scrollToTop = () => {

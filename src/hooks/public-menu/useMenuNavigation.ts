@@ -28,7 +28,7 @@ export const useMenuNavigation = () => {
     }
   };
 
-  // Setup intersection observer for auto-highlighting
+  // Setup intersection observer for auto-highlighting con delay ridotto
   useEffect(() => {
     const cleanup = setupScrollHighlighting();
     return cleanup;
