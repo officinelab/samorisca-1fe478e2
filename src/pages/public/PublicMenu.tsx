@@ -84,6 +84,18 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
   const { t } = usePublicMenuUiStrings(language);
 
+  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
+  useEffect(() => {
+    if (categories.length > 0) {
+      // Piccolo delay per assicurarsi che il DOM sia aggiornato
+      const timeoutId = setTimeout(() => {
+        setupScrollHighlighting();
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [categories, language, setupScrollHighlighting]);
+
   // Mostra uno skeleton o loader se le impostazioni sono ancora in caricamento
   if (isLoadingSiteSettings) {
     return (
@@ -127,18 +139,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
   }
-
-  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
-  useEffect(() => {
-    if (categories.length > 0) {
-      // Piccolo delay per assicurarsi che il DOM sia aggiornato
-      const timeoutId = setTimeout(() => {
-        setupScrollHighlighting();
-      }, 200);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [categories, language, setupScrollHighlighting]);
 
   // Settings layout, font, buttons
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
