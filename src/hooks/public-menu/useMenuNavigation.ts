@@ -6,6 +6,7 @@ export const useMenuNavigation = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -16,7 +17,12 @@ export const useMenuNavigation = () => {
 
   // Auto-highlight category based on scroll position
   const setupScrollHighlighting = useCallback(() => {
-    const observer = new IntersectionObserver(
+    // Clean up existing observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return; // Skip auto-update during manual scroll
         
@@ -56,7 +62,9 @@ export const useMenuNavigation = () => {
       
       categoryElements.forEach((element) => {
         console.log('Observing element:', element.id);
-        observer.observe(element);
+        if (observerRef.current) {
+          observerRef.current.observe(element);
+        }
       });
     };
 
@@ -68,9 +76,10 @@ export const useMenuNavigation = () => {
 
     return () => {
       clearTimeout(timeoutId);
-      const categoryElements = document.querySelectorAll('[id^="category-"]');
-      categoryElements.forEach((element) => observer.unobserve(element));
-      observer.disconnect();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
     };
   }, [isManualScroll]);
 
