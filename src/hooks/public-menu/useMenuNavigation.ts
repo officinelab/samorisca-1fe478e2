@@ -103,42 +103,11 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'altezza totale degli elementi sticky
-      let stickyOffset = 0;
-      
-      // Header
-      const header = document.querySelector('header');
-      if (header) {
-        stickyOffset += header.offsetHeight;
-      }
-      
-      // CategorySidebar (solo su mobile)
-      const categorySidebar = document.querySelector('.sticky.top-\\[68px\\]') || 
-                             document.querySelector('.sticky.top-\\[76px\\]');
-      if (categorySidebar) {
-        stickyOffset += categorySidebar.offsetHeight;
-      }
-      
-      // Aggiungi un po' di padding extra
-      const extraPadding = 20;
-      const totalOffset = stickyOffset + extraPadding;
-      
-      // Calcola la posizione finale
-      const elementRect = element.getBoundingClientRect();
-      const absoluteElementTop = elementRect.top + window.pageYOffset;
-      const scrollToPosition = absoluteElementTop - totalOffset;
-      
-      console.log('Debug scroll:', {
-        elementTop: elementRect.top,
-        pageYOffset: window.pageYOffset,
-        stickyOffset,
-        totalOffset,
-        scrollToPosition
-      });
-      
-      window.scrollTo({
-        top: scrollToPosition,
-        behavior: 'smooth'
+      // Approccio semplificato: usa scrollIntoView nativo
+      // La classe scroll-mt-28 nel CategorySection gestisce già l'offset
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
       });
     }
     
