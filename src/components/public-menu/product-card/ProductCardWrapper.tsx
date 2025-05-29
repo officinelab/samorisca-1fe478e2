@@ -8,7 +8,7 @@ import { ProductCardMobileCustom1 } from "./ProductCardMobileCustom1";
 import { ProductCardDesktopCustom1 } from "./ProductCardDesktopCustom1";
 
 type DeviceView = 'mobile' | 'desktop';
-export type ProductCardLayoutType = 'default' | 'custom1';
+export type ProductCardLayoutType = 'default' | 'compact' | 'custom1';
 
 interface ProductCardWrapperProps {
   product: Product;
@@ -49,6 +49,7 @@ const productCardLayouts = {
     Mobile: ProductCardMobile,
     Desktop: ProductCardDesktop,
   },
+  // compact: { Mobile: ProductCardMobileCompact, Desktop: ProductCardDesktopCompact },
   custom1: {
     Mobile: ProductCardMobileCustom1,
     Desktop: ProductCardDesktopCustom1,

@@ -20,18 +20,13 @@ interface ProductCardDesktopProps {
     description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
     price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
   };
-  buttonSettings?: {
-    color?: string;
-    icon?: string;
-  };
 }
 
 export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
   product,
   onProductSelect,
   addToCart,
-  fontSettings,
-  buttonSettings
+  fontSettings
 }) => {
   const isMobileView = useIsMobile();
   const { title, description, priceSuffix, sortedAllergens, sortedFeatures } = useProductCardLogic(product, fontSettings);
@@ -89,7 +84,6 @@ export const ProductCardDesktop: React.FC<ProductCardDesktopProps> = ({
             priceSuffix={priceSuffix}
             addToCart={addToCart}
             fontSettings={fontSettings}
-            buttonSettings={buttonSettings}
             variant="desktop"
           />
         ) : (

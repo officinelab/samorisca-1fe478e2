@@ -35,7 +35,7 @@ interface PublicMenuLayoutProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   truncateText: (text: string | null, maxLength: number) => string;
   serviceCoverCharge?: number;
-  productCardLayoutType?: 'default' | 'custom1';
+  productCardLayoutType?: string;
   fontSettings?: any;
   buttonSettings?: any;
   

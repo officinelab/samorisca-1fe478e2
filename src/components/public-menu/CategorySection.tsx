@@ -16,7 +16,7 @@ interface CategorySectionProps {
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
   language?: string;
-  productCardLayoutType?: 'default' | 'custom1';
+  productCardLayoutType?: string;
   fontSettings?: {
     title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };

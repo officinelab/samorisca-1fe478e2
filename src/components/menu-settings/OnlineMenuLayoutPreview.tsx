@@ -1,3 +1,4 @@
+
 import { ProductCardWrapper, type ProductCardLayoutType } from "@/components/public-menu/product-card/ProductCardWrapper";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,8 @@ import { Product } from "@/types/database";
 
 const layoutLabel: Record<ProductCardLayoutType, string> = {
   default: "Classico",
-  custom1: "Custom 1"
+  custom1: "Custom 1",
+  compact: "Compatto"
 };
 
 interface OnlineMenuLayoutPreviewProps {
