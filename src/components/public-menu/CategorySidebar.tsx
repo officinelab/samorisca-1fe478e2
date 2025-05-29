@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
 
@@ -18,6 +18,29 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   onSelectCategory,
   language = 'it'
 }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const categoryRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+
+  // Auto-scroll quando cambia la categoria selezionata
+  useEffect(() => {
+    if (selectedCategory && categoryRefs.current[selectedCategory] && scrollContainerRef.current) {
+      const button = categoryRefs.current[selectedCategory];
+      const container = scrollContainerRef.current;
+      
+      if (button) {
+        // Calcola la posizione per centrare il bottone nel container
+        const buttonRect = button.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const scrollLeft = button.offsetLeft - (containerRect.width / 2) + (buttonRect.width / 2);
+        
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [selectedCategory]);
+
   // Sidebar desktop sticky
   if (deviceView === 'desktop') {
     return (
@@ -45,17 +68,21 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con design migliorato
+  // MOBILE: barra orizzontale con auto-scroll e full width
   return (
-    <div className="w-full sticky top-[88px] z-40 bg-white border-b border-gray-200 shadow-md">
-      <div className="relative overflow-hidden">
-        <div className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-3">
+    <div className="sticky top-[88px] z-40 -mx-4 bg-white border-b border-gray-200 shadow-md">
+      <div className="relative">
+        <div 
+          ref={scrollContainerRef}
+          className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-3 scroll-smooth"
+        >
           {categories.map(category => {
             const displayTitle = category.displayTitle || category.title;
             
             return (
               <button
                 key={category.id}
+                ref={el => categoryRefs.current[category.id] = el}
                 className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 
                   ${selectedCategory === category.id 
                     ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
@@ -68,7 +95,8 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
           })}
         </div>
         
-        {/* Gradiente per indicare che c'è altro contenuto scrollabile */}
+        {/* Gradienti per indicare che c'è altro contenuto scrollabile */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
       </div>
       
