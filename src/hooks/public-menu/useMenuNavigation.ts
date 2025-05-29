@@ -9,8 +9,34 @@ export const useMenuNavigation = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Funzione per calcolare dinamicamente l'offset totale
-  const calculateStickyOffset = () => {
+  // Funzione per aspettare che le immagini siano caricate
+  const waitForImages = async (): Promise<void> => {
+    const images = document.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      
+      return new Promise<void>((resolve) => {
+        const handleLoad = () => {
+          img.removeEventListener('load', handleLoad);
+          img.removeEventListener('error', handleLoad);
+          resolve();
+        };
+        img.addEventListener('load', handleLoad);
+        img.addEventListener('error', handleLoad);
+        
+        // Timeout di sicurezza
+        setTimeout(handleLoad, 2000);
+      });
+    });
+    
+    await Promise.all(imagePromises);
+  };
+  
+  // Funzione per calcolare dinamicamente l'offset totale (chiamata al momento giusto)
+  const calculateStickyOffset = async (): Promise<number> => {
+    // Aspetta un frame per essere sicuri che il layout sia stabile
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    
     let totalOffset = 0;
     
     // Header principale
@@ -50,49 +76,53 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    // Calcola dinamicamente il rootMargin
-    const dynamicOffset = calculateStickyOffset();
-    const rootMargin = `-${dynamicOffset}px 0px -40% 0px`;
-    console.log('Using rootMargin:', rootMargin);
+    // Aspetta che tutto sia renderizzato prima di configurare l'observer
+    const setupObserver = async () => {
+      // Aspetta le immagini
+      await waitForImages();
+      
+      // Calcola l'offset dinamico
+      const dynamicOffset = await calculateStickyOffset();
+      const rootMargin = `-${dynamicOffset}px 0px -40% 0px`;
+      console.log('Using rootMargin:', rootMargin);
 
-    // Create new intersection observer
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isManualScroll) return;
-        
-        // Trova tutte le categorie visibili
-        const visibleEntries = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => {
-            // Se una categoria è al top del viewport (o molto vicina), ha priorità
-            const aTop = a.boundingClientRect.top;
-            const bTop = b.boundingClientRect.top;
-            
-            // Priorità alla categoria più vicina al top del viewport
-            if (Math.abs(aTop) < 50) return -1;
-            if (Math.abs(bTop) < 50) return 1;
-            
-            // Altrimenti ordina per posizione verticale
-            return aTop - bTop;
-          });
-        
-        if (visibleEntries.length > 0) {
-          const categoryId = visibleEntries[0].target.id.replace('category-', '');
-          console.log('Auto-selecting category:', categoryId);
-          setSelectedCategory(categoryId);
+      // Create new intersection observer
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (isManualScroll) return;
+          
+          // Trova tutte le categorie visibili
+          const visibleEntries = entries
+            .filter(entry => entry.isIntersecting)
+            .sort((a, b) => {
+              // Se una categoria è al top del viewport (o molto vicina), ha priorità
+              const aTop = a.boundingClientRect.top;
+              const bTop = b.boundingClientRect.top;
+              
+              // Priorità alla categoria più vicina al top del viewport
+              if (Math.abs(aTop) < 50) return -1;
+              if (Math.abs(bTop) < 50) return 1;
+              
+              // Altrimenti ordina per posizione verticale
+              return aTop - bTop;
+            });
+          
+          if (visibleEntries.length > 0) {
+            const categoryId = visibleEntries[0].target.id.replace('category-', '');
+            console.log('Auto-selecting category:', categoryId);
+            setSelectedCategory(categoryId);
+          }
+        },
+        {
+          root: null,
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+          rootMargin: rootMargin
         }
-      },
-      {
-        root: null,
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        rootMargin: rootMargin
-      }
-    );
+      );
 
-    observerRef.current = observer;
+      observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con un piccolo delay per permettere il rendering
-    setTimeout(() => {
+      // Osserva tutte le sezioni categoria
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       console.log('Observing', categoryElements.length, 'category elements');
       categoryElements.forEach((element) => {
@@ -100,7 +130,10 @@ export const useMenuNavigation = () => {
           observerRef.current.observe(element);
         }
       });
-    }, 300); // Aumentato il delay per permettere il rendering completo
+    };
+
+    // Delay più lungo per essere sicuri
+    setTimeout(setupObserver, 500);
 
     return () => {
       if (observerRef.current) {
@@ -130,49 +163,76 @@ export const useMenuNavigation = () => {
     return cleanup;
   }, [setupScrollHighlighting]);
   
-  // Scroll to selected category (manual selection)
-  const scrollToCategory = (categoryId: string) => {
+  // Scroll to selected category (manual selection) con retry mechanism
+  const scrollToCategory = async (categoryId: string) => {
     console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
     const element = document.getElementById(`category-${categoryId}`);
-    if (element) {
-      // Usa il calcolo dinamico dell'offset
-      const dynamicOffset = calculateStickyOffset();
-      
-      // Calcola la posizione finale
-      const elementRect = element.getBoundingClientRect();
-      const absoluteElementTop = elementRect.top + window.pageYOffset;
-      const scrollToPosition = absoluteElementTop - dynamicOffset;
-      
-      console.log('Scroll calculation:', {
-        elementTop: elementRect.top,
-        pageYOffset: window.pageYOffset,
-        dynamicOffset,
-        scrollToPosition,
-        elementId: element.id
-      });
-      
-      // Aggiungi un piccolo delay per permettere eventuali cambiamenti di layout
-      setTimeout(() => {
+    if (!element) {
+      console.error('Element not found:', `category-${categoryId}`);
+      setIsManualScroll(false);
+      return;
+    }
+
+    // Funzione di scroll con retry
+    const performScroll = async (attempt: number = 1): Promise<void> => {
+      try {
+        // Aspetta che tutto sia pronto
+        await waitForImages();
+        
+        // Calcola l'offset dinamicamente
+        const dynamicOffset = await calculateStickyOffset();
+        
+        // Calcola la posizione finale
+        const elementRect = element.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.pageYOffset;
+        const scrollToPosition = absoluteElementTop - dynamicOffset;
+        
+        console.log(`Scroll attempt ${attempt}:`, {
+          elementTop: elementRect.top,
+          pageYOffset: window.pageYOffset,
+          dynamicOffset,
+          scrollToPosition,
+          elementId: element.id
+        });
+        
+        // Scroll con animazione
         window.scrollTo({
           top: scrollToPosition,
           behavior: 'smooth'
         });
-      }, 100);
-    } else {
-      console.error('Element not found:', `category-${categoryId}`);
-    }
+        
+        // Verifica se lo scroll è andato a buon fine dopo l'animazione
+        setTimeout(async () => {
+          const newScrollPosition = window.pageYOffset;
+          const tolerance = 50; // tolleranza di 50px
+          
+          if (Math.abs(newScrollPosition - scrollToPosition) > tolerance && attempt < 3) {
+            console.log(`Scroll attempt ${attempt} failed, retrying...`);
+            await performScroll(attempt + 1);
+          } else {
+            console.log(`Scroll completed after ${attempt} attempt(s)`);
+          }
+        }, 1000); // Aspetta che l'animazione finisca
+        
+      } catch (error) {
+        console.error('Error during scroll:', error);
+      }
+    };
     
-    // Reset manual scroll flag dopo l'animazione
+    // Avvia lo scroll con un piccolo delay
+    setTimeout(() => performScroll(), 150);
+    
+    // Reset manual scroll flag dopo più tempo per permettere i retry
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1500);
+    }, 3000); // Aumentato per permettere i retry
   };
   
   // Scroll to top of page
