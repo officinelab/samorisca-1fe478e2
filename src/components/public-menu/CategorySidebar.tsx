@@ -27,7 +27,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
-        <div className="sticky top-24 z-30 bg-gray-50">
+        <div className="sticky top-20 z-30 bg-gray-50">
           <h3 className="text-lg font-semibold mb-2">Categorie</h3>
           <div className="space-y-1 pr-4">
             {categories.map(category => {
@@ -54,7 +54,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
 
   // MOBILE: barra orizzontale scrollabile, con font più grande (+2pt)
   return (
-    <div className="w-full overflow-hidden mb-6 sticky top-16 z-20 pt-4 py-px bg-white">
+    <div className="w-full overflow-hidden mb-6 sticky top-14 z-20 bg-white shadow-sm">
       <div className="flex overflow-x-auto no-scrollbar space-x-4 px-4 py-2">
         {categories.map(category => {
           const displayTitle = category.displayTitle || category.title;

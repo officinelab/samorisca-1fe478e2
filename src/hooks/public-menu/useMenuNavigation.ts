@@ -6,6 +6,7 @@ export const useMenuNavigation = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -16,60 +17,70 @@ export const useMenuNavigation = () => {
 
   // Auto-highlight category based on scroll position
   const setupScrollHighlighting = useCallback(() => {
+    // Cleanup previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return; // Skip auto-update during manual scroll
         
-        // Find the category that's most visible
-        let mostVisibleEntry = null;
-        let maxRatio = 0;
+        // Trova tutte le sezioni visibili
+        const visibleSections = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => {
+            // Ordina per posizione verticale (top)
+            return a.boundingClientRect.top - b.boundingClientRect.top;
+          });
         
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            mostVisibleEntry = entry;
-          }
-        });
-        
-        if (mostVisibleEntry) {
-          const categoryId = mostVisibleEntry.target.id.replace('category-', '');
+        // Seleziona la prima sezione visibile
+        if (visibleSections.length > 0) {
+          const firstVisibleSection = visibleSections[0];
+          const categoryId = firstVisibleSection.target.id.replace('category-', '');
           setSelectedCategory(categoryId);
         }
       },
       {
-        threshold: [0.1, 0.3, 0.5, 0.7],
-        rootMargin: '-20% 0px -20% 0px'
+        // Usa il viewport principale come root
+        root: null,
+        threshold: [0, 0.1, 0.5, 0.9],
+        // Considera una sezione visibile quando entra nel 10% superiore del viewport
+        rootMargin: '-10% 0px -40% 0px'
       }
     );
 
-    // Observe all category sections
-    const categoryElements = document.querySelectorAll('[id^="category-"]');
-    categoryElements.forEach((element) => observer.observe(element));
+    observerRef.current = observer;
+
+    // Observe all category sections dopo un breve delay per assicurarsi che il DOM sia pronto
+    setTimeout(() => {
+      const categoryElements = document.querySelectorAll('[id^="category-"]');
+      categoryElements.forEach((element) => {
+        if (observerRef.current) {
+          observerRef.current.observe(element);
+        }
+      });
+    }, 100);
 
     return () => {
-      categoryElements.forEach((element) => observer.unobserve(element));
-      observer.disconnect();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
   }, [isManualScroll]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
     const handleScroll = () => {
-      if (menuRef.current) {
-        const scrollTop = menuRef.current.scrollTop;
-        setShowBackToTop(scrollTop > 300);
-      }
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      setShowBackToTop(scrollTop > 300);
     };
     
-    const menuElement = menuRef.current;
-    if (menuElement) {
-      menuElement.addEventListener('scroll', handleScroll);
-    }
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial scroll position
     
     return () => {
-      if (menuElement) {
-        menuElement.removeEventListener('scroll', handleScroll);
-      }
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -86,25 +97,27 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      element.scrollIntoView({
+      const yOffset = -80; // Offset per header sticky
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
         behavior: 'smooth'
       });
     }
     
-    // Reset manual scroll flag after scroll animation
+    // Reset manual scroll flag dopo l'animazione
     setTimeout(() => {
       setIsManualScroll(false);
     }, 1000);
   };
   
-  // Scroll to top of menu
+  // Scroll to top of page
   const scrollToTop = () => {
-    if (menuRef.current) {
-      menuRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
   
   return {
@@ -114,6 +127,7 @@ export const useMenuNavigation = () => {
     menuRef,
     scrollToCategory,
     scrollToTop,
-    initializeCategory
+    initializeCategory,
+    setupScrollHighlighting // Export per permettere re-setup quando cambiano le categorie
   };
 };

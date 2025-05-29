@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -57,7 +58,8 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     menuRef,
     scrollToCategory,
     scrollToTop,
-    initializeCategory
+    initializeCategory,
+    setupScrollHighlighting
   } = useMenuNavigation();
 
   const {
@@ -125,6 +127,18 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
   if (categories.length > 0 && !selectedCategory) {
     initializeCategory(categories[0].id);
   }
+
+  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
+  useEffect(() => {
+    if (categories.length > 0) {
+      // Piccolo delay per assicurarsi che il DOM sia aggiornato
+      const timeoutId = setTimeout(() => {
+        setupScrollHighlighting();
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [categories, language, setupScrollHighlighting]);
 
   // Settings layout, font, buttons
   const productCardLayoutType = siteSettings?.publicMenuLayoutType || "default";
