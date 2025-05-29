@@ -24,9 +24,9 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [headerHeight, setHeaderHeight] = React.useState(104); // Default più accurato
+  const [headerHeight, setHeaderHeight] = React.useState(104);
 
-  // Calcola immediatamente l'altezza dell'header al mount
+  // Calcola l'altezza dell'header solo per la versione non-preview
   React.useEffect(() => {
     if (isPreview) return;
     
@@ -105,15 +105,15 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: migliorato per eliminare lo spazio iniziale
+  // MOBILE: elimina completamente lo spazio tra header e sidebar
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
-    : "sticky top-0 z-50 w-full bg-white border-b border-gray-200";
+    : "sticky z-50 w-full bg-white border-b border-gray-200";
     
-  // Per la versione non-preview, usiamo margin-top invece di top style
+  // Usa top invece di margin-top per far aderire perfettamente all'header
   const containerStyle = isPreview 
     ? {} 
-    : { marginTop: `${headerHeight}px` };
+    : { top: `${headerHeight}px` };
 
   return (
     <div 
