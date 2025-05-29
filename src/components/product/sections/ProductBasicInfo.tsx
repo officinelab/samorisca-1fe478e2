@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   FormField,
@@ -28,6 +29,31 @@ interface ProductBasicInfoProps {
 const ProductBasicInfo: React.FC<ProductBasicInfoProps> = ({ form }) => {
   return (
     <div className="w-full">
+      {/* Toggle Prodotto Attivo */}
+      <div className="mb-6">
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-base font-semibold">Prodotto Attivo</FormLabel>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Disattiva per nascondere il prodotto dal menu pubblico
+              </p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
       {/* Immagine + Nome/Descrizione - Layout responsive grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         {/* Colonna sx: Immagine Prodotto */}
