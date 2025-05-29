@@ -44,23 +44,27 @@ export const useMenuNavigation = () => {
           });
         
         if (visibleEntries.length > 0) {
-          const categoryId = visibleEntries[0].target.id.replace('category-', '');
-          setSelectedCategory(categoryId);
+          // Trova la sezione padre che contiene l'ID
+          const section = visibleEntries[0].target.closest('[id^="category-"]');
+          if (section) {
+            const categoryId = section.id.replace('category-', '');
+            setSelectedCategory(categoryId);
+          }
         }
       },
       {
-  root: null,
-  threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-  // Aggiusta il rootMargin per considerare l'header sticky
-  rootMargin: '-140px 0px -40% 0px'
-}
+        root: null,
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-140px 0px -40% 0px'
+      }
     );
 
     observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con un piccolo delay
+    // Osserva i titoli h2 invece delle sezioni
     setTimeout(() => {
-      const categoryElements = document.querySelectorAll('[id^="category-"]');
+      const categoryElements = document.querySelectorAll('[id^="category-"] h2');
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
