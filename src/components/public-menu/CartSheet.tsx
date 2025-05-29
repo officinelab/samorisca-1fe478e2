@@ -11,6 +11,7 @@ interface CartItem {
   id: string;
   productId: string;
   name: string;
+  translatedName?: string;
   price: number;
   variantName?: string;
   quantity: number;
@@ -63,14 +64,27 @@ export const CartSheet: React.FC<CartSheetProps> = ({
                   <div key={item.id} className="flex justify-between border-b pb-3">
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium">
-                          {item.name}
-                          {item.variantName && (
-                            <span className="text-sm text-gray-500 ml-1">
-                              ({item.variantName})
-                            </span>
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {item.name}
+                            {item.variantName && (
+                              <span className="text-sm text-gray-500 ml-1">
+                                ({item.variantName})
+                              </span>
+                            )}
+                          </p>
+                          {/* Mostra il titolo tradotto se la lingua non è italiana e il titolo tradotto è diverso */}
+                          {language !== "it" && item.translatedName && item.translatedName !== item.name && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              {item.translatedName}
+                              {item.variantName && (
+                                <span className="text-xs text-gray-500 ml-1">
+                                  ({item.variantName})
+                                </span>
+                              )}
+                            </p>
                           )}
-                        </p>
+                        </div>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -165,4 +179,3 @@ export const CartSheet: React.FC<CartSheetProps> = ({
     </Sheet>
   );
 };
-

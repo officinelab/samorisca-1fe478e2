@@ -8,6 +8,7 @@ export interface CartItem {
   id: string;
   productId: string;
   name: string;
+  translatedName?: string;
   price: number;
   variantName?: string;
   quantity: number;
@@ -35,7 +36,8 @@ export const useCart = (language: string = "it") => {
       setCart([...cart, {
         id: itemId,
         productId: product.id,
-        name: product.title,
+        name: product.title, // Sempre il titolo italiano per il cameriere
+        translatedName: product.displayTitle || product.title, // Titolo tradotto per l'utente
         price: price || 0,
         variantName,
         quantity: 1
