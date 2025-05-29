@@ -53,7 +53,7 @@ export const useMenuNavigation = () => {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
         // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-120px 0px -40% 0px'
+        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
       }
     );
 
@@ -105,7 +105,7 @@ export const useMenuNavigation = () => {
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
       // Calcola l'offset considerando header + category sidebar
-      const yOffset = -130; // Aggiustato per mobile
+      const yOffset = -110; // Ridotto da -130
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({

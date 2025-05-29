@@ -69,11 +69,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
 
   // MOBILE: barra orizzontale con auto-scroll, full width e SENZA ombre
   return (
-    <div className="sticky top-[88px] z-50 -mx-4 bg-white border-b border-gray-200">
+    <div className="sticky top-[76px] z-50 w-full bg-white border-b border-gray-200">
       <div className="relative">
         <div 
           ref={scrollContainerRef}
-          className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-3 scroll-smooth"
+          className="flex overflow-x-auto no-scrollbar space-x-3 px-6 py-3 scroll-smooth"
         >
           {categories.map(category => {
             const displayTitle = category.displayTitle || category.title;
@@ -82,7 +82,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
               <button
                 key={category.id}
                 ref={el => categoryRefs.current[category.id] = el}
-                className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 
+                className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex-shrink-0
                   ${selectedCategory === category.id 
                     ? 'bg-primary text-primary-foreground scale-105' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
@@ -95,8 +95,8 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
         </div>
         
         {/* Gradienti per indicare che c'è altro contenuto scrollabile */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white via-white to-transparent pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white via-white to-transparent pointer-events-none"></div>
       </div>
       
       {/* Inline style per no-scrollbar */}
