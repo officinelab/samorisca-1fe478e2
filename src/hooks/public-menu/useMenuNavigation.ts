@@ -49,11 +49,11 @@ export const useMenuNavigation = () => {
         }
       },
       {
-        root: null,
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-100px 0px -40% 0px'
-      }
+  root: null,
+  threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+  // Aggiusta il rootMargin per considerare l'header sticky
+  rootMargin: '-140px 0px -40% 0px'
+}
     );
 
     observerRef.current = observer;
