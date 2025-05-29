@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
 
 export const useMenuNavigation = () => {
@@ -53,7 +52,7 @@ export const useMenuNavigation = () => {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
         // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
+        rootMargin: '-100px 0px -40% 0px'
       }
     );
 
@@ -104,12 +103,13 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'offset considerando header + category sidebar
-      const yOffset = -150; // Ridotto da -130
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      // Usa offsetTop per ottenere la posizione assoluta dall'inizio del documento
+      const elementPosition = element.offsetTop;
+      const offset = 150; // Spazio da lasciare sopra l'elemento
+      const finalPosition = elementPosition - offset;
       
       window.scrollTo({
-        top: y,
+        top: finalPosition,
         behavior: 'smooth'
       });
     }
