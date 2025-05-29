@@ -8,11 +8,9 @@ export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const setupCompleteRef = useRef(false);
   
   const { showBackToTop } = useBackToTop();
   
-  // Memoizza setupScrollHighlighting per evitare ricreazioni
   const { setupScrollHighlighting } = useScrollHighlighting(
     isManualScroll,
     setSelectedCategory
@@ -34,17 +32,13 @@ export const useMenuNavigation = () => {
 
   // Setup intersection observer quando il componente è pronto
   useEffect(() => {
-    // Evita setup multipli
-    if (setupCompleteRef.current) return;
+    console.log('Setting up scroll highlighting');
     
-    // Attendi che il DOM sia completamente caricato
+    // Setup con un breve delay per assicurarsi che il DOM sia pronto
     const timeoutId = setTimeout(() => {
-      console.log('Setting up scroll highlighting for the first time');
       const cleanup = setupScrollHighlighting();
-      setupCompleteRef.current = true;
-      
       return cleanup;
-    }, 300);
+    }, 200); // Ridotto da 300 a 200ms
     
     return () => {
       clearTimeout(timeoutId);
@@ -52,7 +46,7 @@ export const useMenuNavigation = () => {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [setupScrollHighlighting]);
+  }, [setupScrollHighlighting, scrollTimeoutRef]);
   
   return {
     selectedCategory,
@@ -62,12 +56,6 @@ export const useMenuNavigation = () => {
     scrollToCategory,
     scrollToTop,
     initializeCategory,
-    setupScrollHighlighting: useCallback(() => {
-      // Previeni setup multipli
-      if (!setupCompleteRef.current) {
-        return setupScrollHighlighting();
-      }
-      return () => {};
-    }, [setupScrollHighlighting])
+    setupScrollHighlighting
   };
 };

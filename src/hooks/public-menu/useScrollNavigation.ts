@@ -26,20 +26,20 @@ export const useScrollNavigation = (
       return;
     }
 
-    // Calcola dinamicamente gli offset reali
+    // Calcolo offset semplificato (stesso del highlighting)
     const header = document.querySelector('header');
     const mobileSidebar = document.getElementById('mobile-category-sidebar');
     
     const headerHeight = header ? header.offsetHeight : 104;
     const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 64;
-    const totalOffset = headerHeight + sidebarHeight + 10; // 10px padding extra
+    const totalOffset = headerHeight + sidebarHeight + 20;
     
     // Calcola la posizione target
     const elementRect = element.getBoundingClientRect();
     const absoluteElementTop = elementRect.top + window.pageYOffset;
     const scrollToPosition = Math.max(0, absoluteElementTop - totalOffset);
     
-    console.log('Scrolling to position:', scrollToPosition, 'with total offset:', totalOffset);
+    console.log('Scrolling to position:', scrollToPosition);
     
     // Scroll con smooth behavior
     window.scrollTo({
@@ -47,14 +47,14 @@ export const useScrollNavigation = (
       behavior: 'smooth'
     });
     
-    // Reset manual scroll flag dopo l'animazione
+    // Reset manual scroll flag più velocemente
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1000); // Tempo maggiore per assicurare che lo scroll smooth sia completato
+    }, 500); // Ridotto da 1000 a 500ms
   };
 
   const scrollToTop = () => {
@@ -74,7 +74,7 @@ export const useScrollNavigation = (
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1000);
+    }, 500); // Ridotto da 1000 a 500ms
   };
 
   return {
