@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -108,12 +107,16 @@ export const ProductDetailsDialogPreview: React.FC<ProductDetailsDialogPreviewPr
               ))}
             </div>
             {product.features && product.features.length > 0 && (
-              <ProductFeaturesWithText features={product.features} />
+              <div>
+                <h4 className="font-semibold mb-1">{t("product_features")}</h4>
+                <ProductFeaturesWithText features={product.features} />
+              </div>
             )}
           </div>
         )}
         {!product.allergens?.length && product.features && product.features.length > 0 && (
           <div>
+            <h4 className="font-semibold mb-1">{t("product_features")}</h4>
             <ProductFeaturesWithText features={product.features} />
           </div>
         )}
