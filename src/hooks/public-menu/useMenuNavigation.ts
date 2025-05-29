@@ -14,15 +14,15 @@ export const useMenuNavigation = () => {
     let totalOffset = 0;
     
     // Header principale
-    const header = document.querySelector('header');
+    const header = document.querySelector('header') as HTMLElement;
     if (header) {
       totalOffset += header.offsetHeight;
       console.log('Header height:', header.offsetHeight);
     }
     
     // CategorySidebar mobile
-    const categorySidebar = document.querySelector('.sticky.top-\\[88px\\]') || 
-                           document.querySelector('[class*="sticky"][class*="top-"]');
+    const categorySidebar = document.querySelector('.sticky.top-\\[76px\\]') as HTMLElement || 
+                           document.querySelector('[class*="sticky"][class*="top-"]') as HTMLElement;
     if (categorySidebar) {
       totalOffset += categorySidebar.offsetHeight;
       console.log('CategorySidebar height:', categorySidebar.offsetHeight);
@@ -100,7 +100,7 @@ export const useMenuNavigation = () => {
           observerRef.current.observe(element);
         }
       });
-    }, 200); // Aumentato il delay
+    }, 300); // Aumentato il delay per permettere il rendering completo
 
     return () => {
       if (observerRef.current) {
@@ -160,7 +160,7 @@ export const useMenuNavigation = () => {
           top: scrollToPosition,
           behavior: 'smooth'
         });
-      }, 50);
+      }, 100);
     } else {
       console.error('Element not found:', `category-${categoryId}`);
     }
@@ -172,7 +172,7 @@ export const useMenuNavigation = () => {
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1500); // Aumentato il tempo
+    }, 1500);
   };
   
   // Scroll to top of page
