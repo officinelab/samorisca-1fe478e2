@@ -68,9 +68,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({
               <DialogHeader>
                 <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
               </DialogHeader>
-              <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
-                {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} // <-- Prop onSave viene passata sempre
-            onCancel={handleProductFormCancel} />}
+              <div className="overflow-y-auto max-h-[calc(90vh-6rem)]">
+                {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} onCancel={handleProductFormCancel} />}
               </div>
             </DialogContent>
           </Dialog>}
@@ -103,9 +102,8 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({
             <SheetHeader>
               <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
             </SheetHeader>
-            <div className="pt-4 overflow-y-auto max-h-[calc(100vh-8rem)] py-0">
-              {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} // <-- Prop onSave viene passata sempre
-          onCancel={handleProductFormCancel} />}
+            <div className="pt-2 overflow-y-auto max-h-[calc(100vh-6rem)] py-0">
+              {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} onCancel={handleProductFormCancel} />}
             </div>
           </SheetContent>
         </Sheet>}

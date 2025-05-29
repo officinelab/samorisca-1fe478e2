@@ -68,7 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   return (
-    <div className="px-0 py-4 md:px-3 max-w-2xl mx-auto space-y-4 animate-fade-in">
+    <div className="px-1 py-1 w-full space-y-4 animate-fade-in">
       <Form {...form}>
         {/* Campo nascosto per category_id se viene passata come prop */}
         {categoryId && !product && (
