@@ -55,7 +55,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     buttonSettings,
     getCardFontSettings,
     getDetailFontSettings,
-    getCategoryTitleStyle,
     hideProductDetailImage,
     t
   } = usePublicMenu({ isPreview, previewLanguage });
@@ -101,7 +100,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       productCardLayoutType={productCardLayoutType}
       fontSettings={getCardFontSettings(deviceView)}
       buttonSettings={buttonSettings}
-      categoryTitleStyle={getCategoryTitleStyle()}
       showBackToTop={showBackToTop}
       scrollToTop={scrollToTop}
       selectedProduct={selectedProduct}

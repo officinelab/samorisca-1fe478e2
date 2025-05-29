@@ -39,13 +39,6 @@ interface PublicMenuLayoutProps {
   productCardLayoutType?: 'default' | 'custom1';
   fontSettings?: any;
   buttonSettings?: any;
-  categoryTitleStyle?: {
-    fontFamily: string;
-    fontWeight: "normal" | "bold";
-    fontStyle: "normal" | "italic";
-    backgroundColor: string;
-    textColor: string;
-  };
   
   // Back to top
   showBackToTop: boolean;
@@ -90,7 +83,6 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
   productCardLayoutType,
   fontSettings,
   buttonSettings,
-  categoryTitleStyle,
   showBackToTop,
   scrollToTop,
   selectedProduct,
@@ -165,7 +157,6 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
             productCardLayoutType={productCardLayoutType}
             fontSettings={fontSettings}
             buttonSettings={buttonSettings}
-            categoryTitleStyle={categoryTitleStyle}
           />
         </div>
       </div>

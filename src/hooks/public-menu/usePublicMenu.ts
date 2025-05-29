@@ -101,7 +101,7 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
     icon: "plus"
   };
 
-  const { getCardFontSettings, getDetailFontSettings, getCategoryTitleStyle } = useFontSettings(siteSettings, productCardLayoutType);
+  const { getCardFontSettings, getDetailFontSettings } = useFontSettings(siteSettings, productCardLayoutType);
   const hideProductDetailImage = productCardLayoutType === "custom1";
 
   return {
@@ -152,7 +152,6 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
     buttonSettings,
     getCardFontSettings,
     getDetailFontSettings,
-    getCategoryTitleStyle,
     hideProductDetailImage,
     
     // UI strings

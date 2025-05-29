@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { toast } from "@/hooks/use-toast";
@@ -7,7 +6,6 @@ import { OnlineMenuProductDetailsPreview } from "./OnlineMenuProductDetailsPrevi
 import { LayoutTypeSelectorInline } from "./LayoutTypeSelectorInline";
 import { FontSettingsColumn } from "./FontSettingsColumn";
 import { ButtonSettingsColumn } from "./ButtonSettingsColumn";
-import { CategoryTitleStyleSection } from "./CategoryTitleStyleSection";
 import { initializeCompleteFontSettings, DEFAULT_FONT_SETTINGS, truncateText } from "./fontSettingsHelpers";
 import { exampleProduct } from "./ExampleProduct";
 
@@ -89,10 +87,6 @@ export default function OnlineMenuLayoutSection() {
         selectedLayout={selectedLayout}
         onSelect={handleLayoutChange}
       />
-
-      {/* Nuova sezione per personalizzazione titoli categorie */}
-      <CategoryTitleStyleSection selectedLayout={selectedLayout} />
-
       {/* Due colonne per impostazioni font e pulsante */}
       <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4 mt-3">
         {/* Font Settings Column */}

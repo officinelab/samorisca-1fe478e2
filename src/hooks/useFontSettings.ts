@@ -16,14 +16,6 @@ interface FontConfig {
   price: FontConfigItem;
 }
 
-interface CategoryTitleStyle {
-  fontFamily: string;
-  fontWeight: "normal" | "bold";
-  fontStyle: "normal" | "italic";
-  backgroundColor: string;
-  textColor: string;
-}
-
 export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: string) => {
   const defaultFontSettings = {
     title: { fontFamily: "Poppins", fontWeight: "bold", fontStyle: "normal", desktop: { fontSize: 18 }, mobile: { fontSize: 18 }, detail: { fontSize: 18 } },
@@ -59,20 +51,6 @@ export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: s
       mobile: { fontSize: fontSettingsConfig?.price?.mobile?.fontSize || defaultFontSettings.price.mobile.fontSize },
       detail: { fontSize: fontSettingsConfig?.price?.detail?.fontSize || defaultFontSettings.price.detail.fontSize }
     }
-  };
-
-  // Gestione delle impostazioni per i titoli delle categorie
-  const getCategoryTitleStyle = (): CategoryTitleStyle => {
-    const defaultCategoryTitleStyle: CategoryTitleStyle = {
-      fontFamily: "Poppins",
-      fontWeight: "bold",
-      fontStyle: "normal",
-      backgroundColor: "transparent",
-      textColor: "#000000"
-    };
-
-    const categoryTitleSettings = siteSettings?.categoryTitleStyle?.[layoutType];
-    return categoryTitleSettings || defaultCategoryTitleStyle;
   };
 
   const getCardFontSettings = (view: 'mobile' | 'desktop') => ({
@@ -119,7 +97,6 @@ export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: s
 
   return {
     getCardFontSettings,
-    getDetailFontSettings,
-    getCategoryTitleStyle
+    getDetailFontSettings
   };
 };
