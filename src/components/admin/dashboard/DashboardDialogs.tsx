@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -64,11 +65,11 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({
           handleProductFormCancel();
         }
       }}>
-            <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-0">
+              <DialogHeader className="px-6 py-4 border-b">
                 <DialogTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</DialogTitle>
               </DialogHeader>
-              <div className="overflow-y-auto max-h-[calc(90vh-6rem)]">
+              <div className="flex-1 min-h-0">
                 {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} onCancel={handleProductFormCancel} />}
               </div>
             </DialogContent>
@@ -98,11 +99,11 @@ const DashboardDialogs: React.FC<DashboardDialogsProps> = ({
         handleProductFormCancel();
       }
     }}>
-          <SheetContent className="sm:max-w-4xl overflow-hidden">
-            <SheetHeader>
+          <SheetContent className="sm:max-w-4xl flex flex-col p-0 h-full">
+            <SheetHeader className="px-6 py-4 border-b">
               <SheetTitle>{editingProduct ? "Modifica Prodotto" : "Nuovo Prodotto"}</SheetTitle>
             </SheetHeader>
-            <div className="pt-2 overflow-y-auto max-h-[calc(100vh-6rem)] py-0">
+            <div className="flex-1 min-h-0">
               {productDialogOpen && <ProductForm key={memoizedEditingProduct?.id || 'new'} product={memoizedEditingProduct} categoryId={selectedCategoryId || undefined} onSave={handleProductFormSave} onCancel={handleProductFormCancel} />}
             </div>
           </SheetContent>

@@ -12,7 +12,7 @@ const ProductActionButtons: React.FC<ProductActionButtonsProps> = ({
   onCancel
 }) => {
   return (
-    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 mt-6 -mx-6 -mb-4 z-10">
+    <div className="flex-shrink-0 bg-white border-t border-gray-200 p-4">
       <div className="flex justify-end gap-4">
         <Button
           type="button"

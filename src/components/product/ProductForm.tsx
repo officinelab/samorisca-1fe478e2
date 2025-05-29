@@ -68,7 +68,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   return (
-    <div className="px-2 py-2 max-w-full space-y-4 animate-fade-in">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       <Form {...form}>
         {/* Campo nascosto per category_id se viene passata come prop */}
         {categoryId && !product && (
@@ -78,48 +78,53 @@ const ProductForm: React.FC<ProductFormProps> = ({
             value={categoryId} 
           />
         )}
-        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
-          {/* Informazioni Base */}
-          <Card className="overflow-visible">
-            <CardHeader>
-              <CardTitle className="text-lg">Informazioni di Base</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductBasicInfo form={form} />
-              <ProductPriceSection
-                form={form}
-                labels={labels}
-                hasPriceSuffix={hasPriceSuffix}
-                hasMultiplePrices={hasMultiplePrices}
-              />
-            </CardContent>
-          </Card>
+        <form onSubmit={form.handleSubmit(handleSave)} className="flex flex-col h-full">
+          {/* Contenuto scrollabile */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+            {/* Informazioni Base */}
+            <Card className="overflow-visible">
+              <CardHeader>
+                <CardTitle className="text-lg">Informazioni di Base</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProductBasicInfo form={form} />
+                <ProductPriceSection
+                  form={form}
+                  labels={labels}
+                  hasPriceSuffix={hasPriceSuffix}
+                  hasMultiplePrices={hasMultiplePrices}
+                />
+              </CardContent>
+            </Card>
 
-          {/* Sezione caratteristiche */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductFeaturesCheckboxes
-                features={features}
-                selectedFeatureIds={selectedFeatureIds}
-                setSelectedFeatureIds={setSelectedFeatureIds}
-                loading={loadingFeatures}
-              />
-            </CardContent>
-          </Card>
+            {/* Sezione caratteristiche */}
+            <Card>
+              <CardContent className="p-0 border-0 shadow-none">
+                <ProductFeaturesCheckboxes
+                  features={features}
+                  selectedFeatureIds={selectedFeatureIds}
+                  setSelectedFeatureIds={setSelectedFeatureIds}
+                  loading={loadingFeatures}
+                />
+              </CardContent>
+            </Card>
 
-          {/* Sezione allergeni */}
-          <Card>
-            <CardContent className="p-0 border-0 shadow-none">
-              <ProductAllergensCheckboxes
-                allergens={allergens}
-                selectedAllergenIds={selectedAllergenIds}
-                setSelectedAllergenIds={setSelectedAllergenIds}
-                loading={loadingAllergens}
-              />
-            </CardContent>
-          </Card>
+            {/* Sezione allergeni */}
+            <Card>
+              <CardContent className="p-0 border-0 shadow-none">
+                <ProductAllergensCheckboxes
+                  allergens={allergens}
+                  selectedAllergenIds={selectedAllergenIds}
+                  setSelectedAllergenIds={setSelectedAllergenIds}
+                  loading={loadingAllergens}
+                />
+              </CardContent>
+            </Card>
 
-          <Separator className="my-4" />
+            <Separator className="my-4" />
+          </div>
+
+          {/* Pulsanti fissi in basso */}
           <ProductActionButtons
             isSubmitting={isSubmitting}
             onCancel={onCancel}
