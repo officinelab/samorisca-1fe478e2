@@ -4,9 +4,20 @@ export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -27,25 +38,23 @@ export const useMenuNavigation = () => {
       (entries) => {
         if (isManualScroll) return;
         
-        // Trova tutte le categorie visibili
-        const visibleEntries = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => {
-            // Se una categoria è al top del viewport (o molto vicina), ha priorità
-            const aTop = a.boundingClientRect.top;
-            const bTop = b.boundingClientRect.top;
-            
-            // Priorità alla categoria più vicina al top del viewport
-            if (Math.abs(aTop) < 50) return -1;
-            if (Math.abs(bTop) < 50) return 1;
-            
-            // Altrimenti ordina per posizione verticale
-            return aTop - bTop;
-          });
+        // Trova la categoria più in alto che è almeno parzialmente visibile
+        let topMostCategory = null;
+        let topMostPosition = Infinity;
         
-        if (visibleEntries.length > 0) {
-          // Trova la sezione padre che contiene l'ID
-          const section = visibleEntries[0].target.closest('[id^="category-"]');
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const rect = entry.target.getBoundingClientRect();
+            // Considera solo elementi che sono nella parte superiore del viewport
+            if (rect.top < window.innerHeight / 2 && rect.top < topMostPosition) {
+              topMostPosition = rect.top;
+              topMostCategory = entry.target;
+            }
+          }
+        });
+        
+        if (topMostCategory) {
+          const section = topMostCategory.closest('[id^="category-"]');
           if (section) {
             const categoryId = section.id.replace('category-', '');
             setSelectedCategory(categoryId);
@@ -54,17 +63,18 @@ export const useMenuNavigation = () => {
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-140px 0px -40% 0px'
+        threshold: [0, 0.1, 0.5, 1],
+        // Margini diversi per mobile e desktop
+        rootMargin: isMobile ? '-150px 0px -50% 0px' : '-100px 0px -50% 0px'
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva i titoli h2 invece delle sezioni
+    // Osserva le sezioni complete invece dei soli titoli
+    // per catturare meglio quando una categoria è attiva
     setTimeout(() => {
-      const categoryElements = document.querySelectorAll('[id^="category-"] h2');
+      const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
@@ -77,7 +87,7 @@ export const useMenuNavigation = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll]);
+  }, [isManualScroll, isMobile]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -107,11 +117,25 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Approccio semplificato: usa scrollIntoView nativo
-      // La classe scroll-mt-28 nel CategorySection gestisce già l'offset
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
+      // Trova il titolo h2 all'interno della sezione
+      const titleElement = element.querySelector('h2');
+      const targetElement = titleElement || element;
+      
+      // Calcola l'offset dinamicamente
+      const header = document.querySelector('header');
+      const categorySidebar = document.querySelector('[class*="sticky"][class*="top-"]');
+      
+      let offset = 20; // padding base
+      if (header) offset += header.offsetHeight;
+      if (isMobile && categorySidebar) offset += categorySidebar.offsetHeight;
+      
+      // Calcola la posizione
+      const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+      const targetPosition = elementPosition - offset;
+      
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
       });
     }
     
@@ -121,7 +145,7 @@ export const useMenuNavigation = () => {
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1000);
+    }, 1200);
   };
   
   // Scroll to top of page
