@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect } from "react";
 import { preloadCommonFonts } from "@/hooks/useDynamicGoogleFont";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
@@ -15,7 +16,6 @@ interface UsePublicMenuProps {
 
 export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: UsePublicMenuProps) => {
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
-  const observerSetupRef = useRef(false);
 
   // Precarica font comuni al mount per migliorare le performance
   useEffect(() => {
@@ -65,36 +65,22 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
   const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
   const { t } = usePublicMenuUiStrings(language);
 
-  // Setup scroll highlighting SOLO quando cambiano le categorie (non la lingua)
+  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
   useEffect(() => {
-    if (categories.length > 0 && !observerSetupRef.current) {
-      // Attendi un attimo per assicurarsi che il DOM sia pronto
+    if (categories.length > 0) {
+      // Piccolo delay per assicurarsi che il DOM sia aggiornato
       const timeoutId = setTimeout(() => {
         setupScrollHighlighting();
-        observerSetupRef.current = true;
-      }, 300);
+      }, 200);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [categories.length]); // Solo quando il numero di categorie cambia
-
-  // Reset del flag quando cambia la lingua
-  useEffect(() => {
-    observerSetupRef.current = false;
-  }, [language]);
+  }, [categories, language, setupScrollHighlighting]);
 
   // Inizializza la categoria selezionata quando arrivano le categorie
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory) {
-      // Controlla se c'è un hash nell'URL
-      const hashCategory = window.location.hash.replace('#category-', '');
-      const validCategory = categories.find(cat => cat.id === hashCategory);
-      
-      if (validCategory) {
-        initializeCategory(hashCategory);
-      } else {
-        initializeCategory(categories[0].id);
-      }
+      initializeCategory(categories[0].id);
     }
   }, [categories, selectedCategory, initializeCategory]);
 

@@ -16,11 +16,7 @@ export const CategoryNoteItem: React.FC<CategoryNoteItemProps> = ({
   const displayText = note.displayText || note.text;
 
   return (
-    <div 
-      className={`bg-blue-50 border border-blue-200 rounded-lg p-4 ${deviceView === 'mobile' ? 'mx-2' : ''}`}
-      data-note-id={note.id}
-      data-note-type="category-note"
-    >
+    <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 ${deviceView === 'mobile' ? 'mx-2' : ''}`}>
       <div className="flex items-start gap-3">
         {note.icon_url && (
           <img 

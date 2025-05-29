@@ -83,7 +83,6 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
       cartItemsCount={getCartItemsCount()}
       openCart={() => setIsCartOpen(true)}
       deviceView={deviceView}
-      isPreview={isPreview}
       categories={categories}
       products={products}
       allergens={allergens}
