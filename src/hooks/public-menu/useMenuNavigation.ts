@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useScrollHighlighting } from "./useScrollHighlighting";
 import { useScrollNavigation } from "./useScrollNavigation";
@@ -31,18 +32,19 @@ export const useMenuNavigation = () => {
     }
   }, [selectedCategory]);
 
-  // Setup intersection observer UNA SOLA VOLTA quando il componente è pronto
+  // Setup intersection observer quando il componente è pronto
   useEffect(() => {
     // Evita setup multipli
     if (setupCompleteRef.current) return;
     
     // Attendi che il DOM sia completamente caricato
     const timeoutId = setTimeout(() => {
+      console.log('Setting up scroll highlighting for the first time');
       const cleanup = setupScrollHighlighting();
       setupCompleteRef.current = true;
       
       return cleanup;
-    }, 500); // Delay maggiore per assicurare rendering completo
+    }, 300);
     
     return () => {
       clearTimeout(timeoutId);
@@ -50,7 +52,7 @@ export const useMenuNavigation = () => {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, []); // Dipendenze vuote - setup solo una volta!
+  }, [setupScrollHighlighting]);
   
   return {
     selectedCategory,
