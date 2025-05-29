@@ -108,26 +108,14 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
 
       <div className="container max-w-5xl mx-auto px-4 py-6">
         <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'} ${deviceView === 'mobile' ? 'pt-2' : ''}`}>
-          {/* Categories (Sidebar on desktop, full width on mobile) */}
-          {deviceView === 'mobile' ? (
-            <div className="-mx-4 mb-4">
-              <CategorySidebar 
-                categories={categories}
-                selectedCategory={selectedCategory}
-                deviceView={deviceView}
-                onSelectCategory={scrollToCategory}
-                language={language}
-              />
-            </div>
-          ) : (
-            <CategorySidebar 
-              categories={categories}
-              selectedCategory={selectedCategory}
-              deviceView={deviceView}
-              onSelectCategory={scrollToCategory}
-              language={language}
-            />
-          )}
+          {/* Categories (Sidebar on desktop) */}
+          <CategorySidebar 
+            categories={categories}
+            selectedCategory={selectedCategory}
+            deviceView={deviceView}
+            onSelectCategory={scrollToCategory}
+            language={language}
+          />
 
           {/* Main menu content */}
           <MenuContent 

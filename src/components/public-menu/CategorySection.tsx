@@ -43,7 +43,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <section id={`category-${category.id}`} className="scroll-mt-36">
+    <section id={`category-${category.id}`} className="scroll-mt-32">
       <CategorySectionHeader 
         category={category} 
         language={language} 

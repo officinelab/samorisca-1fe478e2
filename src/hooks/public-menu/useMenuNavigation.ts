@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 
 export const useMenuNavigation = () => {
@@ -51,8 +52,8 @@ export const useMenuNavigation = () => {
       {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aumentato per considerare l'altezza totale dell'header
-        rootMargin: '-140px 0px -40% 0px'
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-120px 0px -40% 0px'
       }
     );
 
@@ -103,8 +104,8 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Aumentato per header + CategorySidebar
-      const yOffset = -150;
+      // Calcola l'offset considerando header + category sidebar
+      const yOffset = -130; // Aggiustato per mobile
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
