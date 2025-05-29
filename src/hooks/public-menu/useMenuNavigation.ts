@@ -103,26 +103,52 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Metodo più affidabile: usa scrollIntoView con offset personalizzato
-      // Prima scrolla all'elemento
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Calcola l'altezza totale degli elementi sticky
+      let stickyOffset = 0;
       
-      // Poi aggiusta la posizione con un piccolo delay per compensare header sticky
-      setTimeout(() => {
-        window.scrollBy({
-          top: -150, // Offset negativo per lasciare spazio sopra
-          behavior: 'smooth'
-        });
-      }, 100);
+      // Header
+      const header = document.querySelector('header');
+      if (header) {
+        stickyOffset += header.offsetHeight;
+      }
+      
+      // CategorySidebar (solo su mobile)
+      const categorySidebar = document.querySelector('.sticky.top-\\[68px\\]') || 
+                             document.querySelector('.sticky.top-\\[76px\\]');
+      if (categorySidebar) {
+        stickyOffset += categorySidebar.offsetHeight;
+      }
+      
+      // Aggiungi un po' di padding extra
+      const extraPadding = 20;
+      const totalOffset = stickyOffset + extraPadding;
+      
+      // Calcola la posizione finale
+      const elementRect = element.getBoundingClientRect();
+      const absoluteElementTop = elementRect.top + window.pageYOffset;
+      const scrollToPosition = absoluteElementTop - totalOffset;
+      
+      console.log('Debug scroll:', {
+        elementTop: elementRect.top,
+        pageYOffset: window.pageYOffset,
+        stickyOffset,
+        totalOffset,
+        scrollToPosition
+      });
+      
+      window.scrollTo({
+        top: scrollToPosition,
+        behavior: 'smooth'
+      });
     }
     
-    // Reset manual scroll flag dopo l'animazione (tempo aumentato per doppia animazione)
+    // Reset manual scroll flag dopo l'animazione
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1500);
+    }, 1000);
   };
   
   // Scroll to top of page
