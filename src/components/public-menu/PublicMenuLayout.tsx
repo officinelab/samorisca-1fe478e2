@@ -106,16 +106,29 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
         openCart={openCart}
       />
 
-      <div className="container max-w-5xl mx-auto px-4 py-6">
-        <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'} ${deviceView === 'mobile' ? 'pt-2' : ''}`}>
-          {/* Categories (Sidebar on desktop) */}
-          <CategorySidebar 
-            categories={categories}
-            selectedCategory={selectedCategory}
-            deviceView={deviceView}
-            onSelectCategory={scrollToCategory}
-            language={language}
-          />
+      {/* CategorySidebar fuori dal container solo per mobile */}
+{deviceView === 'mobile' && (
+  <CategorySidebar 
+    categories={categories}
+    selectedCategory={selectedCategory}
+    deviceView={deviceView}
+    onSelectCategory={scrollToCategory}
+    language={language}
+  />
+)}
+
+<div className="container max-w-5xl mx-auto px-4 py-6">
+  <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'}`}>
+    {/* Categories sidebar solo per desktop */}
+    {deviceView === 'desktop' && (
+      <CategorySidebar 
+        categories={categories}
+        selectedCategory={selectedCategory}
+        deviceView={deviceView}
+        onSelectCategory={scrollToCategory}
+        language={language}
+      />
+    )}
 
           {/* Main menu content */}
           <MenuContent 
