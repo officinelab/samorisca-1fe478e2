@@ -56,7 +56,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   }
 
   // MOBILE: barra orizzontale con auto-scroll, full width e SENZA ombre
-  return <div className="sticky top-[76px] z-50 w-full bg-white border-b border-gray-200">
+  return <div className="sticky top-[74px] z-50 w-full bg-white border-b border-gray-200">
       <div className="relative">
         <div ref={scrollContainerRef} className="flex overflow-x-auto no-scrollbar space-x-3 px-6 scroll-smooth py-[20px] mx-[10px]">
           {categories.map(category => {
