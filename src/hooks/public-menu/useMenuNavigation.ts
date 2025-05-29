@@ -6,7 +6,6 @@ export const useMenuNavigation = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -17,20 +16,9 @@ export const useMenuNavigation = () => {
 
   // Auto-highlight category based on scroll position
   const setupScrollHighlighting = useCallback(() => {
-    // Clean up existing observer
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return; // Skip auto-update during manual scroll
-        
-        console.log('IntersectionObserver entries:', entries.map(e => ({
-          id: e.target.id,
-          isIntersecting: e.isIntersecting,
-          intersectionRatio: e.intersectionRatio
-        })));
         
         // Find the category that's most visible
         let mostVisibleEntry = null;
@@ -45,41 +33,22 @@ export const useMenuNavigation = () => {
         
         if (mostVisibleEntry) {
           const categoryId = mostVisibleEntry.target.id.replace('category-', '');
-          console.log('Auto-highlighting category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
-        threshold: [0.1, 0.2, 0.3, 0.4, 0.5],
-        rootMargin: '-80px 0px -40% 0px'
+        threshold: [0.1, 0.3, 0.5, 0.7],
+        rootMargin: '-20% 0px -20% 0px'
       }
     );
 
-    // Wait for DOM to be ready, then observe all category sections
-    const observeCategories = () => {
-      const categoryElements = document.querySelectorAll('[id^="category-"]');
-      console.log('Found category elements:', categoryElements.length);
-      
-      categoryElements.forEach((element) => {
-        console.log('Observing element:', element.id);
-        if (observerRef.current) {
-          observerRef.current.observe(element);
-        }
-      });
-    };
-
-    // Use a timeout to ensure DOM is ready
-    const timeoutId = setTimeout(observeCategories, 100);
-    
-    // Also try immediately in case DOM is already ready
-    observeCategories();
+    // Observe all category sections
+    const categoryElements = document.querySelectorAll('[id^="category-"]');
+    categoryElements.forEach((element) => observer.observe(element));
 
     return () => {
-      clearTimeout(timeoutId);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
+      categoryElements.forEach((element) => observer.unobserve(element));
+      observer.disconnect();
     };
   }, [isManualScroll]);
 
@@ -112,7 +81,6 @@ export const useMenuNavigation = () => {
   
   // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
-    console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
@@ -125,9 +93,8 @@ export const useMenuNavigation = () => {
     
     // Reset manual scroll flag after scroll animation
     setTimeout(() => {
-      console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1500);
+    }, 1000);
   };
   
   // Scroll to top of menu
