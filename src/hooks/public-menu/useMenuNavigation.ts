@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 
 export const useMenuNavigation = () => {
@@ -7,6 +8,33 @@ export const useMenuNavigation = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Funzione per calcolare dinamicamente l'offset totale
+  const calculateStickyOffset = () => {
+    let totalOffset = 0;
+    
+    // Header principale
+    const header = document.querySelector('header');
+    if (header) {
+      totalOffset += header.offsetHeight;
+      console.log('Header height:', header.offsetHeight);
+    }
+    
+    // CategorySidebar mobile
+    const categorySidebar = document.querySelector('.sticky.top-\\[88px\\]') || 
+                           document.querySelector('[class*="sticky"][class*="top-"]');
+    if (categorySidebar) {
+      totalOffset += categorySidebar.offsetHeight;
+      console.log('CategorySidebar height:', categorySidebar.offsetHeight);
+    }
+    
+    // Padding extra per sicurezza
+    const extraPadding = 20;
+    totalOffset += extraPadding;
+    
+    console.log('Total calculated offset:', totalOffset);
+    return totalOffset;
+  };
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -21,6 +49,11 @@ export const useMenuNavigation = () => {
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
+
+    // Calcola dinamicamente il rootMargin
+    const dynamicOffset = calculateStickyOffset();
+    const rootMargin = `-${dynamicOffset}px 0px -40% 0px`;
+    console.log('Using rootMargin:', rootMargin);
 
     // Create new intersection observer
     const observer = new IntersectionObserver(
@@ -45,28 +78,29 @@ export const useMenuNavigation = () => {
         
         if (visibleEntries.length > 0) {
           const categoryId = visibleEntries[0].target.id.replace('category-', '');
+          console.log('Auto-selecting category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-100px 0px -40% 0px'
+        rootMargin: rootMargin
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con un piccolo delay
+    // Osserva tutte le sezioni categoria con un piccolo delay per permettere il rendering
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
+      console.log('Observing', categoryElements.length, 'category elements');
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
         }
       });
-    }, 100);
+    }, 200); // Aumentato il delay
 
     return () => {
       if (observerRef.current) {
@@ -98,48 +132,37 @@ export const useMenuNavigation = () => {
   
   // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
+    console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'altezza totale degli elementi sticky
-      let stickyOffset = 0;
-      
-      // Header
-      const header = document.querySelector('header');
-      if (header) {
-        stickyOffset += header.offsetHeight;
-      }
-      
-      // CategorySidebar (solo su mobile)
-      const categorySidebar = document.querySelector('.sticky.top-\\[68px\\]') || 
-                             document.querySelector('.sticky.top-\\[76px\\]');
-      if (categorySidebar) {
-        stickyOffset += categorySidebar.offsetHeight;
-      }
-      
-      // Aggiungi un po' di padding extra
-      const extraPadding = 20;
-      const totalOffset = stickyOffset + extraPadding;
+      // Usa il calcolo dinamico dell'offset
+      const dynamicOffset = calculateStickyOffset();
       
       // Calcola la posizione finale
       const elementRect = element.getBoundingClientRect();
       const absoluteElementTop = elementRect.top + window.pageYOffset;
-      const scrollToPosition = absoluteElementTop - totalOffset;
+      const scrollToPosition = absoluteElementTop - dynamicOffset;
       
-      console.log('Debug scroll:', {
+      console.log('Scroll calculation:', {
         elementTop: elementRect.top,
         pageYOffset: window.pageYOffset,
-        stickyOffset,
-        totalOffset,
-        scrollToPosition
+        dynamicOffset,
+        scrollToPosition,
+        elementId: element.id
       });
       
-      window.scrollTo({
-        top: scrollToPosition,
-        behavior: 'smooth'
-      });
+      // Aggiungi un piccolo delay per permettere eventuali cambiamenti di layout
+      setTimeout(() => {
+        window.scrollTo({
+          top: scrollToPosition,
+          behavior: 'smooth'
+        });
+      }, 50);
+    } else {
+      console.error('Element not found:', `category-${categoryId}`);
     }
     
     // Reset manual scroll flag dopo l'animazione
@@ -147,8 +170,9 @@ export const useMenuNavigation = () => {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
+      console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1000);
+    }, 1500); // Aumentato il tempo
   };
   
   // Scroll to top of page
