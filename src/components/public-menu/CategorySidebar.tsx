@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ interface CategorySidebarProps {
   deviceView: 'mobile' | 'desktop';
   onSelectCategory: (categoryId: string) => void;
   language?: string;
+  isPreview?: boolean;
 }
 
 export const CategorySidebar: React.FC<CategorySidebarProps> = ({
@@ -15,7 +17,8 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   selectedCategory,
   deviceView,
   onSelectCategory,
-  language = 'it'
+  language = 'it',
+  isPreview = false
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const categoryRefs = useRef<{
@@ -23,8 +26,10 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   }>({});
   const [headerHeight, setHeaderHeight] = React.useState(76);
 
-  // Calcola dinamicamente l'altezza dell'header
+  // Calcola dinamicamente l'altezza dell'header solo se non è preview
   React.useEffect(() => {
+    if (isPreview) return;
+    
     const calculateHeaderHeight = () => {
       const header = document.querySelector('header');
       if (header) {
@@ -36,7 +41,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     window.addEventListener('resize', calculateHeaderHeight);
     
     return () => window.removeEventListener('resize', calculateHeaderHeight);
-  }, []);
+  }, [isPreview]);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -60,7 +65,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   if (deviceView === 'desktop') {
     return (
       <div className="col-span-1">
-        <div className="sticky top-24 z-30 bg-gray-50">
+        <div className={`${isPreview ? 'relative' : 'sticky top-24'} z-30 bg-gray-50`}>
           <h3 className="text-lg font-semibold mb-2">Categorie</h3>
           <div className="space-y-1 pr-4">
             {categories.map(category => {
@@ -82,12 +87,19 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con auto-scroll, posizionamento dinamico
+  // MOBILE: barra orizzontale con auto-scroll
+  // Usa positioning diverso per preview vs produzione
+  const positioningClasses = isPreview 
+    ? "relative z-50 w-full bg-white border-b border-gray-200"
+    : "sticky z-50 w-full bg-white border-b border-gray-200";
+    
+  const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
+
   return (
     <div 
       id="mobile-category-sidebar"
-      className="sticky z-50 w-full bg-white border-b border-gray-200"
-      style={{ top: `${headerHeight}px` }}
+      className={positioningClasses}
+      style={topStyle}
       data-sidebar="mobile"
     >
       <div className="relative">
