@@ -4,20 +4,9 @@ export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Detect mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -38,41 +27,38 @@ export const useMenuNavigation = () => {
       (entries) => {
         if (isManualScroll) return;
         
-        // Trova la categoria più in alto che è almeno parzialmente visibile
-        let topMostCategory = null;
-        let topMostPosition = Infinity;
+        // Trova tutte le categorie visibili
+        const visibleEntries = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => {
+            // Se una categoria è al top del viewport (o molto vicina), ha priorità
+            const aTop = a.boundingClientRect.top;
+            const bTop = b.boundingClientRect.top;
+            
+            // Priorità alla categoria più vicina al top del viewport
+            if (Math.abs(aTop) < 50) return -1;
+            if (Math.abs(bTop) < 50) return 1;
+            
+            // Altrimenti ordina per posizione verticale
+            return aTop - bTop;
+          });
         
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const rect = entry.target.getBoundingClientRect();
-            // Considera solo elementi che sono nella parte superiore del viewport
-            if (rect.top < window.innerHeight / 2 && rect.top < topMostPosition) {
-              topMostPosition = rect.top;
-              topMostCategory = entry.target;
-            }
-          }
-        });
-        
-        if (topMostCategory) {
-          const section = topMostCategory.closest('[id^="category-"]');
-          if (section) {
-            const categoryId = section.id.replace('category-', '');
-            setSelectedCategory(categoryId);
-          }
+        if (visibleEntries.length > 0) {
+          const categoryId = visibleEntries[0].target.id.replace('category-', '');
+          setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.5, 1],
-        // Margini diversi per mobile e desktop
-        rootMargin: isMobile ? '-150px 0px -50% 0px' : '-100px 0px -50% 0px'
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-100px 0px -40% 0px'
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva le sezioni complete invece dei soli titoli
-    // per catturare meglio quando una categoria è attiva
+    // Osserva tutte le sezioni categoria con un piccolo delay
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => {
@@ -87,7 +73,7 @@ export const useMenuNavigation = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll, isMobile]);
+  }, [isManualScroll]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -117,24 +103,41 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Trova il titolo h2 all'interno della sezione
-      const titleElement = element.querySelector('h2');
-      const targetElement = titleElement || element;
+      // Calcola l'altezza totale degli elementi sticky
+      let stickyOffset = 0;
       
-      // Calcola l'offset dinamicamente
+      // Header
       const header = document.querySelector('header');
-      const categorySidebar = document.querySelector('[class*="sticky"][class*="top-"]');
+      if (header) {
+        stickyOffset += header.offsetHeight;
+      }
       
-      let offset = 20; // padding base
-      if (header) offset += header.offsetHeight;
-      if (isMobile && categorySidebar) offset += categorySidebar.offsetHeight;
+      // CategorySidebar (solo su mobile)
+      const categorySidebar = document.querySelector('.sticky.top-\\[68px\\]') || 
+                             document.querySelector('.sticky.top-\\[76px\\]');
+      if (categorySidebar) {
+        stickyOffset += categorySidebar.offsetHeight;
+      }
       
-      // Calcola la posizione
-      const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-      const targetPosition = elementPosition - offset;
+      // Aggiungi un po' di padding extra
+      const extraPadding = 20;
+      const totalOffset = stickyOffset + extraPadding;
+      
+      // Calcola la posizione finale
+      const elementRect = element.getBoundingClientRect();
+      const absoluteElementTop = elementRect.top + window.pageYOffset;
+      const scrollToPosition = absoluteElementTop - totalOffset;
+      
+      console.log('Debug scroll:', {
+        elementTop: elementRect.top,
+        pageYOffset: window.pageYOffset,
+        stickyOffset,
+        totalOffset,
+        scrollToPosition
+      });
       
       window.scrollTo({
-        top: targetPosition,
+        top: scrollToPosition,
         behavior: 'smooth'
       });
     }
@@ -145,7 +148,7 @@ export const useMenuNavigation = () => {
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1200);
+    }, 1000);
   };
   
   // Scroll to top of page
