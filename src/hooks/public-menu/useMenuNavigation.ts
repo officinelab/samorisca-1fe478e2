@@ -105,7 +105,7 @@ export const useMenuNavigation = () => {
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
       // Calcola l'offset considerando header + category sidebar
-      const yOffset = -110; // Ridotto da -130
+      const yOffset = -85; // Ridotto da -130
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
