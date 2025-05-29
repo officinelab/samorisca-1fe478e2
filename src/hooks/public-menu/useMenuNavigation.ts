@@ -1,10 +1,9 @@
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [isManualScrolling, setIsManualScrolling] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
   // Set initial category when categories are loaded
@@ -34,61 +33,17 @@ export const useMenuNavigation = () => {
       }
     };
   }, []);
-
-  // IntersectionObserver per rilevare le categorie visibili
-  useEffect(() => {
-    if (!menuRef.current || isManualScrolling) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Trova la categoria più visibile
-        let mostVisibleEntry = entries[0];
-        let maxRatio = 0;
-
-        entries.forEach(entry => {
-          if (entry.intersectionRatio > maxRatio) {
-            maxRatio = entry.intersectionRatio;
-            mostVisibleEntry = entry;
-          }
-        });
-
-        // Aggiorna la categoria selezionata se ce n'è una sufficientemente visibile
-        if (mostVisibleEntry && mostVisibleEntry.intersectionRatio > 0.3) {
-          const categoryId = mostVisibleEntry.target.id.replace('category-', '');
-          setSelectedCategory(categoryId);
-        }
-      },
-      {
-        root: menuRef.current,
-        rootMargin: '-10% 0px -60% 0px', // Considera visibile quando è nella parte superiore del viewport
-        threshold: [0.1, 0.3, 0.5, 0.7]
-      }
-    );
-
-    // Osserva tutte le sezioni categoria esistenti
-    const categoryElements = menuRef.current.querySelectorAll('[id^="category-"]');
-    categoryElements.forEach(element => observer.observe(element));
-
-    return () => observer.disconnect();
-  }, [isManualScrolling]);
   
   // Scroll to selected category
-  const scrollToCategory = useCallback((categoryId: string) => {
-    setIsManualScrolling(true);
+  const scrollToCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
       element.scrollIntoView({
         behavior: 'smooth'
       });
-      
-      // Reset manual scrolling flag dopo un delay
-      setTimeout(() => {
-        setIsManualScrolling(false);
-      }, 1000);
     }
-  }, []);
+  };
   
   // Scroll to top of menu
   const scrollToTop = () => {
