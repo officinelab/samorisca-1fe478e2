@@ -103,24 +103,26 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Usa offsetTop per ottenere la posizione assoluta dall'inizio del documento
-      const elementPosition = element.offsetTop;
-      const offset = 150; // Spazio da lasciare sopra l'elemento
-      const finalPosition = elementPosition - offset;
+      // Metodo più affidabile: usa scrollIntoView con offset personalizzato
+      // Prima scrolla all'elemento
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       
-      window.scrollTo({
-        top: finalPosition,
-        behavior: 'smooth'
-      });
+      // Poi aggiusta la posizione con un piccolo delay per compensare header sticky
+      setTimeout(() => {
+        window.scrollBy({
+          top: -150, // Offset negativo per lasciare spazio sopra
+          behavior: 'smooth'
+        });
+      }, 100);
     }
     
-    // Reset manual scroll flag dopo l'animazione
+    // Reset manual scroll flag dopo l'animazione (tempo aumentato per doppia animazione)
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1000);
+    }, 1500);
   };
   
   // Scroll to top of page
