@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Product } from "@/types/database";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -193,6 +192,7 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
         onClose={() => setSelectedProduct(null)}
         addToCart={addToCart}
         hideImage={hideProductDetailImage}
+        language={language}
         fontSettings={getDetailFontSettings()}
         buttonSettings={buttonSettings}
       />
