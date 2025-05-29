@@ -1,3 +1,4 @@
+
 import { useRef } from "react";
 
 export const useScrollNavigation = (
@@ -31,14 +32,14 @@ export const useScrollNavigation = (
     
     const headerHeight = header ? header.offsetHeight : 104;
     const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 64;
-    const totalOffset = headerHeight + sidebarHeight + 20; // 20px padding
+    const totalOffset = headerHeight + sidebarHeight + 10; // 10px padding extra
     
     // Calcola la posizione target
     const elementRect = element.getBoundingClientRect();
     const absoluteElementTop = elementRect.top + window.pageYOffset;
     const scrollToPosition = Math.max(0, absoluteElementTop - totalOffset);
     
-    console.log('Scrolling to position:', scrollToPosition, 'with offset:', totalOffset);
+    console.log('Scrolling to position:', scrollToPosition, 'with total offset:', totalOffset);
     
     // Scroll con smooth behavior
     window.scrollTo({
@@ -53,7 +54,7 @@ export const useScrollNavigation = (
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 800); // Tempo sufficiente per completare lo scroll smooth
+    }, 1000); // Tempo maggiore per assicurare che lo scroll smooth sia completato
   };
 
   const scrollToTop = () => {
@@ -73,7 +74,7 @@ export const useScrollNavigation = (
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 800);
+    }, 1000);
   };
 
   return {

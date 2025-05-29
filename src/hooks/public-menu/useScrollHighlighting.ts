@@ -1,3 +1,4 @@
+
 import { useRef, useCallback } from "react";
 
 export const useScrollHighlighting = (
@@ -24,11 +25,12 @@ export const useScrollHighlighting = (
       const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 64;
       const totalOffset = headerHeight + sidebarHeight;
       
-      console.log('Calculated offsets:', { headerHeight, sidebarHeight, totalOffset });
+      console.log('Calculated offsets for scroll highlighting:', { headerHeight, sidebarHeight, totalOffset });
 
       const observer = new IntersectionObserver(
         (entries) => {
           if (isManualScroll) {
+            console.log('Skipping scroll highlighting - manual scroll in progress');
             return;
           }
           
@@ -43,22 +45,21 @@ export const useScrollHighlighting = (
           
           if (visibleEntries.length === 0) return;
           
-          // Trova la categoria che occupa più spazio vicino al top
-          // Consideriamo un "punto di riferimento" subito sotto gli elementi sticky
-          const referencePoint = totalOffset + 100;
+          // Trova la categoria più vicina al punto di riferimento (subito sotto gli elementi sticky)
+          const referencePoint = totalOffset + 50; // Punto di riferimento più preciso
           
           let bestCategory = null;
           let bestScore = -1;
           
           visibleEntries.forEach(entry => {
-            // Calcola quanto della categoria è visibile sotto il punto di riferimento
-            const topVisible = Math.max(0, entry.rect.top - referencePoint);
-            const bottomVisible = Math.min(window.innerHeight, entry.rect.bottom) - referencePoint;
-            const visibleHeight = bottomVisible - topVisible;
-            
-            // Score basato su quanto è visibile e quanto è vicina al punto di riferimento
+            // Calcola la distanza dal punto di riferimento
             const distanceFromReference = Math.abs(entry.rect.top - referencePoint);
-            const score = visibleHeight - (distanceFromReference * 0.1);
+            
+            // Score inversamente proporzionale alla distanza (più vicina = score migliore)
+            // e proporzionale al ratio di visibilità
+            const score = (1000 - distanceFromReference) * entry.ratio;
+            
+            console.log(`Category ${entry.id}: distance=${distanceFromReference.toFixed(2)}, ratio=${entry.ratio.toFixed(2)}, score=${score.toFixed(2)}`);
             
             if (score > bestScore) {
               bestScore = score;
@@ -68,7 +69,7 @@ export const useScrollHighlighting = (
           
           if (bestCategory && bestCategory.id !== lastSelectedRef.current) {
             lastSelectedRef.current = bestCategory.id;
-            console.log('Auto-selecting category:', bestCategory.id);
+            console.log('Auto-selecting category via scroll:', bestCategory.id);
             setSelectedCategory(bestCategory.id);
             
             // Aggiorna l'URL hash senza scroll
@@ -80,8 +81,9 @@ export const useScrollHighlighting = (
         },
         {
           root: null,
-          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-          rootMargin: `-${totalOffset + 20}px 0px -30% 0px`
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
+          // Aggiorna il rootMargin per essere più preciso con il nuovo posizionamento
+          rootMargin: `-${totalOffset}px 0px -40% 0px`
         }
       );
 
@@ -89,13 +91,14 @@ export const useScrollHighlighting = (
 
       // Osserva tutte le sezioni categoria
       const categoryElements = document.querySelectorAll('[data-category-id]');
-      console.log('Observing', categoryElements.length, 'category elements');
+      console.log('Observing', categoryElements.length, 'category elements for scroll highlighting');
       categoryElements.forEach((element) => {
         observer.observe(element);
       });
     };
 
-    setupObserver();
+    // Aspetta un momento per assicurarsi che tutti gli elementi siano renderizzati
+    setTimeout(setupObserver, 100);
 
     return () => {
       if (observerRef.current) {
