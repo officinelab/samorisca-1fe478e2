@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
@@ -42,10 +41,13 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
 }) => {
   const isMobile = useIsMobile();
 
+  // Calcola dinamicamente lo scroll margin basato sul device
+  const scrollMarginClass = deviceView === 'mobile' ? 'scroll-mt-44' : 'scroll-mt-32';
+
   return (
     <section 
       id={`category-${category.id}`} 
-      className="scroll-mt-32"
+      className={scrollMarginClass}
       data-category-id={category.id}
       data-category-name={category.title}
     >

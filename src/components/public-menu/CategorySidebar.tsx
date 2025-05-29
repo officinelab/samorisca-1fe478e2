@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,22 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
+  const [headerHeight, setHeaderHeight] = React.useState(76);
+
+  // Calcola dinamicamente l'altezza dell'header
+  React.useEffect(() => {
+    const calculateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        setHeaderHeight(header.offsetHeight);
+      }
+    };
+
+    calculateHeaderHeight();
+    window.addEventListener('resize', calculateHeaderHeight);
+    
+    return () => window.removeEventListener('resize', calculateHeaderHeight);
+  }, []);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -67,17 +82,18 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con auto-scroll, full width
+  // MOBILE: barra orizzontale con auto-scroll, posizionamento dinamico
   return (
     <div 
       id="mobile-category-sidebar"
-      className="sticky top-[76px] z-50 w-full bg-white border-b border-gray-200"
+      className="sticky z-50 w-full bg-white border-b border-gray-200"
+      style={{ top: `${headerHeight}px` }}
       data-sidebar="mobile"
     >
       <div className="relative">
         <div 
           ref={scrollContainerRef}
-          className="flex overflow-x-auto no-scrollbar space-x-3 px-6 pt-6 pb-5 scroll-smooth py-[20px] mx-[10px]"
+          className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-4 scroll-smooth"
         >
           {categories.map(category => {
             const displayTitle = category.displayTitle || category.title;

@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from "react";
 
 export const useScrollHighlighting = (
@@ -6,6 +5,7 @@ export const useScrollHighlighting = (
   setSelectedCategory: (categoryId: string) => void
 ) => {
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const lastSelectedRef = useRef<string | null>(null);
 
   const setupScrollHighlighting = useCallback(() => {
     // Cleanup previous observer
@@ -13,36 +13,66 @@ export const useScrollHighlighting = (
       observerRef.current.disconnect();
     }
 
-    // Setup dell'observer semplificato
     const setupObserver = () => {
-      console.log('Setting up simplified intersection observer');
+      console.log('Setting up intersection observer (once)');
 
-      // Create new intersection observer con configurazione semplificata
+      // Ottieni le altezze reali degli elementi sticky
+      const header = document.querySelector('header');
+      const mobileSidebar = document.getElementById('mobile-category-sidebar');
+      
+      const headerHeight = header ? header.offsetHeight : 104;
+      const sidebarHeight = mobileSidebar ? mobileSidebar.offsetHeight : 64;
+      const totalOffset = headerHeight + sidebarHeight;
+      
+      console.log('Calculated offsets:', { headerHeight, sidebarHeight, totalOffset });
+
       const observer = new IntersectionObserver(
         (entries) => {
-          // Blocca completamente l'observer durante lo scroll manuale
           if (isManualScroll) {
-            console.log('Observer blocked during manual scroll');
             return;
           }
           
-          // Trova la categoria più visibile al centro del viewport
+          // Raccogli tutte le entries visibili
           const visibleEntries = entries
-            .filter(entry => entry.isIntersecting && entry.intersectionRatio > 0.1)
-            .sort((a, b) => {
-              // Priorità alla categoria più vicina al centro del viewport
-              const aCenter = Math.abs(a.boundingClientRect.top + a.boundingClientRect.height / 2 - window.innerHeight / 2);
-              const bCenter = Math.abs(b.boundingClientRect.top + b.boundingClientRect.height / 2 - window.innerHeight / 2);
-              return aCenter - bCenter;
-            });
+            .filter(entry => entry.isIntersecting)
+            .map(entry => ({
+              id: entry.target.id.replace('category-', ''),
+              rect: entry.boundingClientRect,
+              ratio: entry.intersectionRatio
+            }));
           
-          if (visibleEntries.length > 0) {
-            const categoryId = visibleEntries[0].target.id.replace('category-', '');
-            console.log('Auto-selecting category:', categoryId);
-            setSelectedCategory(categoryId);
+          if (visibleEntries.length === 0) return;
+          
+          // Trova la categoria che occupa più spazio vicino al top
+          // Consideriamo un "punto di riferimento" subito sotto gli elementi sticky
+          const referencePoint = totalOffset + 100;
+          
+          let bestCategory = null;
+          let bestScore = -1;
+          
+          visibleEntries.forEach(entry => {
+            // Calcola quanto della categoria è visibile sotto il punto di riferimento
+            const topVisible = Math.max(0, entry.rect.top - referencePoint);
+            const bottomVisible = Math.min(window.innerHeight, entry.rect.bottom) - referencePoint;
+            const visibleHeight = bottomVisible - topVisible;
+            
+            // Score basato su quanto è visibile e quanto è vicina al punto di riferimento
+            const distanceFromReference = Math.abs(entry.rect.top - referencePoint);
+            const score = visibleHeight - (distanceFromReference * 0.1);
+            
+            if (score > bestScore) {
+              bestScore = score;
+              bestCategory = entry;
+            }
+          });
+          
+          if (bestCategory && bestCategory.id !== lastSelectedRef.current) {
+            lastSelectedRef.current = bestCategory.id;
+            console.log('Auto-selecting category:', bestCategory.id);
+            setSelectedCategory(bestCategory.id);
             
             // Aggiorna l'URL hash senza scroll
-            const targetHash = `#category-${categoryId}`;
+            const targetHash = `#category-${bestCategory.id}`;
             if (window.location.hash !== targetHash) {
               window.history.replaceState(null, '', targetHash);
             }
@@ -50,8 +80,8 @@ export const useScrollHighlighting = (
         },
         {
           root: null,
-          threshold: [0.1, 0.3, 0.5, 0.7],
-          rootMargin: '-100px 0px -50% 0px' // Offset fisso semplificato
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+          rootMargin: `-${totalOffset + 20}px 0px -30% 0px`
         }
       );
 
@@ -61,18 +91,16 @@ export const useScrollHighlighting = (
       const categoryElements = document.querySelectorAll('[data-category-id]');
       console.log('Observing', categoryElements.length, 'category elements');
       categoryElements.forEach((element) => {
-        if (observerRef.current) {
-          observerRef.current.observe(element);
-        }
+        observer.observe(element);
       });
     };
 
-    // Setup immediato senza delay
     setupObserver();
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
+        observerRef.current = null;
       }
     };
   }, [isManualScroll, setSelectedCategory]);
