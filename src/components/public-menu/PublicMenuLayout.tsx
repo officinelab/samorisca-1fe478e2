@@ -7,6 +7,7 @@ import { MenuContent } from "@/components/public-menu/MenuContent";
 import { BackToTopButton } from "@/components/public-menu/BackToTopButton";
 import { ProductDetailsDialog } from "@/components/public-menu/ProductDetailsDialog";
 import { CartSheet } from "@/components/public-menu/CartSheet";
+import { LanguageLoadingIndicator } from "@/components/public-menu/LanguageLoadingIndicator";
 import { Category, Product } from "@/types/database";
 import { CategoryNote } from "@/types/categoryNotes";
 
@@ -106,29 +107,36 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
         openCart={openCart}
       />
 
-      {/* CategorySidebar fuori dal container solo per mobile */}
-{deviceView === 'mobile' && (
-  <CategorySidebar 
-    categories={categories}
-    selectedCategory={selectedCategory}
-    deviceView={deviceView}
-    onSelectCategory={scrollToCategory}
-    language={language}
-  />
-)}
-
-<div className="container max-w-5xl mx-auto px-4 py-6">
-  <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'}`}>
-    {/* Categories sidebar solo per desktop */}
-    {deviceView === 'desktop' && (
-      <CategorySidebar 
-        categories={categories}
-        selectedCategory={selectedCategory}
-        deviceView={deviceView}
-        onSelectCategory={scrollToCategory}
-        language={language}
+      {/* Indicatore di caricamento lingua ottimizzato */}
+      <LanguageLoadingIndicator 
+        isVisible={isLoading}
+        isLanguageChange={true}
+        targetLanguage={language}
       />
-    )}
+
+      {/* CategorySidebar fuori dal container solo per mobile */}
+      {deviceView === 'mobile' && (
+        <CategorySidebar 
+          categories={categories}
+          selectedCategory={selectedCategory}
+          deviceView={deviceView}
+          onSelectCategory={scrollToCategory}
+          language={language}
+        />
+      )}
+
+      <div className="container max-w-5xl mx-auto px-4 py-6">
+        <div className={`grid ${deviceView === 'desktop' ? 'grid-cols-4 gap-6' : 'grid-cols-1 gap-4'}`}>
+          {/* Categories sidebar solo per desktop */}
+          {deviceView === 'desktop' && (
+            <CategorySidebar 
+              categories={categories}
+              selectedCategory={selectedCategory}
+              deviceView={deviceView}
+              onSelectCategory={scrollToCategory}
+              language={language}
+            />
+          )}
 
           {/* Main menu content */}
           <MenuContent 
