@@ -25,6 +25,13 @@ interface CategorySectionProps {
     color?: string;
     icon?: string;
   };
+  categoryTitleStyle?: {
+    fontFamily: string;
+    fontWeight: "normal" | "bold";
+    fontStyle: "normal" | "italic";
+    backgroundColor: string;
+    textColor: string;
+  };
 }
 
 export const CategorySection: React.FC<CategorySectionProps> = ({
@@ -38,15 +45,17 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   language = 'it',
   productCardLayoutType = "default",
   fontSettings,
-  buttonSettings
+  buttonSettings,
+  categoryTitleStyle
 }) => {
   const isMobile = useIsMobile();
 
   return (
     <section id={`category-${category.id}`} className="scroll-mt-28">
-        <CategorySectionHeader 
+      <CategorySectionHeader 
         category={category} 
-        language={language} 
+        language={language}
+        categoryTitleStyle={categoryTitleStyle}
       />
       
       {isLoading ? (
