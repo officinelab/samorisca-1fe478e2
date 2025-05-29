@@ -20,6 +20,12 @@ export const useMenuNavigation = () => {
       (entries) => {
         if (isManualScroll) return; // Skip auto-update during manual scroll
         
+        console.log('IntersectionObserver entries:', entries.map(e => ({
+          id: e.target.id,
+          isIntersecting: e.isIntersecting,
+          intersectionRatio: e.intersectionRatio
+        })));
+        
         // Find the category that's most visible
         let mostVisibleEntry = null;
         let maxRatio = 0;
@@ -33,20 +39,36 @@ export const useMenuNavigation = () => {
         
         if (mostVisibleEntry) {
           const categoryId = mostVisibleEntry.target.id.replace('category-', '');
+          console.log('Auto-highlighting category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
-        threshold: [0.1, 0.3, 0.5, 0.7],
-        rootMargin: '-20% 0px -20% 0px'
+        threshold: [0.1, 0.2, 0.3, 0.4, 0.5],
+        rootMargin: '-80px 0px -40% 0px'
       }
     );
 
-    // Observe all category sections
-    const categoryElements = document.querySelectorAll('[id^="category-"]');
-    categoryElements.forEach((element) => observer.observe(element));
+    // Wait for DOM to be ready, then observe all category sections
+    const observeCategories = () => {
+      const categoryElements = document.querySelectorAll('[id^="category-"]');
+      console.log('Found category elements:', categoryElements.length);
+      
+      categoryElements.forEach((element) => {
+        console.log('Observing element:', element.id);
+        observer.observe(element);
+      });
+    };
+
+    // Use a timeout to ensure DOM is ready
+    const timeoutId = setTimeout(observeCategories, 100);
+    
+    // Also try immediately in case DOM is already ready
+    observeCategories();
 
     return () => {
+      clearTimeout(timeoutId);
+      const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => observer.unobserve(element));
       observer.disconnect();
     };
@@ -81,6 +103,7 @@ export const useMenuNavigation = () => {
   
   // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
+    console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
@@ -93,8 +116,9 @@ export const useMenuNavigation = () => {
     
     // Reset manual scroll flag after scroll animation
     setTimeout(() => {
+      console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1000);
+    }, 1500);
   };
   
   // Scroll to top of menu
