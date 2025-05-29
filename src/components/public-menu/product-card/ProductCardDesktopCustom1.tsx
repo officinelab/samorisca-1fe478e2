@@ -19,6 +19,10 @@ interface ProductCardDesktopCustom1Props {
     description?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
     price?: { fontFamily?: string; fontWeight?: "normal" | "bold"; fontStyle?: "normal" | "italic"; fontSize?: number };
   };
+  buttonSettings?: {
+    color?: string;
+    icon?: string;
+  };
 }
 
 export const ProductCardDesktopCustom1: React.FC<ProductCardDesktopCustom1Props> = ({
