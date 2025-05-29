@@ -7,6 +7,7 @@ export const useMenuNavigation = () => {
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -22,37 +23,43 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
+    // Create new intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
-        if (isManualScroll) return; // Skip auto-update during manual scroll
+        if (isManualScroll) return;
         
-        // Trova tutte le sezioni visibili
-        const visibleSections = entries
+        // Trova tutte le categorie visibili
+        const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
-            // Ordina per posizione verticale (top)
-            return a.boundingClientRect.top - b.boundingClientRect.top;
+            // Se una categoria è al top del viewport (o molto vicina), ha priorità
+            const aTop = a.boundingClientRect.top;
+            const bTop = b.boundingClientRect.top;
+            
+            // Priorità alla categoria più vicina al top del viewport
+            if (Math.abs(aTop) < 50) return -1;
+            if (Math.abs(bTop) < 50) return 1;
+            
+            // Altrimenti ordina per posizione verticale
+            return aTop - bTop;
           });
         
-        // Seleziona la prima sezione visibile
-        if (visibleSections.length > 0) {
-          const firstVisibleSection = visibleSections[0];
-          const categoryId = firstVisibleSection.target.id.replace('category-', '');
+        if (visibleEntries.length > 0) {
+          const categoryId = visibleEntries[0].target.id.replace('category-', '');
           setSelectedCategory(categoryId);
         }
       },
       {
-        // Usa il viewport principale come root
         root: null,
-        threshold: [0, 0.1, 0.5, 0.9],
-        // Considera una sezione visibile quando entra nel 10% superiore del viewport
-        rootMargin: '-10% 0px -40% 0px'
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-120px 0px -40% 0px'
       }
     );
 
     observerRef.current = observer;
 
-    // Observe all category sections dopo un breve delay per assicurarsi che il DOM sia pronto
+    // Osserva tutte le sezioni categoria con un piccolo delay
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => {
@@ -97,7 +104,8 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      const yOffset = -80; // Offset per header sticky
+      // Calcola l'offset considerando header + category sidebar
+      const yOffset = -130; // Aggiustato per mobile
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
@@ -107,7 +115,10 @@ export const useMenuNavigation = () => {
     }
     
     // Reset manual scroll flag dopo l'animazione
-    setTimeout(() => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
     }, 1000);
   };
@@ -119,6 +130,15 @@ export const useMenuNavigation = () => {
       behavior: 'smooth'
     });
   };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
   
   return {
     selectedCategory,
@@ -128,6 +148,6 @@ export const useMenuNavigation = () => {
     scrollToCategory,
     scrollToTop,
     initializeCategory,
-    setupScrollHighlighting // Export per permettere re-setup quando cambiano le categorie
+    setupScrollHighlighting
   };
 };
