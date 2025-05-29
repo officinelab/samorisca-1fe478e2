@@ -45,7 +45,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   return (
     <section 
       id={`category-${category.id}`} 
-      className="scroll-mt-40"
+      className="scroll-mt-32"
       data-category-id={category.id}
       data-category-name={category.title}
     >

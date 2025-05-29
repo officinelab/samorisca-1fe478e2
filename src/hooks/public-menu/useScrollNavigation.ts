@@ -1,6 +1,5 @@
 
 import { useRef } from "react";
-import { waitForDOMReady, calculateStickyOffset } from "./utils/domCalculations";
 
 export const useScrollNavigation = (
   setSelectedCategory: (categoryId: string) => void,
@@ -8,11 +7,20 @@ export const useScrollNavigation = (
 ) => {
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const scrollToCategory = async (categoryId: string) => {
-    console.log('Manual scroll to category:', categoryId);
+  const scrollToCategory = (categoryId: string) => {
+    console.log('Manual scroll to category using native anchor:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
+    // Usa il sistema di anchor nativo del browser
+    const targetHash = `#category-${categoryId}`;
+    
+    // Aggiorna l'URL senza triggerare un reload
+    if (window.location.hash !== targetHash) {
+      window.history.replaceState(null, '', targetHash);
+    }
+    
+    // Trova l'elemento target
     const element = document.getElementById(`category-${categoryId}`);
     if (!element) {
       console.error('Element not found:', `category-${categoryId}`);
@@ -20,41 +28,23 @@ export const useScrollNavigation = (
       return;
     }
 
-    // Funzione di scroll migliorata
-    const performScroll = async (): Promise<void> => {
-      try {
-        // Aspetta che il DOM sia pronto (più veloce di waitForImages)
-        await waitForDOMReady();
-        
-        // Calcola l'offset dinamicamente
-        const dynamicOffset = await calculateStickyOffset();
-        
-        // Calcola la posizione finale
-        const elementRect = element.getBoundingClientRect();
-        const absoluteElementTop = elementRect.top + window.pageYOffset;
-        const scrollToPosition = Math.max(0, absoluteElementTop - dynamicOffset);
-        
-        console.log('Scroll calculation:', {
-          elementTop: elementRect.top,
-          pageYOffset: window.pageYOffset,
-          dynamicOffset,
-          scrollToPosition,
-          elementId: element.id
-        });
-        
-        // Scroll immediato e preciso
-        window.scrollTo({
-          top: scrollToPosition,
-          behavior: 'smooth'
-        });
-        
-      } catch (error) {
-        console.error('Error during scroll:', error);
-      }
-    };
+    // Usa scrollIntoView nativo con offset per l'header
+    const headerHeight = 76; // Header fisso
+    const sidebarHeight = 80; // CategorySidebar mobile approssimativo
+    const totalOffset = headerHeight + sidebarHeight + 20; // padding extra
     
-    // Avvia lo scroll con un delay minimo
-    setTimeout(() => performScroll(), 50);
+    // Calcola la posizione target
+    const elementRect = element.getBoundingClientRect();
+    const absoluteElementTop = elementRect.top + window.pageYOffset;
+    const scrollToPosition = Math.max(0, absoluteElementTop - totalOffset);
+    
+    console.log('Native scroll to position:', scrollToPosition);
+    
+    // Scroll nativo e immediato
+    window.scrollTo({
+      top: scrollToPosition,
+      behavior: 'smooth'
+    });
     
     // Reset manual scroll flag con timeout ridotto
     if (scrollTimeoutRef.current) {
@@ -63,10 +53,12 @@ export const useScrollNavigation = (
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1500); // Ridotto da 3000ms a 1500ms
+    }, 1000); // Ridotto ulteriormente
   };
 
   const scrollToTop = () => {
+    // Rimuovi hash dall'URL
+    window.history.replaceState(null, '', window.location.pathname);
     window.scrollTo({
       top: 0,
       behavior: 'smooth'

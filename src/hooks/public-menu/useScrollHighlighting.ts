@@ -1,6 +1,5 @@
 
 import { useRef, useCallback } from "react";
-import { waitForDOMReady, calculateStickyOffset } from "./utils/domCalculations";
 
 export const useScrollHighlighting = (
   isManualScroll: boolean,
@@ -14,58 +13,52 @@ export const useScrollHighlighting = (
       observerRef.current.disconnect();
     }
 
-    // Setup dell'observer più veloce
-    const setupObserver = async () => {
-      // Aspetta che il DOM sia pronto
-      await waitForDOMReady();
-      
-      // Calcola l'offset dinamico
-      const dynamicOffset = await calculateStickyOffset();
-      const rootMargin = `-${dynamicOffset}px 0px -40% 0px`;
-      console.log('Using rootMargin:', rootMargin);
+    // Setup dell'observer semplificato
+    const setupObserver = () => {
+      console.log('Setting up simplified intersection observer');
 
-      // Create new intersection observer
+      // Create new intersection observer con configurazione semplificata
       const observer = new IntersectionObserver(
         (entries) => {
-          // Blocca l'observer durante lo scroll manuale in modo più aggressivo
+          // Blocca completamente l'observer durante lo scroll manuale
           if (isManualScroll) {
-            console.log('Blocking observer during manual scroll');
+            console.log('Observer blocked during manual scroll');
             return;
           }
           
-          // Trova tutte le categorie visibili
+          // Trova la categoria più visibile al centro del viewport
           const visibleEntries = entries
-            .filter(entry => entry.isIntersecting)
+            .filter(entry => entry.isIntersecting && entry.intersectionRatio > 0.1)
             .sort((a, b) => {
-              // Se una categoria è al top del viewport (o molto vicina), ha priorità
-              const aTop = a.boundingClientRect.top;
-              const bTop = b.boundingClientRect.top;
-              
-              // Priorità alla categoria più vicina al top del viewport
-              if (Math.abs(aTop) < 50) return -1;
-              if (Math.abs(bTop) < 50) return 1;
-              
-              // Altrimenti ordina per posizione verticale
-              return aTop - bTop;
+              // Priorità alla categoria più vicina al centro del viewport
+              const aCenter = Math.abs(a.boundingClientRect.top + a.boundingClientRect.height / 2 - window.innerHeight / 2);
+              const bCenter = Math.abs(b.boundingClientRect.top + b.boundingClientRect.height / 2 - window.innerHeight / 2);
+              return aCenter - bCenter;
             });
           
           if (visibleEntries.length > 0) {
             const categoryId = visibleEntries[0].target.id.replace('category-', '');
             console.log('Auto-selecting category:', categoryId);
             setSelectedCategory(categoryId);
+            
+            // Aggiorna l'URL hash senza scroll
+            const targetHash = `#category-${categoryId}`;
+            if (window.location.hash !== targetHash) {
+              window.history.replaceState(null, '', targetHash);
+            }
           }
         },
         {
           root: null,
-          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-          rootMargin: rootMargin
+          threshold: [0.1, 0.3, 0.5, 0.7],
+          rootMargin: '-100px 0px -50% 0px' // Offset fisso semplificato
         }
       );
 
       observerRef.current = observer;
 
       // Osserva tutte le sezioni categoria
-      const categoryElements = document.querySelectorAll('[id^="category-"]');
+      const categoryElements = document.querySelectorAll('[data-category-id]');
       console.log('Observing', categoryElements.length, 'category elements');
       categoryElements.forEach((element) => {
         if (observerRef.current) {
@@ -74,8 +67,8 @@ export const useScrollHighlighting = (
       });
     };
 
-    // Delay ridotto per essere più reattivo
-    setTimeout(setupObserver, 200);
+    // Setup immediato senza delay
+    setupObserver();
 
     return () => {
       if (observerRef.current) {

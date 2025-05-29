@@ -68,19 +68,23 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
   // Re-setup scroll highlighting quando cambiano le categorie o la lingua
   useEffect(() => {
     if (categories.length > 0) {
-      // Piccolo delay per assicurarsi che il DOM sia aggiornato
-      const timeoutId = setTimeout(() => {
-        setupScrollHighlighting();
-      }, 200);
-      
-      return () => clearTimeout(timeoutId);
+      // Setup immediato senza delay aggiuntivo
+      setupScrollHighlighting();
     }
   }, [categories, language, setupScrollHighlighting]);
 
   // Inizializza la categoria selezionata quando arrivano le categorie
   useEffect(() => {
     if (categories.length > 0 && !selectedCategory) {
-      initializeCategory(categories[0].id);
+      // Controlla se c'è un hash nell'URL
+      const hashCategory = window.location.hash.replace('#category-', '');
+      const validCategory = categories.find(cat => cat.id === hashCategory);
+      
+      if (validCategory) {
+        initializeCategory(hashCategory);
+      } else {
+        initializeCategory(categories[0].id);
+      }
     }
   }, [categories, selectedCategory, initializeCategory]);
 

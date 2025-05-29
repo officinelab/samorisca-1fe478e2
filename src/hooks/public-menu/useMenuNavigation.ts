@@ -25,23 +25,26 @@ export const useMenuNavigation = () => {
   const initializeCategory = (categoryId: string | null) => {
     if (categoryId && !selectedCategory) {
       setSelectedCategory(categoryId);
+      // Imposta l'anchor iniziale senza scroll
+      window.history.replaceState(null, '', `#category-${categoryId}`);
     }
   };
 
-  // Setup intersection observer for auto-highlighting con delay ridotto
+  // Setup intersection observer semplificato
   useEffect(() => {
-    const cleanup = setupScrollHighlighting();
-    return cleanup;
-  }, [setupScrollHighlighting]);
-
-  // Cleanup timeouts on unmount
-  useEffect(() => {
+    // Delay minimo per permettere il rendering del DOM
+    const timeoutId = setTimeout(() => {
+      const cleanup = setupScrollHighlighting();
+      return cleanup;
+    }, 100);
+    
     return () => {
+      clearTimeout(timeoutId);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [scrollTimeoutRef]);
+  }, [setupScrollHighlighting, scrollTimeoutRef]);
   
   return {
     selectedCategory,
