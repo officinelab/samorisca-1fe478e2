@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Product, ProductFeature } from "@/types/database";
 import { CategoryNote } from "@/types/categoryNotes";
@@ -25,7 +24,7 @@ interface MenuContentProps {
   truncateText: (text: string | null, maxLength: number) => string;
   language: string;
   serviceCoverCharge?: number;
-  productCardLayoutType?: 'default' | 'compact';
+  productCardLayoutType?: 'default' | 'custom1';
   fontSettings?: {
     title: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };
     description: { fontFamily: string; fontWeight: "normal" | "bold"; fontStyle: "normal" | "italic" };

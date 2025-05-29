@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/types/database";
@@ -11,7 +10,7 @@ interface LazyProductListProps {
   addToCart: (product: Product, variantName?: string, variantPrice?: number) => void;
   deviceView: 'mobile' | 'desktop';
   truncateText: (text: string | null, maxLength: number) => string;
-  productCardLayoutType?: string;
+  productCardLayoutType?: 'default' | 'custom1';
   fontSettings?: any;
   buttonSettings?: any;
 }
@@ -33,8 +32,7 @@ export const LazyProductList: React.FC<LazyProductListProps> = ({
   const { siteSettings } = useSiteSettings();
 
   // Funzione helper per validare il layout type
-  const validateLayoutType = (layoutType?: string): 'default' | 'compact' | 'custom1' => {
-    if (layoutType === 'compact') return 'compact';
+  const validateLayoutType = (layoutType?: string): 'default' | 'custom1' => {
     if (layoutType === 'custom1') return 'custom1';
     return 'default';
   };
