@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { preloadCommonFonts } from "@/hooks/useDynamicGoogleFont";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
@@ -16,6 +15,7 @@ interface UsePublicMenuProps {
 
 export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: UsePublicMenuProps) => {
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
+  const observerSetupRef = useRef(false);
 
   // Precarica font comuni al mount per migliorare le performance
   useEffect(() => {
@@ -65,13 +65,23 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
   const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
   const { t } = usePublicMenuUiStrings(language);
 
-  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
+  // Setup scroll highlighting SOLO quando cambiano le categorie (non la lingua)
   useEffect(() => {
-    if (categories.length > 0) {
-      // Setup immediato senza delay aggiuntivo
-      setupScrollHighlighting();
+    if (categories.length > 0 && !observerSetupRef.current) {
+      // Attendi un attimo per assicurarsi che il DOM sia pronto
+      const timeoutId = setTimeout(() => {
+        setupScrollHighlighting();
+        observerSetupRef.current = true;
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [categories, language, setupScrollHighlighting]);
+  }, [categories.length]); // Solo quando il numero di categorie cambia
+
+  // Reset del flag quando cambia la lingua
+  useEffect(() => {
+    observerSetupRef.current = false;
+  }, [language]);
 
   // Inizializza la categoria selezionata quando arrivano le categorie
   useEffect(() => {
