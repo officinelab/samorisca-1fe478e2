@@ -25,16 +25,20 @@ export const calculateStickyOffset = async (): Promise<number> => {
     console.log('Header height:', header.offsetHeight);
   }
   
-  // CategorySidebar mobile - usa il nuovo selettore più specifico
-  const categorySidebar = document.getElementById('mobile-category-sidebar') as HTMLElement || 
-                         document.querySelector('[data-sidebar="mobile"]') as HTMLElement;
-  if (categorySidebar) {
+  // CategorySidebar mobile - con il nuovo positioning non contribuisce più all'offset
+  // dato che ora usa margin-top invece di top
+  const categorySidebar = document.getElementById('mobile-category-sidebar') as HTMLElement;
+  if (categorySidebar && categorySidebar.style.marginTop) {
+    // Se la sidebar ha margin-top, significa che è già posizionata correttamente
+    console.log('CategorySidebar positioned with margin-top');
+  } else if (categorySidebar) {
+    // Fallback per altri casi
     totalOffset += categorySidebar.offsetHeight;
-    console.log('CategorySidebar height:', categorySidebar.offsetHeight);
+    console.log('CategorySidebar height (fallback):', categorySidebar.offsetHeight);
   }
   
-  // Padding extra per sicurezza
-  const extraPadding = 20;
+  // Padding extra ridotto dato che ora il positioning è più preciso
+  const extraPadding = 10;
   totalOffset += extraPadding;
   
   console.log('Total calculated offset:', totalOffset);

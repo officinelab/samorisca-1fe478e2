@@ -24,23 +24,41 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [headerHeight, setHeaderHeight] = React.useState(76);
+  const [headerHeight, setHeaderHeight] = React.useState(104); // Default più accurato
 
-  // Calcola dinamicamente l'altezza dell'header solo se non è preview
+  // Calcola immediatamente l'altezza dell'header al mount
   React.useEffect(() => {
     if (isPreview) return;
     
     const calculateHeaderHeight = () => {
       const header = document.querySelector('header');
       if (header) {
-        setHeaderHeight(header.offsetHeight);
+        const height = header.offsetHeight;
+        console.log('Header height calculated:', height);
+        setHeaderHeight(height);
       }
     };
 
+    // Calcola subito
     calculateHeaderHeight();
+    
+    // Usa ResizeObserver per aggiornamenti più precisi
+    const resizeObserver = new ResizeObserver(() => {
+      calculateHeaderHeight();
+    });
+    
+    const header = document.querySelector('header');
+    if (header) {
+      resizeObserver.observe(header);
+    }
+
+    // Fallback con window resize
     window.addEventListener('resize', calculateHeaderHeight);
     
-    return () => window.removeEventListener('resize', calculateHeaderHeight);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', calculateHeaderHeight);
+    };
   }, [isPreview]);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
@@ -87,25 +105,27 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con auto-scroll
-  // Usa positioning diverso per preview vs produzione
+  // MOBILE: migliorato per eliminare lo spazio iniziale
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
-    : "sticky z-50 w-full bg-white border-b border-gray-200";
+    : "sticky top-0 z-50 w-full bg-white border-b border-gray-200";
     
-  const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
+  // Per la versione non-preview, usiamo margin-top invece di top style
+  const containerStyle = isPreview 
+    ? {} 
+    : { marginTop: `${headerHeight}px` };
 
   return (
     <div 
       id="mobile-category-sidebar"
       className={positioningClasses}
-      style={topStyle}
+      style={containerStyle}
       data-sidebar="mobile"
     >
       <div className="relative">
         <div 
           ref={scrollContainerRef}
-          className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-4 scroll-smooth"
+          className="flex overflow-x-auto no-scrollbar space-x-3 px-4 py-5 scroll-smooth"
         >
           {categories.map(category => {
             const displayTitle = category.displayTitle || category.title;
