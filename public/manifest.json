@@ -11,20 +11,20 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://dqkrmewgeeuxhbxrwpjp.supabase.co/storage/v1/object/public/menu-images/site/favicon/1747928626077-favicon.svg",
+      "src": "/lovable-uploads/22bf9563-4943-444f-ad11-545ad2d50d21.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/lovable-uploads/22bf9563-4943-444f-ad11-545ad2d50d21.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/lovable-uploads/22bf9563-4943-444f-ad11-545ad2d50d21.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
   "categories": ["business", "productivity", "utilities"],
