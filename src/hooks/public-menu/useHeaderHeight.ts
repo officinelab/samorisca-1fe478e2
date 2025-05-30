@@ -3,27 +3,29 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 /**
  * Hook per calcolare l'altezza unificata dell'header
- * Considera la visibilità del nome del ristorante
+ * VALORI CORRETTI basati sui dati reali dal debug
  */
 export const useHeaderHeight = () => {
   const { siteSettings } = useSiteSettings();
   
-  // Altezza base dell'header (pt-4 + logo + spazi)
-  const BASE_HEIGHT = 70;
+  // VALORI REALI dal debug:
+  // - Header principale: 72px
+  // - Mobile sidebar quando presente: 73px aggiuntivi
+  const HEADER_HEIGHT = 72;
+  const MOBILE_SIDEBAR_HEIGHT = 73;
   
-  // Altezza aggiuntiva se il nome del ristorante è visibile (mt-2 + testo + pb-2)
-  const NAME_HEIGHT = 32;
-  
-  // Calcola se il nome è visibile (default: true se non specificato)
   const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
   
-  // Altezza totale
-  const headerHeight = BASE_HEIGHT + (showRestaurantName ? NAME_HEIGHT : 0);
+  // Per mobile, considera anche la sidebar
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const totalHeaderHeight = isMobile 
+    ? HEADER_HEIGHT + MOBILE_SIDEBAR_HEIGHT // 145px su mobile
+    : HEADER_HEIGHT; // 72px su desktop
   
   return {
-    headerHeight,
+    headerHeight: totalHeaderHeight,
     showRestaurantName,
-    baseHeight: BASE_HEIGHT,
-    nameHeight: showRestaurantName ? NAME_HEIGHT : 0
+    baseHeight: HEADER_HEIGHT,
+    mobileSidebarHeight: isMobile ? MOBILE_SIDEBAR_HEIGHT : 0
   };
 };
