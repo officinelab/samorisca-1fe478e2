@@ -25,37 +25,65 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     [key: string]: HTMLButtonElement | null;
   }>({});
   const [headerHeight, setHeaderHeight] = React.useState(() => {
-    // Calcolo iniziale più accurato dell'altezza header
-    // Header include: padding (pt-4 + pb-2 = 24px), logo (48px), nome ristorante (line-height ~28px)
-    // Margini e spacing aggiuntivi: ~24px
-    return isPreview ? 76 : 124; // Stima più realistica per il primo render
+    // Calcolo iniziale più accurato basato sulla struttura reale dell'header
+    // Header include: padding top (pt-4 = 16px), logo (h-12 = 48px), padding bottom + nome ristorante + padding (circa 66px)
+    return isPreview ? 76 : 130; // Stima più accurata per il primo render
   });
 
-  // Calcolo immediato e più accurato dell'altezza dell'header
+  // Calcolo migliorato e più affidabile dell'altezza dell'header
   React.useLayoutEffect(() => {
     if (isPreview) return;
     
     const calculateHeaderHeight = () => {
-      const header = document.querySelector('header');
+      const header = document.querySelector('header') as HTMLElement;
       if (header) {
-        const computedHeight = header.offsetHeight;
-        console.log('Header height calculated:', computedHeight);
-        setHeaderHeight(computedHeight);
+        // Forza un reflow per assicurarsi che le dimensioni siano accurate
+        const computedHeight = header.getBoundingClientRect().height;
+        console.log('Header height calculated (getBoundingClientRect):', computedHeight);
+        
+        // Verifica che il valore sia ragionevole (tra 100 e 200px)
+        if (computedHeight >= 100 && computedHeight <= 200) {
+          setHeaderHeight(computedHeight);
+        } else {
+          console.warn('Header height seems incorrect, using fallback:', computedHeight);
+          setHeaderHeight(130); // Fallback sicuro
+        }
+      } else {
+        console.warn('Header element not found, using fallback height');
+        setHeaderHeight(130);
       }
     };
 
+    // Calcolo immediato con requestAnimationFrame per timing ottimale
+    const performCalculation = () => {
+      requestAnimationFrame(() => {
+        calculateHeaderHeight();
+      });
+    };
+
     // Calcolo immediato
-    calculateHeaderHeight();
+    performCalculation();
     
-    // Calcolo dopo un breve delay per assicurarsi che tutto sia renderizzato
-    const timeoutId = setTimeout(calculateHeaderHeight, 100);
+    // Calcolo di backup dopo un delay più lungo per catturare eventuali layout asincroni
+    const timeoutId = setTimeout(performCalculation, 200);
     
-    // Listener per resize
-    window.addEventListener('resize', calculateHeaderHeight);
+    // Secondo backup dopo un delay ancora più lungo
+    const timeoutId2 = setTimeout(performCalculation, 500);
+    
+    // Listener per resize con debounce
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(performCalculation, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
     
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('resize', calculateHeaderHeight);
+      clearTimeout(timeoutId2);
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', handleResize);
     };
   }, [isPreview]);
 
@@ -103,13 +131,14 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con auto-scroll
-  // Usa positioning diverso per preview vs produzione
+  // MOBILE: barra orizzontale con posizionamento migliorato
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
-    : "sticky z-50 w-full bg-white border-b border-gray-200";
+    : "sticky z-50 w-full bg-white border-b border-gray-200 transition-all duration-200";
     
   const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
+
+  console.log('CategorySidebar render - headerHeight:', headerHeight, 'isPreview:', isPreview);
 
   return (
     <div 
