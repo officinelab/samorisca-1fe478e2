@@ -42,17 +42,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
 }) => {
   const isMobile = useIsMobile();
 
-  // VALORI CORRETTI dal debug:
-  // Desktop: Header(72px) + margine(16px) = 88px
-  // Mobile: Header(72px) + Sidebar(73px) + margine(16px) = 161px
-  const scrollMarginPx = deviceView === 'mobile' ? 161 : 88;
-
   return (
-    <section 
-      id={`category-${category.id}`} 
-      style={{ scrollMarginTop: `${scrollMarginPx}px` }}
-    >
-      <CategorySectionHeader 
+    <section id={`category-${category.id}`} className="scroll-mt-28">
+        <CategorySectionHeader 
         category={category} 
         language={language} 
       />

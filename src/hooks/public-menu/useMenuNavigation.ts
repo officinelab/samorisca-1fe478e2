@@ -1,4 +1,5 @@
 
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useHeaderHeight } from "./useHeaderHeight";
 
@@ -12,40 +13,39 @@ export const useMenuNavigation = () => {
   
   const { headerHeight } = useHeaderHeight();
   
+  // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
     if (categoryId && !selectedCategory) {
       setSelectedCategory(categoryId);
     }
   };
 
-  // INTERSECTION OBSERVER CORRETTO con valori reali
+  // Auto-highlight category based on scroll position
   const setupScrollHighlighting = useCallback(() => {
+    // Cleanup previous observer
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
-    // VALORI CORRETTI dal debug:
-    // Desktop: Header(72px) + margine(16px) = 88px
-    // Mobile: Header(72px) + Sidebar(73px) + margine(16px) = 161px
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const topMargin = isMobile ? 161 : 88;
-    
+    // Create new intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return;
         
+        // Trova tutte le categorie visibili
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
+            // Se una categoria è al top del viewport (o molto vicina), ha priorità
             const aTop = a.boundingClientRect.top;
             const bTop = b.boundingClientRect.top;
             
-            // Priorità alla categoria più vicina alla posizione target
-            const targetPos = topMargin;
-            const aDistance = Math.abs(aTop - targetPos);
-            const bDistance = Math.abs(bTop - targetPos);
+            // Priorità alla categoria più vicina al top del viewport
+            if (Math.abs(aTop) < 50) return -1;
+            if (Math.abs(bTop) < 50) return 1;
             
-            return aDistance - bDistance;
+            // Altrimenti ordina per posizione verticale
+            return aTop - bTop;
           });
         
         if (visibleEntries.length > 0) {
@@ -55,14 +55,15 @@ export const useMenuNavigation = () => {
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.3, 0.5],
-        // ROOTMARGIN CORRETTO basato sui valori reali
-        rootMargin: `-${topMargin}px 0px -50% 0px`
+        threshold: [0.5],
+        // Usa l'altezza header calcolata dinamicamente
+        rootMargin: `-${headerHeight}px 0px -50% 0px`
       }
     );
 
     observerRef.current = observer;
 
+    // Osserva tutte le sezioni categoria con un piccolo delay
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => {
@@ -70,15 +71,16 @@ export const useMenuNavigation = () => {
           observerRef.current.observe(element);
         }
       });
-    }, 300);
+    }, 100);
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll]);
+  }, [isManualScroll, headerHeight]);
 
+  // Handle scroll to detect when to show back to top button
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -93,29 +95,20 @@ export const useMenuNavigation = () => {
     };
   }, []);
 
+  // Setup intersection observer for auto-highlighting
   useEffect(() => {
     const cleanup = setupScrollHighlighting();
     return cleanup;
   }, [setupScrollHighlighting]);
   
-  // SCROLL CORRETTO - usa valori reali dal debug
+  // Scroll to selected category (manual selection) - versione migliorata con scrollIntoView
   const scrollToCategory = (categoryId: string) => {
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
 
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Usa i calcoli corretti dal debug:
-      const isMobile = window.innerWidth < 768;
-      const offset = isMobile ? 161 : 88; // Valori reali: mobile(145+16) desktop(72+16)
-      
-      const elementTop = element.offsetTop;
-      const scrollPosition = Math.max(0, elementTop - offset);
-      
-      window.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     if (scrollTimeoutRef.current) {
@@ -123,9 +116,10 @@ export const useMenuNavigation = () => {
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 600); // Ridotto per migliore responsività
+    }, 1000);
   };
   
+  // Scroll to top of page
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -133,6 +127,7 @@ export const useMenuNavigation = () => {
     });
   };
 
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (scrollTimeoutRef.current) {
@@ -152,3 +147,4 @@ export const useMenuNavigation = () => {
     setupScrollHighlighting
   };
 };
+
