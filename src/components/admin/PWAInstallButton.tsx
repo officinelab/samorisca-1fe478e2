@@ -22,8 +22,8 @@ const PWAInstallButton: React.FC = () => {
         setIsInstalled(true);
       }
       
-      // Check if running as PWA on mobile
-      if (window.navigator.standalone === true) {
+      // Check if running as PWA on mobile (iOS Safari)
+      if ((window.navigator as any).standalone === true) {
         setIsInstalled(true);
       }
     };
