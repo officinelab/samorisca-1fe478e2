@@ -1,5 +1,5 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useHeaderHeight } from "./useHeaderHeight";
 
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -8,6 +8,8 @@ export const useMenuNavigation = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { headerHeight } = useHeaderHeight();
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -52,8 +54,8 @@ export const useMenuNavigation = () => {
       {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
+        // Usa l'altezza header calcolata dinamicamente
+        rootMargin: `-${headerHeight}px 0px -40% 0px`
       }
     );
 
@@ -74,7 +76,7 @@ export const useMenuNavigation = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll]);
+  }, [isManualScroll, headerHeight]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -84,7 +86,7 @@ export const useMenuNavigation = () => {
     };
     
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial scroll position
+    handleScroll();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -104,8 +106,8 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'offset considerando header + category sidebar
-      const yOffset = -110; // Ridotto da -130
+      // Usa l'altezza header calcolata dinamicamente
+      const yOffset = -headerHeight;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({

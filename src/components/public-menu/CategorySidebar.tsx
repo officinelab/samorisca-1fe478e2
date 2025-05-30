@@ -1,7 +1,7 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
+import { useHeaderHeight } from '@/hooks/public-menu/useHeaderHeight';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -24,24 +24,8 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [headerHeight, setHeaderHeight] = React.useState(76);
-
-  // Calcola dinamicamente l'altezza dell'header solo se non è preview
-  React.useEffect(() => {
-    if (isPreview) return;
-    
-    const calculateHeaderHeight = () => {
-      const header = document.querySelector('header');
-      if (header) {
-        setHeaderHeight(header.offsetHeight);
-      }
-    };
-
-    calculateHeaderHeight();
-    window.addEventListener('resize', calculateHeaderHeight);
-    
-    return () => window.removeEventListener('resize', calculateHeaderHeight);
-  }, [isPreview]);
+  
+  const { headerHeight } = useHeaderHeight();
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -87,12 +71,12 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con auto-scroll
-  // Usa positioning diverso per preview vs produzione
+  // MOBILE: barra orizzontale con zero spazio dall'header
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
     : "sticky z-50 w-full bg-white border-b border-gray-200";
     
+  // Usa l'altezza header calcolata dinamicamente per eliminare completamente lo spazio
   const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
 
   return (
