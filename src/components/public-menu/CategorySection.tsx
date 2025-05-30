@@ -2,8 +2,7 @@
 import React from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product, Category } from "@/types/database";
-import { useDeviceView } from "@/hooks/public-menu/useDeviceView";
-import { useHeaderHeight } from "@/hooks/public-menu/useHeaderHeight";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { LazyProductList } from "./category-section/LazyProductList";
 import { CategorySectionHeader } from "./category-section/CategorySectionHeader";
 import { EmptyProductsMessage } from "./category-section/EmptyProductsMessage";
@@ -41,20 +40,11 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
   fontSettings,
   buttonSettings
 }) => {
-  const { isMobile } = useDeviceView(deviceView);
-  const { headerHeight } = useHeaderHeight();
-  
-  // Calcolo unificato dello scroll margin
-  const MOBILE_SIDEBAR_HEIGHT = 73;
-  const SCROLL_MARGIN = 16;
-  const scrollMarginPx = headerHeight + (isMobile ? MOBILE_SIDEBAR_HEIGHT : 0) + SCROLL_MARGIN;
+  const isMobile = useIsMobile();
 
   return (
-    <section 
-      id={`category-${category.id}`} 
-      style={{ scrollMarginTop: `${scrollMarginPx}px` }}
-    >
-      <CategorySectionHeader 
+    <section id={`category-${category.id}`} className="scroll-mt-28">
+        <CategorySectionHeader 
         category={category} 
         language={language} 
       />

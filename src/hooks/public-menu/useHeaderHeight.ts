@@ -2,27 +2,28 @@
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 /**
- * Hook semplificato per calcolare l'altezza dell'header
- * Usa valori CSS fissi per evitare loop infiniti
+ * Hook per calcolare l'altezza unificata dell'header
+ * Considera la visibilità del nome del ristorante
  */
 export const useHeaderHeight = () => {
   const { siteSettings } = useSiteSettings();
   
-  // Valori CSS fissi basati sul design reale
-  const BASE_HEADER_HEIGHT = 72; // Header principale fisso
-  const RESTAURANT_NAME_HEIGHT = 36; // Altezza aggiuntiva quando c'è il nome
+  // Altezza base dell'header (pt-4 + logo + spazi)
+  const BASE_HEIGHT = 70;
   
+  // Altezza aggiuntiva se il nome del ristorante è visibile (mt-2 + testo + pb-2)
+  const NAME_HEIGHT = 32;
+  
+  // Calcola se il nome è visibile (default: true se non specificato)
   const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
   
-  // Calcolo semplice e deterministico
-  const headerHeight = showRestaurantName 
-    ? BASE_HEADER_HEIGHT + RESTAURANT_NAME_HEIGHT 
-    : BASE_HEADER_HEIGHT;
+  // Altezza totale
+  const headerHeight = BASE_HEIGHT + (showRestaurantName ? NAME_HEIGHT : 0);
   
   return {
     headerHeight,
     showRestaurantName,
-    baseHeight: BASE_HEADER_HEIGHT,
-    nameHeight: showRestaurantName ? RESTAURANT_NAME_HEIGHT : 0
+    baseHeight: BASE_HEIGHT,
+    nameHeight: showRestaurantName ? NAME_HEIGHT : 0
   };
 };
