@@ -58,7 +58,7 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
 
   if (currentView === 'categories') {
     return (
-      <div className="h-full">
+      <div className={dashboardStyles.mobileContainer}>
         <CategoriesList
           categories={categories}
           selectedCategoryId={selectedCategoryId}
@@ -78,63 +78,66 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
   }
 
   if (currentView === 'products') {
-    // DEBUG before ProductsList
-    console.log('=== Dashboard rendering ProductsList ===');
-    console.log('Passing products:', products.length);
-    console.log('Passing reorderingProductsList:', reorderingProductsList.length);
-
     return (
-      <div className="h-full">
-        <div className="flex items-center p-4 border-b">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className={dashboardStyles.mobileBackButton}
-            onClick={() => setCurrentView('categories')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-lg font-semibold">
-            Prodotti {selectedCategory && `- ${selectedCategory.title}`}
-          </h2>
+      <div className={dashboardStyles.mobileContainer}>
+        <div className={dashboardStyles.mobileHeader}>
+          <div className="flex items-center w-full">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className={dashboardStyles.mobileBackButton}
+              onClick={() => setCurrentView('categories')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h2 className={dashboardStyles.mobileTitle}>
+              Prodotti {selectedCategory && `- ${selectedCategory.title}`}
+            </h2>
+          </div>
         </div>
-        <ProductsList
-          products={products}
-          selectedProductId={selectedProductId}
-          selectedCategory={selectedCategory}
-          isReorderingProducts={isReorderingProducts}
-          reorderingProductsList={reorderingProductsList}
-          onProductSelect={handleProductSelectMobile}
-          onStartReordering={startReorderingProducts}
-          onCancelReordering={cancelReorderingProducts}
-          onMoveProduct={moveProductInList}
-          onSaveReorder={saveReorderProducts}
-          onEditProduct={handleEditProduct}
-          onDeleteProduct={deleteProduct}
-          onAddProduct={handleAddProduct}
-        />
+        <div className={dashboardStyles.mobileContent}>
+          <ProductsList
+            products={products}
+            selectedProductId={selectedProductId}
+            selectedCategory={selectedCategory}
+            isReorderingProducts={isReorderingProducts}
+            reorderingProductsList={reorderingProductsList}
+            onProductSelect={handleProductSelectMobile}
+            onStartReordering={startReorderingProducts}
+            onCancelReordering={cancelReorderingProducts}
+            onMoveProduct={moveProductInList}
+            onSaveReorder={saveReorderProducts}
+            onEditProduct={handleEditProduct}
+            onDeleteProduct={deleteProduct}
+            onAddProduct={handleAddProduct}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full">
-      <div className="flex items-center p-4 border-b">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className={dashboardStyles.mobileBackButton}
-          onClick={() => setCurrentView('products')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-lg font-semibold">Dettagli Prodotto</h2>
+    <div className={dashboardStyles.mobileContainer}>
+      <div className={dashboardStyles.mobileHeader}>
+        <div className="flex items-center w-full">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className={dashboardStyles.mobileBackButton}
+            onClick={() => setCurrentView('products')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className={dashboardStyles.mobileTitle}>Dettagli Prodotto</h2>
+        </div>
       </div>
-      <ProductDetail
-        product={selectedProduct}
-        selectedCategory={selectedCategory}
-        onEditProduct={() => handleEditProduct(selectedProduct!)}
-      />
+      <div className={dashboardStyles.mobileContent}>
+        <ProductDetail
+          product={selectedProduct}
+          selectedCategory={selectedCategory}
+          onEditProduct={() => handleEditProduct(selectedProduct!)}
+        />
+      </div>
     </div>
   );
 };
