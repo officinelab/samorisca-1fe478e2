@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -8,6 +9,19 @@ export const useMenuNavigation = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { siteSettings } = useSiteSettings();
+  
+  // Calcolo unificato dell'altezza header (stesso del CategorySidebar)
+  const getHeaderHeight = useCallback(() => {
+    // Struttura header:
+    // - pt-4 (16px) + logo h-12 (48px) + spazio interno (~20px) = ~84px base
+    // - Se showRestaurantNameInMenuBar: aggiunge mt-2 + pb-2 + altezza testo (~24px)
+    const baseHeight = 84;
+    const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
+    const nameHeight = showRestaurantName ? 24 : 0;
+    
+    return baseHeight + nameHeight;
+  }, [siteSettings]);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -23,40 +37,14 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    // Calcola l'altezza dinamica dell'header + category sidebar con type casting
-    const calculateOffsets = () => {
-      const header = document.querySelector('header') as HTMLElement;
-      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar') as HTMLElement;
-      
-      let totalOffset = 120; // Fallback per desktop
-      
-      if (header) {
-        totalOffset = header.offsetHeight;
-      }
-      
-      if (mobileCategorySidebar) {
-        totalOffset += mobileCategorySidebar.offsetHeight;
-      }
-      
-      console.log('Calculated total offset for observer:', totalOffset);
-      return totalOffset;
-    };
+    const totalOffset = getHeaderHeight();
 
-    const totalOffset = calculateOffsets();
-
-    // Create new intersection observer con configurazione migliorata
+    // Create new intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return;
         
-        console.log('Observer entries:', entries.map(e => ({
-          id: e.target.id,
-          isIntersecting: e.isIntersecting,
-          intersectionRatio: e.intersectionRatio,
-          boundingRect: e.boundingClientRect
-        })));
-        
-        // Logica migliorata per rilevare la categoria più prominente
+        // Logica per rilevare la categoria più prominente
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
@@ -74,28 +62,24 @@ export const useMenuNavigation = () => {
         
         if (visibleEntries.length > 0) {
           const categoryId = visibleEntries[0].target.id.replace('category-', '');
-          console.log('Setting active category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        // Soglie più semplici ma efficaci
         threshold: [0, 0.1, 0.3, 0.5, 0.7],
-        // rootMargin migliorato per il rilevamento
-        rootMargin: `-${totalOffset + 10}px 0px -30% 0px`
+        // rootMargin senza offset aggiuntivi
+        rootMargin: `-${totalOffset}px 0px -30% 0px`
       }
     );
 
     observerRef.current = observer;
 
-    // Setup dell'observer con retry automatico
+    // Setup dell'observer
     const setupObserver = () => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
-      console.log('Found category elements:', categoryElements.length);
       
       if (categoryElements.length === 0) {
-        console.warn('No category elements found, retrying in 300ms...');
         setTimeout(setupObserver, 300);
         return;
       }
@@ -103,12 +87,10 @@ export const useMenuNavigation = () => {
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
-          console.log('Observing category:', element.id);
         }
       });
     };
 
-    // Delay iniziale più lungo per assicurarsi che tutto sia renderizzato
     setTimeout(setupObserver, 250);
 
     return () => {
@@ -116,7 +98,7 @@ export const useMenuNavigation = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll]);
+  }, [isManualScroll, getHeaderHeight]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -141,29 +123,15 @@ export const useMenuNavigation = () => {
   
   // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
-    console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'offset considerando header + category sidebar mobile con type casting
-      const header = document.querySelector('header') as HTMLElement;
-      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar') as HTMLElement;
+      // Usa lo stesso calcolo dell'altezza del CategorySidebar
+      const totalOffset = getHeaderHeight();
       
-      let yOffset = -120; // Fallback
-      
-      if (header) {
-        yOffset = -(header.offsetHeight + 10);
-      }
-      
-      if (mobileCategorySidebar) {
-        yOffset -= mobileCategorySidebar.offsetHeight;
-      }
-      
-      console.log('Scrolling with offset:', yOffset);
-      
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const y = element.getBoundingClientRect().top + window.pageYOffset - totalOffset;
       
       window.scrollTo({
         top: y,
@@ -176,7 +144,6 @@ export const useMenuNavigation = () => {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
-      console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
     }, 1500);
   };
