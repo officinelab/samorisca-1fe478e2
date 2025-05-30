@@ -24,23 +24,39 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [headerHeight, setHeaderHeight] = React.useState(76);
+  const [headerHeight, setHeaderHeight] = React.useState(() => {
+    // Calcolo iniziale più accurato dell'altezza header
+    // Header include: padding (pt-4 + pb-2 = 24px), logo (48px), nome ristorante (line-height ~28px)
+    // Margini e spacing aggiuntivi: ~24px
+    return isPreview ? 76 : 124; // Stima più realistica per il primo render
+  });
 
-  // Calcola dinamicamente l'altezza dell'header solo se non è preview
-  React.useEffect(() => {
+  // Calcolo immediato e più accurato dell'altezza dell'header
+  React.useLayoutEffect(() => {
     if (isPreview) return;
     
     const calculateHeaderHeight = () => {
       const header = document.querySelector('header');
       if (header) {
-        setHeaderHeight(header.offsetHeight);
+        const computedHeight = header.offsetHeight;
+        console.log('Header height calculated:', computedHeight);
+        setHeaderHeight(computedHeight);
       }
     };
 
+    // Calcolo immediato
     calculateHeaderHeight();
+    
+    // Calcolo dopo un breve delay per assicurarsi che tutto sia renderizzato
+    const timeoutId = setTimeout(calculateHeaderHeight, 100);
+    
+    // Listener per resize
     window.addEventListener('resize', calculateHeaderHeight);
     
-    return () => window.removeEventListener('resize', calculateHeaderHeight);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', calculateHeaderHeight);
+    };
   }, [isPreview]);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
