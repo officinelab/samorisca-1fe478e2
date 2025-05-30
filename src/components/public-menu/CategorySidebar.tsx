@@ -2,7 +2,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -25,22 +24,40 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  
-  const { siteSettings } = useSiteSettings();
-  
-  // Calcolo semplificato dell'altezza header basato sulla struttura CSS reale
-  const getHeaderHeight = () => {
-    if (isPreview) return 76;
+  const [headerHeight, setHeaderHeight] = React.useState(() => {
+    // Calcolo iniziale più accurato dell'altezza header
+    // Header include: padding (pt-4 + pb-2 = 24px), logo (48px), nome ristorante (line-height ~28px)
+    // Margini e spacing aggiuntivi: ~24px
+    return isPreview ? 76 : 124; // Stima più realistica per il primo render
+  });
+
+  // Calcolo immediato e più accurato dell'altezza dell'header
+  React.useLayoutEffect(() => {
+    if (isPreview) return;
     
-    // Struttura header:
-    // - pt-4 (16px) + logo h-12 (48px) + spazio interno (~20px) = ~84px base
-    // - Se showRestaurantNameInMenuBar: aggiunge mt-2 + pb-2 + altezza testo (~24px)
-    const baseHeight = 84;
-    const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
-    const nameHeight = showRestaurantName ? 24 : 0;
+    const calculateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        const computedHeight = header.offsetHeight;
+        console.log('Header height calculated:', computedHeight);
+        setHeaderHeight(computedHeight);
+      }
+    };
+
+    // Calcolo immediato
+    calculateHeaderHeight();
     
-    return baseHeight + nameHeight;
-  };
+    // Calcolo dopo un breve delay per assicurarsi che tutto sia renderizzato
+    const timeoutId = setTimeout(calculateHeaderHeight, 100);
+    
+    // Listener per resize
+    window.addEventListener('resize', calculateHeaderHeight);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', calculateHeaderHeight);
+    };
+  }, [isPreview]);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -86,14 +103,19 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale semplificata
-  const headerHeight = getHeaderHeight();
-  
+  // MOBILE: barra orizzontale con auto-scroll
+  // Usa positioning diverso per preview vs produzione
+  const positioningClasses = isPreview 
+    ? "relative z-50 w-full bg-white border-b border-gray-200"
+    : "sticky z-50 w-full bg-white border-b border-gray-200";
+    
+  const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
+
   return (
     <div 
       id="mobile-category-sidebar"
-      className={`${isPreview ? 'relative' : 'sticky'} z-50 w-full bg-white border-b border-gray-200`}
-      style={isPreview ? {} : { top: `${headerHeight}px` }}
+      className={positioningClasses}
+      style={topStyle}
       data-sidebar="mobile"
     >
       <div className="relative">

@@ -1,6 +1,5 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -9,19 +8,6 @@ export const useMenuNavigation = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { siteSettings } = useSiteSettings();
-  
-  // Calcolo unificato dell'altezza header (stesso del CategorySidebar)
-  const getHeaderHeight = useCallback(() => {
-    // Struttura header:
-    // - pt-4 (16px) + logo h-12 (48px) + spazio interno (~20px) = ~84px base
-    // - Se showRestaurantNameInMenuBar: aggiunge mt-2 + pb-2 + altezza testo (~24px)
-    const baseHeight = 84;
-    const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
-    const nameHeight = showRestaurantName ? 24 : 0;
-    
-    return baseHeight + nameHeight;
-  }, [siteSettings]);
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -37,27 +23,25 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    const totalOffset = getHeaderHeight();
-
     // Create new intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return;
         
-        // Logica per rilevare la categoria più prominente
+        // Trova tutte le categorie visibili
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
-            // Priorità alla categoria che è più vicina alla parte superiore del viewport
-            const aDistance = Math.abs(a.boundingClientRect.top - totalOffset);
-            const bDistance = Math.abs(b.boundingClientRect.top - totalOffset);
+            // Se una categoria è al top del viewport (o molto vicina), ha priorità
+            const aTop = a.boundingClientRect.top;
+            const bTop = b.boundingClientRect.top;
             
-            // Se una categoria è molto vicina al top offset, ha priorità
-            if (aDistance < 50 && bDistance >= 50) return -1;
-            if (bDistance < 50 && aDistance >= 50) return 1;
+            // Priorità alla categoria più vicina al top del viewport
+            if (Math.abs(aTop) < 50) return -1;
+            if (Math.abs(bTop) < 50) return 1;
             
-            // Altrimenti usa l'intersection ratio
-            return b.intersectionRatio - a.intersectionRatio;
+            // Altrimenti ordina per posizione verticale
+            return aTop - bTop;
           });
         
         if (visibleEntries.length > 0) {
@@ -67,38 +51,30 @@ export const useMenuNavigation = () => {
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.3, 0.5, 0.7],
-        // rootMargin senza offset aggiuntivi
-        rootMargin: `-${totalOffset}px 0px -30% 0px`
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
       }
     );
 
     observerRef.current = observer;
 
-    // Setup dell'observer
-    const setupObserver = () => {
+    // Osserva tutte le sezioni categoria con un piccolo delay
+    setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
-      
-      if (categoryElements.length === 0) {
-        setTimeout(setupObserver, 300);
-        return;
-      }
-      
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
         }
       });
-    };
-
-    setTimeout(setupObserver, 250);
+    }, 100);
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll, getHeaderHeight]);
+  }, [isManualScroll]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -128,10 +104,9 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Usa lo stesso calcolo dell'altezza del CategorySidebar
-      const totalOffset = getHeaderHeight();
-      
-      const y = element.getBoundingClientRect().top + window.pageYOffset - totalOffset;
+      // Calcola l'offset considerando header + category sidebar
+      const yOffset = -110; // Ridotto da -130
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
         top: y,
@@ -145,7 +120,7 @@ export const useMenuNavigation = () => {
     }
     scrollTimeoutRef.current = setTimeout(() => {
       setIsManualScroll(false);
-    }, 1500);
+    }, 1000);
   };
   
   // Scroll to top of page
