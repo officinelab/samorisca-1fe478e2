@@ -3,6 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { useHeaderHeight } from '@/hooks/public-menu/useHeaderHeight';
+import { useDeviceView } from '@/hooks/public-menu/useDeviceView';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -27,10 +28,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   }>({});
   
   const { headerHeight } = useHeaderHeight();
+  const { isMobile } = useDeviceView(deviceView);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
-    if (deviceView === 'mobile' && selectedCategory && categoryRefs.current[selectedCategory] && scrollContainerRef.current) {
+    if (isMobile && selectedCategory && categoryRefs.current[selectedCategory] && scrollContainerRef.current) {
       const button = categoryRefs.current[selectedCategory];
       const container = scrollContainerRef.current;
       if (button) {
@@ -44,10 +46,10 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
         });
       }
     }
-  }, [selectedCategory, deviceView]);
+  }, [selectedCategory, isMobile]);
 
   // DESKTOP: mantieni lo stile originale
-  if (deviceView === 'desktop') {
+  if (!isMobile) {
     return (
       <div className="col-span-1">
         <div className={`${isPreview ? 'relative' : 'sticky top-24'} z-30 bg-gray-50`}>
@@ -72,12 +74,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con zero spazio dall'header
+  // MOBILE: posizionamento preciso senza gap
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
     : "sticky z-50 w-full bg-white border-b border-gray-200";
     
-  // Usa l'altezza header calcolata dinamicamente per eliminare completamente lo spazio
   const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
 
   return (

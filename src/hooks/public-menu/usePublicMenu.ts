@@ -65,17 +65,17 @@ export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: Use
   const { siteSettings, isLoading: isLoadingSiteSettings } = useSiteSettings();
   const { t } = usePublicMenuUiStrings(language);
 
-  // Re-setup scroll highlighting quando cambiano le categorie o la lingua
+  // Setup scroll highlighting quando cambiano le categorie
   useEffect(() => {
     if (categories.length > 0) {
-      // Piccolo delay per assicurarsi che il DOM sia aggiornato
+      // Delay ridotto per migliore responsività
       const timeoutId = setTimeout(() => {
         setupScrollHighlighting();
-      }, 200);
+      }, 150);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [categories, language, setupScrollHighlighting]);
+  }, [categories.length, setupScrollHighlighting]);
 
   // Inizializza la categoria selezionata quando arrivano le categorie
   useEffect(() => {

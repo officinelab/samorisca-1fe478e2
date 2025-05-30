@@ -2,6 +2,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useHeaderHeight } from "./useHeaderHeight";
 
+const MOBILE_SIDEBAR_HEIGHT = 73;
+const SCROLL_MARGIN = 16;
+
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -18,73 +21,107 @@ export const useMenuNavigation = () => {
     }
   };
 
-  // INTERSECTION OBSERVER con protezione completa dalla race condition
+  // Calcola offset totale una sola volta per evitare re-render
+  const getTotalOffset = useCallback(() => {
+    const isMobile = window.innerWidth < 768;
+    return headerHeight + (isMobile ? MOBILE_SIDEBAR_HEIGHT : 0) + SCROLL_MARGIN;
+  }, [headerHeight]);
+
+  // Sistema di scroll migliorato con debouncing
+  const scrollToCategory = useCallback((categoryId: string) => {
+    console.log('🚀 Scrolling to category:', categoryId);
+    
+    // Imposta immediatamente lo stato per evitare interferenze
+    setIsManualScroll(true);
+    setSelectedCategory(categoryId);
+
+    const element = document.getElementById(`category-${categoryId}`);
+    if (element) {
+      const totalOffset = getTotalOffset();
+      const elementTop = element.offsetTop;
+      const scrollPosition = Math.max(0, elementTop - totalOffset);
+      
+      console.log('📍 Scroll data:', {
+        categoryId,
+        headerHeight,
+        totalOffset,
+        elementTop,
+        scrollPosition
+      });
+      
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+
+    // Debouncing per il flag manual scroll
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      console.log('✅ Manual scroll completed');
+      setIsManualScroll(false);
+    }, 1000);
+  }, [headerHeight, getTotalOffset]);
+
+  // Intersection Observer semplificato e robusto
   const setupScrollHighlighting = useCallback(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
 
-    // Calcola l'offset per mobile (considerando la sidebar)
-    const isMobile = window.innerWidth < 768;
-    const mobileSidebarHeight = isMobile ? 73 : 0; // Dal debug precedente
-    const totalOffset = headerHeight + mobileSidebarHeight + 16; // +16px di margine
+    const totalOffset = getTotalOffset();
     
     const observer = new IntersectionObserver(
       (entries) => {
-        // PROTEZIONE CRITICA: non cambiare categoria durante scroll manuale
         if (isManualScroll) {
-          console.log('🚫 Manual scroll in progress, ignoring intersection changes');
+          console.log('🚫 Manual scroll active, skipping observer');
           return;
         }
         
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
-            const aTop = a.boundingClientRect.top;
-            const bTop = b.boundingClientRect.top;
-            
-            // Priorità alla categoria più vicina alla posizione target
-            const targetPos = totalOffset;
-            const aDistance = Math.abs(aTop - targetPos);
-            const bDistance = Math.abs(bTop - targetPos);
-            
+            const aDistance = Math.abs(a.boundingClientRect.top - totalOffset);
+            const bDistance = Math.abs(b.boundingClientRect.top - totalOffset);
             return aDistance - bDistance;
           });
         
         if (visibleEntries.length > 0) {
           const categoryId = visibleEntries[0].target.id.replace('category-', '');
-          console.log('🎯 Auto-selecting category:', categoryId);
+          console.log('🎯 Observer selecting category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.3, 0.5],
-        // Usa l'offset totale calcolato dinamicamente
+        threshold: [0, 0.2, 0.5],
         rootMargin: `-${totalOffset}px 0px -50% 0px`
       }
     );
 
     observerRef.current = observer;
 
-    // Delay maggiore per assicurare che il DOM sia stabile
+    // Ritardo fisso per stabilità
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
-      console.log(`🔍 Setting up observer for ${categoryElements.length} categories`);
+      console.log(`🔍 Observing ${categoryElements.length} categories`);
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
         }
       });
-    }, 500); // Aumentato a 500ms
+    }, 300);
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll, headerHeight]);
+  }, [getTotalOffset, isManualScroll]);
 
+  // Setup degli event listener
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -99,60 +136,20 @@ export const useMenuNavigation = () => {
     };
   }, []);
 
+  // Setup observer - solo quando cambiano le dipendenze essenziali
   useEffect(() => {
     const cleanup = setupScrollHighlighting();
     return cleanup;
   }, [setupScrollHighlighting]);
   
-  // SCROLL CORRETTO con protezione dalla race condition
-  const scrollToCategory = (categoryId: string) => {
-    console.log('🚀 Manual scroll to category:', categoryId);
-    
-    // PROTEZIONE 1: Setta il flag prima di tutto
-    setIsManualScroll(true);
-    setSelectedCategory(categoryId);
-
-    const element = document.getElementById(`category-${categoryId}`);
-    if (element) {
-      // Calcola l'offset dinamicamente
-      const isMobile = window.innerWidth < 768;
-      const mobileSidebarHeight = isMobile ? 73 : 0;
-      const totalOffset = headerHeight + mobileSidebarHeight + 16;
-      
-      const elementTop = element.offsetTop;
-      const scrollPosition = Math.max(0, elementTop - totalOffset);
-      
-      console.log('📍 Scroll calculation:', {
-        headerHeight,
-        mobileSidebarHeight,
-        totalOffset,
-        elementTop,
-        scrollPosition
-      });
-      
-      window.scrollTo({
-        top: scrollPosition,
-        behavior: 'smooth'
-      });
-    }
-
-    // PROTEZIONE 2: Timeout più lungo per evitare interferenze
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      console.log('✅ Manual scroll completed, re-enabling auto-detection');
-      setIsManualScroll(false);
-    }, 1500); // Aumentato a 1500ms per evitare interferenze
-  };
-  
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
-  };
+  }, []);
 
+  // Cleanup finale
   useEffect(() => {
     return () => {
       if (scrollTimeoutRef.current) {
@@ -169,6 +166,7 @@ export const useMenuNavigation = () => {
     scrollToCategory,
     scrollToTop,
     initializeCategory,
-    setupScrollHighlighting
+    setupScrollHighlighting,
+    getTotalOffset // Esporta per uso esterno
   };
 };
