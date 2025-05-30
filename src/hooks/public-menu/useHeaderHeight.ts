@@ -1,29 +1,45 @@
 
+import { useState, useEffect } from "react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 /**
- * Hook per calcolare l'altezza unificata dell'header
- * Considera la visibilità del nome del ristorante
+ * Hook per calcolare l'altezza REALE dell'header dinamicamente
  */
 export const useHeaderHeight = () => {
   const { siteSettings } = useSiteSettings();
+  const [headerHeight, setHeaderHeight] = useState(72); // Valore iniziale dal debug
   
-  // Altezza base dell'header (pt-4 + logo + spazi)
-  const BASE_HEIGHT = 70;
+  // Calcola l'altezza reale dell'header dal DOM
+  useEffect(() => {
+    const calculateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        const realHeight = header.offsetHeight;
+        setHeaderHeight(realHeight);
+      }
+    };
+
+    // Calcola subito
+    calculateHeaderHeight();
+    
+    // Ri-calcola quando cambia la finestra (per sicurezza)
+    window.addEventListener('resize', calculateHeaderHeight);
+    
+    // Ri-calcola con un piccolo delay per assicurarsi che il DOM sia aggiornato
+    const timeout = setTimeout(calculateHeaderHeight, 100);
+    
+    return () => {
+      window.removeEventListener('resize', calculateHeaderHeight);
+      clearTimeout(timeout);
+    };
+  }, [siteSettings?.showRestaurantNameInMenuBar, siteSettings?.restaurantName]);
   
-  // Altezza aggiuntiva se il nome del ristorante è visibile (mt-2 + testo + pb-2)
-  const NAME_HEIGHT = 32;
-  
-  // Calcola se il nome è visibile (default: true se non specificato)
   const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
-  
-  // Altezza totale
-  const headerHeight = BASE_HEIGHT + (showRestaurantName ? NAME_HEIGHT : 0);
   
   return {
     headerHeight,
     showRestaurantName,
-    baseHeight: BASE_HEIGHT,
-    nameHeight: showRestaurantName ? NAME_HEIGHT : 0
+    baseHeight: headerHeight, // Ora è sempre corretto
+    nameHeight: 0 // Non più necessario calcolare separatamente
   };
 };
