@@ -1,5 +1,4 @@
 
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useHeaderHeight } from "./useHeaderHeight";
 
@@ -55,9 +54,9 @@ export const useMenuNavigation = () => {
       },
       {
         root: null,
-        threshold: [0.5],
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
         // Usa l'altezza header calcolata dinamicamente
-        rootMargin: `-${headerHeight}px 0px -50% 0px`
+        rootMargin: `-${headerHeight}px 0px -40% 0px`
       }
     );
 
@@ -101,16 +100,24 @@ export const useMenuNavigation = () => {
     return cleanup;
   }, [setupScrollHighlighting]);
   
-  // Scroll to selected category (manual selection) - versione migliorata con scrollIntoView
+  // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
-
+    
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Usa l'altezza header calcolata dinamicamente
+      const yOffset = -headerHeight;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
     }
-
+    
+    // Reset manual scroll flag dopo l'animazione
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
@@ -147,4 +154,3 @@ export const useMenuNavigation = () => {
     setupScrollHighlighting
   };
 };
-
