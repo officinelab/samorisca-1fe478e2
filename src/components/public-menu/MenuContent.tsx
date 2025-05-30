@@ -92,7 +92,11 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     >
       <div className="space-y-10 pb-16">
         {categories.map((category, idx) => (
-          <React.Fragment key={category.id}>
+          <div 
+            key={category.id} 
+            id={`category-container-${category.id}`}
+            className="scroll-mt-28"
+          >
             <CategorySection 
               category={category}
               products={products[category.id] || []}
@@ -127,7 +131,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
                 </span>
               </div>
             )}
-          </React.Fragment>
+          </div>
         ))}
 
         {isLoading && <CategorySectionSkeleton />}

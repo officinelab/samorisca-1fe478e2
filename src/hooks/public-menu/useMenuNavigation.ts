@@ -1,5 +1,4 @@
 
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useHeaderHeight } from "./useHeaderHeight";
 
@@ -35,29 +34,18 @@ export const useMenuNavigation = () => {
         // Trova tutte le categorie visibili
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
-          .sort((a, b) => {
-            // Se una categoria è al top del viewport (o molto vicina), ha priorità
-            const aTop = a.boundingClientRect.top;
-            const bTop = b.boundingClientRect.top;
-            
-            // Priorità alla categoria più vicina al top del viewport
-            if (Math.abs(aTop) < 50) return -1;
-            if (Math.abs(bTop) < 50) return 1;
-            
-            // Altrimenti ordina per posizione verticale
-            return aTop - bTop;
-          });
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         
         if (visibleEntries.length > 0) {
-          const categoryId = visibleEntries[0].target.id.replace('category-', '');
+          // CAMBIA QUI: estrai l'ID dal container invece che dalla section
+          const categoryId = visibleEntries[0].target.id.replace('category-container-', '');
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        threshold: [0.5],
-        // Usa l'altezza header calcolata dinamicamente
-        rootMargin: `-${headerHeight}px 0px -50% 0px`
+        threshold: 0.3,
+        rootMargin: '-100px 0px -50% 0px'
       }
     );
 
@@ -65,20 +53,21 @@ export const useMenuNavigation = () => {
 
     // Osserva tutte le sezioni categoria con un piccolo delay
     setTimeout(() => {
-      const categoryElements = document.querySelectorAll('[id^="category-"]');
-      categoryElements.forEach((element) => {
+      // CAMBIA QUI: osserva i container invece delle section
+      const categoryContainers = document.querySelectorAll('[id^="category-container-"]');
+      categoryContainers.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
         }
       });
-    }, 100);
+    }, 300);
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll, headerHeight]);
+  }, [isManualScroll]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -101,20 +90,27 @@ export const useMenuNavigation = () => {
     return cleanup;
   }, [setupScrollHighlighting]);
   
-  // Scroll to selected category (manual selection) - versione migliorata con scrollIntoView
+  // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
+    console.log('🚀 Manual scroll to category:', categoryId);
+    
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
 
-    const element = document.getElementById(`category-${categoryId}`);
+    // CAMBIA QUI: target il container invece della section
+    const element = document.getElementById(`category-container-${categoryId}`);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
     }
 
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
+      console.log('✅ Manual scroll completed');
       setIsManualScroll(false);
     }, 1000);
   };
@@ -147,4 +143,3 @@ export const useMenuNavigation = () => {
     setupScrollHighlighting
   };
 };
-
