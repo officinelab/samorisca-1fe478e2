@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -24,68 +25,22 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [headerHeight, setHeaderHeight] = React.useState(() => {
-    // Calcolo iniziale più accurato basato sulla struttura reale dell'header
-    // Header include: padding top (pt-4 = 16px), logo (h-12 = 48px), padding bottom + nome ristorante + padding (circa 66px)
-    return isPreview ? 76 : 130; // Stima più accurata per il primo render
-  });
-
-  // Calcolo migliorato e più affidabile dell'altezza dell'header
-  React.useLayoutEffect(() => {
-    if (isPreview) return;
+  
+  const { siteSettings } = useSiteSettings();
+  
+  // Calcolo semplificato dell'altezza header basato sulla struttura CSS reale
+  const getHeaderHeight = () => {
+    if (isPreview) return 76;
     
-    const calculateHeaderHeight = () => {
-      const header = document.querySelector('header') as HTMLElement;
-      if (header) {
-        // Forza un reflow per assicurarsi che le dimensioni siano accurate
-        const computedHeight = header.getBoundingClientRect().height;
-        console.log('Header height calculated (getBoundingClientRect):', computedHeight);
-        
-        // Verifica che il valore sia ragionevole (tra 100 e 200px)
-        if (computedHeight >= 100 && computedHeight <= 200) {
-          setHeaderHeight(computedHeight);
-        } else {
-          console.warn('Header height seems incorrect, using fallback:', computedHeight);
-          setHeaderHeight(130); // Fallback sicuro
-        }
-      } else {
-        console.warn('Header element not found, using fallback height');
-        setHeaderHeight(130);
-      }
-    };
-
-    // Calcolo immediato con requestAnimationFrame per timing ottimale
-    const performCalculation = () => {
-      requestAnimationFrame(() => {
-        calculateHeaderHeight();
-      });
-    };
-
-    // Calcolo immediato
-    performCalculation();
+    // Struttura header:
+    // - pt-4 (16px) + logo h-12 (48px) + spazio interno (~20px) = ~84px base
+    // - Se showRestaurantNameInMenuBar: aggiunge mt-2 + pb-2 + altezza testo (~24px)
+    const baseHeight = 84;
+    const showRestaurantName = siteSettings?.showRestaurantNameInMenuBar !== false;
+    const nameHeight = showRestaurantName ? 24 : 0;
     
-    // Calcolo di backup dopo un delay più lungo per catturare eventuali layout asincroni
-    const timeoutId = setTimeout(performCalculation, 200);
-    
-    // Secondo backup dopo un delay ancora più lungo
-    const timeoutId2 = setTimeout(performCalculation, 500);
-    
-    // Listener per resize con debounce
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(performCalculation, 100);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(timeoutId2);
-      clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isPreview]);
+    return baseHeight + nameHeight;
+  };
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -131,20 +86,14 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con posizionamento migliorato
-  const positioningClasses = isPreview 
-    ? "relative z-50 w-full bg-white border-b border-gray-200"
-    : "sticky z-50 w-full bg-white border-b border-gray-200 transition-all duration-200";
-    
-  const topStyle = isPreview ? {} : { top: `${headerHeight}px` };
-
-  console.log('CategorySidebar render - headerHeight:', headerHeight, 'isPreview:', isPreview);
-
+  // MOBILE: barra orizzontale semplificata
+  const headerHeight = getHeaderHeight();
+  
   return (
     <div 
       id="mobile-category-sidebar"
-      className={positioningClasses}
-      style={topStyle}
+      className={`${isPreview ? 'relative' : 'sticky'} z-50 w-full bg-white border-b border-gray-200`}
+      style={isPreview ? {} : { top: `${headerHeight}px` }}
       data-sidebar="mobile"
     >
       <div className="relative">
