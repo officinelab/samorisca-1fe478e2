@@ -2,7 +2,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Category } from '@/types/database';
 import { Button } from '@/components/ui/button';
-import { useHeaderHeight } from '@/hooks/public-menu/useHeaderHeight';
 
 interface CategorySidebarProps {
   categories: Category[];
@@ -25,8 +24,24 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
   const categoryRefs = useRef<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  
-  const { headerHeight } = useHeaderHeight();
+  const [headerHeight, setHeaderHeight] = React.useState(76);
+
+  // Calcola dinamicamente l'altezza dell'header solo se non è preview
+  React.useEffect(() => {
+    if (isPreview) return;
+    
+    const calculateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        setHeaderHeight(header.offsetHeight);
+      }
+    };
+
+    calculateHeaderHeight();
+    window.addEventListener('resize', calculateHeaderHeight);
+    
+    return () => window.removeEventListener('resize', calculateHeaderHeight);
+  }, [isPreview]);
 
   // Auto-scroll quando cambia la categoria selezionata (solo per mobile)
   useEffect(() => {
@@ -34,6 +49,7 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
       const button = categoryRefs.current[selectedCategory];
       const container = scrollContainerRef.current;
       if (button) {
+        // Calcola la posizione per centrare il bottone nel container
         const buttonRect = button.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
         const scrollLeft = button.offsetLeft - containerRect.width / 2 + buttonRect.width / 2;
@@ -71,7 +87,8 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
     );
   }
 
-  // MOBILE: barra orizzontale con calcolo header unificato
+  // MOBILE: barra orizzontale con auto-scroll
+  // Usa positioning diverso per preview vs produzione
   const positioningClasses = isPreview 
     ? "relative z-50 w-full bg-white border-b border-gray-200"
     : "sticky z-50 w-full bg-white border-b border-gray-200";
@@ -108,10 +125,12 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({
           })}
         </div>
         
+        {/* Gradienti per indicare che c'è altro contenuto scrollabile */}
         <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-white via-white to-transparent pointer-events-none"></div>
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white via-white to-transparent pointer-events-none"></div>
       </div>
       
+      {/* Inline style per no-scrollbar */}
       <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;

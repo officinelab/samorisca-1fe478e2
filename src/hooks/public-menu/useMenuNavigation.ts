@@ -1,6 +1,5 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useHeaderHeight } from "./useHeaderHeight";
 
 export const useMenuNavigation = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -9,8 +8,6 @@ export const useMenuNavigation = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const { headerHeight } = useHeaderHeight();
   
   // Set initial category when categories are loaded
   const initializeCategory = (categoryId: string | null) => {
@@ -31,15 +28,19 @@ export const useMenuNavigation = () => {
       (entries) => {
         if (isManualScroll) return;
         
+        // Trova tutte le categorie visibili
         const visibleEntries = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
+            // Se una categoria è al top del viewport (o molto vicina), ha priorità
             const aTop = a.boundingClientRect.top;
             const bTop = b.boundingClientRect.top;
             
+            // Priorità alla categoria più vicina al top del viewport
             if (Math.abs(aTop) < 50) return -1;
             if (Math.abs(bTop) < 50) return 1;
             
+            // Altrimenti ordina per posizione verticale
             return aTop - bTop;
           });
         
@@ -51,13 +52,14 @@ export const useMenuNavigation = () => {
       {
         root: null,
         threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Usa l'altezza header calcolata dinamicamente per il rootMargin
-        rootMargin: `-${headerHeight}px 0px -40% 0px`
+        // Aggiusta il rootMargin per considerare l'header sticky
+        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
       }
     );
 
     observerRef.current = observer;
 
+    // Osserva tutte le sezioni categoria con un piccolo delay
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       categoryElements.forEach((element) => {
@@ -72,7 +74,7 @@ export const useMenuNavigation = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [isManualScroll, headerHeight]);
+  }, [isManualScroll]);
 
   // Handle scroll to detect when to show back to top button
   useEffect(() => {
@@ -82,7 +84,7 @@ export const useMenuNavigation = () => {
     };
     
     window.addEventListener('scroll', handleScroll);
-    handleScroll();
+    handleScroll(); // Check initial scroll position
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -102,8 +104,8 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Usa l'altezza header calcolata dinamicamente, ZERO offset aggiuntivo
-      const yOffset = -headerHeight;
+      // Calcola l'offset considerando header + category sidebar
+      const yOffset = -110; // Ridotto da -130
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
@@ -112,6 +114,7 @@ export const useMenuNavigation = () => {
       });
     }
     
+    // Reset manual scroll flag dopo l'animazione
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
