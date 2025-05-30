@@ -23,10 +23,10 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    // Calcola l'altezza dinamica dell'header + category sidebar
+    // Calcola l'altezza dinamica dell'header + category sidebar con type casting
     const calculateOffsets = () => {
-      const header = document.querySelector('header');
-      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar');
+      const header = document.querySelector('header') as HTMLElement;
+      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar') as HTMLElement;
       
       let totalOffset = 120; // Fallback per desktop
       
@@ -56,27 +56,19 @@ export const useMenuNavigation = () => {
           boundingRect: e.boundingClientRect
         })));
         
-        // Trova le categorie visibili con una logica migliorata
+        // Logica migliorata per rilevare la categoria più prominente
         const visibleEntries = entries
-          .filter(entry => {
-            // Una categoria è considerata visibile se:
-            // 1. È intersecting
-            // 2. Ha almeno il 10% visibile OPPURE è la prima categoria visibile dall'alto
-            return entry.isIntersecting && (
-              entry.intersectionRatio > 0.1 ||
-              entry.boundingClientRect.top <= totalOffset + 50
-            );
-          })
+          .filter(entry => entry.isIntersecting)
           .sort((a, b) => {
-            // Priorità alla categoria più vicina al top del viewport
-            const aTop = Math.abs(a.boundingClientRect.top);
-            const bTop = Math.abs(b.boundingClientRect.top);
+            // Priorità alla categoria che è più vicina alla parte superiore del viewport
+            const aDistance = Math.abs(a.boundingClientRect.top - totalOffset);
+            const bDistance = Math.abs(b.boundingClientRect.top - totalOffset);
             
-            // Se una categoria è molto vicina al top (entro 100px), ha massima priorità
-            if (aTop < 100 && bTop >= 100) return -1;
-            if (bTop < 100 && aTop >= 100) return 1;
+            // Se una categoria è molto vicina al top offset, ha priorità
+            if (aDistance < 50 && bDistance >= 50) return -1;
+            if (bDistance < 50 && aDistance >= 50) return 1;
             
-            // Altrimenti priorità a quella con maggiore intersectionRatio
+            // Altrimenti usa l'intersection ratio
             return b.intersectionRatio - a.intersectionRatio;
           });
         
@@ -88,19 +80,25 @@ export const useMenuNavigation = () => {
       },
       {
         root: null,
-        // Soglie più granulari per un rilevamento migliore
-        threshold: [0, 0.1, 0.2, 0.3, 0.5],
-        // rootMargin aggiustato dinamicamente
-        rootMargin: `-${totalOffset}px 0px -20% 0px`
+        // Soglie più semplici ma efficaci
+        threshold: [0, 0.1, 0.3, 0.5, 0.7],
+        // rootMargin migliorato per il rilevamento
+        rootMargin: `-${totalOffset + 10}px 0px -30% 0px`
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con delay aumentato
-    setTimeout(() => {
+    // Setup dell'observer con retry automatico
+    const setupObserver = () => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
       console.log('Found category elements:', categoryElements.length);
+      
+      if (categoryElements.length === 0) {
+        console.warn('No category elements found, retrying in 300ms...');
+        setTimeout(setupObserver, 300);
+        return;
+      }
       
       categoryElements.forEach((element) => {
         if (observerRef.current) {
@@ -108,20 +106,10 @@ export const useMenuNavigation = () => {
           console.log('Observing category:', element.id);
         }
       });
-      
-      // Se non troviamo categorie, riprova dopo un altro delay
-      if (categoryElements.length === 0) {
-        console.warn('No category elements found, retrying...');
-        setTimeout(() => {
-          const retryElements = document.querySelectorAll('[id^="category-"]');
-          retryElements.forEach((element) => {
-            if (observerRef.current) {
-              observerRef.current.observe(element);
-            }
-          });
-        }, 500);
-      }
-    }, 200); // Aumentato da 100ms
+    };
+
+    // Delay iniziale più lungo per assicurarsi che tutto sia renderizzato
+    setTimeout(setupObserver, 250);
 
     return () => {
       if (observerRef.current) {
@@ -159,9 +147,9 @@ export const useMenuNavigation = () => {
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'offset considerando header + category sidebar mobile
-      const header = document.querySelector('header');
-      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar');
+      // Calcola l'offset considerando header + category sidebar mobile con type casting
+      const header = document.querySelector('header') as HTMLElement;
+      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar') as HTMLElement;
       
       let yOffset = -120; // Fallback
       
@@ -183,14 +171,14 @@ export const useMenuNavigation = () => {
       });
     }
     
-    // Reset manual scroll flag dopo l'animazione con delay più lungo
+    // Reset manual scroll flag dopo l'animazione
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
       console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1500); // Aumentato da 1000ms
+    }, 1500);
   };
   
   // Scroll to top of page
