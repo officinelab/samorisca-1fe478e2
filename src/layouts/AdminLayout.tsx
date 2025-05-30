@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,12 +13,26 @@ import {
   Languages
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import PWAInstallButton from "@/components/admin/PWAInstallButton";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
+
+  // Register service worker only for admin routes
+  useEffect(() => {
+    if ('serviceWorker' in navigator && window.location.pathname.startsWith('/admin')) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/admin/' })
+        .then((registration) => {
+          console.log('PWA: Service Worker registered for admin scope', registration);
+        })
+        .catch((error) => {
+          console.log('PWA: Service Worker registration failed', error);
+        });
+    }
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -53,7 +68,7 @@ const AdminLayout = () => {
                 onLogout={handleLogout} 
                 navItems={navItems}
                 sidebarLogo={siteSettings?.sidebarLogo} 
-                key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
+                key={siteSettings?.sidebarLogo}
               />
             </div>
           </div>
@@ -66,7 +81,7 @@ const AdminLayout = () => {
           onLogout={handleLogout} 
           navItems={navItems} 
           sidebarLogo={siteSettings?.sidebarLogo}
-          key={siteSettings?.sidebarLogo} // Add key to force re-render when logo changes
+          key={siteSettings?.sidebarLogo}
         />
       </div>
 
@@ -76,14 +91,17 @@ const AdminLayout = () => {
           <div className="flex-1">
             <h1 className="text-xl font-semibold">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
-          <div className="lg:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+          <div className="flex items-center gap-3">
+            <PWAInstallButton />
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -119,10 +137,9 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
             alt="Logo" 
             className="h-21 w-auto max-w-full" 
             onError={handleLogoError}
-            key={sidebarLogo} // Add key to force re-render when logo changes
+            key={sidebarLogo}
           />
         ) : (
-          // Mostra solo uno sfondo grigio chiaro, NESSUN logo di default
           <div 
             className="h-21 w-40 rounded bg-gray-100 border flex items-center justify-center"
             style={{ minHeight: 84, minWidth: 160 }} 
