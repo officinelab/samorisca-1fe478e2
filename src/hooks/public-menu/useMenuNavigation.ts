@@ -23,51 +23,105 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    // Create new intersection observer
+    // Calcola l'altezza dinamica dell'header + category sidebar
+    const calculateOffsets = () => {
+      const header = document.querySelector('header');
+      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar');
+      
+      let totalOffset = 120; // Fallback per desktop
+      
+      if (header) {
+        totalOffset = header.offsetHeight;
+      }
+      
+      if (mobileCategorySidebar) {
+        totalOffset += mobileCategorySidebar.offsetHeight;
+      }
+      
+      console.log('Calculated total offset for observer:', totalOffset);
+      return totalOffset;
+    };
+
+    const totalOffset = calculateOffsets();
+
+    // Create new intersection observer con configurazione migliorata
     const observer = new IntersectionObserver(
       (entries) => {
         if (isManualScroll) return;
         
-        // Trova tutte le categorie visibili
+        console.log('Observer entries:', entries.map(e => ({
+          id: e.target.id,
+          isIntersecting: e.isIntersecting,
+          intersectionRatio: e.intersectionRatio,
+          boundingRect: e.boundingClientRect
+        })));
+        
+        // Trova le categorie visibili con una logica migliorata
         const visibleEntries = entries
-          .filter(entry => entry.isIntersecting)
+          .filter(entry => {
+            // Una categoria è considerata visibile se:
+            // 1. È intersecting
+            // 2. Ha almeno il 10% visibile OPPURE è la prima categoria visibile dall'alto
+            return entry.isIntersecting && (
+              entry.intersectionRatio > 0.1 ||
+              entry.boundingClientRect.top <= totalOffset + 50
+            );
+          })
           .sort((a, b) => {
-            // Se una categoria è al top del viewport (o molto vicina), ha priorità
-            const aTop = a.boundingClientRect.top;
-            const bTop = b.boundingClientRect.top;
-            
             // Priorità alla categoria più vicina al top del viewport
-            if (Math.abs(aTop) < 50) return -1;
-            if (Math.abs(bTop) < 50) return 1;
+            const aTop = Math.abs(a.boundingClientRect.top);
+            const bTop = Math.abs(b.boundingClientRect.top);
             
-            // Altrimenti ordina per posizione verticale
-            return aTop - bTop;
+            // Se una categoria è molto vicina al top (entro 100px), ha massima priorità
+            if (aTop < 100 && bTop >= 100) return -1;
+            if (bTop < 100 && aTop >= 100) return 1;
+            
+            // Altrimenti priorità a quella con maggiore intersectionRatio
+            return b.intersectionRatio - a.intersectionRatio;
           });
         
         if (visibleEntries.length > 0) {
           const categoryId = visibleEntries[0].target.id.replace('category-', '');
+          console.log('Setting active category:', categoryId);
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
-        // Aggiusta il rootMargin per considerare l'header sticky
-        rootMargin: '-100px 0px -40% 0px' // Ridotto da -120px
+        // Soglie più granulari per un rilevamento migliore
+        threshold: [0, 0.1, 0.2, 0.3, 0.5],
+        // rootMargin aggiustato dinamicamente
+        rootMargin: `-${totalOffset}px 0px -20% 0px`
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con un piccolo delay
+    // Osserva tutte le sezioni categoria con delay aumentato
     setTimeout(() => {
       const categoryElements = document.querySelectorAll('[id^="category-"]');
+      console.log('Found category elements:', categoryElements.length);
+      
       categoryElements.forEach((element) => {
         if (observerRef.current) {
           observerRef.current.observe(element);
+          console.log('Observing category:', element.id);
         }
       });
-    }, 100);
+      
+      // Se non troviamo categorie, riprova dopo un altro delay
+      if (categoryElements.length === 0) {
+        console.warn('No category elements found, retrying...');
+        setTimeout(() => {
+          const retryElements = document.querySelectorAll('[id^="category-"]');
+          retryElements.forEach((element) => {
+            if (observerRef.current) {
+              observerRef.current.observe(element);
+            }
+          });
+        }, 500);
+      }
+    }, 200); // Aumentato da 100ms
 
     return () => {
       if (observerRef.current) {
@@ -99,13 +153,28 @@ export const useMenuNavigation = () => {
   
   // Scroll to selected category (manual selection)
   const scrollToCategory = (categoryId: string) => {
+    console.log('Manual scroll to category:', categoryId);
     setIsManualScroll(true);
     setSelectedCategory(categoryId);
     
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      // Calcola l'offset considerando header + category sidebar
-      const yOffset = -110; // Ridotto da -130
+      // Calcola l'offset considerando header + category sidebar mobile
+      const header = document.querySelector('header');
+      const mobileCategorySidebar = document.querySelector('#mobile-category-sidebar');
+      
+      let yOffset = -120; // Fallback
+      
+      if (header) {
+        yOffset = -(header.offsetHeight + 10);
+      }
+      
+      if (mobileCategorySidebar) {
+        yOffset -= mobileCategorySidebar.offsetHeight;
+      }
+      
+      console.log('Scrolling with offset:', yOffset);
+      
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       
       window.scrollTo({
@@ -114,13 +183,14 @@ export const useMenuNavigation = () => {
       });
     }
     
-    // Reset manual scroll flag dopo l'animazione
+    // Reset manual scroll flag dopo l'animazione con delay più lungo
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     scrollTimeoutRef.current = setTimeout(() => {
+      console.log('Resetting manual scroll flag');
       setIsManualScroll(false);
-    }, 1000);
+    }, 1500); // Aumentato da 1000ms
   };
   
   // Scroll to top of page
