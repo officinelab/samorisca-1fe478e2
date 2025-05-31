@@ -11,20 +11,25 @@ export const useMenuNavigation = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
-  // Usa offset unificato con categoryManagement: headerHeight + 20px
-  const SCROLL_OFFSET = headerHeight + 20;
+  // Usa lo stesso offset unificato in tutto il sistema
+  const UNIFIED_OFFSET = headerHeight + 20;
   
   const { findActiveCategory } = useCategoryPositions();
   
   const updateActiveCategory = useCallback(() => {
-    if (isUserScrolling) return;
+    // Non aggiornare se l'utente sta scrollando programmaticamente
+    if (isUserScrolling) {
+      console.log('Skipping category update - user is scrolling programmatically');
+      return;
+    }
     
-    const newActiveCategory = findActiveCategory(window.scrollY, SCROLL_OFFSET);
+    const newActiveCategory = findActiveCategory(window.scrollY, UNIFIED_OFFSET);
     
     if (newActiveCategory && newActiveCategory !== activeCategory) {
+      console.log(`Natural scroll - updating active category to: ${newActiveCategory}`);
       setActiveCategory(newActiveCategory);
     }
-  }, [activeCategory, findActiveCategory, isUserScrolling, SCROLL_OFFSET]);
+  }, [activeCategory, findActiveCategory, isUserScrolling, UNIFIED_OFFSET]);
 
   const { scrollToCategory, scrollToTop, initializeCategory } = useCategoryManagement({
     headerHeight,

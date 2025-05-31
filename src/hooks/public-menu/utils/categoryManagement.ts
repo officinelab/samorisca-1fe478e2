@@ -14,97 +14,83 @@ export const useCategoryManagement = ({
   setIsUserScrolling,
   setActiveCategory
 }: UseCategoryManagementProps) => {
+  
+  // Offset unificato per tutto il sistema
+  const UNIFIED_OFFSET = headerHeight + 20;
+
   const scrollToCategory = useCallback((categoryId: string) => {
     const element = document.getElementById(`category-container-${categoryId}`);
     if (!element) return;
     
-    // Attendi che il layout sia stabile prima di scrollare
-    const performScroll = () => {
-      setIsUserScrolling(true);
-      setActiveCategory(categoryId);
-      
-      // Usa offset unificato: headerHeight + 20px per margine extra
-      const targetY = element.offsetTop - headerHeight - 20;
-      const finalPosition = Math.max(0, targetY);
-      
-      console.log(`Scrolling to category ${categoryId}:`, {
-        elementTop: element.offsetTop,
-        headerHeight,
-        targetY,
-        finalPosition
-      });
-      
-      window.scrollTo({
-        top: finalPosition,
-        behavior: 'smooth'
-      });
-      
-      // Sistema di retry per garantire precisione
-      let retryCount = 0;
-      const maxRetries = 3;
-      
-      const checkScrollComplete = () => {
-        const currentScroll = window.scrollY;
-        const tolerance = 20; // Tolleranza ridotta per maggiore precisione
-        
-        console.log(`Scroll check ${retryCount + 1}:`, {
-          currentScroll,
-          finalPosition,
-          difference: Math.abs(currentScroll - finalPosition)
-        });
-        
-        if (Math.abs(currentScroll - finalPosition) <= tolerance) {
-          // Scroll completato correttamente
-          setTimeout(() => setIsUserScrolling(false), 150);
-        } else if (retryCount < maxRetries) {
-          // Retry se non siamo nella posizione corretta
-          retryCount++;
-          setTimeout(() => {
-            const newScroll = window.scrollY;
-            if (Math.abs(newScroll - currentScroll) < 5) {
-              // Lo scroll si è fermato ma non nella posizione corretta, riprova
-              console.log(`Retry scroll ${retryCount} for category ${categoryId}`);
-              window.scrollTo({
-                top: finalPosition,
-                behavior: 'smooth'
-              });
-              setTimeout(checkScrollComplete, 800);
-            } else {
-              // Lo scroll è ancora in corso
-              setTimeout(checkScrollComplete, 300);
-            }
-          }, 300);
-        } else {
-          // Massimo tentativi raggiunto, termina comunque
-          console.log(`Max retries reached for category ${categoryId}`);
-          setIsUserScrolling(false);
-        }
-      };
-      
-      // Inizia il controllo dopo un delay per permettere l'inizio dello scroll
-      setTimeout(checkScrollComplete, 1000);
-    };
+    console.log(`Starting scroll to category ${categoryId}`);
     
-    // Verifica se il layout è stabile (immagini caricate, elementi renderizzati)
-    const checkLayoutStability = () => {
-      const images = element.querySelectorAll('img');
-      const allImagesLoaded = Array.from(images).every(img => img.complete);
+    // Imposta immediatamente la categoria come attiva
+    setActiveCategory(categoryId);
+    setIsUserScrolling(true);
+    
+    // Calcola la posizione target usando l'offset unificato
+    const targetY = element.offsetTop - UNIFIED_OFFSET;
+    const finalPosition = Math.max(0, targetY);
+    
+    console.log(`Scroll calculation:`, {
+      elementTop: element.offsetTop,
+      unifiedOffset: UNIFIED_OFFSET,
+      targetY,
+      finalPosition
+    });
+    
+    // Scroll con comportamento smooth
+    window.scrollTo({
+      top: finalPosition,
+      behavior: 'smooth'
+    });
+    
+    // Sistema di controllo preciso del completamento scroll
+    let checkCount = 0;
+    const maxChecks = 20; // Massimo 4 secondi di controllo
+    const tolerance = 15; // Tolleranza ridotta per maggiore precisione
+    
+    const checkScrollCompletion = () => {
+      const currentScroll = window.scrollY;
+      const difference = Math.abs(currentScroll - finalPosition);
       
-      if (allImagesLoaded || images.length === 0) {
-        performScroll();
+      console.log(`Scroll check ${checkCount + 1}:`, {
+        currentScroll,
+        finalPosition,
+        difference,
+        tolerance
+      });
+      
+      if (difference <= tolerance) {
+        // Scroll completato - mantieni la categoria selezionata e sblocca il sistema
+        console.log(`Scroll completed successfully for category ${categoryId}`);
+        setTimeout(() => {
+          setIsUserScrolling(false);
+        }, 200); // Delay maggiore per evitare interferenze
+        return;
+      }
+      
+      checkCount++;
+      if (checkCount < maxChecks) {
+        // Continua a controllare
+        setTimeout(checkScrollCompletion, 200);
       } else {
-        // Attendi il caricamento delle immagini
-        setTimeout(performScroll, 200);
+        // Timeout raggiunto - forza il completamento
+        console.log(`Scroll timeout reached for category ${categoryId}, forcing completion`);
+        setIsUserScrolling(false);
       }
     };
     
-    // Piccolo delay per permettere il rendering completo
-    setTimeout(checkLayoutStability, 100);
-  }, [headerHeight, setIsUserScrolling, setActiveCategory]);
+    // Inizia il controllo dopo un delay per permettere l'inizio dello scroll
+    setTimeout(checkScrollCompletion, 500);
+    
+  }, [headerHeight, UNIFIED_OFFSET, setIsUserScrolling, setActiveCategory]);
 
   const scrollToTop = useCallback(() => {
+    setIsUserScrolling(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+    setTimeout(() => setIsUserScrolling(false), 1000);
+  }, [setIsUserScrolling]);
 
   const initializeCategory = useCallback((categoryId: string | null, activeCategory: string | null) => {
     if (categoryId && !activeCategory) {

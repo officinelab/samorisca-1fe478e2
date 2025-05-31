@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Category, Product, ProductFeature } from "@/types/database";
 import { CategoryNote } from "@/types/categoryNotes";
@@ -94,7 +95,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           <div 
             key={category.id} 
             id={`category-container-${category.id}`}
-            className="scroll-mt-20"
+            className="scroll-mt-24"
           >
             <CategorySection 
               category={category}
