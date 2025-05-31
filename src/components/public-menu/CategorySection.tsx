@@ -42,6 +42,9 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
 }) => {
   const isMobile = useIsMobile();
 
+  // Mostra skeleton solo se stiamo caricando E non abbiamo prodotti per questa categoria
+  const showProductsLoadingSkeleton = isLoading && (!products || products.length === 0);
+
   return (
     <section id={`category-container-${category.id}`}>
       <CategorySectionHeader 
@@ -49,7 +52,7 @@ export const CategorySection: React.FC<CategorySectionProps> = ({
         language={language} 
       />
       
-      {isLoading ? (
+      {showProductsLoadingSkeleton ? (
         <div className="space-y-4">
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-24 w-full" />

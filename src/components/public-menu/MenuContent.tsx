@@ -85,6 +85,9 @@ export const MenuContent: React.FC<MenuContentProps> = ({
     setExpandedAccordion(value);
   };
 
+  // Mostra skeleton solo se stiamo caricando E non abbiamo ancora categorie
+  const showInitialLoadingSkeleton = isLoading && categories.length === 0;
+
   return (
     <div
       className={deviceView === 'desktop' ? 'col-span-3' : ''}
@@ -100,7 +103,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
             <CategorySection 
               category={category}
               products={products[category.id] || []}
-              isLoading={isLoading}
+              isLoading={false}
               onSelectProduct={setSelectedProduct}
               addToCart={addToCart}
               deviceView={deviceView}
@@ -134,7 +137,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           </div>
         ))}
 
-        {isLoading && <CategorySectionSkeleton />}
+        {showInitialLoadingSkeleton && <CategorySectionSkeleton />}
 
         {/* Accordion unificato per info allergeni e info prodotti */}
         <div className="pt-6 border-t">
