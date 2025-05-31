@@ -26,41 +26,67 @@ export const useMenuNavigation = () => {
       observerRef.current.disconnect();
     }
 
-    // Create new intersection observer
+    // INTERSECTION OBSERVER COMPLETAMENTE RICOSTRUITO
     const observer = new IntersectionObserver(
       (entries) => {
-        if (isManualScroll) return;
+        if (isManualScroll) {
+          console.log('🚫 Manual scroll in progress, ignoring intersection changes');
+          return;
+        }
         
-        // Trova tutte le categorie visibili
-        const visibleEntries = entries
-          .filter(entry => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        console.log(`👁️ Intersection Observer triggered with ${entries.length} entries`);
         
-        if (visibleEntries.length > 0) {
-          // CAMBIA QUI: estrai l'ID dal container invece che dalla section
-          const categoryId = visibleEntries[0].target.id.replace('category-container-', '');
+        // Trova il container più visibile usando calcolo diretto
+        let mostVisible = null;
+        let maxVisibility = 0;
+        
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const rect = entry.boundingClientRect;
+            const viewportHeight = window.innerHeight;
+            
+            // Calcola visibilità più accurato
+            const visibleTop = Math.max(rect.top, 0);
+            const visibleBottom = Math.min(rect.bottom, viewportHeight);
+            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+            const visibility = visibleHeight / rect.height;
+            
+            console.log(`   - ${entry.target.id}: ${(visibility * 100).toFixed(1)}% visible`);
+            
+            if (visibility > maxVisibility && visibility > 0.1) { // Soglia molto bassa
+              maxVisibility = visibility;
+              mostVisible = entry.target;
+            }
+          }
+        });
+        
+        if (mostVisible && maxVisibility > 0.1) {
+          const categoryId = mostVisible.id.replace('category-container-', '');
+          console.log(`🎯 Updating category to: ${categoryId} (${(maxVisibility * 100).toFixed(1)}% visible)`);
           setSelectedCategory(categoryId);
         }
       },
       {
         root: null,
-        threshold: 0.3,
-        rootMargin: '-100px 0px -50% 0px'
+        // SOGLIE MULTIPLE per catturare ogni cambiamento
+        threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        // ROOT MARGIN più permissivo
+        rootMargin: '-50px 0px -200px 0px'
       }
     );
 
     observerRef.current = observer;
 
-    // Osserva tutte le sezioni categoria con un piccolo delay
-    setTimeout(() => {
-      // CAMBIA QUI: osserva i container invece delle section
-      const categoryContainers = document.querySelectorAll('[id^="category-container-"]');
-      categoryContainers.forEach((element) => {
-        if (observerRef.current) {
-          observerRef.current.observe(element);
-        }
-      });
-    }, 300);
+    // SETUP IMMEDIATO senza delay
+    const categoryContainers = document.querySelectorAll('[id^="category-container-"]');
+    console.log(`🔍 Setting up observer for ${categoryContainers.length} category containers`);
+    
+    categoryContainers.forEach((container, index) => {
+      if (observerRef.current) {
+        observerRef.current.observe(container);
+        console.log(`   - Observing: ${container.id}`);
+      }
+    });
 
     return () => {
       if (observerRef.current) {
