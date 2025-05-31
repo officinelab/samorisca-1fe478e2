@@ -18,6 +18,21 @@
     <!-- PWA Manifest (only for admin routes) -->
     <link rel="manifest" href="/manifest.json" media="(display-mode: standalone)" />
 
+    <!-- Font preload ottimizzato per ridurre FOUT -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- CSS fallback fonts per ridurre il font flashing -->
+    <style>
+      /* Fallback font stack più preciso per ridurre il FOUT */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+      
+      /* Font display swap per Google Fonts */
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
+    </style>
+
     <meta property="og:title" content="Sa Morisca Gestionale" />
     <meta property="og:description" content="officine Lab Design software Solution" />
     <meta property="og:type" content="website" />

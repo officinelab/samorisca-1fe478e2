@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { preloadCommonFonts } from "@/hooks/useDynamicGoogleFont";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { usePublicMenuUiStrings } from "@/hooks/public-menu/usePublicMenuUiStrings";
 import { usePublicMenuData } from "@/hooks/public-menu/usePublicMenuData";
@@ -17,10 +16,7 @@ interface UsePublicMenuProps {
 export const usePublicMenu = ({ isPreview = false, previewLanguage = 'it' }: UsePublicMenuProps) => {
   const [showAllergensInfo, setShowAllergensInfo] = useState(false);
 
-  // Precarica font comuni al mount per migliorare le performance
-  useEffect(() => {
-    preloadCommonFonts();
-  }, []);
+  // RIMOSSO: preloadCommonFonts() - ora il preload avviene dinamicamente in useFontSettings
 
   const { 
     categories, 

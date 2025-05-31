@@ -1,5 +1,7 @@
 
+import { useEffect } from "react";
 import { SiteSettings } from "@/hooks/site-settings/types";
+import { useDynamicGoogleFont, preloadSpecificFonts } from "@/hooks/useDynamicGoogleFont";
 
 interface FontConfigItem {
   fontFamily: string;
@@ -52,6 +54,27 @@ export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: s
       detail: { fontSize: fontSettingsConfig?.price?.detail?.fontSize || defaultFontSettings.price.detail.fontSize }
     }
   };
+
+  // Precarica i font configurati per il layout corrente
+  useEffect(() => {
+    const uniqueFonts = new Set([
+      fontSettings.title.fontFamily,
+      fontSettings.description.fontFamily,
+      fontSettings.price.fontFamily
+    ]);
+    
+    const fontsArray = Array.from(uniqueFonts).filter(Boolean);
+    
+    if (fontsArray.length > 0) {
+      console.log(`🎨 Preloading fonts for layout ${layoutType}:`, fontsArray);
+      preloadSpecificFonts(fontsArray);
+    }
+  }, [siteSettings, layoutType, fontSettings.title.fontFamily, fontSettings.description.fontFamily, fontSettings.price.fontFamily]);
+
+  // Carica dinamicamente i font individuali
+  useDynamicGoogleFont(fontSettings.title.fontFamily);
+  useDynamicGoogleFont(fontSettings.description.fontFamily);
+  useDynamicGoogleFont(fontSettings.price.fontFamily);
 
   const getCardFontSettings = (view: 'mobile' | 'desktop') => ({
     title: {

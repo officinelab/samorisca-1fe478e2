@@ -34,7 +34,7 @@ export function useDynamicGoogleFont(fontFamily?: string | null) {
     
     console.log(`🔤 Loading Google Font: ${normalizedFont}`);
 
-    // Crea il link per il font
+    // Crea il link per il font con font-display: swap ottimizzato
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?family=${fontKey}:wght@400;500;600;700&display=swap`;
@@ -64,16 +64,16 @@ export function useDynamicGoogleFont(fontFamily?: string | null) {
 }
 
 /**
- * Precarica font comuni per migliorare le performance
+ * Precarica font specifici per migliorare le performance
  */
-export function preloadCommonFonts() {
-  const commonFonts = ['Poppins', 'Open Sans', 'Roboto', 'Inter'];
-  
-  commonFonts.forEach(font => {
+export function preloadSpecificFonts(fontFamilies: string[]) {
+  fontFamilies.forEach(font => {
+    if (!font) return;
+    
     const fontKey = font.replace(/ /g, "+");
     
     if (!loadedFonts.has(fontKey) && !loadingFonts.has(fontKey)) {
-      // Usa un link preload per i font comuni
+      // Usa un link preload per i font specifici
       const preloadLink = document.createElement("link");
       preloadLink.rel = "preload";
       preloadLink.as = "style";
