@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -17,12 +18,8 @@ import PWAInstallButton from "@/components/admin/PWAInstallButton";
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
-
-  // Rilevamento se siamo nella dashboard per applicare padding specifico
-  const isDashboard = location.pathname === '/admin/dashboard';
 
   // Register service worker only for admin routes
   useEffect(() => {
@@ -56,10 +53,10 @@ const AdminLayout = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-2 left-2 z-50 h-12 w-12 touch-manipulation"
+          className="fixed top-4 left-4 z-50"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          {sidebarOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+          {sidebarOpen ? <X /> : <MenuIcon />}
         </Button>
         
         {sidebarOpen && (
@@ -90,9 +87,9 @@ const AdminLayout = () => {
 
       {/* Contenuto principale */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className={`bg-white shadow-sm h-16 flex items-center px-6 ${isDashboard ? 'lg:px-6 px-16' : ''}`}>
+        <header className="bg-white shadow-sm h-16 flex items-center px-6">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold truncate">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
+            <h1 className="text-xl font-semibold">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
           </div>
           <div className="flex items-center gap-3">
             <PWAInstallButton />
@@ -101,7 +98,6 @@ const AdminLayout = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="h-10 w-10 touch-manipulation"
               >
                 <LogOut className="h-5 w-5" />
               </Button>
@@ -109,7 +105,7 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <main className={`flex-1 overflow-hidden ${isDashboard ? 'p-0' : 'p-6'}`}>
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
@@ -160,7 +156,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
               to={item.to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center px-4 py-3 rounded-md transition-colors touch-manipulation min-h-[48px] ${
+                `flex items-center px-4 py-2 rounded-md transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
@@ -177,7 +173,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
       <div className="px-4 mt-6 mb-4">
         <Button
           variant="outline"
-          className="w-full flex items-center justify-center min-h-[48px] touch-manipulation"
+          className="w-full flex items-center justify-center"
           onClick={onLogout}
         >
           <LogOut className="mr-2 h-5 w-5" />
