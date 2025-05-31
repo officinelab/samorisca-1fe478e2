@@ -11,6 +11,7 @@ export const useMenuNavigation = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
+  // Usa un offset consistente con categoryManagement
   const SCROLL_OFFSET = headerHeight + 100;
   
   const { findActiveCategory } = useCategoryPositions();
@@ -45,10 +46,10 @@ export const useMenuNavigation = () => {
     selectedCategory: activeCategory,
     setSelectedCategory: setActiveCategory,
     showBackToTop,
-    menuRef: { current: null }, // Mantenuto per compatibilità con interfaccia esistente
+    menuRef: { current: null },
     scrollToCategory,
     scrollToTop,
     initializeCategory: handleInitializeCategory,
-    setupScrollHighlighting: () => () => {} // Metodo di compatibilità
+    setupScrollHighlighting: () => () => {}
   };
 };

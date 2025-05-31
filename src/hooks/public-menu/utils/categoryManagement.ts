@@ -21,27 +21,40 @@ export const useCategoryManagement = ({
     setIsUserScrolling(true);
     setActiveCategory(categoryId);
     
-    const targetY = element.offsetTop - headerHeight - 32;
+    // Usa lo stesso offset che usa findActiveCategory per consistency
+    const targetY = element.offsetTop - headerHeight - 100;
+    const finalPosition = Math.max(0, targetY);
+    
     window.scrollTo({
-      top: Math.max(0, targetY),
+      top: finalPosition,
       behavior: 'smooth'
     });
     
-    setTimeout(() => {
-      // Verifica che siamo nella posizione corretta prima di riattivare l'auto-detection
+    // Usa un approccio più robusto per detectare quando lo scroll è finito
+    const checkScrollComplete = () => {
       const currentScroll = window.scrollY;
-      const expectedPosition = Math.max(0, targetY);
-      const tolerance = 50; // Tolleranza di 50px
+      const tolerance = 30; // Tolleranza ridotta
       
-      if (Math.abs(currentScroll - expectedPosition) <= tolerance) {
-        setIsUserScrolling(false);
+      if (Math.abs(currentScroll - finalPosition) <= tolerance) {
+        // Scroll completato correttamente
+        setTimeout(() => setIsUserScrolling(false), 100);
       } else {
-        // Se non siamo nella posizione corretta, aspetta ancora un po'
+        // Verifica se lo scroll si è fermato (anche se non nella posizione esatta)
         setTimeout(() => {
-          setIsUserScrolling(false);
-        }, 500);
+          const newScroll = window.scrollY;
+          if (Math.abs(newScroll - currentScroll) < 5) {
+            // Lo scroll si è fermato, riattiva auto-detection
+            setIsUserScrolling(false);
+          } else {
+            // Lo scroll è ancora in corso, ricontrolla
+            checkScrollComplete();
+          }
+        }, 200);
       }
-    }, 2000);
+    };
+    
+    // Inizia il controllo dopo un delay iniziale
+    setTimeout(checkScrollComplete, 1000);
   }, [headerHeight, setIsUserScrolling, setActiveCategory]);
 
   const scrollToTop = useCallback(() => {
