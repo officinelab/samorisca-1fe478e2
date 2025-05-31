@@ -13,8 +13,8 @@ export const useMenuNavigation = () => {
   
   // Calcola l'offset completo dinamicamente
   const calculateTotalOffset = useCallback(() => {
-    const header = document.querySelector('header');
-    const sidebar = document.querySelector('#mobile-category-sidebar');
+    const header = document.querySelector('header') as HTMLElement;
+    const sidebar = document.querySelector('#mobile-category-sidebar') as HTMLElement;
     const headerH = header?.offsetHeight || headerHeight;
     const sidebarH = sidebar?.offsetHeight || 0;
     return headerH + sidebarH + 20; // 20px padding
