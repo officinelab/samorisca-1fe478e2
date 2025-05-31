@@ -99,3 +99,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ottimizzazioni per lo scroll preciso */
+[id^="category-container-"] {
+  /* Migliora la precisione dello scroll */
+  scroll-behavior: smooth;
+  scroll-snap-align: start;
+  
+  /* Previene il layout shift durante il rendering */
+  contain: layout style;
+}
+
+/* Previene il layout shift delle immagini durante il caricamento */
+img {
+  /* Mantiene lo spazio per l'immagine anche prima del caricamento */
+  aspect-ratio: attr(width) / attr(height);
+  
+  /* Migliora le performance del rendering */
+  content-visibility: auto;
+}
+
+/* Ottimizza la sidebar mobile durante lo scroll */
+#mobile-category-sidebar {
+  /* Migliora le performance dello scroll */
+  will-change: transform;
+  
+  /* Previene il flickering su alcuni dispositivi */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Precarica lo spazio per i font custom */
+.font-loading {
+  /* Usa un font di fallback con metriche simili */
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

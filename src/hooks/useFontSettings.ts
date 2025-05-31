@@ -123,3 +123,47 @@ export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: s
     getDetailFontSettings
   };
 };
+// Aggiungi questa funzione nel file useDynamicGoogleFont.ts o dove gestisci i font
+
+export const preloadCriticalFonts = (fonts: string[]) => {
+  // Crea link di preconnect per Google Fonts
+  const preconnectLink = document.createElement('link');
+  preconnectLink.rel = 'preconnect';
+  preconnectLink.href = 'https://fonts.googleapis.com';
+  preconnectLink.crossOrigin = 'anonymous';
+  
+  const preconnectGstatic = document.createElement('link');
+  preconnectGstatic.rel = 'preconnect';
+  preconnectGstatic.href = 'https://fonts.gstatic.com';
+  preconnectGstatic.crossOrigin = 'anonymous';
+  
+  // Aggiungi solo se non esistono già
+  if (!document.querySelector('link[href="https://fonts.googleapis.com"]')) {
+    document.head.appendChild(preconnectLink);
+  }
+  if (!document.querySelector('link[href="https://fonts.gstatic.com"]')) {
+    document.head.appendChild(preconnectGstatic);
+  }
+  
+  // Precarica i font critici
+  fonts.forEach(font => {
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${font.replace(' ', '+')}:wght@400;700&display=swap`;
+    
+    // Crea link di preload
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.as = 'style';
+    preloadLink.href = fontUrl;
+    
+    // Crea link di stylesheet
+    const styleLink = document.createElement('link');
+    styleLink.rel = 'stylesheet';
+    styleLink.href = fontUrl;
+    
+    // Aggiungi solo se non esiste già
+    if (!document.querySelector(`link[href="${fontUrl}"]`)) {
+      document.head.appendChild(preloadLink);
+      document.head.appendChild(styleLink);
+    }
+  });
+};
