@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useHeaderHeight } from './useHeaderHeight';
 import { useCategoryPositions } from './utils/categoryPositions';
 import { useScrollHandling } from './utils/scrollHandling';
@@ -11,7 +11,7 @@ export const useMenuNavigation = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
-  const SCROLL_OFFSET = useMemo(() => headerHeight + 100, [headerHeight]);
+  const SCROLL_OFFSET = headerHeight + 100;
   
   const { findActiveCategory } = useCategoryPositions();
   
@@ -45,10 +45,10 @@ export const useMenuNavigation = () => {
     selectedCategory: activeCategory,
     setSelectedCategory: setActiveCategory,
     showBackToTop,
-    menuRef: { current: null }, // Compatibility with existing interface
+    menuRef: { current: null }, // Mantenuto per compatibilità con interfaccia esistente
     scrollToCategory,
     scrollToTop,
     initializeCategory: handleInitializeCategory,
-    setupScrollHighlighting: () => () => {} // Compatibility method
+    setupScrollHighlighting: () => () => {} // Metodo di compatibilità
   };
 };
