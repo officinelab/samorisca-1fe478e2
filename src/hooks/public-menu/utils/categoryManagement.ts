@@ -1,3 +1,4 @@
+
 import { useCallback, useRef } from 'react';
 
 interface UseCategoryManagementProps {
@@ -19,7 +20,7 @@ export const useCategoryManagement = ({
   // Ref per tracciare se è il primo scroll
   const isFirstScrollRef = useRef(true);
   
-  // Funzione helper per attendere che il DOM sia stabile
+  // Funzione helper per attendere che il DOM sia stabile - versione più aggressiva
   const waitForStableDOM = async (): Promise<void> => {
     return new Promise((resolve) => {
       // Attendi che tutte le immagini nella viewport siano caricate
@@ -35,14 +36,17 @@ export const useCategoryManagement = ({
       // Attendi anche che i font siano pronti
       const fontPromise = document.fonts?.ready || Promise.resolve();
       
-      // Timeout di sicurezza di 1 secondo
-      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 1000));
+      // Timeout di sicurezza ridotto per maggiore reattività
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 500));
       
       // Attendi il primo tra: tutte le immagini + font o timeout
       Promise.race([
         Promise.all([...imagePromises, fontPromise]),
         timeoutPromise
-      ]).then(() => resolve());
+      ]).then(() => {
+        // Aggiungi un piccolo delay aggiuntivo per assicurarsi che il layout sia stabile
+        setTimeout(resolve, 50);
+      });
     });
   };
 
@@ -64,13 +68,19 @@ export const useCategoryManagement = ({
       console.log('First scroll detected, waiting for stable DOM...');
       await waitForStableDOM();
       isFirstScrollRef.current = false;
+    } else {
+      // Per gli scroll successivi, un piccolo delay per il layout
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
     
     // Funzione per eseguire lo scroll con retry
     const performScroll = (attempt: number = 1): void => {
       const maxAttempts = 3;
       
-      // Ricalcola la posizione ad ogni tentativo con offset dinamico
+      // Forza un reflow per assicurarsi che le dimensioni siano aggiornate
+      element.offsetHeight;
+      
+      // Ricalcola la posizione ad ogni tentativo con offset dinamico più preciso
       const currentOffset = calculateTotalOffset();
       const rect = element.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
@@ -99,7 +109,7 @@ export const useCategoryManagement = ({
         window.scrollTo(0, finalPosition);
       }
       
-      // Verifica se lo scroll è andato a buon fine
+      // Verifica se lo scroll è andato a buon fine con delay ridotto
       setTimeout(() => {
         const currentScroll = window.scrollY;
         const difference = Math.abs(currentScroll - finalPosition);
@@ -121,12 +131,12 @@ export const useCategoryManagement = ({
           // Scroll completato o massimo numero di tentativi raggiunto
           console.log(`Scroll ${difference <= tolerance ? 'completed successfully' : 'completed with best effort'} for category ${categoryId}`);
           
-          // Rilascia il controllo dopo un breve delay
+          // Rilascia il controllo con delay ridotto
           setTimeout(() => {
             setIsUserScrolling(false);
-          }, 300);
+          }, 150);
         }
-      }, 600); // Attendi più a lungo per lo smooth scroll
+      }, 200); // Delay ridotto da 600ms a 200ms per verifiche più rapide
     };
     
     // Esegui lo scroll
