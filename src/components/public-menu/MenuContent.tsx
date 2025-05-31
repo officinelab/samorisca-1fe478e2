@@ -94,7 +94,7 @@ export const MenuContent: React.FC<MenuContentProps> = ({
           <div 
             key={category.id} 
             id={`category-container-${category.id}`}
-            className="scroll-mt-16"
+            className="scroll-mt-20"
           >
             <CategorySection 
               category={category}
