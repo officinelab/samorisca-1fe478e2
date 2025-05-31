@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 
 export interface CategoryPosition {
@@ -27,10 +28,14 @@ export const useCategoryPositions = () => {
     // Questo corrisponde a dove appare il top della categoria dopo lo scroll
     const viewportTop = scrollY + offset;
     
+    // Aggiungiamo una tolleranza di 20px per evitare il problema millimetrico
+    const tolerance = 20;
+    
     console.log(`Finding active category:`, {
       scrollY,
       offset,
       viewportTop,
+      tolerance,
       categoriesCount: positions.length
     });
     
@@ -41,14 +46,16 @@ export const useCategoryPositions = () => {
     for (let i = 0; i < positions.length; i++) {
       const category = positions[i];
       
-      // Se il top della categoria è dopo il viewportTop, abbiamo superato la categoria attiva
-      if (category.top > viewportTop) {
+      // Se il top della categoria è dopo il viewportTop + tolleranza, abbiamo superato la categoria attiva
+      if (category.top > viewportTop + tolerance) {
         break;
       }
       
       // Questa categoria è visibile, potrebbe essere quella attiva
+      // Applichiamo la tolleranza: se siamo entro la tolleranza dal top della categoria,
+      // consideriamo questa categoria come attiva
       const distance = Math.abs(category.top - viewportTop);
-      if (distance < closestDistance || category.top <= viewportTop) {
+      if (distance < closestDistance || (category.top <= viewportTop + tolerance)) {
         activeCategory = category.id;
         closestDistance = distance;
       }
