@@ -18,7 +18,7 @@ import PWAInstallButton from "@/components/admin/PWAInstallButton";
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { siteSettings, isLoading } = useSiteSettings();
 
   // Register service worker only for admin routes
@@ -48,32 +48,24 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar per dispositivi mobili */}
-      <div className="lg:hidden">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-4 left-4 z-50"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? <X /> : <MenuIcon />}
-        </Button>
-        
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-40">
-            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)}></div>
-            <div className="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-lg z-50">
-              <SidebarContent 
-                onClose={() => setSidebarOpen(false)} 
-                onLogout={handleLogout} 
-                navItems={navItems}
-                sidebarLogo={siteSettings?.sidebarLogo} 
-                key={siteSettings?.sidebarLogo}
-              />
-            </div>
+      {/* Sidebar overlay per dispositivi mobili */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div 
+            className="fixed inset-0 bg-black/50 transition-opacity" 
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+          <div className="fixed top-0 left-0 bottom-0 w-80 bg-white shadow-xl z-50 transform transition-transform">
+            <SidebarContent 
+              onClose={() => setSidebarOpen(false)} 
+              onLogout={handleLogout} 
+              navItems={navItems}
+              sidebarLogo={siteSettings?.sidebarLogo} 
+              key={siteSettings?.sidebarLogo}
+            />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Sidebar per desktop */}
       <div className="hidden lg:block w-64 bg-white shadow-md">
@@ -87,25 +79,43 @@ const AdminLayout = () => {
 
       {/* Contenuto principale */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm h-16 flex items-center px-6">
-          <div className="flex-1">
-            <h1 className="text-xl font-semibold">{siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}</h1>
+        <header className="bg-white shadow-sm h-14 flex items-center justify-between px-4 lg:px-6 relative z-40">
+          {/* Menu hamburger - posizionato a sinistra con spazio adeguato */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(true)}
+              className="h-10 w-10 p-0"
+            >
+              <MenuIcon className="h-5 w-5" />
+            </Button>
           </div>
-          <div className="flex items-center gap-3">
+          
+          {/* Titolo centrato su mobile, allineato a sinistra su desktop */}
+          <div className="flex-1 lg:flex-none">
+            <h1 className="text-lg lg:text-xl font-semibold text-center lg:text-left px-2 lg:px-0 truncate">
+              {siteSettings?.adminTitle || "Sa Morisca Menu - Amministrazione"}
+            </h1>
+          </div>
+          
+          {/* Azioni a destra */}
+          <div className="flex items-center gap-2">
             <PWAInstallButton />
             <div className="lg:hidden">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
+                className="h-10 w-10 p-0"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-hidden">
           <Outlet />
         </main>
       </div>
@@ -129,26 +139,44 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
   };
 
   return (
-    <div className="h-full flex flex-col py-4">
-      <div className="px-6 py-4 flex items-center justify-center">
+    <div className="h-full flex flex-col">
+      {/* Header del sidebar con pulsante di chiusura */}
+      {onClose && (
+        <div className="flex items-center justify-between p-4 border-b lg:hidden">
+          <span className="font-semibold text-gray-900">Menu</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+      
+      {/* Logo */}
+      <div className="px-6 py-4 flex items-center justify-center border-b lg:border-0">
         {sidebarLogo && !logoError ? (
           <img 
             src={sidebarLogo} 
             alt="Logo" 
-            className="h-21 w-auto max-w-full" 
+            className="h-16 w-auto max-w-full" 
             onError={handleLogoError}
             key={sidebarLogo}
           />
         ) : (
           <div 
-            className="h-21 w-40 rounded bg-gray-100 border flex items-center justify-center"
-            style={{ minHeight: 84, minWidth: 160 }} 
+            className="h-16 w-32 rounded bg-gray-100 border flex items-center justify-center"
             aria-label="Logo Sidebar Placeholder"
-          />
+          >
+            <span className="text-xs text-gray-500">Logo</span>
+          </div>
         )}
       </div>
 
-      <div className="flex-1 px-4 mt-6">
+      {/* Navigation */}
+      <div className="flex-1 px-4 py-6">
         <nav className="space-y-2">
           {navItems.map((item) => (
             <NavLink
@@ -156,24 +184,25 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ onClose, onLogout, navI
               to={item.to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center px-4 py-2 rounded-md transition-colors ${
+                `flex items-center px-4 py-3 rounded-lg transition-colors touch-manipulation min-h-[48px] ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-gray-100 text-gray-700 hover:text-gray-900"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "hover:bg-gray-100 text-gray-700 hover:text-gray-900 active:bg-gray-200"
                 }`
               }
             >
               {item.icon}
-              {item.label}
+              <span className="font-medium">{item.label}</span>
             </NavLink>
           ))}
         </nav>
       </div>
 
-      <div className="px-4 mt-6 mb-4">
+      {/* Logout button */}
+      <div className="px-4 pb-6">
         <Button
           variant="outline"
-          className="w-full flex items-center justify-center"
+          className="w-full flex items-center justify-center h-12 touch-manipulation"
           onClick={onLogout}
         >
           <LogOut className="mr-2 h-5 w-5" />
