@@ -7,8 +7,13 @@ export const useMenuNavigation = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const categoriesMapRef = useRef<Array<{
+    id: string;
+    startY: number;
+    endY: number;
+    element: HTMLElement;
+  }>>([]);
   
   const { headerHeight } = useHeaderHeight();
   
@@ -18,108 +23,161 @@ export const useMenuNavigation = () => {
     }
   };
 
-  // INTERSECTION OBSERVER CON DEBUG AGGRESSIVO
-  const setupScrollHighlighting = useCallback(() => {
-    console.log('🔧 Setting up intersection observer...');
+  // COSTRUISCI MAPPA POSIZIONI CATEGORIE
+  const buildCategoriesMap = useCallback(() => {
+    const containers = document.querySelectorAll('[id^="category-container-"]');
+    const categoriesMap: typeof categoriesMapRef.current = [];
     
-    if (observerRef.current) {
-      console.log('🗑️ Disconnecting existing observer');
-      observerRef.current.disconnect();
+    containers.forEach((container, index) => {
+      const categoryId = container.id.replace('category-container-', '');
+      const startY = container.offsetTop;
+      
+      // Calcola la fine della categoria:
+      // - Se è l'ultima categoria: fino alla fine del container
+      // - Altrimenti: fino all'inizio della categoria successiva
+      let endY;
+      if (index === containers.length - 1) {
+        // Ultima categoria: fino alla fine del suo container
+        endY = startY + container.offsetHeight;
+      } else {
+        // Altre categorie: fino all'inizio della categoria successiva
+        const nextContainer = containers[index + 1] as HTMLElement;
+        endY = nextContainer.offsetTop;
+      }
+      
+      categoriesMap.push({
+        id: categoryId,
+        startY,
+        endY,
+        element: container as HTMLElement
+      });
+    });
+    
+    categoriesMapRef.current = categoriesMap;
+    console.log('📋 Mappa categorie costruita:', categoriesMap.map(c => ({
+      id: c.id,
+      start: c.startY,
+      end: c.endY,
+      height: c.endY - c.startY
+    })));
+    
+    return categoriesMap;
+  }, []);
+
+  // CALCOLA CATEGORIA ATTUALE BASATA SU POSIZIONE SCROLL
+  const calculateCurrentCategory = useCallback(() => {
+    if (isManualScroll) return;
+    
+    const categoriesMap = categoriesMapRef.current;
+    if (categoriesMap.length === 0) {
+      buildCategoriesMap();
+      return;
+    }
+    
+    // Posizione di riferimento: scroll + offset header + margine
+    const referenceY = window.scrollY + headerHeight + 50;
+    
+    // Trova la categoria che contiene la posizione di riferimento
+    let currentCategory = null;
+    
+    for (const category of categoriesMap) {
+      if (referenceY >= category.startY && referenceY < category.endY) {
+        currentCategory = category.id;
+        break;
+      }
+    }
+    
+    // Se non trovata, usa l'ultima categoria visibile
+    if (!currentCategory) {
+      // Trova l'ultima categoria che inizia prima della posizione di riferimento
+      const visibleCategories = categoriesMap.filter(c => c.startY <= referenceY);
+      if (visibleCategories.length > 0) {
+        currentCategory = visibleCategories[visibleCategories.length - 1].id;
+      }
+    }
+    
+    if (currentCategory) {
+      setSelectedCategory(prevCategory => {
+        if (prevCategory !== currentCategory) {
+          console.log(`🎯 Categoria aggiornata: ${prevCategory} → ${currentCategory} (scroll: ${window.scrollY}px, ref: ${referenceY}px)`);
+          return currentCategory;
+        }
+        return prevCategory;
+      });
+    }
+  }, [isManualScroll, headerHeight, buildCategoriesMap]);
+
+  // SCROLL LISTENER OTTIMIZZATO
+  const setupScrollHighlighting = useCallback(() => {
+    // Costruisci mappa iniziale
+    buildCategoriesMap();
+    
+    let ticking = false;
+    
+    const scrollHandler = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          calculateCurrentCategory();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    // Calcola categoria iniziale
+    setTimeout(() => {
+      calculateCurrentCategory();
+    }, 100);
+    
+    // Listener scroll
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    
+    // Ricostruisci mappa su resize
+    const resizeHandler = () => {
+      setTimeout(buildCategoriesMap, 200);
+    };
+    window.addEventListener('resize', resizeHandler);
+    
+    console.log('✅ Sistema scroll posizionale attivato');
+    
+    return () => {
+      window.removeEventListener('scroll', scrollHandler);
+      window.removeEventListener('resize', resizeHandler);
+    };
+  }, [calculateCurrentCategory, buildCategoriesMap]);
+
+  // SCROLL VERSO CATEGORIA
+  const scrollToCategory = (categoryId: string) => {
+    console.log('🚀 Manual scroll to category:', categoryId);
+    
+    setIsManualScroll(true);
+    setSelectedCategory(categoryId);
+
+    const element = document.getElementById(`category-container-${categoryId}`);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        console.log(`🚨 INTERSECTION OBSERVER FIRED! Entries: ${entries.length}, Manual scroll: ${isManualScroll}`);
-        
-        if (isManualScroll) {
-          console.log('🚫 Manual scroll in progress, ignoring intersection changes');
-          return;
-        }
-        
-        // Trova il container più visibile
-        let mostVisible = null;
-        let maxVisibility = 0;
-        
-        entries.forEach(entry => {
-          const rect = entry.boundingClientRect;
-          const id = entry.target.id;
-          
-          console.log(`📊 Entry: ${id}, isIntersecting: ${entry.isIntersecting}, ratio: ${entry.intersectionRatio.toFixed(3)}`);
-          
-          if (entry.isIntersecting) {
-            const viewportHeight = window.innerHeight;
-            const visibleTop = Math.max(rect.top, 0);
-            const visibleBottom = Math.min(rect.bottom, viewportHeight);
-            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-            const visibility = visibleHeight / rect.height;
-            
-            console.log(`   - Visibility: ${(visibility * 100).toFixed(1)}%`);
-            
-            if (visibility > maxVisibility) {
-              maxVisibility = visibility;
-              mostVisible = entry.target;
-            }
-          }
-        });
-        
-        if (mostVisible && maxVisibility > 0.05) { // Soglia bassissima
-          const categoryId = mostVisible.id.replace('category-container-', '');
-          console.log(`🎯 SELECTING CATEGORY: ${categoryId} (${(maxVisibility * 100).toFixed(1)}% visible)`);
-          setSelectedCategory(categoryId);
-        } else {
-          console.log('❌ No suitable category found');
-        }
-      },
-      {
-        root: null,
-        threshold: [0, 0.01, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9, 1.0],
-        rootMargin: '0px 0px -100px 0px' // Semplificato
-      }
-    );
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      console.log('✅ Manual scroll completed, re-enabling auto-detection');
+      setIsManualScroll(false);
+      // Ricostruisci mappa dopo scroll manuale
+      buildCategoriesMap();
+      setTimeout(calculateCurrentCategory, 200);
+    }, 1500);
+  };
 
-    observerRef.current = observer;
-
-    // Setup immediato con retry
-    const setupObserver = () => {
-      const categoryContainers = document.querySelectorAll('[id^="category-container-"]');
-      console.log(`🔍 Found ${categoryContainers.length} category containers to observe`);
-      
-      if (categoryContainers.length === 0) {
-        console.log('⚠️ No containers found, retrying in 1 second...');
-        setTimeout(setupObserver, 1000);
-        return;
-      }
-      
-      categoryContainers.forEach((container, index) => {
-        if (observerRef.current) {
-          observerRef.current.observe(container);
-          console.log(`   ✅ Observing: ${container.id}`);
-        }
-      });
-      
-      console.log('🎉 Intersection observer setup complete!');
-    };
-
-    setupObserver();
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [isManualScroll]);
-
-  // Test scroll event per verificare che i container esistano
+  // GESTIONE BACK TO TOP
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       setShowBackToTop(scrollTop > 300);
-      
-      // Debug periodico
-      if (Math.random() < 0.1) { // 10% delle volte
-        const containers = document.querySelectorAll('[id^="category-container-"]');
-        console.log(`📍 Scroll debug: ${containers.length} containers exist`);
-      }
     };
     
     window.addEventListener('scroll', handleScroll);
@@ -130,36 +188,11 @@ export const useMenuNavigation = () => {
     };
   }, []);
 
+  // SETUP SISTEMA SCROLL
   useEffect(() => {
     const cleanup = setupScrollHighlighting();
     return cleanup;
   }, [setupScrollHighlighting]);
-  
-  const scrollToCategory = (categoryId: string) => {
-    console.log('🚀 Manual scroll to category:', categoryId);
-    
-    setIsManualScroll(true);
-    setSelectedCategory(categoryId);
-
-    const element = document.getElementById(`category-container-${categoryId}`);
-    if (element) {
-      console.log('✅ Element found, scrolling...');
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
-    } else {
-      console.error('❌ Element not found:', `category-container-${categoryId}`);
-    }
-
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      console.log('✅ Manual scroll completed, re-enabling auto-detection');
-      setIsManualScroll(false);
-    }, 2000); // Timeout più lungo
-  };
   
   const scrollToTop = () => {
     window.scrollTo({
@@ -168,6 +201,7 @@ export const useMenuNavigation = () => {
     });
   };
 
+  // CLEANUP
   useEffect(() => {
     return () => {
       if (scrollTimeoutRef.current) {
