@@ -21,15 +21,27 @@ export const useCategoryManagement = ({
     setIsUserScrolling(true);
     setActiveCategory(categoryId);
     
-    const targetY = element.offsetTop - headerHeight - 16;
+    const targetY = element.offsetTop - headerHeight - 32;
     window.scrollTo({
       top: Math.max(0, targetY),
       behavior: 'smooth'
     });
     
     setTimeout(() => {
-      setIsUserScrolling(false);
-    }, 1000);
+      // Verifica che siamo nella posizione corretta prima di riattivare l'auto-detection
+      const currentScroll = window.scrollY;
+      const expectedPosition = Math.max(0, targetY);
+      const tolerance = 50; // Tolleranza di 50px
+      
+      if (Math.abs(currentScroll - expectedPosition) <= tolerance) {
+        setIsUserScrolling(false);
+      } else {
+        // Se non siamo nella posizione corretta, aspetta ancora un po'
+        setTimeout(() => {
+          setIsUserScrolling(false);
+        }, 500);
+      }
+    }, 2000);
   }, [headerHeight, setIsUserScrolling, setActiveCategory]);
 
   const scrollToTop = useCallback(() => {
