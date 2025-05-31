@@ -75,7 +75,8 @@ export const useCategoryManagement = ({
       const rect = element.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
       const targetY = absoluteTop - currentOffset;
-      const finalPosition = Math.max(0, targetY);
+      // Aggiunge 3px per posizionare leggermente dentro la categoria
+      const finalPosition = Math.max(0, targetY + 3);
       
       console.log(`Scroll attempt ${attempt}:`, {
         elementRect: rect,
