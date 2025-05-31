@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 interface UseCategoryManagementProps {
   headerHeight: number;
@@ -17,10 +17,43 @@ export const useCategoryManagement = ({
   
   // Offset unificato per tutto il sistema
   const UNIFIED_OFFSET = headerHeight + 20;
+  
+  // Ref per tracciare se è il primo scroll
+  const isFirstScrollRef = useRef(true);
+  
+  // Funzione helper per attendere che il DOM sia stabile
+  const waitForStableDOM = async (): Promise<void> => {
+    return new Promise((resolve) => {
+      // Attendi che tutte le immagini nella viewport siano caricate
+      const images = document.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+        });
+      });
+      
+      // Attendi anche che i font siano pronti
+      const fontPromise = document.fonts?.ready || Promise.resolve();
+      
+      // Timeout di sicurezza di 1 secondo
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Attendi il primo tra: tutte le immagini + font o timeout
+      Promise.race([
+        Promise.all([...imagePromises, fontPromise]),
+        timeoutPromise
+      ]).then(() => resolve());
+    });
+  };
 
-  const scrollToCategory = useCallback((categoryId: string) => {
+  const scrollToCategory = useCallback(async (categoryId: string) => {
     const element = document.getElementById(`category-container-${categoryId}`);
-    if (!element) return;
+    if (!element) {
+      console.error(`Category element not found: ${categoryId}`);
+      return;
+    }
     
     console.log(`Starting scroll to category ${categoryId}`);
     
@@ -28,61 +61,76 @@ export const useCategoryManagement = ({
     setActiveCategory(categoryId);
     setIsUserScrolling(true);
     
-    // Calcola la posizione target usando l'offset unificato
-    const targetY = element.offsetTop - UNIFIED_OFFSET;
-    const finalPosition = Math.max(0, targetY);
+    // Se è il primo scroll, attendi che il DOM sia stabile
+    if (isFirstScrollRef.current) {
+      console.log('First scroll detected, waiting for stable DOM...');
+      await waitForStableDOM();
+      isFirstScrollRef.current = false;
+    }
     
-    console.log(`Scroll calculation:`, {
-      elementTop: element.offsetTop,
-      unifiedOffset: UNIFIED_OFFSET,
-      targetY,
-      finalPosition
-    });
-    
-    // Scroll con comportamento smooth
-    window.scrollTo({
-      top: finalPosition,
-      behavior: 'smooth'
-    });
-    
-    // Sistema di controllo preciso del completamento scroll
-    let checkCount = 0;
-    const maxChecks = 20; // Massimo 4 secondi di controllo
-    const tolerance = 15; // Tolleranza ridotta per maggiore precisione
-    
-    const checkScrollCompletion = () => {
-      const currentScroll = window.scrollY;
-      const difference = Math.abs(currentScroll - finalPosition);
+    // Funzione per eseguire lo scroll con retry
+    const performScroll = (attempt: number = 1): void => {
+      const maxAttempts = 3;
       
-      console.log(`Scroll check ${checkCount + 1}:`, {
-        currentScroll,
-        finalPosition,
-        difference,
-        tolerance
+      // Ricalcola la posizione ad ogni tentativo
+      const rect = element.getBoundingClientRect();
+      const absoluteTop = window.scrollY + rect.top;
+      const targetY = absoluteTop - UNIFIED_OFFSET;
+      const finalPosition = Math.max(0, targetY);
+      
+      console.log(`Scroll attempt ${attempt}:`, {
+        elementRect: rect,
+        currentScrollY: window.scrollY,
+        absoluteTop,
+        unifiedOffset: UNIFIED_OFFSET,
+        targetY,
+        finalPosition
       });
       
-      if (difference <= tolerance) {
-        // Scroll completato - mantieni la categoria selezionata e sblocca il sistema
-        console.log(`Scroll completed successfully for category ${categoryId}`);
-        setTimeout(() => {
-          setIsUserScrolling(false);
-        }, 200); // Delay maggiore per evitare interferenze
-        return;
+      // Usa scrollIntoView con offset personalizzato
+      if ('scrollBehavior' in document.documentElement.style) {
+        // Browser moderni: usa smooth scroll nativo
+        window.scrollTo({
+          top: finalPosition,
+          behavior: 'smooth'
+        });
+      } else {
+        // Fallback per browser più vecchi
+        window.scrollTo(0, finalPosition);
       }
       
-      checkCount++;
-      if (checkCount < maxChecks) {
-        // Continua a controllare
-        setTimeout(checkScrollCompletion, 200);
-      } else {
-        // Timeout raggiunto - forza il completamento
-        console.log(`Scroll timeout reached for category ${categoryId}, forcing completion`);
-        setIsUserScrolling(false);
-      }
+      // Verifica se lo scroll è andato a buon fine
+      setTimeout(() => {
+        const currentScroll = window.scrollY;
+        const difference = Math.abs(currentScroll - finalPosition);
+        const tolerance = 5; // Tolleranza molto stretta
+        
+        console.log(`Scroll verification:`, {
+          currentScroll,
+          finalPosition,
+          difference,
+          tolerance,
+          success: difference <= tolerance
+        });
+        
+        if (difference > tolerance && attempt < maxAttempts) {
+          // Retry se non siamo nella posizione giusta
+          console.log(`Scroll not accurate, retrying (attempt ${attempt + 1})...`);
+          performScroll(attempt + 1);
+        } else {
+          // Scroll completato o massimo numero di tentativi raggiunto
+          console.log(`Scroll ${difference <= tolerance ? 'completed successfully' : 'completed with best effort'} for category ${categoryId}`);
+          
+          // Rilascia il controllo dopo un breve delay
+          setTimeout(() => {
+            setIsUserScrolling(false);
+          }, 300);
+        }
+      }, 600); // Attendi più a lungo per lo smooth scroll
     };
     
-    // Inizia il controllo dopo un delay per permettere l'inizio dello scroll
-    setTimeout(checkScrollCompletion, 500);
+    // Esegui lo scroll
+    performScroll();
     
   }, [headerHeight, UNIFIED_OFFSET, setIsUserScrolling, setActiveCategory]);
 
