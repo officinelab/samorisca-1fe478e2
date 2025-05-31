@@ -1,9 +1,18 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Package, Layers, Info } from "lucide-react";
 import { dashboardStyles } from "@/pages/admin/Dashboard.styles";
 import { useDashboard } from "@/hooks/admin/dashboard/useDashboard";
+import { useBreadcrumb } from "@/hooks/admin/dashboard/useBreadcrumb";
+import { 
+  Breadcrumb, 
+  BreadcrumbList, 
+  BreadcrumbItem, 
+  BreadcrumbLink, 
+  BreadcrumbSeparator, 
+  BreadcrumbPage 
+} from "@/components/ui/breadcrumb";
 import CategoriesList from "./CategoriesList";
 import ProductsList from "./ProductsList";
 import ProductDetail from "./ProductDetail";
@@ -44,6 +53,14 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
     handleAddProduct
   } = dashboard;
 
+  const { breadcrumbItems, currentPageTitle } = useBreadcrumb({
+    currentView,
+    selectedCategory,
+    selectedProduct,
+    onNavigateToCategories: () => setCurrentView('categories'),
+    onNavigateToProducts: () => setCurrentView('products')
+  });
+
   const handleCategorySelectMobile = (categoryId: string) => {
     handleCategorySelect(categoryId);
     setCurrentView('products');
@@ -56,23 +73,48 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
     }
   };
 
+  const getViewIcon = () => {
+    switch (currentView) {
+      case 'categories':
+        return <Layers className="h-5 w-5 text-gray-600" />;
+      case 'products':
+        return <Package className="h-5 w-5 text-gray-600" />;
+      case 'detail':
+        return <Info className="h-5 w-5 text-gray-600" />;
+      default:
+        return null;
+    }
+  };
+
   if (currentView === 'categories') {
     return (
       <div className={dashboardStyles.mobileContainer}>
-        <CategoriesList
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          isReorderingCategories={isReorderingCategories}
-          reorderingCategoriesList={reorderingCategoriesList}
-          onCategorySelect={handleCategorySelectMobile}
-          onStartReordering={startReorderingCategories}
-          onCancelReordering={cancelReorderingCategories}
-          onMoveCategory={moveCategoryInList}
-          onSaveReorder={saveReorderCategories}
-          onEditCategory={handleEditCategory}
-          onDeleteCategory={deleteCategory}
-          onAddCategory={handleAddCategory}
-        />
+        <div className={dashboardStyles.mobileHeader}>
+          <div className={dashboardStyles.mobileHeaderContent}>
+            {getViewIcon()}
+            <h2 className={`${dashboardStyles.mobileTitle} ml-2`}>
+              {currentPageTitle}
+            </h2>
+          </div>
+        </div>
+        <div className={dashboardStyles.mobileContent}>
+          <div className={dashboardStyles.categoriesContent}>
+            <CategoriesList
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              isReorderingCategories={isReorderingCategories}
+              reorderingCategoriesList={reorderingCategoriesList}
+              onCategorySelect={handleCategorySelectMobile}
+              onStartReordering={startReorderingCategories}
+              onCancelReordering={cancelReorderingCategories}
+              onMoveCategory={moveCategoryInList}
+              onSaveReorder={saveReorderCategories}
+              onEditCategory={handleEditCategory}
+              onDeleteCategory={deleteCategory}
+              onAddCategory={handleAddCategory}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -81,36 +123,61 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
     return (
       <div className={dashboardStyles.mobileContainer}>
         <div className={dashboardStyles.mobileHeader}>
-          <div className="flex items-center w-full">
+          <div className={dashboardStyles.mobileHeaderContent}>
             <Button 
               variant="ghost" 
               size="sm"
               className={dashboardStyles.mobileBackButton}
               onClick={() => setCurrentView('categories')}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h2 className={dashboardStyles.mobileTitle}>
-              Prodotti {selectedCategory && `- ${selectedCategory.title}`}
-            </h2>
+            <div className="flex-1 min-w-0">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {breadcrumbItems.map((item, index) => (
+                    <React.Fragment key={index}>
+                      <BreadcrumbItem>
+                        {item.action ? (
+                          <BreadcrumbLink 
+                            onClick={item.action}
+                            className="cursor-pointer text-gray-600 hover:text-gray-900"
+                          >
+                            {item.label}
+                          </BreadcrumbLink>
+                        ) : (
+                          <BreadcrumbPage className="text-gray-900 font-medium">
+                            {item.label}
+                          </BreadcrumbPage>
+                        )}
+                      </BreadcrumbItem>
+                      {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            {getViewIcon()}
           </div>
         </div>
         <div className={dashboardStyles.mobileContent}>
-          <ProductsList
-            products={products}
-            selectedProductId={selectedProductId}
-            selectedCategory={selectedCategory}
-            isReorderingProducts={isReorderingProducts}
-            reorderingProductsList={reorderingProductsList}
-            onProductSelect={handleProductSelectMobile}
-            onStartReordering={startReorderingProducts}
-            onCancelReordering={cancelReorderingProducts}
-            onMoveProduct={moveProductInList}
-            onSaveReorder={saveReorderProducts}
-            onEditProduct={handleEditProduct}
-            onDeleteProduct={deleteProduct}
-            onAddProduct={handleAddProduct}
-          />
+          <div className={dashboardStyles.productsContent}>
+            <ProductsList
+              products={products}
+              selectedProductId={selectedProductId}
+              selectedCategory={selectedCategory}
+              isReorderingProducts={isReorderingProducts}
+              reorderingProductsList={reorderingProductsList}
+              onProductSelect={handleProductSelectMobile}
+              onStartReordering={startReorderingProducts}
+              onCancelReordering={cancelReorderingProducts}
+              onMoveProduct={moveProductInList}
+              onSaveReorder={saveReorderProducts}
+              onEditProduct={handleEditProduct}
+              onDeleteProduct={deleteProduct}
+              onAddProduct={handleAddProduct}
+            />
+          </div>
         </div>
       </div>
     );
@@ -119,24 +186,51 @@ const DashboardMobile: React.FC<DashboardMobileProps> = ({ dashboard }) => {
   return (
     <div className={dashboardStyles.mobileContainer}>
       <div className={dashboardStyles.mobileHeader}>
-        <div className="flex items-center w-full">
+        <div className={dashboardStyles.mobileHeaderContent}>
           <Button 
             variant="ghost" 
             size="sm"
             className={dashboardStyles.mobileBackButton}
             onClick={() => setCurrentView('products')}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h2 className={dashboardStyles.mobileTitle}>Dettagli Prodotto</h2>
+          <div className="flex-1 min-w-0">
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <BreadcrumbItem>
+                      {item.action ? (
+                        <BreadcrumbLink 
+                          onClick={item.action}
+                          className="cursor-pointer text-gray-600 hover:text-gray-900"
+                        >
+                          {item.label}
+                        </BreadcrumbLink>
+                      ) : (
+                        <BreadcrumbPage className="text-gray-900 font-medium">
+                          {item.label}
+                        </BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                    {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+                  </React.Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          {getViewIcon()}
         </div>
       </div>
       <div className={dashboardStyles.mobileContent}>
-        <ProductDetail
-          product={selectedProduct}
-          selectedCategory={selectedCategory}
-          onEditProduct={() => handleEditProduct(selectedProduct!)}
-        />
+        <div className="p-4">
+          <ProductDetail
+            product={selectedProduct}
+            selectedCategory={selectedCategory}
+            onEditProduct={() => handleEditProduct(selectedProduct!)}
+          />
+        </div>
       </div>
     </div>
   );
