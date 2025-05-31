@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 
 export interface CategoryPosition {
@@ -24,7 +23,8 @@ export const useCategoryPositions = () => {
     const positions = getCategoryPositions();
     if (positions.length === 0) return null;
     
-    // Punto di riferimento per il rilevamento (stesso offset usato per lo scroll)
+    // Il punto di riferimento è la parte superiore della viewport + offset
+    // Questo corrisponde a dove appare il top della categoria dopo lo scroll
     const viewportTop = scrollY + offset;
     
     console.log(`Finding active category:`, {
@@ -34,24 +34,28 @@ export const useCategoryPositions = () => {
       categoriesCount: positions.length
     });
     
-    // Trova la categoria che contiene il punto di riferimento
+    // Trova la categoria il cui top è più vicino (e non supera) il viewportTop
+    let activeCategory = positions[0].id; // Default: prima categoria
+    let closestDistance = Math.abs(positions[0].top - viewportTop);
+    
     for (let i = 0; i < positions.length; i++) {
-      const current = positions[i];
-      const next = positions[i + 1];
+      const category = positions[i];
       
-      // Se siamo nell'ultima categoria o il punto è prima della prossima categoria
-      if (!next || viewportTop < next.top) {
-        // Verifica che siamo effettivamente nella categoria corrente
-        if (viewportTop >= current.top) {
-          console.log(`Active category found: ${current.id}`);
-          return current.id;
-        }
+      // Se il top della categoria è dopo il viewportTop, abbiamo superato la categoria attiva
+      if (category.top > viewportTop) {
+        break;
+      }
+      
+      // Questa categoria è visibile, potrebbe essere quella attiva
+      const distance = Math.abs(category.top - viewportTop);
+      if (distance < closestDistance || category.top <= viewportTop) {
+        activeCategory = category.id;
+        closestDistance = distance;
       }
     }
     
-    // Fallback: ritorna la prima categoria se siamo sopra tutto
-    console.log(`Fallback to first category: ${positions[0].id}`);
-    return positions[0].id;
+    console.log(`Active category found: ${activeCategory}`);
+    return activeCategory;
   }, [getCategoryPositions]);
 
   return {
