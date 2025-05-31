@@ -11,8 +11,8 @@ export const useMenuNavigation = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
-  // Usa un offset consistente con categoryManagement
-  const SCROLL_OFFSET = headerHeight + 100;
+  // Usa offset unificato con categoryManagement: headerHeight + 20px
+  const SCROLL_OFFSET = headerHeight + 20;
   
   const { findActiveCategory } = useCategoryPositions();
   
