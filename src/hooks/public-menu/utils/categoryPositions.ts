@@ -34,17 +34,23 @@ export const useCategoryPositions = () => {
       categoriesCount: positions.length
     });
     
-    // Trova la categoria che è attualmente visibile nella viewport
-    let activeCategory = positions[0].id;
+    // Trova la categoria il cui top è più vicino (e non supera) il viewportTop
+    let activeCategory = positions[0].id; // Default: prima categoria
+    let closestDistance = Math.abs(positions[0].top - viewportTop);
     
-    for (let i = positions.length - 1; i >= 0; i--) {
+    for (let i = 0; i < positions.length; i++) {
       const category = positions[i];
       
-      // Se il top della categoria è al di sopra o esattamente al viewportTop,
-      // questa è la categoria attiva
-      if (category.top <= viewportTop) {
-        activeCategory = category.id;
+      // Se il top della categoria è dopo il viewportTop, abbiamo superato la categoria attiva
+      if (category.top > viewportTop) {
         break;
+      }
+      
+      // Questa categoria è visibile, potrebbe essere quella attiva
+      const distance = Math.abs(category.top - viewportTop);
+      if (distance < closestDistance || category.top <= viewportTop) {
+        activeCategory = category.id;
+        closestDistance = distance;
       }
     }
     
