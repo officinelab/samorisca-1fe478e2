@@ -20,7 +20,8 @@ export const dashboardStyles = {
   categoriesTitle: "text-lg font-semibold",
   categoriesContent: "p-4 space-y-3",
   categoryItem: "flex flex-col p-4 rounded-lg cursor-pointer touch-manipulation min-h-[72px] bg-white shadow-sm border transition-all duration-200 active:scale-[0.98]",
-  categoryItemSelected: "bg-primary text-primary-foreground shadow-md",
+  // Fixed: Better contrast for selected category in mobile - dark blue background with white text
+  categoryItemSelected: "bg-blue-600 text-white shadow-lg border-blue-600",
   categoryItemHover: "hover:shadow-md hover:bg-gray-50 active:bg-gray-100",
   categoryItemInactive: "opacity-60",
   categoryContent: "flex items-center justify-between mb-2",
@@ -33,7 +34,8 @@ export const dashboardStyles = {
   productsHeader: "flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10 shadow-sm",
   productsContent: "p-4 space-y-4",
   productItem: "bg-white border rounded-lg p-4 cursor-pointer transition-all duration-200 touch-manipulation min-h-[100px] shadow-sm active:scale-[0.98]",
-  productItemSelected: "border-primary bg-primary/5 shadow-md",
+  // Fixed: Better contrast for selected product in mobile - dark blue background with white text
+  productItemSelected: "border-blue-600 bg-blue-600 text-white shadow-lg",
   productItemHover: "hover:shadow-md hover:bg-gray-50 active:bg-gray-100",
   productItemInactive: "opacity-60",
   productContent: "flex space-x-4",

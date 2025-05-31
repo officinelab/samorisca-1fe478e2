@@ -73,6 +73,14 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
     return c;
   };
 
+  // Fixed: Get appropriate icon color based on selection state
+  const getIconColor = () => {
+    if (isSelected && !isReordering) {
+      return "text-white"; // White icons on selected category
+    }
+    return "text-gray-600"; // Default gray icons
+  };
+
   return (
     <div
       className={getItemClass()}
@@ -92,7 +100,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
             <span className="break-words">{category.title}</span>
           </div>
           {!category.is_active && (
-            <span className={dashboardStyles.categoryInactiveLabel}>
+            <span className={`${dashboardStyles.categoryInactiveLabel} ${isSelected ? 'bg-white/20 text-white' : ''}`}>
               Disattivata
             </span>
           )}
@@ -107,7 +115,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 size="sm"
                 className={`${dashboardStyles.buttonSm} 
                   ${index === 0 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
-                  transition-colors`}
+                  transition-colors ${getIconColor()}`}
                 onMouseDown={e => {
                   e.stopPropagation();
                   handleContinuousMove(onMoveUp, index > 0);
@@ -129,7 +137,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
                 size="sm"
                 className={`${dashboardStyles.buttonSm} 
                   ${index === totalCategories - 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-blue-100 hover:text-blue-800"}
-                  transition-colors`}
+                  transition-colors ${getIconColor()}`}
                 onMouseDown={e => {
                   e.stopPropagation();
                   handleContinuousMove(onMoveDown, index < totalCategories - 1);
@@ -152,6 +160,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm"
+                className={getIconColor()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit();
@@ -163,6 +172,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm"
+                className={getIconColor()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete();
