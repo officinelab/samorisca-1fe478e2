@@ -1,5 +1,6 @@
 
 import { useEffect } from "react";
+import { debugLog, debugError } from "@/utils/logger";
 
 // Cache globale per i font già caricati
 const loadedFonts = new Set<string>();
@@ -32,7 +33,7 @@ export function useDynamicGoogleFont(fontFamily?: string | null) {
     // Marca il font come in caricamento
     loadingFonts.add(fontKey);
     
-    console.log(`🔤 Loading Google Font: ${normalizedFont}`);
+    debugLog(`🔤 Loading Google Font: ${normalizedFont}`);
 
     // Crea il link per il font con font-display: swap ottimizzato
     const link = document.createElement("link");
@@ -42,13 +43,13 @@ export function useDynamicGoogleFont(fontFamily?: string | null) {
     
     // Gestisci il completamento del caricamento
     link.onload = () => {
-      console.log(`✅ Google Font loaded: ${normalizedFont}`);
+      debugLog(`✅ Google Font loaded: ${normalizedFont}`);
       loadedFonts.add(fontKey);
       loadingFonts.delete(fontKey);
     };
     
     link.onerror = () => {
-      console.error(`❌ Failed to load Google Font: ${normalizedFont}`);
+      debugError(`❌ Failed to load Google Font: ${normalizedFont}`);
       loadingFonts.delete(fontKey);
     };
     
@@ -89,7 +90,7 @@ export function preloadSpecificFonts(fontFamilies: string[]) {
         document.head.appendChild(styleLink);
         
         loadedFonts.add(fontKey);
-        console.log(`🚀 Preloaded font: ${font}`);
+        debugLog(`🚀 Preloaded font: ${font}`);
       };
       
       document.head.appendChild(preloadLink);
@@ -110,5 +111,5 @@ export function clearFontCache() {
     link.remove();
   });
   
-  console.log('🧹 Font cache cleared');
+  debugLog('🧹 Font cache cleared');
 }

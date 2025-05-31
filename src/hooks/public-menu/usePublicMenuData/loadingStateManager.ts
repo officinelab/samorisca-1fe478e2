@@ -1,4 +1,6 @@
 
+import { debugLog } from "@/utils/logger";
+
 // Gestione ottimizzata degli stati di caricamento
 export interface LoadingState {
   isLoading: boolean;
@@ -55,12 +57,9 @@ export const createLoadingStateManager = () => {
       slowLoadingTimeout = null;
     }
 
+    // Rimuovo il logging del tempo di caricamento per produzione
     const loadTime = Date.now() - state.loadingStartTime;
-    
-    // Log solo se il caricamento è stato lento
-    if (loadTime > 2000) {
-      console.log(`⏱️ Language loading completed in ${loadTime}ms`);
-    }
+    debugLog(`⏱️ Language loading completed in ${loadTime}ms`);
 
     return {
       ...state,

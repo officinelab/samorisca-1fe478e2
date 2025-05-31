@@ -7,6 +7,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { fetchMenuDataOptimized } from "./usePublicMenuData/fetchMenuDataOptimized";
 import { preloadLanguageData, clearLanguageCache } from "./usePublicMenuData/languageCache";
 import { createLoadingStateManager } from "./usePublicMenuData/loadingStateManager";
+import { debugLog, debugError } from "@/utils/logger";
 
 export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -33,7 +34,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     if (siteSettings?.enabledPublicMenuLanguages) {
       const enabledLanguages = ["it", ...siteSettings.enabledPublicMenuLanguages];
       if (!enabledLanguages.includes(language) && language !== 'it') {
-        console.log(`Language ${language} is no longer enabled, switching to Italian`);
+        debugLog(`Language ${language} is no longer enabled, switching to Italian`);
         setLanguage('it');
         setDebouncedLanguage('it');
       }
@@ -104,8 +105,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
     setError(null);
 
     try {
-      const startTime = Date.now();
-      console.log(`🔄 Loading menu data for language: ${targetLanguage}`);
+      debugLog(`🔄 Loading menu data for language: ${targetLanguage}`);
       
       const data = await fetchMenuDataOptimized(
         targetLanguage,
@@ -114,7 +114,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       
       // Controlla se la richiesta è stata cancellata
       if (abortControllerRef.current?.signal.aborted) {
-        console.log('❌ Request aborted for language:', targetLanguage);
+        debugLog('❌ Request aborted for language:', targetLanguage);
         return;
       }
 
@@ -123,24 +123,16 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       setAllergens(data.allergens);
       setCategoryNotes(data.categoryNotes || []);
 
-      const loadTime = Date.now() - startTime;
-      console.log(`✅ Menu loaded successfully for ${targetLanguage} in ${loadTime}ms`);
-      
-      // Mostra toast solo se il caricamento è stato molto lento (>3s)
-      if (loadTime > 3000) {
-        toast.success(`Menu caricato in ${(loadTime / 1000).toFixed(1)}s`, {
-          duration: 2000
-        });
-      }
+      debugLog(`✅ Menu loaded successfully for ${targetLanguage}`);
 
     } catch (error: any) {
       // Non mostrare errori se la richiesta è stata cancellata
       if (error.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
-        console.log('Request was aborted, ignoring error');
+        debugLog('Request was aborted, ignoring error');
         return;
       }
 
-      console.error('❌ Errore nel caricamento dei dati:', error);
+      debugError('❌ Errore nel caricamento dei dati:', error);
       setError("Errore nel caricamento del menu. Riprova più tardi.");
       toast.error("Errore nel caricamento del menu. Riprova più tardi.");
     } finally {
@@ -153,7 +145,7 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
 
   // Effect principale per caricare i dati quando cambia la lingua debounced
   useEffect(() => {
-    console.log(`🌐 Language changed to: ${debouncedLanguage}`);
+    debugLog(`🌐 Language changed to: ${debouncedLanguage}`);
     loadData(debouncedLanguage);
 
     return () => {

@@ -4,18 +4,18 @@ import { fetchCategoryNotesOptimized } from "./fetchCategoryNotesOptimized";
 import { fetchProductsOptimized } from "./fetchProductsOptimized";
 import { fetchAllergensOptimized } from "./fetchAllergensOptimized";
 import { getLanguageCachedData, setLanguageCachedData } from "./languageCache";
+import { debugLog, debugError } from "@/utils/logger";
 
 export const fetchMenuDataOptimized = async (
   language: string, 
   signal?: AbortSignal
 ) => {
-  const startTime = Date.now();
-  console.log('🚀 Starting optimized menu data fetch for language:', language);
+  debugLog('🚀 Starting optimized menu data fetch for language:', language);
 
   // Controlla cache per lingua specifica
   const cachedData = getLanguageCachedData(language);
   if (cachedData) {
-    console.log(`📦 Menu data loaded from cache for language: ${language}`);
+    debugLog(`📦 Menu data loaded from cache for language: ${language}`);
     return cachedData;
   }
 
@@ -31,7 +31,7 @@ export const fetchMenuDataOptimized = async (
       fetchCategoryNotesOptimized(language, signal)
     ]);
 
-    console.log('📂 Categories loaded:', categories.length);
+    debugLog('📂 Categories loaded:', categories.length);
 
     // Controlla se la richiesta è stata cancellata dopo il primo caricamento
     if (signal?.aborted) {
@@ -67,8 +67,7 @@ export const fetchMenuDataOptimized = async (
     // Salva in cache per lingua specifica
     setLanguageCachedData(language, result);
 
-    const endTime = Date.now();
-    console.log(`✅ Menu data fetch completed for language "${language}" in ${endTime - startTime}ms`);
+    debugLog(`✅ Menu data fetch completed for language "${language}"`);
 
     return result;
   } catch (error: any) {
@@ -77,7 +76,7 @@ export const fetchMenuDataOptimized = async (
       throw error;
     }
     
-    console.error('❌ Errore nel caricamento ottimizzato dei dati menu:', error);
+    debugError('❌ Errore nel caricamento ottimizzato dei dati menu:', error);
     throw error;
   }
 };
@@ -85,9 +84,9 @@ export const fetchMenuDataOptimized = async (
 // Funzione per pulire solo la cache di una lingua specifica
 export const clearMenuDataCache = (language?: string) => {
   if (language) {
-    console.log(`🗑️ Clearing cache for language: ${language}`);
+    debugLog(`🗑️ Clearing cache for language: ${language}`);
     // Non implementiamo più clearCache globale, usiamo languageCache
   } else {
-    console.log('🗑️ Clearing all menu cache');
+    debugLog('🗑️ Clearing all menu cache');
   }
 };

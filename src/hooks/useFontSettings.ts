@@ -1,7 +1,7 @@
-
 import { useEffect } from "react";
 import { SiteSettings } from "@/hooks/site-settings/types";
 import { useDynamicGoogleFont, preloadSpecificFonts } from "@/hooks/useDynamicGoogleFont";
+import { debugLog } from "@/utils/logger";
 
 interface FontConfigItem {
   fontFamily: string;
@@ -66,7 +66,7 @@ export const useFontSettings = (siteSettings: SiteSettings | null, layoutType: s
     const fontsArray = Array.from(uniqueFonts).filter(Boolean);
     
     if (fontsArray.length > 0) {
-      console.log(`🎨 Preloading fonts for layout ${layoutType}:`, fontsArray);
+      debugLog(`🎨 Preloading fonts for layout ${layoutType}:`, fontsArray);
       preloadSpecificFonts(fontsArray);
     }
   }, [siteSettings, layoutType, fontSettings.title.fontFamily, fontSettings.description.fontFamily, fontSettings.price.fontFamily]);
