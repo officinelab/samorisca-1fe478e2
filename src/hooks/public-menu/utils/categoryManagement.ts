@@ -23,13 +23,15 @@ export const useCategoryManagement = ({
       setIsUserScrolling(true);
       setActiveCategory(categoryId);
       
-      // Usa offset unificato: headerHeight + 20px per margine extra
-      const targetY = element.offsetTop - headerHeight - 20;
+      // Offset per lo scroll: headerHeight + 20px per margine visivo
+      const SCROLL_OFFSET = headerHeight + 20;
+      const targetY = element.offsetTop - SCROLL_OFFSET;
       const finalPosition = Math.max(0, targetY);
       
       console.log(`Scrolling to category ${categoryId}:`, {
         elementTop: element.offsetTop,
         headerHeight,
+        scrollOffset: SCROLL_OFFSET,
         targetY,
         finalPosition
       });
@@ -45,7 +47,7 @@ export const useCategoryManagement = ({
       
       const checkScrollComplete = () => {
         const currentScroll = window.scrollY;
-        const tolerance = 20; // Tolleranza ridotta per maggiore precisione
+        const tolerance = 15; // Tolleranza per il controllo di precisione
         
         console.log(`Scroll check ${retryCount + 1}:`, {
           currentScroll,
