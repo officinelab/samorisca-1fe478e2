@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useHeaderHeight } from './useHeaderHeight';
 import { useCategoryPositions } from './utils/categoryPositions';
@@ -11,8 +10,15 @@ export const useMenuNavigation = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
-  // Usa lo stesso offset unificato in tutto il sistema
-  const UNIFIED_OFFSET = headerHeight + 20;
+  
+  // Calcola l'offset completo dinamicamente
+  const calculateTotalOffset = useCallback(() => {
+    const header = document.querySelector('header');
+    const sidebar = document.querySelector('#mobile-category-sidebar');
+    const headerH = header?.offsetHeight || headerHeight;
+    const sidebarH = sidebar?.offsetHeight || 0;
+    return headerH + sidebarH + 20; // 20px padding
+  }, [headerHeight]);
   
   const { findActiveCategory } = useCategoryPositions();
   
@@ -23,19 +29,21 @@ export const useMenuNavigation = () => {
       return;
     }
     
-    const newActiveCategory = findActiveCategory(window.scrollY, UNIFIED_OFFSET);
+    const currentOffset = calculateTotalOffset();
+    const newActiveCategory = findActiveCategory(window.scrollY, currentOffset);
     
     if (newActiveCategory && newActiveCategory !== activeCategory) {
       console.log(`Natural scroll - updating active category to: ${newActiveCategory}`);
       setActiveCategory(newActiveCategory);
     }
-  }, [activeCategory, findActiveCategory, isUserScrolling, UNIFIED_OFFSET]);
+  }, [activeCategory, findActiveCategory, isUserScrolling, calculateTotalOffset]);
 
   const { scrollToCategory, scrollToTop, initializeCategory } = useCategoryManagement({
     headerHeight,
     isUserScrolling,
     setIsUserScrolling,
-    setActiveCategory
+    setActiveCategory,
+    calculateTotalOffset
   });
 
   useScrollHandling({

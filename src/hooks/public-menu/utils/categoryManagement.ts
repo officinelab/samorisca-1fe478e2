@@ -1,4 +1,3 @@
-
 import { useCallback, useRef } from 'react';
 
 interface UseCategoryManagementProps {
@@ -6,17 +5,16 @@ interface UseCategoryManagementProps {
   isUserScrolling: boolean;
   setIsUserScrolling: (scrolling: boolean) => void;
   setActiveCategory: (category: string) => void;
+  calculateTotalOffset: () => number;
 }
 
 export const useCategoryManagement = ({
   headerHeight,
   isUserScrolling,
   setIsUserScrolling,
-  setActiveCategory
+  setActiveCategory,
+  calculateTotalOffset
 }: UseCategoryManagementProps) => {
-  
-  // Offset unificato per tutto il sistema
-  const UNIFIED_OFFSET = headerHeight + 20;
   
   // Ref per tracciare se è il primo scroll
   const isFirstScrollRef = useRef(true);
@@ -72,17 +70,18 @@ export const useCategoryManagement = ({
     const performScroll = (attempt: number = 1): void => {
       const maxAttempts = 3;
       
-      // Ricalcola la posizione ad ogni tentativo
+      // Ricalcola la posizione ad ogni tentativo con offset dinamico
+      const currentOffset = calculateTotalOffset();
       const rect = element.getBoundingClientRect();
       const absoluteTop = window.scrollY + rect.top;
-      const targetY = absoluteTop - UNIFIED_OFFSET;
+      const targetY = absoluteTop - currentOffset;
       const finalPosition = Math.max(0, targetY);
       
       console.log(`Scroll attempt ${attempt}:`, {
         elementRect: rect,
         currentScrollY: window.scrollY,
         absoluteTop,
-        unifiedOffset: UNIFIED_OFFSET,
+        calculatedOffset: currentOffset,
         targetY,
         finalPosition
       });
@@ -132,7 +131,7 @@ export const useCategoryManagement = ({
     // Esegui lo scroll
     performScroll();
     
-  }, [headerHeight, UNIFIED_OFFSET, setIsUserScrolling, setActiveCategory]);
+  }, [headerHeight, setIsUserScrolling, setActiveCategory, calculateTotalOffset]);
 
   const scrollToTop = useCallback(() => {
     setIsUserScrolling(true);
