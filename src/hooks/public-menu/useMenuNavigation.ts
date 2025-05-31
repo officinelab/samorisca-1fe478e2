@@ -1,202 +1,129 @@
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useHeaderHeight } from "./useHeaderHeight";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useHeaderHeight } from './useHeaderHeight';
+
+interface CategoryPosition {
+  id: string;
+  element: HTMLElement;
+  top: number;
+  bottom: number;
+}
 
 export const useMenuNavigation = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [isManualScroll, setIsManualScroll] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const categoriesMapRef = useRef<Array<{
-    id: string;
-    startY: number;
-    endY: number;
-    element: HTMLElement;
-  }>>([]);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   const { headerHeight } = useHeaderHeight();
   
-  const initializeCategory = (categoryId: string | null) => {
-    if (categoryId && !selectedCategory) {
-      setSelectedCategory(categoryId);
-    }
-  };
-
-  const buildCategoriesMap = useCallback(() => {
-    const containers = document.querySelectorAll('[id^="category-container-"]');
-    const categoriesMap: typeof categoriesMapRef.current = [];
+  const SCROLL_OFFSET = useMemo(() => headerHeight + 100, [headerHeight]);
+  
+  const getCategoryPositions = useCallback((): CategoryPosition[] => {
+    const containers = document.querySelectorAll<HTMLElement>('[id^="category-container-"]');
     
-    containers.forEach((container, index) => {
-      const htmlElement = container as HTMLElement;
-      const categoryId = container.id.replace('category-container-', '');
-      const startY = htmlElement.offsetTop;
-      
-      let endY;
-      if (index === containers.length - 1) {
-        endY = startY + htmlElement.offsetHeight;
-      } else {
-        const nextContainer = containers[index + 1] as HTMLElement;
-        endY = nextContainer.offsetTop;
-      }
-      
-      categoriesMap.push({
-        id: categoryId,
-        startY,
-        endY,
-        element: htmlElement
-      });
+    return Array.from(containers).map(element => ({
+      id: element.id.replace('category-container-', ''),
+      element,
+      top: element.offsetTop,
+      bottom: element.offsetTop + element.offsetHeight
+    }));
+  }, []);
+  
+  const findActiveCategory = useCallback((scrollY: number): string | null => {
+    const positions = getCategoryPositions();
+    const targetY = scrollY + SCROLL_OFFSET;
+    
+    const activePosition = positions.find(pos => 
+      targetY >= pos.top && targetY < pos.bottom
+    );
+    
+    if (activePosition) {
+      return activePosition.id;
+    }
+    
+    const categoriesAbove = positions.filter(pos => pos.top <= targetY);
+    if (categoriesAbove.length > 0) {
+      return categoriesAbove[categoriesAbove.length - 1].id;
+    }
+    
+    return positions[0]?.id || null;
+  }, [SCROLL_OFFSET, getCategoryPositions]);
+  
+  const updateActiveCategory = useCallback(() => {
+    if (isUserScrolling) return;
+    
+    const newActiveCategory = findActiveCategory(window.scrollY);
+    
+    if (newActiveCategory && newActiveCategory !== activeCategory) {
+      setActiveCategory(newActiveCategory);
+    }
+  }, [activeCategory, findActiveCategory, isUserScrolling]);
+  
+  const scrollToCategory = useCallback((categoryId: string) => {
+    const element = document.getElementById(`category-container-${categoryId}`);
+    if (!element) return;
+    
+    setIsUserScrolling(true);
+    setActiveCategory(categoryId);
+    
+    const targetY = element.offsetTop - headerHeight - 16;
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: 'smooth'
     });
     
-    categoriesMapRef.current = categoriesMap;
-    console.log('Categories map built:', categoriesMap.map(c => ({
-      id: c.id,
-      start: c.startY,
-      end: c.endY,
-      height: c.endY - c.startY
-    })));
-    
-    return categoriesMap;
-  }, []);
-
-  const calculateCurrentCategory = useCallback(() => {
-    if (isManualScroll) return;
-    
-    const categoriesMap = categoriesMapRef.current;
-    if (categoriesMap.length === 0) {
-      buildCategoriesMap();
-      return;
-    }
-    
-    const referenceY = window.scrollY + headerHeight + 50;
-    let currentCategory = null;
-    
-    for (const category of categoriesMap) {
-      if (referenceY >= category.startY && referenceY < category.endY) {
-        currentCategory = category.id;
-        break;
-      }
-    }
-    
-    if (!currentCategory) {
-      const visibleCategories = categoriesMap.filter(c => c.startY <= referenceY);
-      if (visibleCategories.length > 0) {
-        currentCategory = visibleCategories[visibleCategories.length - 1].id;
-      }
-    }
-    
-    if (currentCategory) {
-      setSelectedCategory(prevCategory => {
-        if (prevCategory !== currentCategory) {
-          console.log(`Category updated: ${prevCategory} -> ${currentCategory}`);
-          return currentCategory;
-        }
-        return prevCategory;
-      });
-    }
-  }, [isManualScroll, headerHeight, buildCategoriesMap]);
-
-  const setupScrollHighlighting = useCallback(() => {
-    buildCategoriesMap();
-    
-    let ticking = false;
-    
-    const scrollHandler = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          calculateCurrentCategory();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    
     setTimeout(() => {
-      calculateCurrentCategory();
-    }, 100);
-    
-    window.addEventListener('scroll', scrollHandler, { passive: true });
-    
-    const resizeHandler = () => {
-      setTimeout(buildCategoriesMap, 200);
-    };
-    window.addEventListener('resize', resizeHandler);
-    
-    console.log('Positional scroll system activated');
-    
-    return () => {
-      window.removeEventListener('scroll', scrollHandler);
-      window.removeEventListener('resize', resizeHandler);
-    };
-  }, [calculateCurrentCategory, buildCategoriesMap]);
-
-  const scrollToCategory = (categoryId: string) => {
-    console.log('Manual scroll to category:', categoryId);
-    
-    setIsManualScroll(true);
-    setSelectedCategory(categoryId);
-
-    const element = document.getElementById(`category-container-${categoryId}`);
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
+      setIsUserScrolling(false);
+    }, 1000);
+  }, [headerHeight]);
+  
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
+  const initializeCategory = useCallback((categoryId: string | null) => {
+    if (categoryId && !activeCategory) {
+      setActiveCategory(categoryId);
     }
-
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      console.log('Manual scroll completed, re-enabling auto-detection');
-      setIsManualScroll(false);
-      buildCategoriesMap();
-      setTimeout(calculateCurrentCategory, 200);
-    }, 1500);
-  };
-
+  }, [activeCategory]);
+  
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setShowBackToTop(scrollTop > 300);
+      setShowBackToTop(window.scrollY > 300);
+      
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateActiveCategory, 50);
     };
     
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
+    updateActiveCategory();
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
     };
-  }, []);
-
-  useEffect(() => {
-    const cleanup = setupScrollHighlighting();
-    return cleanup;
-  }, [setupScrollHighlighting]);
+  }, [updateActiveCategory]);
   
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
   useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
+    const handleResize = () => {
+      setTimeout(updateActiveCategory, 100);
     };
-  }, []);
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updateActiveCategory]);
   
   return {
-    selectedCategory,
-    setSelectedCategory,
+    selectedCategory: activeCategory,
+    setSelectedCategory: setActiveCategory,
     showBackToTop,
-    menuRef,
+    menuRef: { current: null }, // Compatibility with existing interface
     scrollToCategory,
     scrollToTop,
     initializeCategory,
-    setupScrollHighlighting
+    setupScrollHighlighting: () => () => {} // Compatibility method
   };
 };
