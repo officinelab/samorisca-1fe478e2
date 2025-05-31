@@ -107,12 +107,14 @@ export const PublicMenuLayout: React.FC<PublicMenuLayoutProps> = ({
         openCart={openCart}
       />
 
-      {/* Indicatore di caricamento lingua ottimizzato */}
-      <LanguageLoadingIndicator 
-        isVisible={isLoading}
-        isLanguageChange={true}
-        targetLanguage={language}
-      />
+      {/* Indicatore di caricamento solo durante i caricamenti effettivi */}
+      {isLoading && categories.length === 0 && (
+        <LanguageLoadingIndicator 
+          isVisible={true}
+          isLanguageChange={false}
+          targetLanguage={language}
+        />
+      )}
 
       {/* CategorySidebar fuori dal container solo per mobile */}
       {deviceView === 'mobile' && (
