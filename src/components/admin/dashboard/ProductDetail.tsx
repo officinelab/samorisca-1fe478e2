@@ -8,11 +8,13 @@ import { ProductFeaturesIcons } from "@/components/public-menu/product-card/Prod
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
+
 interface ProductDetailProps {
   product: Product | null;
   selectedCategory: Category | null;
   onEditProduct: () => void;
 }
+
 const ProductDetail: React.FC<ProductDetailProps> = ({
   product,
   selectedCategory,
@@ -39,8 +41,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     value: Number(product.price_variant_2_value).toFixed(2)
   } : null].filter(Boolean);
   const isActive = product.is_active;
+  
   return <div className="h-full w-full flex flex-col bg-white px-[20px] py-[20px]">
-      {/* Header ristrutturato con flex per pulsante Modifica */}
+      {/* Header ristrutturato con layout responsivo */}
       <Card className="mb-4">
         <div className="flex flex-col md:flex-row gap-6 p-6">
           {/* Immagine grande */}
@@ -49,7 +52,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           </div>
           {/* Header info principali + azioni */}
           <div className="flex-1 flex flex-col gap-2">
-            <div className="flex flex-row items-start justify-between mb-2">
+            {/* Layout Desktop: Flex row con justify-between */}
+            <div className="hidden md:flex md:flex-row md:items-start md:justify-between mb-2">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="text-2xl font-bold">{product.title}</h2>
@@ -72,6 +76,35 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 </Button>
               </div>
             </div>
+
+            {/* Layout Mobile: Stack verticale */}
+            <div className="md:hidden flex flex-col gap-2 mb-2">
+              {/* Prima riga: Solo titolo e badge */}
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-2xl font-bold">{product.title}</h2>
+                {isActive ? <Badge variant="default" className="ml-1">Attivo</Badge> : <Badge variant="secondary" className="ml-1">Disattivo</Badge>}
+                {label && <Badge style={label.color ? {
+                backgroundColor: label.color,
+                color: label.text_color ?? "#fff"
+              } : {}}>
+                    {label.title}
+                  </Badge>}
+              </div>
+              
+              {/* Seconda riga: Categoria */}
+              <div className="text-gray-500 text-sm">
+                Categoria: <span className="font-semibold">{selectedCategory?.title || "-"}</span>
+              </div>
+              
+              {/* Terza riga: Pulsante Modifica */}
+              <div className="flex justify-start">
+                <Button size="sm" onClick={onEditProduct} variant="outline">
+                  <Edit className="w-4 h-4 mr-1" />
+                  Modifica
+                </Button>
+              </div>
+            </div>
+
             <div>
               <Label className="text-xs mb-0">Descrizione</Label>
               <div className="text-gray-600 whitespace-pre-line mt-1">
@@ -147,4 +180,5 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       </Card>
     </div>;
 };
+
 export default ProductDetail;
