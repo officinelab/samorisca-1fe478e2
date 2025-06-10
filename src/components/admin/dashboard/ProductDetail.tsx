@@ -23,8 +23,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   if (!product) {
     return <div className="h-full flex items-center justify-center text-gray-500">
         Seleziona un prodotto per visualizzare i dettagli.
-      </div>
-  </div>;
+      </div>;
   }
 
   // Sezione Label prodotto
@@ -43,10 +42,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   } : null].filter(Boolean);
   const isActive = product.is_active;
   
-  return <div className="h-full w-full flex flex-col bg-white overflow-y-auto">
-    <div className="px-[20px] py-[20px] space-y-4">
+  return <div className="h-full w-full flex flex-col bg-white px-[20px] py-[20px]">
       {/* Header ristrutturato con layout responsivo */}
-      <Card className="mb-4 flex-shrink-0">
+      <Card className="mb-4">
         <div className="flex flex-col md:flex-row gap-6 p-6">
           {/* Immagine grande */}
           <div className="flex-shrink-0 flex justify-center items-center">
@@ -141,7 +139,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
       </Card>
       {/* Allergeni */}
-      {allergens.length > 0 && <Card className="mb-4 flex-shrink-0">
+      {allergens.length > 0 && <Card className="mb-4">
           <CardContent>
             <Label className="text-xs">Allergeni</Label>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -153,7 +151,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           </CardContent>
         </Card>}
       {/* Dettagli tecnici */}
-      <Card className="flex-shrink-0">
+      <Card>
         <CardContent>
           <Label className="text-xs">Informazioni tecniche</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
