@@ -158,8 +158,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
       </div>
 
       {/* Layout Mobile: Stack verticale ottimizzato */}
-      <div className="md:hidden p-3 space-y-3">
-        {/* Header con immagine e titolo completo */}
+      <div className="md:hidden p-3 space-y-2">
+        {/* Header con immagine, titolo e prezzo */}
         <div className="flex items-start gap-3">
           {/* Immagine */}
           <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -174,25 +174,26 @@ const ProductItem: React.FC<ProductItemProps> = ({
             )}
           </div>
 
-          {/* Info principale - solo titolo e status */}
+          {/* Colonna titolo e prezzo */}
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-gray-900 leading-tight">{product.title}</h3>
+            
+            {/* Prezzo subito sotto il titolo */}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm font-semibold text-gray-900">
+                {Number(product.price_standard).toFixed(2)} €
+              </span>
+              {product.has_price_suffix && product.price_suffix && (
+                <span className="text-xs text-gray-500">{product.price_suffix}</span>
+              )}
+            </div>
+
             {!product.is_active && (
               <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium mt-1">
                 Non disponibile
               </span>
             )}
           </div>
-        </div>
-
-        {/* Riga prezzo - allineato a destra */}
-        <div className="flex justify-end items-center gap-2">
-          <span className="text-lg font-semibold text-gray-900">
-            {Number(product.price_standard).toFixed(2)} €
-          </span>
-          {product.has_price_suffix && product.price_suffix && (
-            <span className="text-sm text-gray-500">{product.price_suffix}</span>
-          )}
         </div>
 
         {/* Descrizione */}
