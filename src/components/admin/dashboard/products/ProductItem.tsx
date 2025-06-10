@@ -159,7 +159,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
 
       {/* Layout Mobile: Stack verticale ottimizzato */}
       <div className="md:hidden p-3 space-y-3">
-        {/* Header con immagine, titolo e azioni */}
+        {/* Header con immagine e titolo completo */}
         <div className="flex items-start gap-3">
           {/* Immagine */}
           <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -174,57 +174,25 @@ const ProductItem: React.FC<ProductItemProps> = ({
             )}
           </div>
 
-          {/* Info principale */}
+          {/* Info principale - solo titolo e status */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 truncate">{product.title}</h3>
-                {!product.is_active && (
-                  <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium mt-1">
-                    Non disponibile
-                  </span>
-                )}
-              </div>
-              
-              {/* Azioni rapide */}
-              <div className="flex items-center gap-1 ml-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onEdit();
-                  }}
-                  tabIndex={-1}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={e => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
-                  tabIndex={-1}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Prezzo */}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-lg font-semibold text-gray-900">
-                {Number(product.price_standard).toFixed(2)} €
+            <h3 className="text-base font-semibold text-gray-900 leading-tight">{product.title}</h3>
+            {!product.is_active && (
+              <span className="inline-block text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-medium mt-1">
+                Non disponibile
               </span>
-              {product.has_price_suffix && product.price_suffix && (
-                <span className="text-sm text-gray-500">{product.price_suffix}</span>
-              )}
-            </div>
+            )}
           </div>
+        </div>
+
+        {/* Riga prezzo - allineato a destra */}
+        <div className="flex justify-end items-center gap-2">
+          <span className="text-lg font-semibold text-gray-900">
+            {Number(product.price_standard).toFixed(2)} €
+          </span>
+          {product.has_price_suffix && product.price_suffix && (
+            <span className="text-sm text-gray-500">{product.price_suffix}</span>
+          )}
         </div>
 
         {/* Descrizione */}
@@ -232,7 +200,7 @@ const ProductItem: React.FC<ProductItemProps> = ({
           <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
         )}
 
-        {/* Footer con allergeni e controlli riordino */}
+        {/* Footer con allergeni e controlli */}
         <div className="flex items-center justify-between">
           {/* Allergeni */}
           <div className="flex-1">
@@ -255,8 +223,35 @@ const ProductItem: React.FC<ProductItemProps> = ({
             )}
           </div>
 
-          {/* Controlli riordino */}
+          {/* Azioni e controlli riordino */}
           <div className="flex items-center gap-1 ml-3">
+            {/* Azioni Edit/Delete */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={e => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              tabIndex={-1}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={e => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              tabIndex={-1}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            
+            {/* Controlli riordino */}
             <Button
               variant="ghost"
               size="icon"
