@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from "uuid";
 
@@ -68,6 +67,12 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         fontStyle: "italic",
         alignment: "left",
         margin: { top: 2, right: 0, bottom: 0, left: 0 }
+      },
+      productFeatures: {
+        iconSize: 16,
+        iconSpacing: 8,
+        marginTop: 4,
+        marginBottom: 4
       },
       priceVariants: {
         visible: true,

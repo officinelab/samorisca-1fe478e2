@@ -56,6 +56,12 @@ export const modernLayout: PrintLayout = {
       alignment: "left",
       margin: { top: 3, right: 0, bottom: 0, left: 0 }
     },
+    productFeatures: {
+      iconSize: 18,
+      iconSpacing: 10,
+      marginTop: 6,
+      marginBottom: 6
+    },
     priceVariants: {
       fontFamily: "Helvetica",
       fontSize: 12,

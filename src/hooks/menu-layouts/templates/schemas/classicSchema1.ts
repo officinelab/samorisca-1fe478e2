@@ -62,6 +62,12 @@ export const classicLayoutSchema1: PrintLayout = {
       alignment: "left",
       margin: { top: 2, right: 0, bottom: 0, left: 0 },
     },
+    productFeatures: {
+      iconSize: 16,
+      iconSpacing: 8,
+      marginTop: 4,
+      marginBottom: 4
+    },
     priceVariants: {
       visible: true,
       fontFamily: "Times New Roman",

@@ -56,6 +56,12 @@ export const classicLayout: PrintLayout = {
       alignment: "center",
       margin: { top: 0, right: 10, bottom: 0, left: 0 }
     },
+    productFeatures: {
+      iconSize: 16,
+      iconSpacing: 8,
+      marginTop: 4,
+      marginBottom: 4
+    },
     priceVariants: {
       fontFamily: "Arial",
       fontSize: 10,

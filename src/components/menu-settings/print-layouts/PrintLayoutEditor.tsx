@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
@@ -46,6 +47,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
     handleAllergensItemChange,
+    handleProductFeaturesChange,
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -59,7 +61,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
       ...(page.oddPages ? [page.oddPages.marginTop, page.oddPages.marginRight, page.oddPages.marginBottom, page.oddPages.marginLeft] : []),
       ...(page.evenPages ? [page.evenPages.marginTop, page.evenPages.marginRight, page.evenPages.marginBottom, page.evenPages.marginLeft] : [])
     ];
-    const allFontSizes = [...Object.values(editedLayout.elements).map(e => e.fontSize)];
+    
+    // Fix: filtra solo gli elementi che hanno fontSize
+    const elementsWithFontSize = Object.values(editedLayout.elements).filter(e => 'fontSize' in e && typeof e.fontSize === 'number');
+    const allFontSizes = elementsWithFontSize.map(e => (e as any).fontSize);
+    
     if (allMargins.some(m => m < 0)) {
       setValidationError("I margini devono essere ≥ 0");
       return false;
@@ -110,6 +116,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleAllergensItemTitleChange={handleAllergensItemTitleChange}
               handleAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
               handleAllergensItemChange={handleAllergensItemChange}
+              handleProductFeaturesChange={handleProductFeaturesChange}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}
             />
@@ -121,4 +128,3 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 };
 
 export default PrintLayoutEditor;
-// Il file ora è diviso in più moduli/componenti per una maggiore manutenibilità.
