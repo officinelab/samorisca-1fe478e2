@@ -165,7 +165,8 @@ const baseAllergens = {
     spacing: 15,
     backgroundColor: "#f8f9fa",
     borderRadius: 4,
-    padding: 12
+    padding: 12,
+    iconSize: 16
   }
 };
 

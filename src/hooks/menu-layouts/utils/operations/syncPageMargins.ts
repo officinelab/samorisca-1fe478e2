@@ -114,7 +114,7 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
     };
   }
   
-  // Ensure allergens settings exist, including item.description
+  // Ensure allergens settings exist, including item.description and iconSize
   if (!syncedLayout.allergens) {
     syncedLayout.allergens = {
       title: {
@@ -166,7 +166,8 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
         spacing: 10,
         backgroundColor: "#f9f9f9",
         borderRadius: 4,
-        padding: 8
+        padding: 8,
+        iconSize: 16
       }
     };
   } else {
@@ -201,7 +202,8 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
       spacing: 10,
       backgroundColor: "#f9f9f9",
       borderRadius: 4,
-      padding: 8
+      padding: 8,
+      iconSize: 16
     };
     syncedLayout.allergens.item = {
       ...item,
@@ -219,7 +221,8 @@ export const syncPageMargins = (layout: PrintLayout): PrintLayout => {
       spacing: item.spacing ?? 10,
       backgroundColor: item.backgroundColor ?? "#f9f9f9",
       borderRadius: item.borderRadius ?? 4,
-      padding: item.padding ?? 8
+      padding: item.padding ?? 8,
+      iconSize: item.iconSize ?? 16
     };
   }
   return syncedLayout;
