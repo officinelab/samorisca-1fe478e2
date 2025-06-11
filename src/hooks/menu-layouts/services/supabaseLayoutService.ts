@@ -273,7 +273,7 @@ async function initializeDefaultLayouts(): Promise<{
   success: boolean;
   layouts?: PrintLayout[];
   error?: string;
-}> => {
+}> {
   try {
     // Trasforma i layout predefiniti aggiungendo UUID
     const layoutsWithId = defaultLayouts.map(layout => ({
