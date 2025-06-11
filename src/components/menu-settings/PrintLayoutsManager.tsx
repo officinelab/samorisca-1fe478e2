@@ -45,8 +45,9 @@ const PrintLayoutsManager = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-card rounded-lg shadow px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
+      {/* Header row with both sections */}
+      <div className="flex flex-col xl:flex-row gap-6">
+        <div className="bg-card rounded-lg shadow px-4 py-3 flex-1">
           <div className="flex items-center gap-2 text-xl font-semibold">
             <LayoutGrid size={22} className="text-primary" />
             Gestione Layout di Stampa
@@ -55,13 +56,13 @@ const PrintLayoutsManager = () => {
             È disponibile un solo layout di stampa che puoi personalizzare secondo le tue esigenze.
           </div>
         </div>
+        
+        <div className="xl:w-[280px] flex-shrink-0">
+          <DefaultPrintLayoutCard layout={defaultLayout} />
+        </div>
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="w-full lg:w-[260px] flex-shrink-0">
-          <DefaultPrintLayoutCard layout={defaultLayout} />
-        </div>
-
         <div className="flex-1 flex flex-col gap-6 min-w-0">
           <div className="flex gap-2 mb-2 lg:hidden">
             <button

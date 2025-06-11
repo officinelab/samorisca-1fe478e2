@@ -1,3 +1,5 @@
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
@@ -37,84 +39,102 @@ const ElementsTab = ({
 
   return (
     <div className="space-y-4">
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="category">
-          <AccordionTrigger>Categoria</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.category}
-              onChange={(field, value) => onElementChange("category", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("category", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+      <Tabs defaultValue="categoria" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="categoria">Categoria e Prodotto</TabsTrigger>
+          <TabsTrigger value="descrizioni">Descrizioni</TabsTrigger>
+          <TabsTrigger value="prezzi">Prezzi e Allergeni</TabsTrigger>
+        </TabsList>
 
-        <AccordionItem value="title">
-          <AccordionTrigger>Titolo Prodotto</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.title}
-              onChange={(field, value) => onElementChange("title", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("title", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+        <TabsContent value="categoria" className="space-y-4 pt-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="category">
+              <AccordionTrigger>Categoria</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.category}
+                  onChange={(field, value) => onElementChange("category", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("category", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-        <AccordionItem value="description">
-          <AccordionTrigger>Descrizione Prodotto</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.description}
-              onChange={(field, value) => onElementChange("description", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("description", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+            <AccordionItem value="title">
+              <AccordionTrigger>Titolo Prodotto</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.title}
+                  onChange={(field, value) => onElementChange("title", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("title", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </TabsContent>
 
-        <AccordionItem value="descriptionEng">
-          <AccordionTrigger>Descrizione Prodotto ENG</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.descriptionEng}
-              onChange={(field, value) => onElementChange("descriptionEng", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("descriptionEng", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+        <TabsContent value="descrizioni" className="space-y-4 pt-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="description">
+              <AccordionTrigger>Descrizione Prodotto</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.description}
+                  onChange={(field, value) => onElementChange("description", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("description", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-        <AccordionItem value="allergens">
-          <AccordionTrigger>Allergeni</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.allergensList}
-              onChange={(field, value) => onElementChange("allergensList", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("allergensList", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+            <AccordionItem value="descriptionEng">
+              <AccordionTrigger>Descrizione Prodotto ENG</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.descriptionEng}
+                  onChange={(field, value) => onElementChange("descriptionEng", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("descriptionEng", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </TabsContent>
 
-        <AccordionItem value="price">
-          <AccordionTrigger>Prezzo</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.price}
-              onChange={(field, value) => onElementChange("price", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("price", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
+        <TabsContent value="prezzi" className="space-y-4 pt-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="allergens">
+              <AccordionTrigger>Allergeni</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.allergensList}
+                  onChange={(field, value) => onElementChange("allergensList", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("allergensList", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-        <AccordionItem value="priceVariants">
-          <AccordionTrigger>Varianti Prezzo</AccordionTrigger>
-          <AccordionContent>
-            <ElementEditor
-              element={layout.elements.priceVariants}
-              onChange={(field, value) => onElementChange("priceVariants", field, value)}
-              onMarginChange={(field, value) => onElementMarginChange("priceVariants", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+            <AccordionItem value="price">
+              <AccordionTrigger>Prezzo</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.price}
+                  onChange={(field, value) => onElementChange("price", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("price", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="priceVariants">
+              <AccordionTrigger>Varianti Prezzo</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.priceVariants}
+                  onChange={(field, value) => onElementChange("priceVariants", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("priceVariants", field, value)}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
