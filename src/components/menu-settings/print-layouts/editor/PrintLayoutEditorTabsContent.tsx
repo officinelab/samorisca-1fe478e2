@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,8 @@ import CategoryNotesTab from "./CategoryNotesTab";
 import ProductFeaturesTab from "./ProductFeaturesTab";
 import SpacingTab from "./SpacingTab";
 import PageSettingsTab from "./PageSettingsTab";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig } from "@/types/printLayout";
+import ServicePriceTab from "./ServicePriceTab";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig, ServicePriceConfig } from "@/types/printLayout";
 
 type TabKey = 
   | "generale" 
@@ -20,6 +20,7 @@ type TabKey =
   | "allergeni" 
   | "notecategorie"
   | "caratteristicheprodotto"
+  | "prezzoservizio"
   | "spaziatura" 
   | "pagina";
 
@@ -59,6 +60,8 @@ interface PrintLayoutEditorTabsContentProps {
   handleProductFeaturesIconChange: (field: keyof ProductFeaturesConfig["icon"], value: number) => void;
   handleProductFeaturesTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
   handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleServicePriceChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleServicePriceMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleSaveWithValidation: () => void;
   validationError: string | null;
 }
@@ -99,6 +102,8 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
   handleProductFeaturesIconChange,
   handleProductFeaturesTitleChange,
   handleProductFeaturesTitleMarginChange,
+  handleServicePriceChange,
+  handleServicePriceMarginChange,
   handleSaveWithValidation,
   validationError
 }) => {
@@ -166,6 +171,14 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
             onProductFeaturesIconChange={handleProductFeaturesIconChange}
             onProductFeaturesTitleChange={handleProductFeaturesTitleChange}
             onProductFeaturesTitleMarginChange={handleProductFeaturesTitleMarginChange}
+          />
+        );
+      case "prezzoservizio":
+        return (
+          <ServicePriceTab
+            layout={editedLayout}
+            onServicePriceChange={handleServicePriceChange}
+            onServicePriceMarginChange={handleServicePriceMarginChange}
           />
         );
       case "spaziatura":

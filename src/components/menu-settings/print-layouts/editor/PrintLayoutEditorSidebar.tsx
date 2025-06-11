@@ -9,7 +9,8 @@ import {
   Type, 
   Sparkles,
   ShieldAlert, 
-  StickyNote
+  StickyNote,
+  DollarSign
 } from "lucide-react";
 
 type TabKey = 
@@ -20,6 +21,7 @@ type TabKey =
   | "notecategorie"
   | "spaziatura" 
   | "caratteristicheprodotto"
+  | "prezzoservizio"
   | "allergeni";
 
 interface PrintLayoutEditorSidebarProps {
@@ -36,6 +38,7 @@ const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditor
     { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
     { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
     { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
+    { key: "prezzoservizio" as const, label: "Prezzo Servizio", icon: DollarSign },
     { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
   ];
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
@@ -19,6 +18,7 @@ type TabKey =
   | "allergeni"
   | "notecategorie"
   | "caratteristicheprodotto"
+  | "prezzoservizio"
   | "spaziatura"
   | "pagina";
 
@@ -60,6 +60,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
     handleProductFeaturesTitleMarginChange,
+    handleServicePriceChange,
+    handleServicePriceMarginChange,
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -143,6 +145,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleProductFeaturesIconChange={handleProductFeaturesIconChange}
               handleProductFeaturesTitleChange={handleProductFeaturesTitleChange}
               handleProductFeaturesTitleMarginChange={handleProductFeaturesTitleMarginChange}
+              handleServicePriceChange={handleServicePriceChange}
+              handleServicePriceMarginChange={handleServicePriceMarginChange}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}
             />

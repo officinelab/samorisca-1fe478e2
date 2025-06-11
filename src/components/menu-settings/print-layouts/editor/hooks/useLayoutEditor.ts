@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig, ServicePriceConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
@@ -10,6 +9,7 @@ import { useCategoryNotesTab } from "./useCategoryNotesTab";
 import { useProductFeaturesTab } from "./useProductFeaturesTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
+import { useServicePriceTab } from "./useServicePriceTab";
 
 // Util per valori safe
 function ensurePageMargins(layout: PrintLayout): PrintLayout {
@@ -46,6 +46,17 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     alignment: layout.cover?.subtitle?.alignment ?? "center",
     margin: layout.cover?.subtitle?.margin ?? { top: 5, right: 0, bottom: 0, left: 0 },
     menuSubtitle: layout.cover?.subtitle?.menuSubtitle ?? "",
+  };
+
+  // Service Price fallback
+  const servicePrice: ServicePriceConfig = {
+    visible: typeof layout.servicePrice?.visible === "boolean" ? layout.servicePrice.visible : true,
+    fontFamily: layout.servicePrice?.fontFamily ?? "Arial",
+    fontSize: layout.servicePrice?.fontSize ?? 12,
+    fontColor: layout.servicePrice?.fontColor ?? "#000000",
+    fontStyle: layout.servicePrice?.fontStyle ?? "normal",
+    alignment: layout.servicePrice?.alignment ?? "left",
+    margin: layout.servicePrice?.margin ?? { top: 0, right: 0, bottom: 0, left: 0 }
   };
 
   // Allergens item.description safe fallback (fix: cast e nullish checks)
@@ -108,6 +119,7 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     cover: { logo, title, subtitle },
     categoryNotes,
     productFeatures,
+    servicePrice,
     allergens: {
       ...layout.allergens,
       item: {
@@ -187,6 +199,12 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleProductFeaturesTitleMarginChange
   } = useProductFeaturesTab(setEditedLayout);
 
+  // Service Price tab
+  const {
+    handleServicePriceChange,
+    handleServicePriceMarginChange
+  } = useServicePriceTab(setEditedLayout);
+
   // Spacing
   const { handleSpacingChange } = useSpacingTab(setEditedLayout);
 
@@ -240,6 +258,8 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
     handleProductFeaturesTitleMarginChange,
+    handleServicePriceChange,
+    handleServicePriceMarginChange,
     handleSave
   };
 }

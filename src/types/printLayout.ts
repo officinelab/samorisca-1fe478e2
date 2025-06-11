@@ -1,4 +1,3 @@
-
 // Struttura aggiornata e commentata secondo la nuova specifica
 
 export type FontStyle = 'normal' | 'italic' | 'bold';
@@ -139,6 +138,11 @@ export type PrintLayoutPageConfig = PageMargins & {
   evenPages: PageMargins;
 };
 
+/**
+ * Configurazione specifica per il prezzo del servizio
+ */
+export type ServicePriceConfig = PrintLayoutElementConfig;
+
 /** -- STRUTTURA PRINCIPALE LAYOUT -- */
 export type PrintLayout = {
   id: string;
@@ -151,6 +155,7 @@ export type PrintLayout = {
   allergens: AllergensConfig;
   categoryNotes: CategoryNotesConfig;  // configurazione note categorie
   productFeatures: ProductFeaturesConfig;  // NUOVO: configurazione caratteristiche prodotto per stampa
+  servicePrice: ServicePriceConfig;  // NUOVO: configurazione prezzo servizio
   spacing: MenuSpacing;
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;
