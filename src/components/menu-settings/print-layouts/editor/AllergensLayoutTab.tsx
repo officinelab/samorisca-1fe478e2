@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -97,6 +98,15 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
     iconSize: 16
   };
 
+  // Gestori per i testi dei campi allergeni
+  const handleAllergensTitleTextChange = (value: string) => {
+    onAllergensTitleChange('text', value);
+  };
+
+  const handleAllergensDescriptionTextChange = (value: string) => {
+    onAllergensDescriptionChange('text', value);
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="titolo">
@@ -114,7 +124,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
               <AllergensMenuSettings
                 title="Titolo Menu Allergeni (stampabile)"
                 placeholder="Inserisci il titolo del menu allergeni..."
-                settingKey="allergensMenuTitle"
+                value={(allergensTitle as any).text || ''}
+                onChange={handleAllergensTitleTextChange}
                 description="Questo titolo verrà utilizzato nel menu stampabile"
               />
 
@@ -135,7 +146,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
               <AllergensMenuSettings
                 title="Descrizione Menu Allergeni (stampabile)"
                 placeholder="Inserisci la descrizione del menu allergeni..."
-                settingKey="allergensMenuDescription"
+                value={(allergensDescription as any).text || ''}
+                onChange={handleAllergensDescriptionTextChange}
                 description="Questa descrizione verrà utilizzata nel menu stampabile"
               />
 

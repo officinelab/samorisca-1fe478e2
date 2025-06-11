@@ -1,41 +1,36 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface AllergensMenuSettingsProps {
   title: string;
   placeholder: string;
-  settingKey: string;
+  value: string;
+  onChange: (value: string) => void;
   description: string;
 }
 
 const AllergensMenuSettings: React.FC<AllergensMenuSettingsProps> = ({
   title,
   placeholder,
-  settingKey,
+  value,
+  onChange,
   description
 }) => {
-  const { siteSettings, saveSetting } = useSiteSettings();
-
-  const handleChange = async (value: string) => {
-    console.log(`Saving ${settingKey}:`, value);
-    const success = await saveSetting(settingKey, value);
-    console.log("Save result:", success);
+  const handleChange = (newValue: string) => {
+    console.log(`Updating allergens field:`, newValue);
+    onChange(newValue);
   };
-
-  const currentValue = siteSettings?.[settingKey] || '';
 
   return (
     <div className="space-y-4 mb-6">
       <div className="space-y-2">
-        <Label htmlFor={settingKey}>{title}</Label>
+        <Label htmlFor={`allergens-${title}`}>{title}</Label>
         <Input
-          id={settingKey}
+          id={`allergens-${title}`}
           type="text"
-          value={currentValue}
+          value={value || ''}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
           className="w-full"
