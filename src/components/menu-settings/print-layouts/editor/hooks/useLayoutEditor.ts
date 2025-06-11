@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
@@ -87,6 +88,20 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     origHandleElementMarginChange(elementKey, marginKey, value);
   };
 
+  // Product Features
+  const handleProductFeaturesChange = (field: keyof ProductFeaturesConfig, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      elements: {
+        ...prev.elements,
+        productFeatures: {
+          ...prev.elements.productFeatures,
+          [field]: value
+        }
+      }
+    }));
+  };
+
   // Cover tab
   const {
     handleCoverLogoChange,
@@ -151,6 +166,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
     handleAllergensItemChange,
+    handleProductFeaturesChange,
     handleSave
   };
 }
