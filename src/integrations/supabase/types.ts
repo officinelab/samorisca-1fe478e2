@@ -312,38 +312,6 @@ export type Database = {
         }
         Relationships: []
       }
-      product_prices: {
-        Row: {
-          display_order: number
-          id: string
-          name: string | null
-          price: number
-          product_id: string | null
-        }
-        Insert: {
-          display_order?: number
-          id?: string
-          name?: string | null
-          price: number
-          product_id?: string | null
-        }
-        Update: {
-          display_order?: number
-          id?: string
-          name?: string | null
-          price?: number
-          product_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_prices_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       product_to_features: {
         Row: {
           feature_id: string | null

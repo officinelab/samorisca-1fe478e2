@@ -1,55 +1,56 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import GeneralTab from "./GeneralTab";
 import ElementsTab from "./ElementsTab";
-import SpacingTab from "./SpacingTab";
-import PageSettingsTab from "./PageSettingsTab";
 import CoverLayoutTab from "./CoverLayoutTab";
 import AllergensLayoutTab from "./AllergensLayoutTab";
+import SpacingTab from "./SpacingTab";
+import PageSettingsTab from "./PageSettingsTab";
 
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+type TabKey = "generale" | "elementi" | "copertina" | "allergeni" | "spaziatura" | "pagina";
 
-type TabKey =
-  | "generale"
-  | "elementi"
-  | "copertina"
-  | "allergeni"
-  | "spaziatura"
-  | "pagina";
-
-interface TabsContentProps {
+interface PrintLayoutEditorTabsContentProps {
   activeTab: TabKey;
-  editedLayout: any;
-  handleGeneralChange: any;
-  handleElementChange: any;
-  handleElementMarginChange: any;
-  handleSpacingChange: any;
-  handlePageMarginChange: any;
-  handleOddPageMarginChange: any;
-  handleEvenPageMarginChange: any;
-  handleToggleDistinctMargins: any;
-  handleCoverLogoChange: any;
-  handleCoverTitleChange: any;
-  handleCoverTitleMarginChange: any;
-  handleCoverSubtitleChange: any;
-  handleCoverSubtitleMarginChange: any;
-  handleAllergensTitleChange: any;
-  handleAllergensTitleMarginChange: any;
-  handleAllergensDescriptionChange: any;
-  handleAllergensDescriptionMarginChange: any;
-  handleAllergensItemNumberChange: any;
-  handleAllergensItemNumberMarginChange: any;
-  handleAllergensItemTitleChange: any;
-  handleAllergensItemTitleMarginChange: any;
-  handleAllergensItemChange: any;
-  handleSaveWithValidation: any;
+  editedLayout: PrintLayout;
+  handleGeneralChange: (field: string, value: string | boolean) => void;
+  handleElementChange: (
+    elementKey: keyof PrintLayout["elements"],
+    field: keyof PrintLayoutElementConfig,
+    value: any
+  ) => void;
+  handleElementMarginChange: (
+    elementKey: keyof PrintLayout["elements"],
+    marginKey: keyof PrintLayoutElementConfig["margin"],
+    value: number
+  ) => void;
+  handleSpacingChange: (spacingKey: keyof PrintLayout["spacing"], value: number) => void;
+  handlePageMarginChange: (marginKey: keyof PrintLayout["page"], value: number) => void;
+  handleOddPageMarginChange: (marginKey: keyof PrintLayout["page"]["oddPages"], value: number) => void;
+  handleEvenPageMarginChange: (marginKey: keyof PrintLayout["page"]["evenPages"], value: number) => void;
+  handleToggleDistinctMargins: (useDistinct: boolean) => void;
+  handleCoverLogoChange: (field: keyof PrintLayout["cover"]["logo"], value: any) => void;
+  handleCoverTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleCoverTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleCoverSubtitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleCoverSubtitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleAllergensTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensDescriptionChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleAllergensDescriptionMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensItemNumberChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleAllergensItemNumberMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensItemTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleAllergensItemTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensItemChange: (field: keyof PrintLayout["allergens"]["item"], value: any) => void;
+  handleProductFeaturesChange: (field: keyof ProductFeaturesConfig, value: number) => void;
+  handleSaveWithValidation: () => void;
   validationError: string | null;
 }
 
-const PrintLayoutEditorTabsContent: React.FC<TabsContentProps> = ({
+const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> = ({
   activeTab,
   editedLayout,
   handleGeneralChange,
@@ -74,123 +75,78 @@ const PrintLayoutEditorTabsContent: React.FC<TabsContentProps> = ({
   handleAllergensItemTitleChange,
   handleAllergensItemTitleMarginChange,
   handleAllergensItemChange,
+  handleProductFeaturesChange,
   handleSaveWithValidation,
-  validationError
-}) => (
-  <div className="py-4 px-2 md:px-8">
-    {activeTab === "generale" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Impostazioni generali</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-5 py-7">
-            <GeneralTab
-              layout={editedLayout}
-              onGeneralChange={handleGeneralChange}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
-    {activeTab === "elementi" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Elementi modificabili del menu</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-5 py-7">
-            <ElementsTab
-              layout={editedLayout}
-              onElementChange={handleElementChange}
-              onElementMarginChange={handleElementMarginChange}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
-    {activeTab === "copertina" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Copertina</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-3 sm:px-5 py-7">
-            <CoverLayoutTab
-              layout={editedLayout}
-              onCoverLogoChange={handleCoverLogoChange}
-              onCoverTitleChange={handleCoverTitleChange}
-              onCoverTitleMarginChange={handleCoverTitleMarginChange}
-              onCoverSubtitleChange={handleCoverSubtitleChange}
-              onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
-    {activeTab === "allergeni" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Pagina Allergeni</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-4 py-7">
-            <AllergensLayoutTab
-              layout={editedLayout}
-              onAllergensTitleChange={handleAllergensTitleChange}
-              onAllergensTitleMarginChange={handleAllergensTitleMarginChange}
-              onAllergensDescriptionChange={handleAllergensDescriptionChange}
-              onAllergensDescriptionMarginChange={handleAllergensDescriptionMarginChange}
-              onAllergensItemNumberChange={handleAllergensItemNumberChange}
-              onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
-              onAllergensItemTitleChange={handleAllergensItemTitleChange}
-              onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
-              onAllergensItemChange={handleAllergensItemChange}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
-    {activeTab === "spaziatura" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Spaziatura Menu</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-4 py-7">
-            <SpacingTab
-              layout={editedLayout}
-              onSpacingChange={handleSpacingChange}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
-    {activeTab === "pagina" && (
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2">Impostazioni Pagina</h3>
-        <Card className="shadow border bg-white/90 mb-5">
-          <CardContent className="px-4 py-7">
-            <PageSettingsTab
-              layout={editedLayout}
-              onPageMarginChange={handlePageMarginChange}
-              onOddPageMarginChange={handleOddPageMarginChange}
-              onEvenPageMarginChange={handleEvenPageMarginChange}
-              onToggleDistinctMargins={handleToggleDistinctMargins}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    )}
+  validationError,
+}) => {
+  return (
+    <div className="p-6 space-y-6">
+      {validationError && (
+        <Alert variant="destructive">
+          <AlertDescription>{validationError}</AlertDescription>
+        </Alert>
+      )}
 
-    <Separator className="my-6" />
+      {activeTab === "generale" && (
+        <GeneralTab layout={editedLayout} onGeneralChange={handleGeneralChange} />
+      )}
 
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-2 pb-4">
-      <div>
-        {validationError && (
-          <span className="text-sm text-red-500">{validationError}</span>
-        )}
+      {activeTab === "elementi" && (
+        <ElementsTab
+          layout={editedLayout}
+          onElementChange={handleElementChange}
+          onElementMarginChange={handleElementMarginChange}
+          onProductFeaturesChange={handleProductFeaturesChange}
+        />
+      )}
+
+      {activeTab === "copertina" && (
+        <CoverLayoutTab
+          layout={editedLayout}
+          onCoverLogoChange={handleCoverLogoChange}
+          onCoverTitleChange={handleCoverTitleChange}
+          onCoverTitleMarginChange={handleCoverTitleMarginChange}
+          onCoverSubtitleChange={handleCoverSubtitleChange}
+          onCoverSubtitleMarginChange={handleCoverSubtitleMarginChange}
+        />
+      )}
+
+      {activeTab === "allergeni" && (
+        <AllergensLayoutTab
+          layout={editedLayout}
+          onAllergensTitleChange={handleAllergensTitleChange}
+          onAllergensTitleMarginChange={handleAllergensTitleMarginChange}
+          onAllergensDescriptionChange={handleAllergensDescriptionChange}
+          onAllergensDescriptionMarginChange={handleAllergensDescriptionMarginChange}
+          onAllergensItemNumberChange={handleAllergensItemNumberChange}
+          onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
+          onAllergensItemTitleChange={handleAllergensItemTitleChange}
+          onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
+          onAllergensItemChange={handleAllergensItemChange}
+        />
+      )}
+
+      {activeTab === "spaziatura" && (
+        <SpacingTab layout={editedLayout} onSpacingChange={handleSpacingChange} />
+      )}
+
+      {activeTab === "pagina" && (
+        <PageSettingsTab
+          layout={editedLayout}
+          onPageMarginChange={handlePageMarginChange}
+          onOddPageMarginChange={handleOddPageMarginChange}
+          onEvenPageMarginChange={handleEvenPageMarginChange}
+          onToggleDistinctMargins={handleToggleDistinctMargins}
+        />
+      )}
+
+      <div className="flex justify-end pt-4 border-t">
+        <Button onClick={handleSaveWithValidation} size="lg">
+          Salva Layout
+        </Button>
       </div>
-      <Button
-        onClick={handleSaveWithValidation}
-        className="w-full md:w-auto mt-3 md:mt-0"
-        variant="default"
-      >
-        <Save size={18} className="mr-2" />
-        Salva modifiche
-      </Button>
     </div>
-  </div>
-);
+  );
+};
 
 export default PrintLayoutEditorTabsContent;

@@ -24,6 +24,16 @@ export type PrintLayoutElementConfig = {
   visible?: boolean; // opzionale
 };
 
+/**
+ * Configurazione specifica per le caratteristiche prodotto
+ */
+export type ProductFeaturesConfig = {
+  iconSize: number;      // dimensione delle icone in px
+  iconSpacing: number;   // spaziatura tra le icone in px
+  marginTop: number;     // margine superiore in px
+  marginBottom: number;  // margine inferiore in px
+};
+
 export type PageMargins = {
   marginTop: number;
   marginRight: number;
@@ -45,6 +55,7 @@ export type MenuElementsConfig = {
   description: PrintLayoutElementConfig;       // Descrizione prodotto (sempre visibile)
   descriptionEng: PrintLayoutElementConfig;    // Descrizione prodotto ENG (stessi campi di description)
   allergensList: PrintLayoutElementConfig;     // Allergeni prodotto (sempre visibile)
+  productFeatures: ProductFeaturesConfig;      // Caratteristiche prodotto (configurazione icone)
   price: PrintLayoutElementConfig;             // Prezzo (sempre visibile)
   suffix: Omit<PrintLayoutElementConfig, 'margin'> & {
     // Il suffisso del prezzo eredita i margini dal prezzo: niente margin qui

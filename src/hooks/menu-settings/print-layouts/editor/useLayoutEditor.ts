@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { PrintLayout, PrintLayoutElementConfig, ProductSchema } from '@/types/printLayout';
+import { PrintLayout, PrintLayoutElementConfig, ProductSchema, ProductFeaturesConfig } from '@/types/printLayout';
 
 const defaultCoverLogo = {
   imageUrl: "",
@@ -31,6 +31,13 @@ const defaultCoverSubtitle = {
   menuSubtitle: ""
 };
 
+const defaultProductFeatures = {
+  iconSize: 16,
+  iconSpacing: 8,
+  marginTop: 4,
+  marginBottom: 4
+};
+
 export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) {
   const [editedLayout, setEditedLayout] = useState<PrintLayout>({
     ...initialLayout,
@@ -39,6 +46,10 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
       logo: { ...defaultCoverLogo, ...initialLayout.cover?.logo },
       title: { ...defaultCoverTitle, ...initialLayout.cover?.title },
       subtitle: { ...defaultCoverSubtitle, ...initialLayout.cover?.subtitle }
+    },
+    elements: {
+      ...initialLayout.elements,
+      productFeatures: { ...defaultProductFeatures, ...initialLayout.elements?.productFeatures }
     }
   });
   const [activeTab, setActiveTab] = useState('generale');
@@ -77,6 +88,20 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
             ...(prev.elements[elementKey] && 'margin' in prev.elements[elementKey] ? (prev.elements[elementKey] as any).margin : {}),
             [marginKey]: value
           }
+        }
+      }
+    }));
+  }, []);
+
+  // Gestione delle modifiche alle caratteristiche prodotto
+  const handleProductFeaturesChange = useCallback((field: keyof ProductFeaturesConfig, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      elements: {
+        ...prev.elements,
+        productFeatures: {
+          ...prev.elements.productFeatures,
+          [field]: value
         }
       }
     }));
@@ -380,6 +405,7 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleGeneralChange,
     handleElementChange,
     handleElementMarginChange,
+    handleProductFeaturesChange,
     handleSpacingChange,
     handlePageMarginChange,
     handleOddPageMarginChange,
