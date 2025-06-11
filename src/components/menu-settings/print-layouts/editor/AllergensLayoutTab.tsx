@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { PrintLayout } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface AllergensLayoutTabProps {
   layout: PrintLayout;
@@ -33,6 +33,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
   onAllergensItemTitleMarginChange,
   onAllergensItemChange
 }) => {
+  const { siteSettings, saveSetting } = useSiteSettings();
+
   // Se le configurazioni di allergeni non esistono, usa valori predefiniti
   const allergensTitle = layout.allergens?.title || {
     visible: true,
@@ -84,6 +86,14 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
     iconSize: 16
   };
 
+  const handleMenuTitleChange = async (value: string) => {
+    await saveSetting('allergensMenuTitle', value);
+  };
+
+  const handleMenuDescriptionChange = async (value: string) => {
+    await saveSetting('allergensMenuDescription', value);
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="titolo">
@@ -97,6 +107,22 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
           <Card>
             <CardContent className="pt-6">
               <h4 className="text-lg font-medium mb-4">Titolo Tabella Allergeni</h4>
+              
+              <div className="space-y-4 mb-6">
+                <div className="space-y-2">
+                  <Label>Titolo Menu Allergeni (stampabile)</Label>
+                  <Input
+                    type="text"
+                    value={siteSettings.allergensMenuTitle || ''}
+                    onChange={(e) => handleMenuTitleChange(e.target.value)}
+                    placeholder="Inserisci il titolo del menu allergeni..."
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Questo titolo verrà utilizzato nel menu stampabile
+                  </p>
+                </div>
+              </div>
+
               <ElementEditor
                 element={allergensTitle}
                 onChange={onAllergensTitleChange}
@@ -110,6 +136,22 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
           <Card>
             <CardContent className="pt-6">
               <h4 className="text-lg font-medium mb-4">Descrizione</h4>
+              
+              <div className="space-y-4 mb-6">
+                <div className="space-y-2">
+                  <Label>Descrizione Menu Allergeni (stampabile)</Label>
+                  <Input
+                    type="text"
+                    value={siteSettings.allergensMenuDescription || ''}
+                    onChange={(e) => handleMenuDescriptionChange(e.target.value)}
+                    placeholder="Inserisci la descrizione del menu allergeni..."
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Questa descrizione verrà utilizzata nel menu stampabile
+                  </p>
+                </div>
+              </div>
+
               <ElementEditor
                 element={allergensDescription}
                 onChange={onAllergensDescriptionChange}

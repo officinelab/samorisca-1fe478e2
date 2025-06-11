@@ -28,7 +28,9 @@ export interface SiteSettings {
   browserTitle?: string;
   tokenPackagePrice?: string;
   tokenPackageAmount?: string;
-  monthlyTokensLimit?: string; // Nuovo campo per il limite mensile dei token
+  monthlyTokensLimit?: string;
+  allergensMenuTitle?: string; // Nuovo campo per il titolo del menu allergeni
+  allergensMenuDescription?: string; // Nuovo campo per la descrizione del menu allergeni
   [key: string]: any;
 }
 
