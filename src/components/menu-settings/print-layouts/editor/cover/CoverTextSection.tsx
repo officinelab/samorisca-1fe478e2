@@ -6,10 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
 import ElementEditor from "../../ElementEditor";
+import CoverLogoSection from "./CoverLogoSection";
 
 interface CoverTextSectionProps {
+  coverLogo: PrintLayout['cover']['logo'];
   coverTitle: PrintLayout['cover']['title'];
   coverSubtitle: PrintLayout['cover']['subtitle'];
+  onCoverLogoChange: (field: keyof PrintLayout['cover']['logo'], value: any) => void;
   onCoverTitleChange: (field: keyof PrintLayout['cover']['title'], value: any) => void;
   onCoverTitleMarginChange: (field: keyof PrintLayoutElementConfig['margin'], value: number) => void;
   onCoverSubtitleChange: (field: keyof PrintLayout['cover']['subtitle'], value: any) => void;
@@ -17,19 +20,28 @@ interface CoverTextSectionProps {
 }
 
 const CoverTextSection: React.FC<CoverTextSectionProps> = ({
+  coverLogo,
   coverTitle,
   coverSubtitle,
+  onCoverLogoChange,
   onCoverTitleChange,
   onCoverTitleMarginChange,
   onCoverSubtitleChange,
   onCoverSubtitleMarginChange
 }) => {
   return (
-    <Tabs defaultValue="titolo">
-      <TabsList className="w-full grid grid-cols-2">
+    <Tabs defaultValue="logo">
+      <TabsList className="w-full grid grid-cols-3">
+        <TabsTrigger value="logo">Logo</TabsTrigger>
         <TabsTrigger value="titolo">Titolo Menu</TabsTrigger>
         <TabsTrigger value="sottotitolo">Sottotitolo</TabsTrigger>
       </TabsList>
+      <TabsContent value="logo" className="space-y-4 pt-4">
+        <CoverLogoSection
+          coverLogo={coverLogo}
+          onCoverLogoChange={onCoverLogoChange}
+        />
+      </TabsContent>
       <TabsContent value="titolo" className="space-y-4 pt-4">
         <Card>
           <CardContent className="pt-6">

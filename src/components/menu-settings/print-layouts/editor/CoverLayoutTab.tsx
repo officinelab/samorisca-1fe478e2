@@ -1,7 +1,6 @@
 
 import React from "react";
 import { PrintLayout } from "@/types/printLayout";
-import CoverLogoSection from "./cover/CoverLogoSection";
 import CoverTextSection from "./cover/CoverTextSection";
 
 interface CoverLayoutTabProps {
@@ -56,16 +55,11 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Sezione Logo separata */}
-      <CoverLogoSection
-        coverLogo={coverLogo}
-        onCoverLogoChange={onCoverLogoChange}
-      />
-
-      {/* Schede per Titolo e Sottotitolo */}
       <CoverTextSection
+        coverLogo={coverLogo}
         coverTitle={coverTitle}
         coverSubtitle={coverSubtitle}
+        onCoverLogoChange={onCoverLogoChange}
         onCoverTitleChange={onCoverTitleChange}
         onCoverTitleMarginChange={onCoverTitleMarginChange}
         onCoverSubtitleChange={onCoverSubtitleChange}
