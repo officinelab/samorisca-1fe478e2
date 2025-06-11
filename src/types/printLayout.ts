@@ -22,6 +22,7 @@ export type PrintLayoutElementConfig = {
   alignment: TextAlign;
   margin: Margin;
   visible?: boolean; // opzionale
+  text?: string; // opzionale - per testi personalizzabili come titoli e descrizioni
 };
 
 /**

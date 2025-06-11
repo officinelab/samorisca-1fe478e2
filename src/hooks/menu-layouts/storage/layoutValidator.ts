@@ -21,6 +21,7 @@ const PrintLayoutElementConfigSchema = z.object({
     bottom: z.number().min(0),
     left: z.number().min(0),
   }),
+  text: z.string().optional(), // Nuovo campo opzionale per testi personalizzabili
 });
 
 const PageMarginsSchema = z.object({
