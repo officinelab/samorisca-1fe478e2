@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const classicLayout: PrintLayout = {
@@ -181,44 +180,6 @@ export const classicLayout: PrintLayout = {
       borderRadius: 0,
       padding: 5,
       iconSize: 16
-    }
-  },
-  productFeaturesDetail: {
-    icon: { size: 16 },
-    title: {
-      fontFamily: "Times New Roman",
-      fontSize: 12,
-      fontColor: "#000000",
-      fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 4, bottom: 0, left: 0 }
-    },
-    text: {
-      fontFamily: "Times New Roman",
-      fontSize: 10,
-      fontColor: "#666666",
-      fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 4, left: 0 }
-    }
-  },
-  categoryNotesDetail: {
-    icon: { size: 16 },
-    title: {
-      fontFamily: "Times New Roman",
-      fontSize: 14,
-      fontColor: "#000000",
-      fontStyle: "bold",
-      alignment: "left",
-      margin: { top: 0, right: 8, bottom: 4, left: 0 }
-    },
-    text: {
-      fontFamily: "Times New Roman",
-      fontSize: 12,
-      fontColor: "#666666",
-      fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 8, left: 0 }
     }
   }
 };

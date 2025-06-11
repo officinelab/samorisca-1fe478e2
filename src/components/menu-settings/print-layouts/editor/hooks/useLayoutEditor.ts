@@ -6,8 +6,6 @@ import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
 import { useCoverTab } from "./useCoverTab";
 import { useAllergensTab } from "./useAllergensTab";
-import { useProductFeaturesDetailTab } from "./useProductFeaturesDetailTab";
-import { useCategoryNotesDetailTab } from "./useCategoryNotesDetailTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 
@@ -128,24 +126,6 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemChange
   } = useAllergensTab(setEditedLayout);
 
-  // Product Features Detail
-  const {
-    handleProductFeaturesDetailIconChange,
-    handleProductFeaturesDetailTitleChange,
-    handleProductFeaturesDetailTitleMarginChange,
-    handleProductFeaturesDetailTextChange,
-    handleProductFeaturesDetailTextMarginChange,
-  } = useProductFeaturesDetailTab(setEditedLayout);
-
-  // Category Notes Detail
-  const {
-    handleCategoryNotesDetailIconChange,
-    handleCategoryNotesDetailTitleChange,
-    handleCategoryNotesDetailTitleMarginChange,
-    handleCategoryNotesDetailTextChange,
-    handleCategoryNotesDetailTextMarginChange,
-  } = useCategoryNotesDetailTab(setEditedLayout);
-
   // Spacing
   const { handleSpacingChange } = useSpacingTab(setEditedLayout);
 
@@ -191,16 +171,6 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
     handleProductFeaturesChange,
-    handleProductFeaturesDetailIconChange,
-    handleProductFeaturesDetailTitleChange,
-    handleProductFeaturesDetailTitleMarginChange,
-    handleProductFeaturesDetailTextChange,
-    handleProductFeaturesDetailTextMarginChange,
-    handleCategoryNotesDetailIconChange,
-    handleCategoryNotesDetailTitleChange,
-    handleCategoryNotesDetailTitleMarginChange,
-    handleCategoryNotesDetailTextChange,
-    handleCategoryNotesDetailTextMarginChange,
     handleSave
   };
 }
