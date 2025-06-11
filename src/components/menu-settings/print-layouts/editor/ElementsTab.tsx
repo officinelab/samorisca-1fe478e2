@@ -27,10 +27,13 @@ const ElementsTab = ({
   onElementMarginChange,
   onProductFeaturesChange 
 }: ElementsTabProps) => {
-  // Handle legacy productFeatures in elements
+  // Handle legacy productFeatures in elements - convert to new structure calls
   const handleLegacyProductFeaturesChange = (field: string, value: number) => {
-    // This handles the old productFeatures structure in elements for backward compatibility
-    onProductFeaturesChange(field as keyof ProductFeaturesConfig, value);
+    // Map old field names to new ProductFeaturesConfig structure
+    if (field === 'iconSize') {
+      onProductFeaturesChange('icon', { iconSize: value });
+    }
+    // For other fields, we ignore them as they're handled by the new structure
   };
 
   return (
