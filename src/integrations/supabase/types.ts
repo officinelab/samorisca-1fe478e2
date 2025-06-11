@@ -178,6 +178,7 @@ export type Database = {
           page: Json
           product_features: Json
           product_schema: string
+          service_price: Json
           spacing: Json
           type: string
           updated_at: string
@@ -194,6 +195,7 @@ export type Database = {
           page: Json
           product_features?: Json
           product_schema: string
+          service_price?: Json
           spacing: Json
           type: string
           updated_at?: string
@@ -210,6 +212,7 @@ export type Database = {
           page?: Json
           product_features?: Json
           product_schema?: string
+          service_price?: Json
           spacing?: Json
           type?: string
           updated_at?: string

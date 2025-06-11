@@ -1,9 +1,14 @@
 
+import { classicLayout } from './classicLayout';
+import { allergensLayout } from './allergensLayout';
+import { modernLayout } from './modernLayout';
+import { classicSchema1 } from './schemas/classicSchema1';
 
-// Export all layout templates
-export { classicLayout } from './classicLayout';
-export { modernLayout } from './modernLayout';
-export { allergensLayout } from './allergensLayout';
+export const layoutTemplates = {
+  classic: classicLayout,
+  allergens: allergensLayout,
+  modern: modernLayout,
+  classicSchema1: classicSchema1
+};
 
-// Export only classicSchema1 (rimuovo classicSchema2 e classicSchema3)
-export { classicSchema1Layout } from './schemas/classicSchema1';
+export { classicLayout, allergensLayout, modernLayout, classicSchema1 };

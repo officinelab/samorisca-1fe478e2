@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 
 export const defaultLayout: PrintLayout = {
@@ -241,3 +242,6 @@ export const defaultLayout: PrintLayout = {
     }
   }
 };
+
+// Array di layout predefiniti - ora contiene solo il layout di default
+export const defaultLayouts: PrintLayout[] = [defaultLayout];
