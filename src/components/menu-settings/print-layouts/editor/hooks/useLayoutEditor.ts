@@ -121,6 +121,8 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemNumberMarginChange,
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange
   } = useAllergensTab(setEditedLayout);
 
@@ -165,6 +167,8 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemNumberMarginChange,
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
     handleProductFeaturesChange,
     handleSave
