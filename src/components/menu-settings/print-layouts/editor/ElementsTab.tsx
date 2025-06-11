@@ -2,7 +2,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
-import ProductFeaturesEditor from "../ProductFeaturesEditor";
 
 interface ElementsTabProps {
   layout: PrintLayout;
@@ -28,6 +27,12 @@ const ElementsTab = ({
   onElementMarginChange,
   onProductFeaturesChange 
 }: ElementsTabProps) => {
+  // Handle legacy productFeatures in elements
+  const handleLegacyProductFeaturesChange = (field: string, value: number) => {
+    // This handles the old productFeatures structure in elements for backward compatibility
+    onProductFeaturesChange(field as keyof ProductFeaturesConfig, value);
+  };
+
   return (
     <div className="space-y-4">
       <Accordion type="single" collapsible className="w-full">
@@ -82,16 +87,6 @@ const ElementsTab = ({
               element={layout.elements.allergensList}
               onChange={(field, value) => onElementChange("allergensList", field, value)}
               onMarginChange={(field, value) => onElementMarginChange("allergensList", field, value)}
-            />
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="productFeatures">
-          <AccordionTrigger>Caratteristiche Prodotto</AccordionTrigger>
-          <AccordionContent>
-            <ProductFeaturesEditor
-              config={layout.elements.productFeatures}
-              onChange={onProductFeaturesChange}
             />
           </AccordionContent>
         </AccordionItem>

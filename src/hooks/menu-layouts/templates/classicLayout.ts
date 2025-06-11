@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 
 export const classicLayout: PrintLayout = {
@@ -57,17 +58,10 @@ export const classicLayout: PrintLayout = {
       margin: { top: 0, right: 10, bottom: 0, left: 0 }
     },
     productFeatures: {
-      icon: {
-        iconSize: 16
-      },
-      title: {
-        fontFamily: "Arial",
-        fontSize: 12,
-        fontColor: "#000000",
-        fontStyle: "normal",
-        alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
-      }
+      iconSize: 16,
+      iconSpacing: 8,
+      marginTop: 4,
+      marginBottom: 4
     },
     priceVariants: {
       fontFamily: "Arial",
@@ -210,6 +204,19 @@ export const classicLayout: PrintLayout = {
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
       visible: true
+    }
+  },
+  productFeatures: {
+    icon: {
+      iconSize: 16
+    },
+    title: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#000000",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
     }
   }
 };
