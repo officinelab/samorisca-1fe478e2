@@ -35,6 +35,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
 }) => {
   const { siteSettings, saveSetting } = useSiteSettings();
 
+  console.log("AllergensLayoutTab - siteSettings:", siteSettings);
+
   // Se le configurazioni di allergeni non esistono, usa valori predefiniti
   const allergensTitle = layout.allergens?.title || {
     visible: true,
@@ -87,11 +89,15 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
   };
 
   const handleMenuTitleChange = async (value: string) => {
-    await saveSetting('allergensMenuTitle', value);
+    console.log("Saving allergensMenuTitle:", value);
+    const success = await saveSetting('allergensMenuTitle', value);
+    console.log("Save result:", success);
   };
 
   const handleMenuDescriptionChange = async (value: string) => {
-    await saveSetting('allergensMenuDescription', value);
+    console.log("Saving allergensMenuDescription:", value);
+    const success = await saveSetting('allergensMenuDescription', value);
+    console.log("Save result:", success);
   };
 
   return (
@@ -113,9 +119,10 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
                   <Label>Titolo Menu Allergeni (stampabile)</Label>
                   <Input
                     type="text"
-                    value={siteSettings.allergensMenuTitle || ''}
+                    value={siteSettings?.allergensMenuTitle || ''}
                     onChange={(e) => handleMenuTitleChange(e.target.value)}
                     placeholder="Inserisci il titolo del menu allergeni..."
+                    className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
                     Questo titolo verrà utilizzato nel menu stampabile
@@ -142,9 +149,10 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
                   <Label>Descrizione Menu Allergeni (stampabile)</Label>
                   <Input
                     type="text"
-                    value={siteSettings.allergensMenuDescription || ''}
+                    value={siteSettings?.allergensMenuDescription || ''}
                     onChange={(e) => handleMenuDescriptionChange(e.target.value)}
                     placeholder="Inserisci la descrizione del menu allergeni..."
+                    className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
                     Questa descrizione verrà utilizzata nel menu stampabile
@@ -277,3 +285,5 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
 };
 
 export default AllergensLayoutTab;
+
+</edits_to_apply>
