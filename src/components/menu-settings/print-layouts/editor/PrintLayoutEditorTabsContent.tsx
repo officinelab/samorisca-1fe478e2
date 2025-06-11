@@ -1,19 +1,19 @@
 
 import React from "react";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig } from "@/types/printLayout";
 import TabRenderer from "./components/TabRenderer";
 import SaveLayoutSection from "./components/SaveLayoutSection";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig, ServicePriceConfig } from "@/types/printLayout";
 
 type TabKey = 
   | "generale" 
-  | "elementi" 
+  | "pagina"
   | "copertina" 
-  | "allergeni" 
+  | "elementi" 
   | "notecategorie"
-  | "caratteristicheprodotto"
-  | "prezzoservizio"
   | "spaziatura" 
-  | "pagina";
+  | "prezzoservizio"
+  | "allergeni"
+  | "caratteristicheprodotto";
 
 interface PrintLayoutEditorTabsContentProps {
   activeTab: TabKey;
@@ -59,8 +59,46 @@ interface PrintLayoutEditorTabsContentProps {
 
 const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> = (props) => {
   return (
-    <div className="flex-1 p-6 space-y-6">
-      <TabRenderer {...props} />
+    <div className="p-6 space-y-6">
+      <TabRenderer
+        activeTab={props.activeTab}
+        editedLayout={props.editedLayout}
+        handleGeneralChange={props.handleGeneralChange}
+        handleElementChange={props.handleElementChange}
+        handleElementMarginChange={props.handleElementMarginChange}
+        handleSpacingChange={props.handleSpacingChange}
+        handlePageMarginChange={props.handlePageMarginChange}
+        handleOddPageMarginChange={props.handleOddPageMarginChange}
+        handleEvenPageMarginChange={props.handleEvenPageMarginChange}
+        handleToggleDistinctMargins={props.handleToggleDistinctMargins}
+        handleCoverLogoChange={props.handleCoverLogoChange}
+        handleCoverTitleChange={props.handleCoverTitleChange}
+        handleCoverTitleMarginChange={props.handleCoverTitleMarginChange}
+        handleCoverSubtitleChange={props.handleCoverSubtitleChange}
+        handleCoverSubtitleMarginChange={props.handleCoverSubtitleMarginChange}
+        handleAllergensTitleChange={props.handleAllergensTitleChange}
+        handleAllergensTitleMarginChange={props.handleAllergensTitleMarginChange}
+        handleAllergensDescriptionChange={props.handleAllergensDescriptionChange}
+        handleAllergensDescriptionMarginChange={props.handleAllergensDescriptionMarginChange}
+        handleAllergensItemNumberChange={props.handleAllergensItemNumberChange}
+        handleAllergensItemNumberMarginChange={props.handleAllergensItemNumberMarginChange}
+        handleAllergensItemTitleChange={props.handleAllergensItemTitleChange}
+        handleAllergensItemTitleMarginChange={props.handleAllergensItemTitleMarginChange}
+        handleAllergensItemDescriptionChange={props.handleAllergensItemDescriptionChange}
+        handleAllergensItemDescriptionMarginChange={props.handleAllergensItemDescriptionMarginChange}
+        handleAllergensItemChange={props.handleAllergensItemChange}
+        handleCategoryNotesIconChange={props.handleCategoryNotesIconChange}
+        handleCategoryNotesTitleChange={props.handleCategoryNotesTitleChange}
+        handleCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
+        handleCategoryNotesTextChange={props.handleCategoryNotesTextChange}
+        handleCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
+        handleProductFeaturesChange={props.handleProductFeaturesChange}
+        handleProductFeaturesIconChange={props.handleProductFeaturesIconChange}
+        handleProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
+        handleProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
+        handleServicePriceChange={props.handleServicePriceChange}
+        handleServicePriceMarginChange={props.handleServicePriceMarginChange}
+      />
       
       <SaveLayoutSection
         onSave={props.handleSaveWithValidation}

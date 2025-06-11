@@ -13,14 +13,14 @@ import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfi
 
 type TabKey = 
   | "generale" 
-  | "elementi" 
+  | "pagina"
   | "copertina" 
-  | "allergeni" 
+  | "elementi" 
   | "notecategorie"
-  | "caratteristicheprodotto"
-  | "prezzoservizio"
   | "spaziatura" 
-  | "pagina";
+  | "prezzoservizio"
+  | "allergeni"
+  | "caratteristicheprodotto";
 
 interface TabRendererProps {
   activeTab: TabKey;
@@ -73,13 +73,14 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
           onGeneralChange={props.handleGeneralChange}
         />
       );
-    case "elementi":
+    case "pagina":
       return (
-        <ElementsTab
+        <PageSettingsTab
           layout={editedLayout}
-          onElementChange={props.handleElementChange}
-          onElementMarginChange={props.handleElementMarginChange}
-          onProductFeaturesChange={props.handleProductFeaturesChange}
+          onPageMarginChange={props.handlePageMarginChange}
+          onOddPageMarginChange={props.handleOddPageMarginChange}
+          onEvenPageMarginChange={props.handleEvenPageMarginChange}
+          onToggleDistinctMargins={props.handleToggleDistinctMargins}
         />
       );
     case "copertina":
@@ -91,6 +92,41 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
           onCoverTitleMarginChange={props.handleCoverTitleMarginChange}
           onCoverSubtitleChange={props.handleCoverSubtitleChange}
           onCoverSubtitleMarginChange={props.handleCoverSubtitleMarginChange}
+        />
+      );
+    case "elementi":
+      return (
+        <ElementsTab
+          layout={editedLayout}
+          onElementChange={props.handleElementChange}
+          onElementMarginChange={props.handleElementMarginChange}
+          onProductFeaturesChange={props.handleProductFeaturesChange}
+        />
+      );
+    case "notecategorie":
+      return (
+        <CategoryNotesTab
+          layout={editedLayout}
+          onCategoryNotesIconChange={props.handleCategoryNotesIconChange}
+          onCategoryNotesTitleChange={props.handleCategoryNotesTitleChange}
+          onCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
+          onCategoryNotesTextChange={props.handleCategoryNotesTextChange}
+          onCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
+        />
+      );
+    case "spaziatura":
+      return (
+        <SpacingTab
+          layout={editedLayout}
+          onSpacingChange={props.handleSpacingChange}
+        />
+      );
+    case "prezzoservizio":
+      return (
+        <ServicePriceTab
+          layout={editedLayout}
+          onServicePriceChange={props.handleServicePriceChange}
+          onServicePriceMarginChange={props.handleServicePriceMarginChange}
         />
       );
     case "allergeni":
@@ -110,17 +146,6 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
           onAllergensItemChange={props.handleAllergensItemChange}
         />
       );
-    case "notecategorie":
-      return (
-        <CategoryNotesTab
-          layout={editedLayout}
-          onCategoryNotesIconChange={props.handleCategoryNotesIconChange}
-          onCategoryNotesTitleChange={props.handleCategoryNotesTitleChange}
-          onCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
-          onCategoryNotesTextChange={props.handleCategoryNotesTextChange}
-          onCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
-        />
-      );
     case "caratteristicheprodotto":
       return (
         <ProductFeaturesTab
@@ -128,31 +153,6 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
           onProductFeaturesIconChange={props.handleProductFeaturesIconChange}
           onProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
           onProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
-        />
-      );
-    case "prezzoservizio":
-      return (
-        <ServicePriceTab
-          layout={editedLayout}
-          onServicePriceChange={props.handleServicePriceChange}
-          onServicePriceMarginChange={props.handleServicePriceMarginChange}
-        />
-      );
-    case "spaziatura":
-      return (
-        <SpacingTab
-          layout={editedLayout}
-          onSpacingChange={props.handleSpacingChange}
-        />
-      );
-    case "pagina":
-      return (
-        <PageSettingsTab
-          layout={editedLayout}
-          onPageMarginChange={props.handlePageMarginChange}
-          onOddPageMarginChange={props.handleOddPageMarginChange}
-          onEvenPageMarginChange={props.handleEvenPageMarginChange}
-          onToggleDistinctMargins={props.handleToggleDistinctMargins}
         />
       );
     default:

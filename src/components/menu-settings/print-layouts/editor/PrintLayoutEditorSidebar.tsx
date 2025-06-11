@@ -20,9 +20,9 @@ type TabKey =
   | "elementi" 
   | "notecategorie"
   | "spaziatura" 
-  | "caratteristicheprodotto"
   | "prezzoservizio"
-  | "allergeni";
+  | "allergeni"
+  | "caratteristicheprodotto";
 
 interface PrintLayoutEditorSidebarProps {
   activeTab: TabKey;
@@ -37,9 +37,9 @@ const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditor
     { key: "elementi" as const, label: "Elementi Menu", icon: Type },
     { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
     { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
-    { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
     { key: "prezzoservizio" as const, label: "Prezzo Servizio", icon: DollarSign },
     { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
+    { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
   ];
 
   return (

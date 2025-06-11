@@ -13,14 +13,14 @@ interface PrintLayoutEditorProps {
 
 type TabKey =
   | "generale"
-  | "elementi"
+  | "pagina"
   | "copertina"
-  | "allergeni"
+  | "elementi"
   | "notecategorie"
-  | "caratteristicheprodotto"
-  | "prezzoservizio"
   | "spaziatura"
-  | "pagina";
+  | "prezzoservizio"
+  | "allergeni"
+  | "caratteristicheprodotto";
 
 const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
   const {

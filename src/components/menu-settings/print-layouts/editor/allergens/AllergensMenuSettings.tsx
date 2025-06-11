@@ -26,13 +26,16 @@ const AllergensMenuSettings: React.FC<AllergensMenuSettingsProps> = ({
     console.log("Save result:", success);
   };
 
+  const currentValue = siteSettings?.[settingKey] || '';
+
   return (
     <div className="space-y-4 mb-6">
       <div className="space-y-2">
-        <Label>{title}</Label>
+        <Label htmlFor={settingKey}>{title}</Label>
         <Input
+          id={settingKey}
           type="text"
-          value={siteSettings?.[settingKey] || ''}
+          value={currentValue}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder}
           className="w-full"
