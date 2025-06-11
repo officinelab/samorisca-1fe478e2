@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
