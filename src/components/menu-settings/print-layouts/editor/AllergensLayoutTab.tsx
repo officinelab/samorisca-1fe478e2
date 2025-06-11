@@ -285,5 +285,3 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
 };
 
 export default AllergensLayoutTab;
-
-</edits_to_apply>
