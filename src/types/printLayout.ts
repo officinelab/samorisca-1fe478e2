@@ -100,6 +100,7 @@ export type AllergensItemElementConfig = {
   backgroundColor: string;
   borderRadius: number;
   padding: number;
+  iconSize: number;  // NUOVO: dimensione icone allergeni in px
 };
 
 export type AllergensConfig = {

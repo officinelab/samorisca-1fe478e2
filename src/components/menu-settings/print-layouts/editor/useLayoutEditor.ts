@@ -268,6 +268,7 @@ function ensureAllFields(layout: PrintLayout): PrintLayout {
         backgroundColor: layout.allergens?.item?.backgroundColor ?? "#FFFFFF",
         borderRadius: typeof layout.allergens?.item?.borderRadius === "number" ? layout.allergens?.item?.borderRadius : 0,
         padding: typeof layout.allergens?.item?.padding === "number" ? layout.allergens?.item?.padding : 0,
+        iconSize: typeof layout.allergens?.item?.iconSize === "number" ? layout.allergens?.item?.iconSize : 16,
       },
     },
 

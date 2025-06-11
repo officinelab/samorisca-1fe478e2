@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
-import { useLayoutEditor } from "./editor/useLayoutEditor";
+import { useLayoutEditor } from "./editor/hooks/useLayoutEditor";
 import PrintLayoutEditorSidebar from "./editor/PrintLayoutEditorSidebar";
 import PrintLayoutEditorHeader from "./editor/PrintLayoutEditorHeader";
 import PrintLayoutEditorTabsContent from "./editor/PrintLayoutEditorTabsContent";

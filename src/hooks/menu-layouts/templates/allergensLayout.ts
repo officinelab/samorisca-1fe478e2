@@ -177,7 +177,8 @@ export const allergensLayout: PrintLayout = {
       spacing: 12,
       backgroundColor: "#f9f9f9",
       borderRadius: 4,
-      padding: 8
+      padding: 8,
+      iconSize: 16
     }
   }
 };

@@ -191,7 +191,8 @@ export const classicLayoutSchema1: PrintLayout = {
       spacing: 10,
       backgroundColor: "#f5f5f5",
       borderRadius: 0,
-      padding: 5
+      padding: 5,
+      iconSize: 16
     }
   }
 };

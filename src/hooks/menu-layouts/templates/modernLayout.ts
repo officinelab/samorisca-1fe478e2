@@ -178,7 +178,8 @@ export const modernLayout: PrintLayout = {
       spacing: 12,
       backgroundColor: "#F1F0FB",
       borderRadius: 6,
-      padding: 10
+      padding: 10,
+      iconSize: 18
     }
   }
 };

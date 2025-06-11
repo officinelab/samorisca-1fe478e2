@@ -18,7 +18,7 @@ interface AllergensLayoutTabProps {
   onAllergensItemNumberMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
   onAllergensItemTitleChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
   onAllergensItemTitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
-  onAllergensItemChange: (field: keyof {spacing: number, backgroundColor: string, borderRadius: number, padding: number}, value: any) => void;
+  onAllergensItemChange: (field: keyof {spacing: number, backgroundColor: string, borderRadius: number, padding: number, iconSize: number}, value: any) => void;
 }
 
 const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
@@ -80,7 +80,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
     spacing: 10,
     backgroundColor: "#f9f9f9",
     borderRadius: 4,
-    padding: 8
+    padding: 8,
+    iconSize: 16
   };
 
   return (
@@ -166,6 +167,21 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
                       className="flex-1"
                     />
                     <span className="w-12 text-right">{allergensItem.borderRadius}px</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Dimensione Icone (px)</Label>
+                  <div className="flex items-center space-x-4">
+                    <Slider
+                      value={[allergensItem.iconSize || 16]}
+                      min={12}
+                      max={32}
+                      step={2}
+                      onValueChange={(value) => onAllergensItemChange("iconSize", value[0])}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-right">{allergensItem.iconSize || 16}px</span>
                   </div>
                 </div>
                 

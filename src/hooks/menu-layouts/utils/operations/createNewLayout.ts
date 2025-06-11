@@ -197,7 +197,8 @@ export const createNewLayoutFromTemplate = (name: string, existingLayouts?: Prin
         spacing: 10,
         backgroundColor: "#f9f9f9",
         borderRadius: 4,
-        padding: 8
+        padding: 8,
+        iconSize: 16
       }
     }
   };
