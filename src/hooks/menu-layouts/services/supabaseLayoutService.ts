@@ -226,27 +226,7 @@ function transformDbToLayout(dbLayout: any): PrintLayout {
     elements: dbLayout.elements,
     cover: dbLayout.cover,
     allergens: dbLayout.allergens,
-    categoryNotes: dbLayout.category_notes || {
-      icon: { iconSize: 16 },
-      title: {
-        fontFamily: "Arial",
-        fontSize: 14,
-        fontColor: "#000000",
-        fontStyle: "bold",
-        alignment: "left",
-        margin: { top: 0, right: 0, bottom: 2, left: 0 },
-        visible: true
-      },
-      text: {
-        fontFamily: "Arial",
-        fontSize: 12,
-        fontColor: "#333333",
-        fontStyle: "normal",
-        alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
-        visible: true
-      }
-    },
+    categoryNotes: dbLayout.category_notes, // Rimuovo il fallback, ora è gestito dal DB
     spacing: dbLayout.spacing,
     page: dbLayout.page
   };

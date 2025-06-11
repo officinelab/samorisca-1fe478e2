@@ -168,6 +168,7 @@ export type Database = {
       print_layouts: {
         Row: {
           allergens: Json
+          category_notes: Json
           cover: Json
           created_at: string
           elements: Json
@@ -182,6 +183,7 @@ export type Database = {
         }
         Insert: {
           allergens: Json
+          category_notes?: Json
           cover: Json
           created_at?: string
           elements: Json
@@ -196,6 +198,7 @@ export type Database = {
         }
         Update: {
           allergens?: Json
+          category_notes?: Json
           cover?: Json
           created_at?: string
           elements?: Json
