@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
@@ -226,7 +227,8 @@ function transformDbToLayout(dbLayout: any): PrintLayout {
     elements: dbLayout.elements,
     cover: dbLayout.cover,
     allergens: dbLayout.allergens,
-    categoryNotes: dbLayout.category_notes, // Rimuovo il fallback, ora è gestito dal DB
+    categoryNotes: dbLayout.category_notes,
+    productFeatures: dbLayout.product_features, // Nuovo campo
     spacing: dbLayout.spacing,
     page: dbLayout.page
   };
@@ -243,6 +245,7 @@ function transformLayoutToDb(layout: PrintLayout): any {
     cover: layout.cover,
     allergens: layout.allergens,
     category_notes: layout.categoryNotes,
+    product_features: layout.productFeatures, // Nuovo campo
     spacing: layout.spacing,
     page: layout.page
   };

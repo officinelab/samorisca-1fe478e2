@@ -1,60 +1,72 @@
 
-import React from "react";
-import { Settings, LayoutList, Image, Folder, FileText, Text, StickyNote } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { 
+  Settings, 
+  Type, 
+  Image, 
+  ShieldAlert, 
+  StickyNote,
+  Sparkles,
+  Spacing, 
+  FileText 
+} from "lucide-react";
 
-type TabKey =
-  | "generale"
-  | "elementi"
-  | "copertina"
-  | "allergeni"
+type TabKey = 
+  | "generale" 
+  | "elementi" 
+  | "copertina" 
+  | "allergeni" 
   | "notecategorie"
-  | "spaziatura"
+  | "caratteristicheprodotto"
+  | "spaziatura" 
   | "pagina";
 
-const SECTIONS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "generale", label: "Impostazioni generali", icon: <Settings size={18} /> },
-  { key: "elementi", label: "Elementi Menu", icon: <LayoutList size={18} /> },
-  { key: "copertina", label: "Copertina", icon: <Image size={18} /> },
-  { key: "allergeni", label: "Allergeni", icon: <Folder size={18} /> },
-  { key: "notecategorie", label: "Note categorie", icon: <StickyNote size={18} /> },
-  { key: "spaziatura", label: "Spaziatura", icon: <FileText size={18} /> },
-  { key: "pagina", label: "Impostazioni Pagina", icon: <Text size={18} /> },
-];
-
-interface SidebarProps {
+interface PrintLayoutEditorSidebarProps {
   activeTab: TabKey;
-  setActiveTab: (key: TabKey) => void;
+  setActiveTab: (tab: TabKey) => void;
 }
 
-const PrintLayoutEditorSidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => (
-  <aside className="w-full md:w-60 flex-shrink-0 bg-card/80 rounded-lg shadow-xs p-3 border md:sticky md:top-28 self-start h-fit">
-    <div className="mb-3">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
-        Menu di modifica
+const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditorSidebarProps) => {
+  const tabs = [
+    { key: "generale" as const, label: "Generale", icon: Settings },
+    { key: "elementi" as const, label: "Elementi Menu", icon: Type },
+    { key: "copertina" as const, label: "Copertina", icon: Image },
+    { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
+    { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
+    { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
+    { key: "spaziatura" as const, label: "Spaziatura", icon: Spacing },
+    { key: "pagina" as const, label: "Impostazioni Pagina", icon: FileText },
+  ];
+
+  return (
+    <div className="w-64 bg-card border-r min-h-full">
+      <div className="p-4 border-b">
+        <h3 className="font-semibold text-lg">Editor Layout</h3>
+        <p className="text-sm text-muted-foreground">Personalizza il layout di stampa</p>
       </div>
-    </div>
-    <nav>
-      <ul className="flex md:flex-col gap-1">
-        {SECTIONS.map(section => (
-          <li key={section.key}>
-            <button
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded transition
-                ${activeTab === section.key
-                  ? "bg-primary/90 text-primary-foreground font-bold shadow"
-                  : "hover:bg-muted text-muted-foreground"}
-              `}
-              onClick={() => setActiveTab(section.key)}
-              aria-current={activeTab === section.key ? "page" : undefined}
-              type="button"
+      
+      <nav className="p-2 space-y-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <Button
+              key={tab.key}
+              variant={activeTab === tab.key ? "secondary" : "ghost"}
+              className={cn(
+                "w-full justify-start text-left",
+                activeTab === tab.key && "bg-secondary/80"
+              )}
+              onClick={() => setActiveTab(tab.key)}
             >
-              {section.icon}
-              <span>{section.label}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  </aside>
-);
+              <Icon className="mr-2 h-4 w-4" />
+              {tab.label}
+            </Button>
+          );
+        })}
+      </nav>
+    </div>
+  );
+};
 
 export default PrintLayoutEditorSidebar;

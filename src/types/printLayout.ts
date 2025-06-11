@@ -26,13 +26,13 @@ export type PrintLayoutElementConfig = {
 };
 
 /**
- * Configurazione specifica per le caratteristiche prodotto
+ * Configurazione specifica per le caratteristiche prodotto nel layout di stampa
  */
 export type ProductFeaturesConfig = {
-  iconSize: number;      // dimensione delle icone in px
-  iconSpacing: number;   // spaziatura tra le icone in px
-  marginTop: number;     // margine superiore in px
-  marginBottom: number;  // margine inferiore in px
+  icon: {
+    iconSize: number;      // dimensione delle icone in px
+  };
+  title: PrintLayoutElementConfig;    // Titolo delle caratteristiche prodotto
 };
 
 /**
@@ -67,7 +67,12 @@ export type MenuElementsConfig = {
   description: PrintLayoutElementConfig;       // Descrizione prodotto (sempre visibile)
   descriptionEng: PrintLayoutElementConfig;    // Descrizione prodotto ENG (stessi campi di description)
   allergensList: PrintLayoutElementConfig;     // Allergeni prodotto (sempre visibile)
-  productFeatures: ProductFeaturesConfig;      // Caratteristiche prodotto (configurazione icone)
+  productFeatures: {                           // Caratteristiche prodotto nel layout elementi (configurazione icone esistente)
+    iconSize: number;
+    iconSpacing: number;
+    marginTop: number;
+    marginBottom: number;
+  };
   price: PrintLayoutElementConfig;             // Prezzo (sempre visibile)
   suffix: Omit<PrintLayoutElementConfig, 'margin'> & {
     // Il suffisso del prezzo eredita i margini dal prezzo: niente margin qui
@@ -144,7 +149,8 @@ export type PrintLayout = {
   elements: MenuElementsConfig;
   cover: PrintLayoutCover;
   allergens: AllergensConfig;
-  categoryNotes: CategoryNotesConfig;  // NUOVO: configurazione note categorie
+  categoryNotes: CategoryNotesConfig;  // configurazione note categorie
+  productFeatures: ProductFeaturesConfig;  // NUOVO: configurazione caratteristiche prodotto per stampa
   spacing: MenuSpacing;
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;

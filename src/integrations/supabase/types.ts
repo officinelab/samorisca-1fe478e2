@@ -176,6 +176,7 @@ export type Database = {
           is_default: boolean
           name: string
           page: Json
+          product_features: Json
           product_schema: string
           spacing: Json
           type: string
@@ -191,6 +192,7 @@ export type Database = {
           is_default?: boolean
           name: string
           page: Json
+          product_features?: Json
           product_schema: string
           spacing: Json
           type: string
@@ -206,6 +208,7 @@ export type Database = {
           is_default?: boolean
           name?: string
           page?: Json
+          product_features?: Json
           product_schema?: string
           spacing?: Json
           type?: string

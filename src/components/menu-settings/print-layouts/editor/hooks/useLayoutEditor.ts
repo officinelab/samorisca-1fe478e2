@@ -7,6 +7,7 @@ import { useElementsTab } from "./useElementsTab";
 import { useCoverTab } from "./useCoverTab";
 import { useAllergensTab } from "./useAllergensTab";
 import { useCategoryNotesTab } from "./useCategoryNotesTab";
+import { useProductFeaturesTab } from "./useProductFeaturesTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 
@@ -86,10 +87,27 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     }
   };
 
+  // Product Features fallback
+  const productFeatures: ProductFeaturesConfig = {
+    icon: {
+      iconSize: layout.productFeatures?.icon?.iconSize ?? 16
+    },
+    title: {
+      visible: typeof layout.productFeatures?.title?.visible === "boolean" ? layout.productFeatures.title.visible : true,
+      fontFamily: layout.productFeatures?.title?.fontFamily ?? "Arial",
+      fontSize: layout.productFeatures?.title?.fontSize ?? 12,
+      fontColor: layout.productFeatures?.title?.fontColor ?? "#000000",
+      fontStyle: layout.productFeatures?.title?.fontStyle ?? "normal",
+      alignment: layout.productFeatures?.title?.alignment ?? "left",
+      margin: layout.productFeatures?.title?.margin ?? { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  };
+
   return {
     ...layout,
     cover: { logo, title, subtitle },
     categoryNotes,
+    productFeatures,
     allergens: {
       ...layout.allergens,
       item: {
@@ -115,8 +133,8 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     origHandleElementMarginChange(elementKey, marginKey, value);
   };
 
-  // Product Features
-  const handleProductFeaturesChange = (field: keyof ProductFeaturesConfig, value: number) => {
+  // Product Features (existing in elements)
+  const handleProductFeaturesChange = (field: string, value: number) => {
     setEditedLayout(prev => ({
       ...prev,
       elements: {
@@ -161,6 +179,13 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleCategoryNotesTextChange,
     handleCategoryNotesTextMarginChange
   } = useCategoryNotesTab(setEditedLayout);
+
+  // Product Features (new layout section)
+  const {
+    handleProductFeaturesIconChange,
+    handleProductFeaturesTitleChange,
+    handleProductFeaturesTitleMarginChange
+  } = useProductFeaturesTab(setEditedLayout);
 
   // Spacing
   const { handleSpacingChange } = useSpacingTab(setEditedLayout);
@@ -212,6 +237,9 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleCategoryNotesTextChange,
     handleCategoryNotesTextMarginChange,
     handleProductFeaturesChange,
+    handleProductFeaturesIconChange,
+    handleProductFeaturesTitleChange,
+    handleProductFeaturesTitleMarginChange,
     handleSave
   };
 }
