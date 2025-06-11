@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
@@ -228,7 +227,45 @@ function transformDbToLayout(dbLayout: any): PrintLayout {
     cover: dbLayout.cover,
     allergens: dbLayout.allergens,
     spacing: dbLayout.spacing,
-    page: dbLayout.page
+    page: dbLayout.page,
+    productFeaturesDetail: dbLayout.product_features_detail || {
+      icon: { size: 16 },
+      title: {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#000000",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 4, bottom: 0, left: 0 }
+      },
+      text: {
+        fontFamily: "Arial",
+        fontSize: 10,
+        fontColor: "#666666",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 4, left: 0 }
+      }
+    },
+    categoryNotesDetail: dbLayout.category_notes_detail || {
+      icon: { size: 16 },
+      title: {
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#000000",
+        fontStyle: "bold",
+        alignment: "left",
+        margin: { top: 0, right: 8, bottom: 4, left: 0 }
+      },
+      text: {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#666666",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 8, left: 0 }
+      }
+    }
   };
 }
 
@@ -243,7 +280,9 @@ function transformLayoutToDb(layout: PrintLayout): any {
     cover: layout.cover,
     allergens: layout.allergens,
     spacing: layout.spacing,
-    page: layout.page
+    page: layout.page,
+    product_features_detail: layout.productFeaturesDetail,
+    category_notes_detail: layout.categoryNotesDetail
   };
 }
 
