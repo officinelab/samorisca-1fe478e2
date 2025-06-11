@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 
 // Classic layout - Schema 1 (layout originale)
@@ -193,6 +194,29 @@ export const classicLayoutSchema1: PrintLayout = {
       borderRadius: 0,
       padding: 5,
       iconSize: 16
+    }
+  },
+  categoryNotes: {
+    icon: {
+      iconSize: 16
+    },
+    title: {
+      fontFamily: "Times New Roman",
+      fontSize: 14,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 2, left: 0 },
+      visible: true
+    },
+    text: {
+      fontFamily: "Times New Roman",
+      fontSize: 12,
+      fontColor: "#333333",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      visible: true
     }
   }
 };

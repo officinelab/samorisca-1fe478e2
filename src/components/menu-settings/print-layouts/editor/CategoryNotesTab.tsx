@@ -93,7 +93,6 @@ const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({
             <div>
               <Label htmlFor="title-font-color">Colore Font</Label>
               <ColorPickerInput
-                id="title-font-color"
                 value={layout.categoryNotes?.title?.fontColor || "#000000"}
                 onChange={(value) => onCategoryNotesTitleChange("fontColor", value)}
               />
@@ -222,7 +221,6 @@ const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({
             <div>
               <Label htmlFor="text-font-color">Colore Font</Label>
               <ColorPickerInput
-                id="text-font-color"
                 value={layout.categoryNotes?.text?.fontColor || "#000000"}
                 onChange={(value) => onCategoryNotesTextChange("fontColor", value)}
               />
