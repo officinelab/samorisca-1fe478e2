@@ -15,12 +15,12 @@ import {
 type TabKey = 
   | "generale" 
   | "pagina"
-  | "spaziatura" 
   | "copertina" 
   | "elementi" 
+  | "notecategorie"
+  | "spaziatura" 
   | "caratteristicheprodotto"
-  | "allergeni" 
-  | "notecategorie";
+  | "allergeni";
 
 interface PrintLayoutEditorSidebarProps {
   activeTab: TabKey;
@@ -31,12 +31,12 @@ const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditor
   const tabs = [
     { key: "generale" as const, label: "Generale", icon: Settings },
     { key: "pagina" as const, label: "Impostazioni Pagina", icon: FileText },
-    { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
     { key: "copertina" as const, label: "Copertina", icon: Image },
     { key: "elementi" as const, label: "Elementi Menu", icon: Type },
+    { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
+    { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
     { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
     { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
-    { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
   ];
 
   return (
