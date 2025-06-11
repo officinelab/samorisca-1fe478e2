@@ -1,11 +1,11 @@
 import { PrintLayout } from "@/types/printLayout";
 
 export const classicLayout: PrintLayout = {
-  id: "classic",
+  id: "classic-layout",
   name: "Layout Classico",
   type: "classic",
   isDefault: true,
-  productSchema: 'schema1',
+  productSchema: "schema1",
   elements: {
     category: {
       fontFamily: "Arial",
@@ -13,137 +13,114 @@ export const classicLayout: PrintLayout = {
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 5, left: 0 }
+      margin: { top: 0, right: 0, bottom: 8, left: 0 }
     },
     title: {
       fontFamily: "Arial",
-      fontSize: 12,
+      fontSize: 16,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 }
+      margin: { top: 0, right: 0, bottom: 4, left: 0 }
     },
     description: {
       fontFamily: "Arial",
-      fontSize: 10,
+      fontSize: 12,
       fontColor: "#333333",
-      fontStyle: "italic",
+      fontStyle: "normal",
       alignment: "left",
-      margin: { top: 2, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 2, left: 0 }
     },
     descriptionEng: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#333333",
+      fontSize: 11,
+      fontColor: "#666666",
       fontStyle: "italic",
       alignment: "left",
-      margin: { top: 2, right: 0, bottom: 0, left: 0 },
-      visible: true
+      margin: { top: 0, right: 0, bottom: 2, left: 0 }
+    },
+    allergensList: {
+      fontFamily: "Arial",
+      fontSize: 10,
+      fontColor: "#888888",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 2, left: 0 }
+    },
+    productFeatures: {
+      iconSize: 14,
+      iconSpacing: 4,
+      marginTop: 2,
+      marginBottom: 2
     },
     price: {
       fontFamily: "Arial",
-      fontSize: 12,
+      fontSize: 14,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "right",
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
-    allergensList: {
+    suffix: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#555555",
-      fontStyle: "normal",
-      alignment: "center",
-      margin: { top: 0, right: 10, bottom: 0, left: 0 }
-    },
-    productFeatures: {
-      iconSize: 16,
-      iconSpacing: 8,
-      marginTop: 4,
-      marginBottom: 4
+      fontSize: 14,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "right"
     },
     priceVariants: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#000000",
+      fontSize: 12,
+      fontColor: "#666666",
       fontStyle: "normal",
       alignment: "right",
-      margin: { top: 1, right: 0, bottom: 0, left: 0 }
-    },
-    suffix: {
-      fontFamily: "Arial",
-      fontSize: 9,
-      fontColor: "#888888",
-      fontStyle: "normal",
-      alignment: "left"
-    }
-  },
-  spacing: {
-    betweenCategories: 15,
-    betweenProducts: 5,
-    categoryTitleBottomMargin: 5
-  },
-  page: {
-    marginTop: 20,
-    marginRight: 15,
-    marginBottom: 20,
-    marginLeft: 15,
-    useDistinctMarginsForPages: false,
-    oddPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
-    },
-    evenPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
+      margin: { top: 2, right: 0, bottom: 0, left: 0 }
     }
   },
   cover: {
     logo: {
-      imageUrl: null,
+      imageUrl: "",
       maxWidth: 80,
       maxHeight: 50,
-      alignment: 'center',
+      alignment: "center",
       marginTop: 20,
       marginBottom: 20,
       visible: true
     },
     title: {
-      menuTitle: undefined,
       visible: true,
-      fontFamily: "Times New Roman",
-      fontSize: 26,
+      fontFamily: "Arial",
+      fontSize: 24,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 20, right: 0, bottom: 10, left: 0 }
+      margin: { top: 20, right: 0, bottom: 10, left: 0 },
+      menuTitle: ""
     },
     subtitle: {
-      menuSubtitle: undefined,
       visible: true,
-      fontFamily: "Times New Roman",
-      fontSize: 16,
+      fontFamily: "Arial",
+      fontSize: 14,
       fontColor: "#666666",
       fontStyle: "italic",
       alignment: "center",
-      margin: { top: 5, right: 0, bottom: 0, left: 0 }
+      margin: { top: 5, right: 0, bottom: 0, left: 0 },
+      menuSubtitle: ""
     }
   },
   allergens: {
     title: {
-      fontFamily: "Times New Roman",
+      visible: true,
+      fontFamily: "Arial",
       fontSize: 22,
       fontColor: "#000000",
       fontStyle: "bold",
-      alignment: "left",
+      alignment: "center",
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
     },
     description: {
-      fontFamily: "Times New Roman",
+      visible: true,
+      fontFamily: "Arial",
       fontSize: 14,
       fontColor: "#333333",
       fontStyle: "normal",
@@ -152,7 +129,8 @@ export const classicLayout: PrintLayout = {
     },
     item: {
       number: {
-        fontFamily: "Times New Roman",
+        visible: true,
+        fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#000000",
         fontStyle: "bold",
@@ -160,7 +138,8 @@ export const classicLayout: PrintLayout = {
         margin: { top: 0, right: 8, bottom: 0, left: 0 }
       },
       title: {
-        fontFamily: "Times New Roman",
+        visible: true,
+        fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#333333",
         fontStyle: "normal",
@@ -168,17 +147,18 @@ export const classicLayout: PrintLayout = {
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
       description: {
-        fontFamily: "Times New Roman",
+        visible: true,
+        fontFamily: "Arial",
         fontSize: 12,
-        fontColor: "#444444",
+        fontColor: "#666666",
         fontStyle: "normal",
         alignment: "left",
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
       spacing: 10,
-      backgroundColor: "#f5f5f5",
-      borderRadius: 0,
-      padding: 5,
+      backgroundColor: "#f9f9f9",
+      borderRadius: 4,
+      padding: 8,
       iconSize: 16
     }
   },
@@ -187,22 +167,22 @@ export const classicLayout: PrintLayout = {
       iconSize: 16
     },
     title: {
-      fontFamily: "Times New Roman",
+      visible: true,
+      fontFamily: "Arial",
       fontSize: 14,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 },
-      visible: true
+      margin: { top: 0, right: 0, bottom: 2, left: 0 }
     },
     text: {
-      fontFamily: "Times New Roman",
+      visible: true,
+      fontFamily: "Arial",
       fontSize: 12,
       fontColor: "#333333",
       fontStyle: "normal",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      visible: true
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
     }
   },
   productFeatures: {
@@ -210,12 +190,46 @@ export const classicLayout: PrintLayout = {
       iconSize: 16
     },
     title: {
+      visible: true,
       fontFamily: "Arial",
       fontSize: 12,
       fontColor: "#000000",
       fontStyle: "normal",
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  servicePrice: {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 12,
+    fontColor: "#000000",
+    fontStyle: "normal",
+    alignment: "left",
+    margin: { top: 0, right: 0, bottom: 0, left: 0 }
+  },
+  spacing: {
+    betweenCategories: 15,
+    betweenProducts: 8,
+    categoryTitleBottomMargin: 10
+  },
+  page: {
+    marginTop: 20,
+    marginRight: 20,
+    marginBottom: 20,
+    marginLeft: 20,
+    useDistinctMarginsForPages: false,
+    oddPages: {
+      marginTop: 20,
+      marginRight: 20,
+      marginBottom: 20,
+      marginLeft: 20
+    },
+    evenPages: {
+      marginTop: 20,
+      marginRight: 20,
+      marginBottom: 20,
+      marginLeft: 20
     }
   }
 };

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
@@ -295,3 +294,29 @@ async function initializeDefaultLayouts(): Promise<{
     };
   }
 }
+
+export const mapSupabaseToLayout = (data: any): PrintLayout => {
+  return {
+    id: data.id,
+    name: data.name,
+    type: data.type,
+    isDefault: data.is_default,
+    productSchema: data.product_schema,
+    elements: data.elements,
+    cover: data.cover,
+    allergens: data.allergens,
+    categoryNotes: data.category_notes,
+    productFeatures: data.product_features,
+    servicePrice: data.service_price || {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#000000",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    },
+    spacing: data.spacing,
+    page: data.page,
+  };
+};
