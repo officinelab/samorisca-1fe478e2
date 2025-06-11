@@ -17,6 +17,7 @@ type TabKey =
   | "elementi"
   | "copertina"
   | "allergeni"
+  | "notecategorie"
   | "spaziatura"
   | "pagina";
 
@@ -49,6 +50,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleAllergensItemDescriptionChange,
     handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
+    handleCategoryNotesIconChange,
+    handleCategoryNotesTitleChange,
+    handleCategoryNotesTitleMarginChange,
+    handleCategoryNotesTextChange,
+    handleCategoryNotesTextMarginChange,
     handleProductFeaturesChange,
     handleSave
   } = useLayoutEditor(layout, onSave);
@@ -120,6 +126,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleAllergensItemDescriptionChange={handleAllergensItemDescriptionChange}
               handleAllergensItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
               handleAllergensItemChange={handleAllergensItemChange}
+              handleCategoryNotesIconChange={handleCategoryNotesIconChange}
+              handleCategoryNotesTitleChange={handleCategoryNotesTitleChange}
+              handleCategoryNotesTitleMarginChange={handleCategoryNotesTitleMarginChange}
+              handleCategoryNotesTextChange={handleCategoryNotesTextChange}
+              handleCategoryNotesTextMarginChange={handleCategoryNotesTextMarginChange}
               handleProductFeaturesChange={handleProductFeaturesChange}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}

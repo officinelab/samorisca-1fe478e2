@@ -181,5 +181,28 @@ export const modernLayout: PrintLayout = {
       padding: 10,
       iconSize: 18
     }
+  },
+  categoryNotes: {
+    icon: {
+      iconSize: 18
+    },
+    title: {
+      fontFamily: "Helvetica",
+      fontSize: 16,
+      fontColor: "#1A1F2C",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 3, left: 0 },
+      visible: true
+    },
+    text: {
+      fontFamily: "Helvetica",
+      fontSize: 12,
+      fontColor: "#555555",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      visible: true
+    }
   }
 };

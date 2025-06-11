@@ -1,11 +1,12 @@
 
 import { useState } from "react";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
 import { useCoverTab } from "./useCoverTab";
 import { useAllergensTab } from "./useAllergensTab";
+import { useCategoryNotesTab } from "./useCategoryNotesTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 
@@ -60,9 +61,35 @@ function ensurePageMargins(layout: PrintLayout): PrintLayout {
     margin: (allergensItem as any).description?.margin ?? { top: 0, right: 0, bottom: 5, left: 0 }
   };
 
+  // Category Notes fallback
+  const categoryNotes: CategoryNotesConfig = {
+    icon: {
+      iconSize: layout.categoryNotes?.icon?.iconSize ?? 16
+    },
+    title: {
+      visible: typeof layout.categoryNotes?.title?.visible === "boolean" ? layout.categoryNotes.title.visible : true,
+      fontFamily: layout.categoryNotes?.title?.fontFamily ?? "Arial",
+      fontSize: layout.categoryNotes?.title?.fontSize ?? 14,
+      fontColor: layout.categoryNotes?.title?.fontColor ?? "#000000",
+      fontStyle: layout.categoryNotes?.title?.fontStyle ?? "bold",
+      alignment: layout.categoryNotes?.title?.alignment ?? "left",
+      margin: layout.categoryNotes?.title?.margin ?? { top: 0, right: 0, bottom: 2, left: 0 }
+    },
+    text: {
+      visible: typeof layout.categoryNotes?.text?.visible === "boolean" ? layout.categoryNotes.text.visible : true,
+      fontFamily: layout.categoryNotes?.text?.fontFamily ?? "Arial",
+      fontSize: layout.categoryNotes?.text?.fontSize ?? 12,
+      fontColor: layout.categoryNotes?.text?.fontColor ?? "#333333",
+      fontStyle: layout.categoryNotes?.text?.fontStyle ?? "normal",
+      alignment: layout.categoryNotes?.text?.alignment ?? "left",
+      margin: layout.categoryNotes?.text?.margin ?? { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  };
+
   return {
     ...layout,
     cover: { logo, title, subtitle },
+    categoryNotes,
     allergens: {
       ...layout.allergens,
       item: {
@@ -126,6 +153,15 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemChange
   } = useAllergensTab(setEditedLayout);
 
+  // Category Notes
+  const {
+    handleCategoryNotesIconChange,
+    handleCategoryNotesTitleChange,
+    handleCategoryNotesTitleMarginChange,
+    handleCategoryNotesTextChange,
+    handleCategoryNotesTextMarginChange
+  } = useCategoryNotesTab(setEditedLayout);
+
   // Spacing
   const { handleSpacingChange } = useSpacingTab(setEditedLayout);
 
@@ -170,6 +206,11 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleAllergensItemDescriptionChange,
     handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
+    handleCategoryNotesIconChange,
+    handleCategoryNotesTitleChange,
+    handleCategoryNotesTitleMarginChange,
+    handleCategoryNotesTextChange,
+    handleCategoryNotesTextMarginChange,
     handleProductFeaturesChange,
     handleSave
   };

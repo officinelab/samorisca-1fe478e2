@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from "uuid";
 
@@ -7,6 +6,30 @@ const defaultProductFeatures = {
   iconSpacing: 8,
   marginTop: 4,
   marginBottom: 4
+};
+
+const baseCategoryNotes = {
+  icon: {
+    iconSize: 16
+  },
+  title: {
+    fontFamily: "Arial",
+    fontSize: 14,
+    fontColor: "#000000",
+    fontStyle: "bold" as const,
+    alignment: "left" as const,
+    margin: { top: 0, right: 0, bottom: 2, left: 0 },
+    visible: true
+  },
+  text: {
+    fontFamily: "Arial",
+    fontSize: 12,
+    fontColor: "#333333",
+    fontStyle: "normal" as const,
+    alignment: "left" as const,
+    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+    visible: true
+  }
 };
 
 const baseElements = {
@@ -206,6 +229,7 @@ export const defaultLayouts: PrintLayout[] = [
     elements: baseElements,
     cover: baseCover,
     allergens: baseAllergens,
+    categoryNotes: baseCategoryNotes,
     spacing: baseSpacing,
     page: basePage
   }

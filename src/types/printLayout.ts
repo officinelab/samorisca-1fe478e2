@@ -1,3 +1,4 @@
+
 // Struttura aggiornata e commentata secondo la nuova specifica
 
 export type FontStyle = 'normal' | 'italic' | 'bold';
@@ -32,6 +33,17 @@ export type ProductFeaturesConfig = {
   iconSpacing: number;   // spaziatura tra le icone in px
   marginTop: number;     // margine superiore in px
   marginBottom: number;  // margine inferiore in px
+};
+
+/**
+ * Configurazione specifica per le note categorie
+ */
+export type CategoryNotesConfig = {
+  icon: {
+    iconSize: number;    // dimensione icona in px
+  };
+  title: PrintLayoutElementConfig;    // Titolo della nota categoria
+  text: PrintLayoutElementConfig;     // Testo della nota categoria
 };
 
 export type PageMargins = {
@@ -132,6 +144,7 @@ export type PrintLayout = {
   elements: MenuElementsConfig;
   cover: PrintLayoutCover;
   allergens: AllergensConfig;
+  categoryNotes: CategoryNotesConfig;  // NUOVO: configurazione note categorie
   spacing: MenuSpacing;
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;
