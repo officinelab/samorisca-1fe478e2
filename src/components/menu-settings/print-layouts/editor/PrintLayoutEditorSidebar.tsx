@@ -1,12 +1,14 @@
 
 import React from "react";
-import { Settings, LayoutList, Image, Folder, FileText, Text } from "lucide-react";
+import { Settings, LayoutList, Image, Folder, FileText, Text, Star, StickyNote } from "lucide-react";
 
 type TabKey =
   | "generale"
   | "elementi"
   | "copertina"
   | "allergeni"
+  | "caratteristiche-prodotto"
+  | "note-categorie"
   | "spaziatura"
   | "pagina";
 
@@ -15,6 +17,8 @@ const SECTIONS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: "elementi", label: "Elementi Menu", icon: <LayoutList size={18} /> },
   { key: "copertina", label: "Copertina", icon: <Image size={18} /> },
   { key: "allergeni", label: "Allergeni", icon: <Folder size={18} /> },
+  { key: "caratteristiche-prodotto", label: "Caratteristiche Prodotto", icon: <Star size={18} /> },
+  { key: "note-categorie", label: "Note Categorie", icon: <StickyNote size={18} /> },
   { key: "spaziatura", label: "Spaziatura", icon: <FileText size={18} /> },
   { key: "pagina", label: "Impostazioni Pagina", icon: <Text size={18} /> },
 ];

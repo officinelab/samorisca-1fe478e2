@@ -116,6 +116,24 @@ export type MenuSpacing = {
   categoryTitleBottomMargin: number;
 };
 
+export type ProductFeaturesDetailConfig = {
+  iconSize: number;      // dimensione delle icone in px
+  iconSpacing: number;   // spaziatura tra le icone in px
+  marginTop: number;     // margine superiore in px
+  marginBottom: number;  // margine inferiore in px
+};
+
+/**
+ * Configurazione dettagliata per le note delle categorie nella stampa
+ */
+export type CategoryNotesDetailConfig = {
+  icon: {
+    size: number; // dimensione icona in px
+  };
+  title: PrintLayoutElementConfig;
+  text: PrintLayoutElementConfig;
+};
+
 export type PrintLayoutPageConfig = PageMargins & {
   useDistinctMarginsForPages: boolean;
   oddPages: PageMargins;
@@ -132,6 +150,8 @@ export type PrintLayout = {
   elements: MenuElementsConfig;
   cover: PrintLayoutCover;
   allergens: AllergensConfig;
+  productFeaturesDetail: ProductFeaturesDetailConfig; // configurazione dettagliata caratteristiche prodotto
+  categoryNotesDetail: CategoryNotesDetailConfig; // NUOVO: configurazione dettagliata note categorie
   spacing: MenuSpacing;
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;

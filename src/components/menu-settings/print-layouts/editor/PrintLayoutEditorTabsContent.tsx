@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -7,10 +6,12 @@ import GeneralTab from "./GeneralTab";
 import ElementsTab from "./ElementsTab";
 import CoverLayoutTab from "./CoverLayoutTab";
 import AllergensLayoutTab from "./AllergensLayoutTab";
+import ProductFeaturesDetailTab from "./ProductFeaturesDetailTab";
+import CategoryNotesDetailTab from "./CategoryNotesDetailTab";
 import SpacingTab from "./SpacingTab";
 import PageSettingsTab from "./PageSettingsTab";
 
-type TabKey = "generale" | "elementi" | "copertina" | "allergeni" | "spaziatura" | "pagina";
+type TabKey = "generale" | "elementi" | "copertina" | "allergeni" | "caratteristiche-prodotto" | "note-categorie" | "spaziatura" | "pagina";
 
 interface PrintLayoutEditorTabsContentProps {
   activeTab: TabKey;
@@ -48,6 +49,11 @@ interface PrintLayoutEditorTabsContentProps {
   handleAllergensItemDescriptionMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleAllergensItemChange: (field: keyof PrintLayout["allergens"]["item"], value: any) => void;
   handleProductFeaturesChange: (field: keyof ProductFeaturesConfig, value: number) => void;
+  handleCategoryNotesDetailIconChange: (field: 'size', value: number) => void;
+  handleCategoryNotesDetailTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleCategoryNotesDetailTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleCategoryNotesDetailTextChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleCategoryNotesDetailTextMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleSaveWithValidation: () => void;
   validationError: string | null;
 }
@@ -80,6 +86,11 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
   handleAllergensItemDescriptionMarginChange,
   handleAllergensItemChange,
   handleProductFeaturesChange,
+  handleCategoryNotesDetailIconChange,
+  handleCategoryNotesDetailTitleChange,
+  handleCategoryNotesDetailTitleMarginChange,
+  handleCategoryNotesDetailTextChange,
+  handleCategoryNotesDetailTextMarginChange,
   handleSaveWithValidation,
   validationError,
 }) => {
@@ -129,6 +140,24 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
           onAllergensItemDescriptionChange={handleAllergensItemDescriptionChange}
           onAllergensItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
           onAllergensItemChange={handleAllergensItemChange}
+        />
+      )}
+
+      {activeTab === "caratteristiche-prodotto" && (
+        <ProductFeaturesDetailTab
+          layout={editedLayout}
+          onProductFeaturesChange={handleProductFeaturesChange}
+        />
+      )}
+
+      {activeTab === "note-categorie" && (
+        <CategoryNotesDetailTab
+          layout={editedLayout}
+          onCategoryNotesDetailIconChange={handleCategoryNotesDetailIconChange}
+          onCategoryNotesDetailTitleChange={handleCategoryNotesDetailTitleChange}
+          onCategoryNotesDetailTitleMarginChange={handleCategoryNotesDetailTitleMarginChange}
+          onCategoryNotesDetailTextChange={handleCategoryNotesDetailTextChange}
+          onCategoryNotesDetailTextMarginChange={handleCategoryNotesDetailTextMarginChange}
         />
       )}
 

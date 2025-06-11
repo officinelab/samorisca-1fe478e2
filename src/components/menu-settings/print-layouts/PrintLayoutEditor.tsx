@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
@@ -17,6 +16,8 @@ type TabKey =
   | "elementi"
   | "copertina"
   | "allergeni"
+  | "caratteristiche-prodotto"
+  | "note-categorie"
   | "spaziatura"
   | "pagina";
 
@@ -50,6 +51,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
     handleProductFeaturesChange,
+    handleCategoryNotesDetailIconChange,
+    handleCategoryNotesDetailTitleChange,
+    handleCategoryNotesDetailTitleMarginChange,
+    handleCategoryNotesDetailTextChange,
+    handleCategoryNotesDetailTextMarginChange,
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -121,6 +127,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleAllergensItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
               handleAllergensItemChange={handleAllergensItemChange}
               handleProductFeaturesChange={handleProductFeaturesChange}
+              handleCategoryNotesDetailIconChange={handleCategoryNotesDetailIconChange}
+              handleCategoryNotesDetailTitleChange={handleCategoryNotesDetailTitleChange}
+              handleCategoryNotesDetailTitleMarginChange={handleCategoryNotesDetailTitleMarginChange}
+              handleCategoryNotesDetailTextChange={handleCategoryNotesDetailTextChange}
+              handleCategoryNotesDetailTextMarginChange={handleCategoryNotesDetailTextMarginChange}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}
             />
