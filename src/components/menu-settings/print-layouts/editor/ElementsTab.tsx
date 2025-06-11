@@ -1,4 +1,3 @@
-
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
@@ -17,7 +16,7 @@ interface ElementsTabProps {
   ) => void;
   onProductFeaturesChange: (
     field: keyof ProductFeaturesConfig,
-    value: number
+    value: any
   ) => void;
 }
 
