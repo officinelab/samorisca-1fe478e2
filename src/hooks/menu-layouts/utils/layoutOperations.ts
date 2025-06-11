@@ -1,8 +1,10 @@
 
+
 // Re-export all operations from the operations folder
 export {
   syncPageMargins,
   updateLayoutInList,
-  createNewLayoutFromTemplate,
+  createNewLayout,
   cloneExistingLayout
 } from "./operations";
+
