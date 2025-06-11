@@ -1,25 +1,26 @@
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
   Settings, 
-  Type, 
-  Image, 
-  ShieldAlert, 
-  StickyNote,
-  Sparkles,
+  FileText,
   AlignJustify, 
-  FileText 
+  Image, 
+  Type, 
+  Sparkles,
+  ShieldAlert, 
+  StickyNote
 } from "lucide-react";
 
 type TabKey = 
   | "generale" 
-  | "elementi" 
-  | "copertina" 
-  | "allergeni" 
-  | "notecategorie"
-  | "caratteristicheprodotto"
+  | "pagina"
   | "spaziatura" 
-  | "pagina";
+  | "copertina" 
+  | "elementi" 
+  | "caratteristicheprodotto"
+  | "allergeni" 
+  | "notecategorie";
 
 interface PrintLayoutEditorSidebarProps {
   activeTab: TabKey;
@@ -29,13 +30,13 @@ interface PrintLayoutEditorSidebarProps {
 const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditorSidebarProps) => {
   const tabs = [
     { key: "generale" as const, label: "Generale", icon: Settings },
-    { key: "elementi" as const, label: "Elementi Menu", icon: Type },
+    { key: "pagina" as const, label: "Impostazioni Pagina", icon: FileText },
+    { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
     { key: "copertina" as const, label: "Copertina", icon: Image },
+    { key: "elementi" as const, label: "Elementi Menu", icon: Type },
+    { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
     { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
     { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
-    { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
-    { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
-    { key: "pagina" as const, label: "Impostazioni Pagina", icon: FileText },
   ];
 
   return (
