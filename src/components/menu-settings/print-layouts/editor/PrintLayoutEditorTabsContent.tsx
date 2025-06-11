@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -49,6 +50,11 @@ interface PrintLayoutEditorTabsContentProps {
   handleAllergensItemDescriptionMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleAllergensItemChange: (field: keyof PrintLayout["allergens"]["item"], value: any) => void;
   handleProductFeaturesChange: (field: keyof ProductFeaturesConfig, value: number) => void;
+  handleProductFeaturesDetailIconChange: (field: 'size', value: number) => void;
+  handleProductFeaturesDetailTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleProductFeaturesDetailTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleProductFeaturesDetailTextChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleProductFeaturesDetailTextMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleCategoryNotesDetailIconChange: (field: 'size', value: number) => void;
   handleCategoryNotesDetailTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
   handleCategoryNotesDetailTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
@@ -86,6 +92,11 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
   handleAllergensItemDescriptionMarginChange,
   handleAllergensItemChange,
   handleProductFeaturesChange,
+  handleProductFeaturesDetailIconChange,
+  handleProductFeaturesDetailTitleChange,
+  handleProductFeaturesDetailTitleMarginChange,
+  handleProductFeaturesDetailTextChange,
+  handleProductFeaturesDetailTextMarginChange,
   handleCategoryNotesDetailIconChange,
   handleCategoryNotesDetailTitleChange,
   handleCategoryNotesDetailTitleMarginChange,
@@ -146,7 +157,11 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
       {activeTab === "caratteristiche-prodotto" && (
         <ProductFeaturesDetailTab
           layout={editedLayout}
-          onProductFeaturesChange={handleProductFeaturesChange}
+          onProductFeaturesDetailIconChange={handleProductFeaturesDetailIconChange}
+          onProductFeaturesDetailTitleChange={handleProductFeaturesDetailTitleChange}
+          onProductFeaturesDetailTitleMarginChange={handleProductFeaturesDetailTitleMarginChange}
+          onProductFeaturesDetailTextChange={handleProductFeaturesDetailTextChange}
+          onProductFeaturesDetailTextMarginChange={handleProductFeaturesDetailTextMarginChange}
         />
       )}
 
@@ -162,7 +177,10 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
       )}
 
       {activeTab === "spaziatura" && (
-        <SpacingTab layout={editedLayout} onSpacingChange={handleSpacingChange} />
+        <SpacingTab
+          layout={editedLayout}
+          onSpacingChange={handleSpacingChange}
+        />
       )}
 
       {activeTab === "pagina" && (
