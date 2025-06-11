@@ -112,6 +112,7 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Sezione Logo separata */}
       <Card>
         <CardContent className="pt-6">
           <h4 className="text-lg font-medium mb-4">Logo della copertina</h4>
@@ -195,6 +196,8 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Schede per Titolo e Sottotitolo */}
       <Tabs defaultValue="titolo">
         <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="titolo">Titolo Menu</TabsTrigger>
@@ -256,4 +259,3 @@ const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
 };
 
 export default CoverLayoutTab;
-
