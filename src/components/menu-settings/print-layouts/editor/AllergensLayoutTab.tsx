@@ -1,12 +1,11 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
 import { PrintLayout } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import AllergensMenuSettings from "./allergens/AllergensMenuSettings";
+import AllergensItemConfiguration from "./allergens/AllergensItemConfiguration";
 
 interface AllergensLayoutTabProps {
   layout: PrintLayout;
@@ -33,10 +32,6 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
   onAllergensItemTitleMarginChange,
   onAllergensItemChange
 }) => {
-  const { siteSettings, saveSetting } = useSiteSettings();
-
-  console.log("AllergensLayoutTab - siteSettings:", siteSettings);
-
   // Se le configurazioni di allergeni non esistono, usa valori predefiniti
   const allergensTitle = layout.allergens?.title || {
     visible: true,
@@ -88,18 +83,6 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
     iconSize: 16
   };
 
-  const handleMenuTitleChange = async (value: string) => {
-    console.log("Saving allergensMenuTitle:", value);
-    const success = await saveSetting('allergensMenuTitle', value);
-    console.log("Save result:", success);
-  };
-
-  const handleMenuDescriptionChange = async (value: string) => {
-    console.log("Saving allergensMenuDescription:", value);
-    const success = await saveSetting('allergensMenuDescription', value);
-    console.log("Save result:", success);
-  };
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="titolo">
@@ -114,21 +97,12 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
             <CardContent className="pt-6">
               <h4 className="text-lg font-medium mb-4">Titolo Tabella Allergeni</h4>
               
-              <div className="space-y-4 mb-6">
-                <div className="space-y-2">
-                  <Label>Titolo Menu Allergeni (stampabile)</Label>
-                  <Input
-                    type="text"
-                    value={siteSettings?.allergensMenuTitle || ''}
-                    onChange={(e) => handleMenuTitleChange(e.target.value)}
-                    placeholder="Inserisci il titolo del menu allergeni..."
-                    className="w-full"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Questo titolo verrà utilizzato nel menu stampabile
-                  </p>
-                </div>
-              </div>
+              <AllergensMenuSettings
+                title="Titolo Menu Allergeni (stampabile)"
+                placeholder="Inserisci il titolo del menu allergeni..."
+                settingKey="allergensMenuTitle"
+                description="Questo titolo verrà utilizzato nel menu stampabile"
+              />
 
               <ElementEditor
                 element={allergensTitle}
@@ -144,21 +118,12 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
             <CardContent className="pt-6">
               <h4 className="text-lg font-medium mb-4">Descrizione</h4>
               
-              <div className="space-y-4 mb-6">
-                <div className="space-y-2">
-                  <Label>Descrizione Menu Allergeni (stampabile)</Label>
-                  <Input
-                    type="text"
-                    value={siteSettings?.allergensMenuDescription || ''}
-                    onChange={(e) => handleMenuDescriptionChange(e.target.value)}
-                    placeholder="Inserisci la descrizione del menu allergeni..."
-                    className="w-full"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Questa descrizione verrà utilizzata nel menu stampabile
-                  </p>
-                </div>
-              </div>
+              <AllergensMenuSettings
+                title="Descrizione Menu Allergeni (stampabile)"
+                placeholder="Inserisci la descrizione del menu allergeni..."
+                settingKey="allergensMenuDescription"
+                description="Questa descrizione verrà utilizzata nel menu stampabile"
+              />
 
               <ElementEditor
                 element={allergensDescription}
@@ -174,108 +139,14 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
             <CardContent className="pt-6">
               <h4 className="text-lg font-medium mb-4">Configurazione Voce Allergene</h4>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="space-y-2">
-                  <Label>Spaziatura (px)</Label>
-                  <div className="flex items-center space-x-4">
-                    <Slider
-                      value={[allergensItem.spacing]}
-                      min={0}
-                      max={30}
-                      step={1}
-                      onValueChange={(value) => onAllergensItemChange("spacing", value[0])}
-                      className="flex-1"
-                    />
-                    <span className="w-12 text-right">{allergensItem.spacing}px</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Padding (px)</Label>
-                  <div className="flex items-center space-x-4">
-                    <Slider
-                      value={[allergensItem.padding]}
-                      min={0}
-                      max={20}
-                      step={1}
-                      onValueChange={(value) => onAllergensItemChange("padding", value[0])}
-                      className="flex-1"
-                    />
-                    <span className="w-12 text-right">{allergensItem.padding}px</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Raggio Bordo (px)</Label>
-                  <div className="flex items-center space-x-4">
-                    <Slider
-                      value={[allergensItem.borderRadius]}
-                      min={0}
-                      max={12}
-                      step={1}
-                      onValueChange={(value) => onAllergensItemChange("borderRadius", value[0])}
-                      className="flex-1"
-                    />
-                    <span className="w-12 text-right">{allergensItem.borderRadius}px</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Dimensione Icone (px)</Label>
-                  <div className="flex items-center space-x-4">
-                    <Slider
-                      value={[allergensItem.iconSize || 16]}
-                      min={12}
-                      max={32}
-                      step={2}
-                      onValueChange={(value) => onAllergensItemChange("iconSize", value[0])}
-                      className="flex-1"
-                    />
-                    <span className="w-12 text-right">{allergensItem.iconSize || 16}px</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Colore Sfondo</Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      type="text"
-                      value={allergensItem.backgroundColor}
-                      onChange={(e) => onAllergensItemChange("backgroundColor", e.target.value)}
-                      placeholder="#f9f9f9"
-                    />
-                    <div 
-                      className="h-8 w-8 border border-gray-300 rounded"
-                      style={{ backgroundColor: allergensItem.backgroundColor }}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <Tabs defaultValue="numero">
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="numero">Numero</TabsTrigger>
-                  <TabsTrigger value="titolo">Titolo</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="numero" className="pt-4">
-                  <h5 className="text-md font-medium mb-4">Stile Numero</h5>
-                  <ElementEditor
-                    element={allergensItemNumber}
-                    onChange={onAllergensItemNumberChange}
-                    onMarginChange={onAllergensItemNumberMarginChange}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="titolo" className="pt-4">
-                  <h5 className="text-md font-medium mb-4">Stile Titolo</h5>
-                  <ElementEditor
-                    element={allergensItemTitle}
-                    onChange={onAllergensItemTitleChange}
-                    onMarginChange={onAllergensItemTitleMarginChange}
-                  />
-                </TabsContent>
-              </Tabs>
+              <AllergensItemConfiguration
+                allergensItem={allergensItem}
+                onAllergensItemNumberChange={onAllergensItemNumberChange}
+                onAllergensItemNumberMarginChange={onAllergensItemNumberMarginChange}
+                onAllergensItemTitleChange={onAllergensItemTitleChange}
+                onAllergensItemTitleMarginChange={onAllergensItemTitleMarginChange}
+                onAllergensItemChange={onAllergensItemChange}
+              />
             </CardContent>
           </Card>
         </TabsContent>
