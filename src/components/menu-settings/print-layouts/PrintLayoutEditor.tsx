@@ -46,6 +46,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleAllergensItemNumberMarginChange,
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
     handleProductFeaturesChange,
     handleSave
@@ -115,6 +117,8 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
               handleAllergensItemTitleChange={handleAllergensItemTitleChange}
               handleAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
+              handleAllergensItemDescriptionChange={handleAllergensItemDescriptionChange}
+              handleAllergensItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
               handleAllergensItemChange={handleAllergensItemChange}
               handleProductFeaturesChange={handleProductFeaturesChange}
               handleSaveWithValidation={handleSaveWithValidation}

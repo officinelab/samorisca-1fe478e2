@@ -44,6 +44,8 @@ interface PrintLayoutEditorTabsContentProps {
   handleAllergensItemNumberMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleAllergensItemTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
   handleAllergensItemTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleAllergensItemDescriptionChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleAllergensItemDescriptionMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleAllergensItemChange: (field: keyof PrintLayout["allergens"]["item"], value: any) => void;
   handleProductFeaturesChange: (field: keyof ProductFeaturesConfig, value: number) => void;
   handleSaveWithValidation: () => void;
@@ -74,6 +76,8 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
   handleAllergensItemNumberMarginChange,
   handleAllergensItemTitleChange,
   handleAllergensItemTitleMarginChange,
+  handleAllergensItemDescriptionChange,
+  handleAllergensItemDescriptionMarginChange,
   handleAllergensItemChange,
   handleProductFeaturesChange,
   handleSaveWithValidation,
@@ -122,6 +126,8 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
           onAllergensItemNumberMarginChange={handleAllergensItemNumberMarginChange}
           onAllergensItemTitleChange={handleAllergensItemTitleChange}
           onAllergensItemTitleMarginChange={handleAllergensItemTitleMarginChange}
+          onAllergensItemDescriptionChange={handleAllergensItemDescriptionChange}
+          onAllergensItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
           onAllergensItemChange={handleAllergensItemChange}
         />
       )}
