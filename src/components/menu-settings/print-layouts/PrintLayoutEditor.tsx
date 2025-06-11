@@ -96,6 +96,10 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     }
   };
 
+  const handleToggleDistinctMarginsWrapper = () => {
+    handleToggleDistinctMargins(!editedLayout.page.useDistinctMarginsForPages);
+  };
+
   return (
     <div className="w-full flex flex-col md:flex-row gap-6 h-full">
       <PrintLayoutEditorSidebar activeTab={activeTab as TabKey} setActiveTab={setActiveTab} />
@@ -113,7 +117,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handlePageMarginChange={handlePageMarginChange}
               handleOddPageMarginChange={handleOddPageMarginChange}
               handleEvenPageMarginChange={handleEvenPageMarginChange}
-              handleToggleDistinctMargins={handleToggleDistinctMargins}
+              handleToggleDistinctMargins={handleToggleDistinctMarginsWrapper}
               handleCoverLogoChange={handleCoverLogoChange}
               handleCoverTitleChange={handleCoverTitleChange}
               handleCoverTitleMarginChange={handleCoverTitleMarginChange}

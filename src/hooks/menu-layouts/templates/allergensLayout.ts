@@ -1,53 +1,43 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const allergensLayout: PrintLayout = {
-  id: "allergens",
-  name: "Solo Allergeni",
-  type: "custom",
+  id: 'allergens-layout',
+  name: 'Layout Allergeni',
+  type: 'custom',
   isDefault: false,
   productSchema: 'schema1',
   elements: {
     category: {
       fontFamily: "Arial",
-      fontSize: 16,
+      fontSize: 14,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 0, right: 0, bottom: 5, left: 0 }
+      margin: { top: 5, right: 0, bottom: 5, left: 0 }
     },
     title: {
       fontFamily: "Arial",
-      fontSize: 12,
-      fontColor: "#000000", 
-      fontStyle: "bold",
+      fontSize: 18,
+      fontColor: "#333333",
+      fontStyle: "normal",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 }
+      margin: { top: 10, right: 0, bottom: 5, left: 0 }
     },
     description: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#333333",
-      fontStyle: "italic",
+      fontSize: 12,
+      fontColor: "#666666",
+      fontStyle: "normal",
       alignment: "left",
-      margin: { top: 2, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 10, left: 0 }
     },
     descriptionEng: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#333333",
-      fontStyle: "italic",
-      alignment: "left",
-      margin: { top: 2, right: 0, bottom: 0, left: 0 },
-      visible: true
-    },
-    price: {
-      fontFamily: "Arial",
       fontSize: 12,
-      fontColor: "#000000",
-      fontStyle: "bold",
-      alignment: "right",
-      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      fontColor: "#666666",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 10, left: 0 }
     },
     allergensList: {
       fontFamily: "Arial",
@@ -55,7 +45,7 @@ export const allergensLayout: PrintLayout = {
       fontColor: "#000000",
       fontStyle: "normal",
       alignment: "left",
-      margin: { top: 3, right: 0, bottom: 3, left: 0 }
+      margin: { top: 0, right: 0, bottom: 5, left: 0 }
     },
     productFeatures: {
       iconSize: 16,
@@ -63,89 +53,72 @@ export const allergensLayout: PrintLayout = {
       marginTop: 4,
       marginBottom: 4
     },
-    priceVariants: {
+    price: {
       fontFamily: "Arial",
-      fontSize: 10,
-      fontColor: "#000000",
-      fontStyle: "normal",
+      fontSize: 16,
+      fontColor: "#0077CC",
+      fontStyle: "bold",
       alignment: "right",
-      margin: { top: 1, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 0, left: 5 }
     },
     suffix: {
       fontFamily: "Arial",
-      fontSize: 9,
-      fontColor: "#888888",
+      fontSize: 12,
+      fontColor: "#0077CC",
       fontStyle: "normal",
       alignment: "left"
-    }
-  },
-  spacing: {
-    betweenCategories: 10,
-    betweenProducts: 4,
-    categoryTitleBottomMargin: 5
-  },
-  page: {
-    marginTop: 20,
-    marginRight: 15,
-    marginBottom: 20,
-    marginLeft: 15,
-    useDistinctMarginsForPages: false,
-    oddPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
     },
-    evenPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
+    priceVariants: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#999999",
+      fontStyle: "italic",
+      alignment: "right",
+      margin: { top: 0, right: 0, bottom: 0, left: 5 }
     }
   },
   cover: {
     logo: {
+      imageUrl: null,
       maxWidth: 80,
       maxHeight: 50,
-      alignment: 'center',
+      alignment: "center",
       marginTop: 20,
       marginBottom: 20,
       visible: true
     },
     title: {
       fontFamily: "Arial",
-      fontSize: 28,
-      fontColor: "#ea384c",
+      fontSize: 24,
+      fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
       margin: { top: 20, right: 0, bottom: 10, left: 0 },
-      menuTitle: undefined,
-      visible: true
+      menuTitle: ""
     },
     subtitle: {
       fontFamily: "Arial",
-      fontSize: 16,
+      fontSize: 14,
       fontColor: "#666666",
       fontStyle: "italic",
       alignment: "center",
       margin: { top: 5, right: 0, bottom: 0, left: 0 },
-      menuSubtitle: undefined,
-      visible: true
+      menuSubtitle: ""
     }
   },
   allergens: {
     title: {
       fontFamily: "Arial",
-      fontSize: 28,
-      fontColor: "#ea384c",
+      fontSize: 20,
+      fontColor: "#222222",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 0, right: 0, bottom: 20, left: 0 }
+      margin: { top: 15, right: 0, bottom: 10, left: 0 }
     },
     description: {
       fontFamily: "Arial",
       fontSize: 14,
-      fontColor: "#333333",
+      fontColor: "#444444",
       fontStyle: "normal",
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 15, left: 0 }
@@ -153,19 +126,19 @@ export const allergensLayout: PrintLayout = {
     item: {
       number: {
         fontFamily: "Arial",
-        fontSize: 14,
+        fontSize: 12,
         fontColor: "#FFFFFF",
         fontStyle: "bold",
         alignment: "center",
-        margin: { top: 0, right: 10, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
       title: {
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#333333",
-        fontStyle: "bold",
+        fontStyle: "normal",
         alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 5, left: 5 }
       },
       description: {
         fontFamily: "Arial",
@@ -173,12 +146,12 @@ export const allergensLayout: PrintLayout = {
         fontColor: "#444444",
         fontStyle: "normal",
         alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 5, left: 0 }
       },
-      spacing: 12,
-      backgroundColor: "#f9f9f9",
-      borderRadius: 4,
-      padding: 8,
+      spacing: 8,
+      backgroundColor: "#F0F0F0",
+      borderRadius: 5,
+      padding: 5,
       iconSize: 16
     }
   },
@@ -192,8 +165,7 @@ export const allergensLayout: PrintLayout = {
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 },
-      visible: true
+      margin: { top: 0, right: 0, bottom: 2, left: 0 }
     },
     text: {
       fontFamily: "Arial",
@@ -201,8 +173,44 @@ export const allergensLayout: PrintLayout = {
       fontColor: "#333333",
       fontStyle: "normal",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      visible: true
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  productFeatures: {
+    icon: {
+      iconSize: 16
+    },
+    title: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#000000",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  spacing: {
+    betweenCategories: 15,
+    betweenProducts: 10,
+    categoryTitleBottomMargin: 5
+  },
+  page: {
+    marginTop: 15,
+    marginRight: 15,
+    marginBottom: 15,
+    marginLeft: 15,
+    useDistinctMarginsForPages: false,
+    oddPages: {
+      marginTop: 15,
+      marginRight: 15,
+      marginBottom: 15,
+      marginLeft: 15
+    },
+    evenPages: {
+      marginTop: 15,
+      marginRight: 15,
+      marginBottom: 15,
+      marginLeft: 15
     }
   }
 };

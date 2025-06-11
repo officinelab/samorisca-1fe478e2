@@ -57,10 +57,17 @@ export const classicLayout: PrintLayout = {
       margin: { top: 0, right: 10, bottom: 0, left: 0 }
     },
     productFeatures: {
-      iconSize: 16,
-      iconSpacing: 8,
-      marginTop: 4,
-      marginBottom: 4
+      icon: {
+        iconSize: 16
+      },
+      title: {
+        fontFamily: "Arial",
+        fontSize: 12,
+        fontColor: "#000000",
+        fontStyle: "normal",
+        alignment: "left",
+        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+      }
     },
     priceVariants: {
       fontFamily: "Arial",

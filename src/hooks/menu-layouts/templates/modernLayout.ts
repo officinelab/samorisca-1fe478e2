@@ -1,208 +1,233 @@
 import { PrintLayout } from "@/types/printLayout";
 
 export const modernLayout: PrintLayout = {
-  id: "modern",
-  name: "Layout Moderno",
-  type: "custom",
+  id: 'modern-layout',
+  name: 'Layout Moderno',
+  type: 'custom',
   isDefault: false,
   productSchema: 'schema2',
   elements: {
     category: {
-      fontFamily: "Helvetica",
-      fontSize: 20,
-      fontColor: "#1A1F2C",
+      fontFamily: "Arial",
+      fontSize: 16,
+      fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 0, right: 0, bottom: 8, left: 0 }
-    },
-    title: {
-      fontFamily: "Helvetica",
-      fontSize: 16,
-      fontColor: "#333333",
-      fontStyle: "bold",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 3, left: 0 }
-    },
-    description: {
-      fontFamily: "Helvetica",
-      fontSize: 12,
-      fontColor: "#555555",
-      fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 8, left: 0 }
-    },
-    descriptionEng: {
-      fontFamily: "Helvetica",
-      fontSize: 12,
-      fontColor: "#555555",
-      fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 8, left: 0 },
+      margin: { top: 5, right: 0, bottom: 5, left: 0 },
       visible: true
     },
-    price: {
-      fontFamily: "Helvetica",
-      fontSize: 16,
-      fontColor: "#9b87f5",
-      fontStyle: "bold",
-      alignment: "right",
-      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    title: {
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#333333",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 2, right: 0, bottom: 2, left: 0 },
+      visible: true
     },
-    allergensList: {
-      fontFamily: "Helvetica",
-      fontSize: 10,
-      fontColor: "#777777",
+    description: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#666666",
       fontStyle: "italic",
       alignment: "left",
-      margin: { top: 3, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
+      visible: true
+    },
+    descriptionEng: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#666666",
+      fontStyle: "italic",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
+      visible: true
+    },
+    allergensList: {
+      fontFamily: "Arial",
+      fontSize: 10,
+      fontColor: "#990000",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      visible: true
     },
     productFeatures: {
-      iconSize: 18,
-      iconSpacing: 10,
-      marginTop: 6,
-      marginBottom: 6
+      iconSize: 12,
+      iconSpacing: 4,
+      marginTop: 2,
+      marginBottom: 2
     },
-    priceVariants: {
-      fontFamily: "Helvetica",
-      fontSize: 12,
-      fontColor: "#555555",
-      fontStyle: "normal",
+    price: {
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#008000",
+      fontStyle: "bold",
       alignment: "right",
-      margin: { top: 3, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 0, left: 5 },
+      visible: true
     },
     suffix: {
-      fontFamily: "Helvetica",
-      fontSize: 9,
-      fontColor: "#888888",
+      fontFamily: "Arial",
+      fontSize: 10,
+      fontColor: "#008000",
       fontStyle: "normal",
-      alignment: "left"
-    }
-  },
-  spacing: {
-    betweenCategories: 25,
-    betweenProducts: 15,
-    categoryTitleBottomMargin: 10
-  },
-  page: {
-    marginTop: 25,
-    marginRight: 20,
-    marginBottom: 25,
-    marginLeft: 20,
-    useDistinctMarginsForPages: false,
-    oddPages: {
-      marginTop: 25,
-      marginRight: 20,
-      marginBottom: 25,
-      marginLeft: 20
+      alignment: "left",
+      visible: true
     },
-    evenPages: {
-      marginTop: 25,
-      marginRight: 20,
-      marginBottom: 25,
-      marginLeft: 20
+    priceVariants: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#008000",
+      fontStyle: "italic",
+      alignment: "right",
+      margin: { top: 0, right: 0, bottom: 0, left: 5 },
+      visible: true
     }
   },
   cover: {
     logo: {
       imageUrl: null,
-      maxWidth: 85,
-      maxHeight: 60,
-      alignment: 'center',
-      marginTop: 30,
-      marginBottom: 30,
+      maxWidth: 70,
+      maxHeight: 40,
+      alignment: "center",
+      marginTop: 15,
+      marginBottom: 10,
       visible: true
     },
     title: {
-      menuTitle: undefined,
-      visible: true,
       fontFamily: "Helvetica",
-      fontSize: 32,
-      fontColor: "#1A1F2C",
+      fontSize: 28,
+      fontColor: "#1A202C",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 30, right: 0, bottom: 15, left: 0 }
+      margin: { top: 10, right: 0, bottom: 5, left: 0 },
+      menuTitle: "Titolo del Menu",
+      visible: true
     },
     subtitle: {
-      menuSubtitle: undefined,
-      visible: true,
       fontFamily: "Helvetica",
-      fontSize: 18,
-      fontColor: "#555555",
+      fontSize: 16,
+      fontColor: "#4A5568",
       fontStyle: "italic",
       alignment: "center",
-      margin: { top: 10, right: 0, bottom: 0, left: 0 }
+      margin: { top: 0, right: 0, bottom: 15, left: 0 },
+      menuSubtitle: "Sottotitolo Opzionale",
+      visible: true
     }
   },
   allergens: {
     title: {
-      fontFamily: "Helvetica",
-      fontSize: 24,
-      fontColor: "#1A1F2C",
+      fontFamily: "Arial",
+      fontSize: 18,
+      fontColor: "#B00020",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 0, right: 0, bottom: 20, left: 0 }
+      margin: { top: 10, right: 0, bottom: 5, left: 0 },
+      visible: true
     },
     description: {
-      fontFamily: "Helvetica",
-      fontSize: 14,
-      fontColor: "#555555",
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#444444",
       fontStyle: "normal",
-      alignment: "center",
-      margin: { top: 0, right: 0, bottom: 20, left: 0 }
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 10, left: 0 },
+      visible: true
     },
     item: {
       number: {
-        fontFamily: "Helvetica",
-        fontSize: 14,
+        fontFamily: "Arial",
+        fontSize: 12,
         fontColor: "#FFFFFF",
         fontStyle: "bold",
         alignment: "center",
-        margin: { top: 0, right: 12, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        visible: true
       },
       title: {
-        fontFamily: "Helvetica",
-        fontSize: 14,
+        fontFamily: "Arial",
+        fontSize: 12,
         fontColor: "#333333",
         fontStyle: "normal",
         alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 5, left: 0 },
+        visible: true
       },
       description: {
-        fontFamily: "Helvetica",
-        fontSize: 12,
+        fontFamily: "Arial",
+        fontSize: 10,
         fontColor: "#555555",
-        fontStyle: "normal",
+        fontStyle: "italic",
         alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 5, left: 0 },
+        visible: true
       },
-      spacing: 12,
-      backgroundColor: "#F1F0FB",
-      borderRadius: 6,
-      padding: 10,
-      iconSize: 18
+      spacing: 8,
+      backgroundColor: "#F0F0F0",
+      borderRadius: 5,
+      padding: 5,
+      iconSize: 16
     }
   },
   categoryNotes: {
     icon: {
-      iconSize: 18
+      iconSize: 16
     },
     title: {
-      fontFamily: "Helvetica",
-      fontSize: 16,
-      fontColor: "#1A1F2C",
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 3, left: 0 },
+      margin: { top: 0, right: 0, bottom: 2, left: 0 },
       visible: true
     },
     text: {
-      fontFamily: "Helvetica",
+      fontFamily: "Arial",
       fontSize: 12,
-      fontColor: "#555555",
+      fontColor: "#333333",
       fontStyle: "normal",
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
       visible: true
+    }
+  },
+  productFeatures: {
+    icon: {
+      iconSize: 16
+    },
+    title: {
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#000000",
+      fontStyle: "normal",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 0, left: 0 }
+    }
+  },
+  spacing: {
+    betweenCategories: 15,
+    betweenProducts: 10,
+    categoryTitleBottomMargin: 5
+  },
+  page: {
+    marginTop: 15,
+    marginRight: 15,
+    marginBottom: 15,
+    marginLeft: 15,
+    useDistinctMarginsForPages: false,
+    oddPages: {
+      marginTop: 15,
+      marginRight: 15,
+      marginBottom: 15,
+      marginLeft: 15
+    },
+    evenPages: {
+      marginTop: 15,
+      marginRight: 15,
+      marginBottom: 15,
+      marginLeft: 15
     }
   }
 };

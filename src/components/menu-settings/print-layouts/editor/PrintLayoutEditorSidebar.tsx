@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
@@ -8,7 +7,7 @@ import {
   ShieldAlert, 
   StickyNote,
   Sparkles,
-  Spacing, 
+  AlignJustify, 
   FileText 
 } from "lucide-react";
 
@@ -35,7 +34,7 @@ const PrintLayoutEditorSidebar = ({ activeTab, setActiveTab }: PrintLayoutEditor
     { key: "allergeni" as const, label: "Allergeni", icon: ShieldAlert },
     { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
     { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Sparkles },
-    { key: "spaziatura" as const, label: "Spaziatura", icon: Spacing },
+    { key: "spaziatura" as const, label: "Spaziatura", icon: AlignJustify },
     { key: "pagina" as const, label: "Impostazioni Pagina", icon: FileText },
   ];
 
