@@ -31,7 +31,7 @@ const ProductFeaturesDetailTab: React.FC<ProductFeaturesDetailTabProps> = ({
         </p>
       </div>
 
-      {/* Configurazione Icona */}
+      {/* Card Configurazione Icona */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Icona</CardTitle>
@@ -53,9 +53,7 @@ const ProductFeaturesDetailTab: React.FC<ProductFeaturesDetailTabProps> = ({
         </CardContent>
       </Card>
 
-      <Separator />
-
-      {/* Configurazione Titolo */}
+      {/* Card Configurazione Titolo */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Titolo</CardTitle>
@@ -76,9 +74,7 @@ const ProductFeaturesDetailTab: React.FC<ProductFeaturesDetailTabProps> = ({
         </CardContent>
       </Card>
 
-      <Separator />
-
-      {/* Configurazione Testo */}
+      {/* Card Configurazione Testo */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Testo</CardTitle>
