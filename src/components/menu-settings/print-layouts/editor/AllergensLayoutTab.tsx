@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +16,8 @@ interface AllergensLayoutTabProps {
   onAllergensItemNumberMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
   onAllergensItemTitleChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
   onAllergensItemTitleMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
+  onAllergensItemDescriptionChange: (field: keyof PrintLayout['elements']['category'], value: any) => void;
+  onAllergensItemDescriptionMarginChange: (field: keyof PrintLayout['elements']['category']['margin'], value: number) => void;
   onAllergensItemChange: (field: keyof {spacing: number, backgroundColor: string, borderRadius: number, padding: number, iconSize: number}, value: any) => void;
 }
 
@@ -30,6 +31,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
   onAllergensItemNumberMarginChange,
   onAllergensItemTitleChange,
   onAllergensItemTitleMarginChange,
+  onAllergensItemDescriptionChange,
+  onAllergensItemDescriptionMarginChange,
   onAllergensItemChange
 }) => {
   // Se le configurazioni di allergeni non esistono, usa valori predefiniti
@@ -73,9 +76,20 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
     margin: { top: 0, right: 0, bottom: 0, left: 0 }
   };
 
+  const allergensItemDescription = layout.allergens?.item?.description || {
+    visible: true,
+    fontFamily: "Arial",
+    fontSize: 12,
+    fontColor: "#666666",
+    fontStyle: "normal",
+    alignment: "left",
+    margin: { top: 0, right: 0, bottom: 0, left: 0 }
+  };
+
   const allergensItem = layout.allergens?.item || {
     number: allergensItemNumber,
     title: allergensItemTitle,
+    description: allergensItemDescription,
     spacing: 10,
     backgroundColor: "#f9f9f9",
     borderRadius: 4,
@@ -145,6 +159,8 @@ const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({
                 onAllergensItemNumberMarginChange={onAllergensItemNumberMarginChange}
                 onAllergensItemTitleChange={onAllergensItemTitleChange}
                 onAllergensItemTitleMarginChange={onAllergensItemTitleMarginChange}
+                onAllergensItemDescriptionChange={onAllergensItemDescriptionChange}
+                onAllergensItemDescriptionMarginChange={onAllergensItemDescriptionMarginChange}
                 onAllergensItemChange={onAllergensItemChange}
               />
             </CardContent>

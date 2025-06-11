@@ -131,6 +131,41 @@ export function useAllergensTab(setEditedLayout: React.Dispatch<React.SetStateAc
     }));
   }, [setEditedLayout]);
 
+  const handleAllergensItemDescriptionChange = useCallback((field: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          description: {
+            ...prev.allergens.item.description,
+            [field]: value
+          }
+        }
+      }
+    }));
+  }, [setEditedLayout]);
+
+  const handleAllergensItemDescriptionMarginChange = useCallback((marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          description: {
+            ...prev.allergens.item.description,
+            margin: {
+              ...prev.allergens.item.description.margin,
+              [marginKey]: value
+            }
+          }
+        }
+      }
+    }));
+  }, [setEditedLayout]);
+
   const handleAllergensItemChange = useCallback((field: keyof {spacing: number, backgroundColor: string, borderRadius: number, padding: number}, value: any) => {
     setEditedLayout(prev => ({
       ...prev,
@@ -153,6 +188,8 @@ export function useAllergensTab(setEditedLayout: React.Dispatch<React.SetStateAc
     handleAllergensItemNumberMarginChange,
     handleAllergensItemTitleChange,
     handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
   };
 }

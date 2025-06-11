@@ -10,6 +10,7 @@ interface AllergensItemConfigurationProps {
   allergensItem: {
     number: any;
     title: any;
+    description: any;
     spacing: number;
     backgroundColor: string;
     borderRadius: number;
@@ -20,6 +21,8 @@ interface AllergensItemConfigurationProps {
   onAllergensItemNumberMarginChange: (field: any, value: number) => void;
   onAllergensItemTitleChange: (field: any, value: any) => void;
   onAllergensItemTitleMarginChange: (field: any, value: number) => void;
+  onAllergensItemDescriptionChange: (field: any, value: any) => void;
+  onAllergensItemDescriptionMarginChange: (field: any, value: number) => void;
   onAllergensItemChange: (field: any, value: any) => void;
 }
 
@@ -29,6 +32,8 @@ const AllergensItemConfiguration: React.FC<AllergensItemConfigurationProps> = ({
   onAllergensItemNumberMarginChange,
   onAllergensItemTitleChange,
   onAllergensItemTitleMarginChange,
+  onAllergensItemDescriptionChange,
+  onAllergensItemDescriptionMarginChange,
   onAllergensItemChange
 }) => {
   return (
@@ -112,9 +117,10 @@ const AllergensItemConfiguration: React.FC<AllergensItemConfigurationProps> = ({
       </div>
       
       <Tabs defaultValue="numero">
-        <TabsList className="w-full grid grid-cols-2">
+        <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="numero">Numero</TabsTrigger>
           <TabsTrigger value="titolo">Titolo</TabsTrigger>
+          <TabsTrigger value="descrizione">Descrizione</TabsTrigger>
         </TabsList>
         
         <TabsContent value="numero" className="pt-4">
@@ -132,6 +138,15 @@ const AllergensItemConfiguration: React.FC<AllergensItemConfigurationProps> = ({
             element={allergensItem.title}
             onChange={onAllergensItemTitleChange}
             onMarginChange={onAllergensItemTitleMarginChange}
+          />
+        </TabsContent>
+        
+        <TabsContent value="descrizione" className="pt-4">
+          <h5 className="text-md font-medium mb-4">Stile Descrizione</h5>
+          <ElementEditor
+            element={allergensItem.description}
+            onChange={onAllergensItemDescriptionChange}
+            onMarginChange={onAllergensItemDescriptionMarginChange}
           />
         </TabsContent>
       </Tabs>
