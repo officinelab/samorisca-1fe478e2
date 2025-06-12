@@ -40,6 +40,7 @@ const MenuPrint = () => {
         setShowMargins={setShowMargins}
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
+        currentLayout={currentLayout}
       />
       
       <MenuPrintPreview 

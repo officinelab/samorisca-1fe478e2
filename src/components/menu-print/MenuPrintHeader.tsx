@@ -2,22 +2,52 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Printer, FileDown, Eye, EyeOff, Settings } from "lucide-react";
+import { Printer, FileDown, Eye, EyeOff, Settings, Loader2 } from "lucide-react";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
+import { usePdfExport } from "@/hooks/print/usePdfExport";
+import { useMenuData } from "@/hooks/useMenuData";
+import { PrintLayout } from "@/types/printLayout";
 
 interface MenuPrintHeaderProps {
   showMargins: boolean;
   setShowMargins: (show: boolean) => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
+  currentLayout?: PrintLayout;
 }
 
 const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   showMargins,
   setShowMargins,
   isSettingsOpen,
-  setIsSettingsOpen
+  setIsSettingsOpen,
+  currentLayout
 }) => {
+  const { exportToPdf, isExporting } = usePdfExport();
+  const { 
+    categories, 
+    products, 
+    allergens, 
+    restaurantLogo,
+    isLoading: isMenuDataLoading 
+  } = useMenuData();
+
+  const handleExportPdf = async () => {
+    if (!currentLayout || isMenuDataLoading) {
+      return;
+    }
+
+    await exportToPdf({
+      currentLayout,
+      categories,
+      products,
+      allergens,
+      restaurantLogo,
+      language: 'it',
+      printAllergens: true
+    });
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -53,14 +83,21 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
           {showMargins ? "Nascondi" : "Mostra"} Margini
         </Button>
         
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => window.print()}>
           <Printer className="w-4 h-4 mr-2" />
           Stampa
         </Button>
         
-        <Button>
-          <FileDown className="w-4 h-4 mr-2" />
-          Salva PDF
+        <Button 
+          onClick={handleExportPdf}
+          disabled={isExporting || !currentLayout || isMenuDataLoading}
+        >
+          {isExporting ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4 mr-2" />
+          )}
+          {isExporting ? 'Generazione...' : 'Salva PDF'}
         </Button>
       </div>
     </div>
