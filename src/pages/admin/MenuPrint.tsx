@@ -2,11 +2,14 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Printer, FileDown, Eye, EyeOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Printer, FileDown, Eye, EyeOff, Settings } from "lucide-react";
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
+import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 
 const MenuPrint = () => {
   const [showMargins, setShowMargins] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { layouts } = useMenuLayouts();
   
   // Usa il primo layout disponibile o valori di default
@@ -131,6 +134,23 @@ const MenuPrint = () => {
         </div>
         
         <div className="flex gap-2">
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                Impostazioni Stampa
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Impostazioni Layout di Stampa</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4">
+                <PrintLayoutsManager />
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           <Button
             variant={showMargins ? "default" : "outline"}
             onClick={() => setShowMargins(!showMargins)}
