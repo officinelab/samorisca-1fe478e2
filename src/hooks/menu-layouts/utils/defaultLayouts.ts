@@ -239,6 +239,27 @@ export const defaultLayout: PrintLayout = {
       marginRight: 20,
       marginBottom: 20,
       marginLeft: 20
+    },
+    coverMarginTop: 25,
+    coverMarginRight: 25,
+    coverMarginBottom: 25,
+    coverMarginLeft: 25,
+    allergensMarginTop: 20,
+    allergensMarginRight: 15,
+    allergensMarginBottom: 20,
+    allergensMarginLeft: 15,
+    useDistinctMarginsForAllergensPages: false,
+    allergensOddPages: {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
+    },
+    allergensEvenPages: {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
     }
   }
 };

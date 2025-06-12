@@ -9,7 +9,7 @@ import ProductFeaturesTab from "../ProductFeaturesTab";
 import ServicePriceTab from "../ServicePriceTab";
 import SpacingTab from "../SpacingTab";
 import PageSettingsTab from "../PageSettingsTab";
-import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, CoverLogoConfig, CoverTitleConfig, CoverSubtitleConfig, ProductFeaturesConfig, CategoryNotesConfig, PageMargins } from "@/types/printLayout";
 
 type TabKey = 
   | "generale" 
@@ -60,6 +60,11 @@ interface TabRendererProps {
   handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleServicePriceChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
   handleServicePriceMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleCoverMarginChange: (field: string, value: number) => void;
+  handleAllergensMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleAllergensOddPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleAllergensEvenPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleToggleDistinctAllergensMargins: (useDistinct: boolean) => void;
 }
 
 const TabRenderer: React.FC<TabRendererProps> = (props) => {
@@ -81,6 +86,11 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
           onOddPageMarginChange={props.handleOddPageMarginChange}
           onEvenPageMarginChange={props.handleEvenPageMarginChange}
           onToggleDistinctMargins={props.handleToggleDistinctMargins}
+          onCoverMarginChange={props.handleCoverMarginChange}
+          onAllergensMarginChange={props.handleAllergensMarginChange}
+          onAllergensOddPageMarginChange={props.handleAllergensOddPageMarginChange}
+          onAllergensEvenPageMarginChange={props.handleAllergensEvenPageMarginChange}
+          onToggleDistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
         />
       );
     case "copertina":
