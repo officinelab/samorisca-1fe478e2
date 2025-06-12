@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
+import CoverPagePreview from './CoverPagePreview';
 import MenuPagePreview from './MenuPagePreview';
 
 interface MenuPrintPreviewProps {
@@ -53,12 +54,12 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Cover Page */}
+      {/* Cover Pages */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            Pagina Copertina del Menu
+            Pagine Copertina del Menu
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Margini: {margins.cover.top}mm (alto), {margins.cover.right}mm (destro), 
@@ -66,13 +67,25 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
           </p>
         </CardHeader>
         <CardContent>
-          <MenuPagePreview
-            pageType="cover"
-            margins={margins.cover}
-            showMargins={showMargins}
-            width={A4_WIDTH_MM}
-            height={A4_HEIGHT_MM}
-          />
+          {/* First Cover Page */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4">Prima Pagina - Contenuto Copertina</h3>
+            <CoverPagePreview
+              currentLayout={currentLayout}
+              showMargins={showMargins}
+              pageNumber={1}
+            />
+          </div>
+          
+          {/* Second Cover Page */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Seconda Pagina - Pagina Vuota</h3>
+            <CoverPagePreview
+              currentLayout={currentLayout}
+              showMargins={showMargins}
+              pageNumber={2}
+            />
+          </div>
         </CardContent>
       </Card>
 
