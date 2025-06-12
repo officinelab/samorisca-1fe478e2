@@ -118,7 +118,10 @@ const CoverPagePreview: React.FC<CoverPagePreviewProps> = ({
           <div style={{
             marginTop: `${cover.logo.marginTop || 0}mm`,
             marginBottom: `${cover.logo.marginBottom || 0}mm`,
-            textAlign: cover.logo.alignment || 'center'
+            width: '100%',
+            display: 'flex',
+            justifyContent: cover.logo.alignment === 'left' ? 'flex-start' : 
+                           cover.logo.alignment === 'right' ? 'flex-end' : 'center'
           }}>
             <img 
               src={logoUrl}

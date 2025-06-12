@@ -14,18 +14,24 @@ const MenuPrint = () => {
   
   // Listen for layout updates from the settings dialog
   useEffect(() => {
-    const handleLayoutUpdate = () => {
-      console.log("Layout aggiornato, ricarico i layout...");
+    const handleLayoutUpdate = (event: CustomEvent) => {
+      console.log("Layout aggiornato, ricarico i layout...", event.detail);
       forceRefresh();
     };
 
     // Listen for the custom event dispatched when layouts are saved
-    window.addEventListener('layoutUpdated', handleLayoutUpdate);
+    window.addEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
     
     return () => {
-      window.removeEventListener('layoutUpdated', handleLayoutUpdate);
+      window.removeEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
     };
   }, [forceRefresh]);
+  
+  // Debug log per verificare il layout corrente
+  useEffect(() => {
+    console.log("MenuPrint - Layout corrente:", currentLayout);
+    console.log("MenuPrint - Logo config:", currentLayout?.cover?.logo);
+  }, [currentLayout]);
   
   return (
     <div className="space-y-6">
