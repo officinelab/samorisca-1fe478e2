@@ -53,15 +53,33 @@ export const usePdfExport = () => {
     language = 'it',
     printAllergens = true
   }: UsePdfExportProps) => {
+    console.log('🔍 Inizio processo esportazione PDF...');
+    console.log('📊 Dati ricevuti:', {
+      hasLayout: !!currentLayout,
+      categoriesCount: categories?.length || 0,
+      productsCount: Object.keys(products || {}).length,
+      allergensCount: allergens?.length || 0,
+      hasLogo: !!restaurantLogo,
+      language,
+      printAllergens
+    });
+
     if (!currentLayout) {
+      console.error('❌ Errore: Nessun layout disponibile');
       toast.error('Nessun layout disponibile per l\'esportazione');
+      return;
+    }
+
+    if (!categories || categories.length === 0) {
+      console.error('❌ Errore: Nessuna categoria disponibile');
+      toast.error('Nessuna categoria disponibile per l\'esportazione');
       return;
     }
 
     setIsExporting(true);
     
     try {
-      console.log('Inizio esportazione PDF...');
+      console.log('📄 Creazione documento PDF...');
       
       const pdfDocument = (
         <NewMenuPdfDocument
@@ -75,7 +93,9 @@ export const usePdfExport = () => {
         />
       );
 
+      console.log('🔄 Generazione blob PDF...');
       const blob = await pdf(pdfDocument).toBlob();
+      console.log('✅ Blob generato, dimensione:', blob.size, 'bytes');
       
       // Create download link
       const url = URL.createObjectURL(blob);
@@ -83,15 +103,19 @@ export const usePdfExport = () => {
       link.href = url;
       link.download = `menu-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(link);
+      
+      console.log('📥 Avvio download...');
       link.click();
+      
+      // Cleanup
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
+      console.log('✅ PDF esportato con successo');
       toast.success('PDF esportato con successo!');
-      console.log('PDF esportato con successo');
     } catch (error) {
-      console.error('Errore durante l\'esportazione PDF:', error);
-      toast.error('Errore durante l\'esportazione del PDF');
+      console.error('❌ Errore durante l\'esportazione PDF:', error);
+      toast.error(`Errore durante l'esportazione del PDF: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
     } finally {
       setIsExporting(false);
     }

@@ -26,6 +26,16 @@ const NewMenuPdfDocument: React.FC<NewMenuPdfDocumentProps> = ({
   language,
   printAllergens
 }) => {
+  console.log('📄 Rendering NewMenuPdfDocument con:', {
+    layoutName: currentLayout?.name,
+    categoriesCount: categories?.length || 0,
+    productsCount: Object.keys(products || {}).length,
+    allergensCount: allergens?.length || 0,
+    hasLogo: !!restaurantLogo,
+    language,
+    printAllergens
+  });
+
   return (
     <Document>
       {/* Cover Page */}
@@ -42,18 +52,23 @@ const NewMenuPdfDocument: React.FC<NewMenuPdfDocumentProps> = ({
       />
       
       {/* Content Pages */}
-      {categories.map((category) => (
-        <NewMenuContentPdf
-          key={category.id}
-          currentLayout={currentLayout}
-          category={category}
-          products={products[category.id] || []}
-          language={language}
-        />
-      ))}
+      {categories && categories.length > 0 && categories.map((category) => {
+        const categoryProducts = products[category.id] || [];
+        console.log(`📂 Rendering categoria: ${category.title} con ${categoryProducts.length} prodotti`);
+        
+        return (
+          <NewMenuContentPdf
+            key={category.id}
+            currentLayout={currentLayout}
+            category={category}
+            products={categoryProducts}
+            language={language}
+          />
+        );
+      })}
       
       {/* Allergens Page */}
-      {printAllergens && allergens.length > 0 && (
+      {printAllergens && allergens && allergens.length > 0 && (
         <NewAllergensPdf
           currentLayout={currentLayout}
           allergens={allergens}
