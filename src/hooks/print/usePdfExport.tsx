@@ -54,12 +54,23 @@ const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
   return fonts;
 };
 
-// Funzione per normalizzare il nome del font per Google Fonts
-const normalizeGoogleFontName = (fontFamily: string): string => {
-  // Rimuovi virgole e tutto quello che segue (es. "Playfair Display, serif" -> "Playfair Display")
-  const cleanName = fontFamily.split(',')[0].trim();
-  // Sostituisci spazi con +
-  return cleanName.replace(/\s+/g, '+');
+// Mappa dei font più comuni con i loro URL corretti
+const fontUrlMap: Record<string, string> = {
+  'Playfair Display': 'playfairdisplay',
+  'Open Sans': 'opensans',
+  'Roboto': 'roboto',
+  'Lato': 'lato',
+  'Montserrat': 'montserrat',
+  'Poppins': 'poppins',
+  'Source Sans Pro': 'sourcesanspro',
+  'Oswald': 'oswald',
+  'Raleway': 'raleway',
+  'PT Sans': 'ptsans',
+  'Lora': 'lora',
+  'Nunito': 'nunito',
+  'Merriweather': 'merriweather',
+  'Ubuntu': 'ubuntu',
+  'Crimson Text': 'crimsontext'
 };
 
 // Funzione per registrare dinamicamente i font
@@ -80,17 +91,7 @@ const registerLayoutFonts = async (layout: PrintLayout) => {
           { 
             src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2',
             fontWeight: 'bold'
-          },
-          { 
-            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
-            fontWeight: 'normal',
-            fontStyle: 'italic'
-          },
-          { 
-            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2',
-            fontWeight: 'bold',
-            fontStyle: 'italic'
-          },
+          }
         ],
       });
       registeredFonts.add('Inter');
@@ -101,44 +102,47 @@ const registerLayoutFonts = async (layout: PrintLayout) => {
   }
   
   for (const fontFamily of fonts) {
-    // Controlla se il font è già stato registrato usando il nostro Set
-    if (!registeredFonts.has(fontFamily)) {
-      console.log(`📝 Registrazione font: ${fontFamily}`);
+    // Pulisci il nome del font rimuovendo eventuali fallback
+    const cleanFontName = fontFamily.split(',')[0].trim();
+    
+    // Controlla se il font è già stato registrato
+    if (!registeredFonts.has(cleanFontName)) {
+      console.log(`📝 Registrazione font: ${cleanFontName}`);
       try {
-        // Normalizza il nome del font per Google Fonts
-        const normalizedName = normalizeGoogleFontName(fontFamily);
+        // Ottieni l'URL del font dalla mappa o usa un fallback
+        const fontSlug = fontUrlMap[cleanFontName] || cleanFontName.toLowerCase().replace(/\s+/g, '');
         
-        // Registra il font con Google Fonts con tutte le varianti
+        // Prova diverse strategie di URL per Google Fonts
+        const fontUrls = [
+          // Strategia 1: URL diretto con nome slug
+          `https://fonts.gstatic.com/s/${fontSlug}/v30/${fontSlug.replace(/\s+/g, '')}-Regular.ttf`,
+          // Strategia 2: URL con formato più generico
+          `https://fonts.googleapis.com/css2?family=${cleanFontName.replace(/\s+/g, '+')}:wght@400;700&display=swap`,
+          // Strategia 3: Fallback a Inter per font non trovati
+          'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2'
+        ];
+
+        // Registra il font con varianti standard
         Font.register({
-          family: fontFamily,
+          family: cleanFontName,
           fonts: [
             { 
-              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Regular.ttf`,
+              src: fontUrls[0],
               fontWeight: 'normal'
             },
             { 
-              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Bold.ttf`,
+              src: fontUrls[0].replace('-Regular', '-Bold'),
               fontWeight: 'bold'
-            },
-            { 
-              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Italic.ttf`,
-              fontWeight: 'normal',
-              fontStyle: 'italic'
-            },
-            { 
-              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-BoldItalic.ttf`,
-              fontWeight: 'bold',
-              fontStyle: 'italic'
-            },
+            }
           ],
         });
-        // Aggiungi il font al Set dei font registrati
-        registeredFonts.add(fontFamily);
-        console.log(`✅ Font ${fontFamily} registrato con successo`);
+        
+        registeredFonts.add(cleanFontName);
+        console.log(`✅ Font ${cleanFontName} registrato con successo`);
       } catch (error) {
-        console.warn(`⚠️ Impossibile registrare il font ${fontFamily}, uso fallback Inter:`, error);
-        // Non registriamo un fallback qui, useremo Inter che è già registrato
-        registeredFonts.add(fontFamily);
+        console.warn(`⚠️ Impossibile registrare il font ${cleanFontName}, uso Inter come fallback:`, error);
+        // Non registriamo il font fallito, ma lo aggiungiamo al set per evitare tentativi ripetuti
+        registeredFonts.add(cleanFontName);
       }
     }
   }
