@@ -54,44 +54,90 @@ const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
   return fonts;
 };
 
+// Funzione per normalizzare il nome del font per Google Fonts
+const normalizeGoogleFontName = (fontFamily: string): string => {
+  // Rimuovi virgole e tutto quello che segue (es. "Playfair Display, serif" -> "Playfair Display")
+  const cleanName = fontFamily.split(',')[0].trim();
+  // Sostituisci spazi con +
+  return cleanName.replace(/\s+/g, '+');
+};
+
 // Funzione per registrare dinamicamente i font
 const registerLayoutFonts = async (layout: PrintLayout) => {
   const fonts = getUniqueFontsFromLayout(layout);
   console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
+  
+  // Registra sempre Inter come font di fallback
+  if (!registeredFonts.has('Inter')) {
+    try {
+      Font.register({
+        family: 'Inter',
+        fonts: [
+          { 
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
+            fontWeight: 'normal'
+          },
+          { 
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2',
+            fontWeight: 'bold'
+          },
+          { 
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2',
+            fontWeight: 'normal',
+            fontStyle: 'italic'
+          },
+          { 
+            src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2',
+            fontWeight: 'bold',
+            fontStyle: 'italic'
+          },
+        ],
+      });
+      registeredFonts.add('Inter');
+      console.log('✅ Font Inter registrato come fallback');
+    } catch (error) {
+      console.warn('⚠️ Errore registrazione font Inter:', error);
+    }
+  }
   
   for (const fontFamily of fonts) {
     // Controlla se il font è già stato registrato usando il nostro Set
     if (!registeredFonts.has(fontFamily)) {
       console.log(`📝 Registrazione font: ${fontFamily}`);
       try {
-        // Registra il font con Google Fonts
-        const fontName = fontFamily.replace(/\s+/g, '+');
+        // Normalizza il nome del font per Google Fonts
+        const normalizedName = normalizeGoogleFontName(fontFamily);
+        
+        // Registra il font con Google Fonts con tutte le varianti
         Font.register({
           family: fontFamily,
           fonts: [
             { 
-              src: `https://fonts.gstatic.com/s/${fontName.toLowerCase()}/v30/${fontName}-Regular.ttf`,
+              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Regular.ttf`,
               fontWeight: 'normal'
             },
             { 
-              src: `https://fonts.gstatic.com/s/${fontName.toLowerCase()}/v30/${fontName}-Bold.ttf`,
+              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Bold.ttf`,
               fontWeight: 'bold'
+            },
+            { 
+              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-Italic.ttf`,
+              fontWeight: 'normal',
+              fontStyle: 'italic'
+            },
+            { 
+              src: `https://fonts.gstatic.com/s/${normalizedName.toLowerCase()}/v30/${normalizedName}-BoldItalic.ttf`,
+              fontWeight: 'bold',
+              fontStyle: 'italic'
             },
           ],
         });
         // Aggiungi il font al Set dei font registrati
         registeredFonts.add(fontFamily);
+        console.log(`✅ Font ${fontFamily} registrato con successo`);
       } catch (error) {
-        console.warn(`⚠️ Impossibile registrare il font ${fontFamily}, uso fallback:`, error);
-        // Fallback ai font di sistema
-        Font.register({
-          family: fontFamily,
-          fonts: [
-            { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2' },
-            { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2', fontWeight: 'bold' },
-          ],
-        });
-        // Aggiungi comunque il font al Set per evitare tentativi ripetuti
+        console.warn(`⚠️ Impossibile registrare il font ${fontFamily}, uso fallback Inter:`, error);
+        // Non registriamo un fallback qui, useremo Inter che è già registrato
         registeredFonts.add(fontFamily);
       }
     }

@@ -9,6 +9,14 @@ interface NewCoverPagePdfProps {
   isEmpty?: boolean;
 }
 
+// Funzione helper per ottenere un font safe
+const getSafeFont = (fontFamily?: string): string => {
+  if (!fontFamily) return 'Inter';
+  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
+  const cleanFont = fontFamily.split(',')[0].trim();
+  return cleanFont || 'Inter';
+};
+
 const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
   currentLayout,
   restaurantLogo,
@@ -24,7 +32,7 @@ const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
       paddingBottom: `${page.coverMarginBottom || 25}mm`,
       paddingLeft: `${page.coverMarginLeft || 25}mm`,
       backgroundColor: 'white',
-      fontFamily: cover.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(cover.title.fontFamily),
     },
     container: {
       flex: 1,
@@ -35,6 +43,7 @@ const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
       fontSize: 14,
       color: '#999',
       textAlign: 'center',
+      fontFamily: 'Inter',
     },
     logoContainer: {
       marginTop: `${cover.logo.marginTop || 0}mm`,
@@ -54,7 +63,7 @@ const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
       fontWeight: cover.title.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: cover.title.fontStyle === 'italic' ? 'italic' : 'normal',
       color: cover.title.fontColor || '#000000',
-      fontFamily: cover.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(cover.title.fontFamily),
       textAlign: cover.title.alignment || 'center',
       marginTop: `${cover.title.margin?.top || 0}mm`,
       marginRight: `${cover.title.margin?.right || 0}mm`,
@@ -66,7 +75,7 @@ const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
       fontWeight: cover.subtitle.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: cover.subtitle.fontStyle === 'italic' ? 'italic' : 'normal',
       color: cover.subtitle.fontColor || '#000000',
-      fontFamily: cover.subtitle.fontFamily || 'Inter',
+      fontFamily: getSafeFont(cover.subtitle.fontFamily),
       textAlign: cover.subtitle.alignment || 'center',
       marginTop: `${cover.subtitle.margin?.top || 0}mm`,
       marginRight: `${cover.subtitle.margin?.right || 0}mm`,

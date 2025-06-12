@@ -10,6 +10,14 @@ interface NewAllergensPdfProps {
   language: string;
 }
 
+// Funzione helper per ottenere un font safe
+const getSafeFont = (fontFamily?: string): string => {
+  if (!fontFamily) return 'Inter';
+  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
+  const cleanFont = fontFamily.split(',')[0].trim();
+  return cleanFont || 'Inter';
+};
+
 const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
   currentLayout,
   allergens,
@@ -25,14 +33,14 @@ const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
       paddingBottom: `${page.allergensMarginBottom || 20}mm`,
       paddingLeft: `${page.allergensMarginLeft || 15}mm`,
       backgroundColor: 'white',
-      fontFamily: allergensConfig.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(allergensConfig.title.fontFamily),
     },
     title: {
       fontSize: `${allergensConfig.title.fontSize || 18}pt`,
       fontWeight: allergensConfig.title.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: allergensConfig.title.fontStyle === 'italic' ? 'italic' : 'normal',
       color: allergensConfig.title.fontColor || '#000000',
-      fontFamily: allergensConfig.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(allergensConfig.title.fontFamily),
       textAlign: allergensConfig.title.alignment || 'center',
       marginTop: `${allergensConfig.title.margin?.top || 0}mm`,
       marginRight: `${allergensConfig.title.margin?.right || 0}mm`,
@@ -51,7 +59,7 @@ const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
       fontWeight: allergensConfig.item.number.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: allergensConfig.item.number.fontStyle === 'italic' ? 'italic' : 'normal',
       color: allergensConfig.item.number.fontColor || '#000000',
-      fontFamily: allergensConfig.item.number.fontFamily || 'Inter',
+      fontFamily: getSafeFont(allergensConfig.item.number.fontFamily),
       marginRight: '5mm',
       width: '8mm',
     },
@@ -60,7 +68,7 @@ const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
       fontWeight: allergensConfig.item.title.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: allergensConfig.item.title.fontStyle === 'italic' ? 'italic' : 'normal',
       color: allergensConfig.item.title.fontColor || '#000000',
-      fontFamily: allergensConfig.item.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(allergensConfig.item.title.fontFamily),
       flex: 1,
     },
     pageNumber: {
@@ -69,6 +77,7 @@ const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
       right: '15mm',
       fontSize: 10,
       color: '#888',
+      fontFamily: 'Inter',
     },
   });
 

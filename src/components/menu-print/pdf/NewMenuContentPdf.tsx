@@ -11,6 +11,14 @@ interface NewMenuContentPdfProps {
   language: string;
 }
 
+// Funzione helper per ottenere un font safe
+const getSafeFont = (fontFamily?: string): string => {
+  if (!fontFamily) return 'Inter';
+  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
+  const cleanFont = fontFamily.split(',')[0].trim();
+  return cleanFont || 'Inter';
+};
+
 const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
   currentLayout,
   category,
@@ -28,14 +36,14 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       paddingBottom: `${page.marginBottom || 20}mm`,
       paddingLeft: `${page.marginLeft || 20}mm`,
       backgroundColor: 'white',
-      fontFamily: elements.category.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.category.fontFamily),
     },
     categoryTitle: {
       fontSize: `${elements.category.fontSize || 18}pt`,
       fontWeight: elements.category.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.category.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.category.fontColor || '#000000',
-      fontFamily: elements.category.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.category.fontFamily),
       textAlign: elements.category.alignment || 'left',
       marginTop: `${elements.category.margin?.top || 0}mm`,
       marginRight: `${elements.category.margin?.right || 0}mm`,
@@ -57,7 +65,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       fontWeight: elements.title.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.title.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.title.fontColor || '#000000',
-      fontFamily: elements.title.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.title.fontFamily),
       textAlign: elements.title.alignment || 'left',
       flex: 1,
       maxWidth: '60%',
@@ -74,7 +82,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       fontWeight: elements.price.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.price.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.price.fontColor || '#000000',
-      fontFamily: elements.price.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.price.fontFamily),
       textAlign: 'right',
     },
     productDescription: {
@@ -82,7 +90,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       fontWeight: elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.description.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.description.fontColor || '#666666',
-      fontFamily: elements.description.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.description.fontFamily),
       textAlign: elements.description.alignment || 'left',
       marginTop: '1mm',
     },
@@ -91,7 +99,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       fontWeight: elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.allergensList.fontColor || '#666666',
-      fontFamily: elements.allergensList.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.allergensList.fontFamily),
       textAlign: elements.allergensList.alignment || 'left',
       marginTop: '1mm',
     },
@@ -106,7 +114,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       fontWeight: elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
       fontStyle: elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
       color: elements.priceVariants.fontColor || '#000000',
-      fontFamily: elements.priceVariants.fontFamily || 'Inter',
+      fontFamily: getSafeFont(elements.priceVariants.fontFamily),
     },
     pageNumber: {
       position: 'absolute',
@@ -114,6 +122,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       right: '15mm',
       fontSize: 10,
       color: '#888',
+      fontFamily: 'Inter',
     },
   });
 
