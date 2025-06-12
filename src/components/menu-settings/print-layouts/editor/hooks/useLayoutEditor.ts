@@ -10,6 +10,8 @@ import { useCategoryNotesTab } from "./useCategoryNotesTab";
 import { useProductFeaturesTab } from "./useProductFeaturesTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
+import { useCoverMarginsTab } from "./useCoverMarginsTab";
+import { useAllergensMarginsTab } from "./useAllergensMarginsTab";
 import { useServicePriceTab } from "./useServicePriceTab";
 import { ensurePageMargins } from "./utils/ensurePageMargins";
 
@@ -91,13 +93,24 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
   // Spacing
   const { handleSpacingChange } = useSpacingTab(setEditedLayout);
 
-  // Page settings
+  // Page settings (existing)
   const {
     handlePageMarginChange,
     handleOddPageMarginChange,
     handleEvenPageMarginChange,
     handleToggleDistinctMargins
   } = usePageSettingsTab(setEditedLayout);
+
+  // Cover margins (new)
+  const { handleCoverMarginChange } = useCoverMarginsTab(setEditedLayout);
+
+  // Allergens margins (new)
+  const {
+    handleAllergensMarginChange,
+    handleAllergensOddPageMarginChange,
+    handleAllergensEvenPageMarginChange,
+    handleToggleDistinctAllergensMargins
+  } = useAllergensMarginsTab(setEditedLayout);
 
   const handleSave = () => {
     const finalLayout = ensurePageMargins(syncPageMargins(editedLayout));
@@ -143,6 +156,11 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleProductFeaturesTitleMarginChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,
+    handleCoverMarginChange,
+    handleAllergensMarginChange,
+    handleAllergensOddPageMarginChange,
+    handleAllergensEvenPageMarginChange,
+    handleToggleDistinctAllergensMargins,
     handleSave
   };
 }

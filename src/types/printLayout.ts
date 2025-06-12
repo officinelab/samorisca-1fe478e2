@@ -139,6 +139,19 @@ export type PrintLayoutPageConfig = PageMargins & {
   useDistinctMarginsForPages: boolean;
   oddPages: PageMargins;
   evenPages: PageMargins;
+  // Nuovi margini per la copertina (sempre uguali)
+  coverMarginTop: number;
+  coverMarginRight: number;
+  coverMarginBottom: number;
+  coverMarginLeft: number;
+  // Nuovi margini per le pagine allergeni (con supporto pari/dispari)
+  allergensMarginTop: number;
+  allergensMarginRight: number;
+  allergensMarginBottom: number;
+  allergensMarginLeft: number;
+  useDistinctMarginsForAllergensPages: boolean;
+  allergensOddPages: PageMargins;
+  allergensEvenPages: PageMargins;
 };
 
 /**

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
@@ -62,6 +63,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleProductFeaturesTitleMarginChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,
+    handleCoverMarginChange,
+    handleAllergensMarginChange,
+    handleAllergensOddPageMarginChange,
+    handleAllergensEvenPageMarginChange,
+    handleToggleDistinctAllergensMargins,
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -72,8 +78,12 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     const page = editedLayout.page;
     const allMargins = [
       page.marginTop, page.marginRight, page.marginBottom, page.marginLeft,
+      page.coverMarginTop || 25, page.coverMarginRight || 25, page.coverMarginBottom || 25, page.coverMarginLeft || 25,
+      page.allergensMarginTop || 20, page.allergensMarginRight || 15, page.allergensMarginBottom || 20, page.allergensMarginLeft || 15,
       ...(page.oddPages ? [page.oddPages.marginTop, page.oddPages.marginRight, page.oddPages.marginBottom, page.oddPages.marginLeft] : []),
-      ...(page.evenPages ? [page.evenPages.marginTop, page.evenPages.marginRight, page.evenPages.marginBottom, page.evenPages.marginLeft] : [])
+      ...(page.evenPages ? [page.evenPages.marginTop, page.evenPages.marginRight, page.evenPages.marginBottom, page.evenPages.marginLeft] : []),
+      ...(page.allergensOddPages ? [page.allergensOddPages.marginTop, page.allergensOddPages.marginRight, page.allergensOddPages.marginBottom, page.allergensOddPages.marginLeft] : []),
+      ...(page.allergensEvenPages ? [page.allergensEvenPages.marginTop, page.allergensEvenPages.marginRight, page.allergensEvenPages.marginBottom, page.allergensEvenPages.marginLeft] : [])
     ];
     
     // Fix: filtra solo gli elementi che hanno fontSize
@@ -100,6 +110,10 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
 
   const handleToggleDistinctMarginsWrapper = () => {
     handleToggleDistinctMargins(!editedLayout.page.useDistinctMarginsForPages);
+  };
+
+  const handleToggleDistinctAllergensMarginsWrapper = () => {
+    handleToggleDistinctAllergensMargins(!editedLayout.page.useDistinctMarginsForAllergensPages);
   };
 
   return (
@@ -147,6 +161,11 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleProductFeaturesTitleMarginChange={handleProductFeaturesTitleMarginChange}
               handleServicePriceChange={handleServicePriceChange}
               handleServicePriceMarginChange={handleServicePriceMarginChange}
+              handleCoverMarginChange={handleCoverMarginChange}
+              handleAllergensMarginChange={handleAllergensMarginChange}
+              handleAllergensOddPageMarginChange={handleAllergensOddPageMarginChange}
+              handleAllergensEvenPageMarginChange={handleAllergensEvenPageMarginChange}
+              handleToggleDistinctAllergensMargins={handleToggleDistinctAllergensMarginsWrapper}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}
             />

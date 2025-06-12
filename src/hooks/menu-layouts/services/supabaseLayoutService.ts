@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
@@ -218,6 +217,32 @@ export const setLayoutAsDefault = async (layoutId: string): Promise<{
 
 // Funzioni di utilità per la conversione tra formati
 function transformDbToLayout(dbLayout: any): PrintLayout {
+  // Assicura che i nuovi campi margini esistano nel page object
+  const pageWithDefaults = {
+    ...dbLayout.page,
+    coverMarginTop: dbLayout.page.coverMarginTop || 25,
+    coverMarginRight: dbLayout.page.coverMarginRight || 25,
+    coverMarginBottom: dbLayout.page.coverMarginBottom || 25,
+    coverMarginLeft: dbLayout.page.coverMarginLeft || 25,
+    allergensMarginTop: dbLayout.page.allergensMarginTop || 20,
+    allergensMarginRight: dbLayout.page.allergensMarginRight || 15,
+    allergensMarginBottom: dbLayout.page.allergensMarginBottom || 20,
+    allergensMarginLeft: dbLayout.page.allergensMarginLeft || 15,
+    useDistinctMarginsForAllergensPages: dbLayout.page.useDistinctMarginsForAllergensPages || false,
+    allergensOddPages: dbLayout.page.allergensOddPages || {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
+    },
+    allergensEvenPages: dbLayout.page.allergensEvenPages || {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
+    }
+  };
+
   return {
     id: dbLayout.id,
     name: dbLayout.name,
@@ -239,7 +264,7 @@ function transformDbToLayout(dbLayout: any): PrintLayout {
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
     spacing: dbLayout.spacing,
-    page: dbLayout.page
+    page: pageWithDefaults
   };
 }
 
@@ -266,7 +291,7 @@ async function initializeDefaultLayouts(): Promise<{
   success: boolean;
   layouts?: PrintLayout[];
   error?: string;
-}> {
+}> => {
   try {
     // Trasforma i layout predefiniti aggiungendo UUID
     const layoutsWithId = defaultLayouts.map(layout => ({
@@ -328,6 +353,29 @@ export const mapSupabaseToLayout = (data: any): PrintLayout => {
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
     spacing: data.spacing,
-    page: data.page,
+    page: {
+      ...data.page,
+      coverMarginTop: data.page.coverMarginTop || 25,
+      coverMarginRight: data.page.coverMarginRight || 25,
+      coverMarginBottom: data.page.coverMarginBottom || 25,
+      coverMarginLeft: data.page.coverMarginLeft || 25,
+      allergensMarginTop: data.page.allergensMarginTop || 20,
+      allergensMarginRight: data.page.allergensMarginRight || 15,
+      allergensMarginBottom: data.page.allergensMarginBottom || 20,
+      allergensMarginLeft: data.page.allergensMarginLeft || 15,
+      useDistinctMarginsForAllergensPages: data.page.useDistinctMarginsForAllergensPages || false,
+      allergensOddPages: data.page.allergensOddPages || {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      },
+      allergensEvenPages: data.page.allergensEvenPages || {
+        marginTop: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        marginLeft: 15
+      }
+    },
   };
 };

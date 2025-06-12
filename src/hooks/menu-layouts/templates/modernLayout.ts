@@ -238,6 +238,27 @@ export const modernLayout: PrintLayout = {
       marginRight: 25,
       marginBottom: 25,
       marginLeft: 25
+    },
+    coverMarginTop: 30,
+    coverMarginRight: 30,
+    coverMarginBottom: 30,
+    coverMarginLeft: 30,
+    allergensMarginTop: 20,
+    allergensMarginRight: 15,
+    allergensMarginBottom: 20,
+    allergensMarginLeft: 15,
+    useDistinctMarginsForAllergensPages: false,
+    allergensOddPages: {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
+    },
+    allergensEvenPages: {
+      marginTop: 20,
+      marginRight: 15,
+      marginBottom: 20,
+      marginLeft: 15
     }
   }
 };
