@@ -3,6 +3,9 @@ import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
+import ProductHeader from './components/ProductHeader';
+import ProductDetails from './components/ProductDetails';
+import CategoryTitle from './components/CategoryTitle';
 
 interface NewMenuContentPdfProps {
   currentLayout: PrintLayout;
@@ -126,82 +129,37 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
     },
   });
 
-  const getCategoryTitle = () => {
-    const titleKey = `title_${language}` as keyof Category;
-    return (category[titleKey] as string) || category.title;
-  };
-
-  const getProductTitle = (product: Product) => {
-    const titleKey = `title_${language}` as keyof Product;
-    return (product[titleKey] as string) || product.title;
-  };
-
-  const getProductDescription = (product: Product) => {
-    const descKey = `description_${language}` as keyof Product;
-    return (product[descKey] as string) || product.description;
-  };
-
   return (
     <Page size="A4" style={styles.page}>
       {/* Category Title */}
-      {elements.category.visible !== false && (
-        <Text style={styles.categoryTitle}>
-          {getCategoryTitle()}
-        </Text>
-      )}
+      <CategoryTitle
+        category={category}
+        language={language}
+        style={styles.categoryTitle}
+        visible={elements.category.visible !== false}
+      />
       
       {/* Products */}
       {products.map((product) => (
         <View key={product.id} style={styles.productContainer}>
           {/* Product Header with Title and Price */}
-          <View style={styles.productHeader}>
-            {elements.title.visible !== false && (
-              <Text style={styles.productTitle}>
-                {getProductTitle(product)}
-              </Text>
-            )}
-            
-            <View style={styles.priceDotted} />
-            
-            {elements.price.visible !== false && product.price_standard && (
-              <Text style={styles.productPrice}>
-                € {product.price_standard.toFixed(2)}
-                {product.has_price_suffix && product.price_suffix && (
-                  <Text> {product.price_suffix}</Text>
-                )}
-              </Text>
-            )}
-          </View>
+          <ProductHeader
+            product={product}
+            language={language}
+            styles={styles}
+            titleVisible={elements.title.visible !== false}
+            priceVisible={elements.price.visible !== false}
+          />
           
-          {/* Product Description */}
-          {elements.description.visible !== false && getProductDescription(product) && (
-            <Text style={styles.productDescription}>
-              {getProductDescription(product)}
-            </Text>
-          )}
-          
-          {/* Product Allergens */}
-          {elements.allergensList.visible !== false && product.allergens && product.allergens.length > 0 && (
-            <Text style={styles.productAllergens}>
-              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
-            </Text>
-          )}
-          
-          {/* Price Variants */}
-          {elements.priceVariants.visible !== false && product.has_multiple_prices && (
-            <View style={styles.priceVariants}>
-              {product.price_variant_1_name && product.price_variant_1_value && (
-                <Text style={styles.priceVariantItem}>
-                  {product.price_variant_1_name}: € {product.price_variant_1_value.toFixed(2)}
-                </Text>
-              )}
-              {product.price_variant_2_name && product.price_variant_2_value && (
-                <Text style={styles.priceVariantItem}>
-                  {product.price_variant_2_name}: € {product.price_variant_2_value.toFixed(2)}
-                </Text>
-              )}
-            </View>
-          )}
+          {/* Product Details */}
+          <ProductDetails
+            product={product}
+            language={language}
+            styles={styles}
+            descriptionVisible={elements.description.visible !== false}
+            allergensVisible={elements.allergensList.visible !== false}
+            priceVariantsVisible={elements.priceVariants.visible !== false}
+          />
         </View>
       ))}
       
