@@ -187,7 +187,7 @@ const CoverPagePreview: React.FC<CoverPagePreviewProps> = ({
   };
 
   return (
-    <div style={getPageStyle()}>
+    <div className="pdf-page-preview cover-page-preview" style={getPageStyle()}>
       {getMarginsOverlay()}
       {pageNumber === 1 ? getFirstPageContent() : getSecondPageContent()}
     </div>

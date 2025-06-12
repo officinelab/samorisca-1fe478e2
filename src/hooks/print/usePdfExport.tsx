@@ -13,8 +13,8 @@ export const usePdfExport = () => {
     setIsExporting(true);
     
     try {
-      // Trova tutte le pagine di anteprima nel container
-      const previewPages = document.querySelectorAll('.page');
+      // Trova tutte le pagine di anteprima con la nuova classe CSS
+      const previewPages = document.querySelectorAll('.pdf-page-preview');
       
       if (previewPages.length === 0) {
         console.error('❌ Errore: Nessuna pagina di anteprima trovata');

@@ -96,7 +96,7 @@ const MenuPagePreview: React.FC<MenuPagePreviewProps> = ({
     const titles = {
       cover: 'Pagina Copertina',
       content: 'Pagina Contenuto',
-      allergens: 'Pagina Allergeni'
+      allergens: 'Pagina Allergeni e Caratteristiche Prodotto'
     };
 
     const descriptions = {
@@ -116,7 +116,7 @@ const MenuPagePreview: React.FC<MenuPagePreviewProps> = ({
   };
 
   return (
-    <div style={getPageStyle()}>
+    <div className="pdf-page-preview menu-page-preview" style={getPageStyle()}>
       {getMarginsOverlay()}
       {getPageContent()}
     </div>
