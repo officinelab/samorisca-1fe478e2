@@ -94,7 +94,18 @@ export const usePdfExport = () => {
       toast.success('PDF esportato con successo!');
     } catch (error) {
       console.error('❌ Errore durante l\'esportazione PDF:', error);
-      toast.error(`Errore durante l'esportazione del PDF: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
+      
+      // Messaggio di errore più dettagliato
+      let errorMessage = 'Errore sconosciuto';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // Se è un errore di font, suggerisci una soluzione
+        if (errorMessage.includes('font') || errorMessage.includes('Font')) {
+          errorMessage += '. Prova a usare un layout con font diversi o contatta il supporto.';
+        }
+      }
+      
+      toast.error(`Errore durante l'esportazione del PDF: ${errorMessage}`);
     } finally {
       setIsExporting(false);
     }

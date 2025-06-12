@@ -1,7 +1,7 @@
 
 import { Font } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
-import { fontUrlMap, GOOGLE_FONTS_BASE_URL, INTER_FONT_URLS } from './fontMappings';
+import { fontUrlMap, INTER_FONT_URLS } from './fontMappings';
 
 // Set per tenere traccia dei font già registrati
 const registeredFonts = new Set<string>();
@@ -45,6 +45,8 @@ export const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
 const registerInterFont = async (): Promise<void> => {
   if (!registeredFonts.has('Inter')) {
     try {
+      console.log('🔤 Registrazione font Inter...');
+      
       Font.register({
         family: 'Inter',
         fonts: [
@@ -58,10 +60,12 @@ const registerInterFont = async (): Promise<void> => {
           }
         ],
       });
+      
       registeredFonts.add('Inter');
-      console.log('✅ Font Inter registrato come fallback');
+      console.log('✅ Font Inter registrato con successo');
     } catch (error) {
-      console.warn('⚠️ Errore registrazione font Inter:', error);
+      console.error('❌ Errore registrazione font Inter:', error);
+      throw new Error(`Errore durante la registrazione del font Inter: ${error}`);
     }
   }
 };
@@ -71,28 +75,33 @@ const registerSingleFont = async (fontFamily: string): Promise<void> => {
   const cleanFontName = fontFamily.split(',')[0].trim();
   
   if (registeredFonts.has(cleanFontName)) {
+    console.log(`✓ Font ${cleanFontName} già registrato`);
     return;
   }
 
-  console.log(`📝 Registrazione font: ${cleanFontName}`);
+  console.log(`🔤 Registrazione font: ${cleanFontName}`);
   
   try {
-    const fontSlug = fontUrlMap[cleanFontName] || cleanFontName.toLowerCase().replace(/\s+/g, '');
+    // Controlla se abbiamo URL specifici per questo font
+    const fontUrls = fontUrlMap[cleanFontName];
     
-    // Costruisci gli URL per le varianti del font
-    const baseUrl = `${GOOGLE_FONTS_BASE_URL}/${fontSlug}`;
-    const normalUrl = `${baseUrl}/v30/${fontSlug.replace(/\s+/g, '')}-Regular.woff2`;
-    const boldUrl = `${baseUrl}/v30/${fontSlug.replace(/\s+/g, '')}-Bold.woff2`;
+    if (!fontUrls) {
+      console.warn(`⚠️ Font ${cleanFontName} non trovato nella mappa, uso Inter come fallback`);
+      registeredFonts.add(cleanFontName); // Marca come "registrato" per evitare tentativi ripetuti
+      return;
+    }
+
+    console.log(`📥 URL font ${cleanFontName}:`, fontUrls);
 
     Font.register({
       family: cleanFontName,
       fonts: [
         { 
-          src: normalUrl,
+          src: fontUrls.normal,
           fontWeight: 'normal'
         },
         { 
-          src: boldUrl,
+          src: fontUrls.bold,
           fontWeight: 'bold'
         }
       ],
@@ -101,23 +110,30 @@ const registerSingleFont = async (fontFamily: string): Promise<void> => {
     registeredFonts.add(cleanFontName);
     console.log(`✅ Font ${cleanFontName} registrato con successo`);
   } catch (error) {
-    console.warn(`⚠️ Impossibile registrare il font ${cleanFontName}, uso Inter come fallback:`, error);
-    registeredFonts.add(cleanFontName);
+    console.error(`❌ Errore durante la registrazione del font ${cleanFontName}:`, error);
+    throw new Error(`Errore durante la registrazione del font ${cleanFontName}: ${error}`);
   }
 };
 
 // Funzione principale per registrare dinamicamente i font
 export const registerLayoutFonts = async (layout: PrintLayout): Promise<void> => {
-  const fonts = getUniqueFontsFromLayout(layout);
-  console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
+  console.log('🎯 Inizio registrazione font per layout:', layout.name);
   
-  // Registra sempre Inter come font di fallback
-  await registerInterFont();
-  
-  // Registra tutti i font del layout
-  const registrationPromises = Array.from(fonts).map(fontFamily => 
-    registerSingleFont(fontFamily)
-  );
-  
-  await Promise.all(registrationPromises);
+  try {
+    const fonts = getUniqueFontsFromLayout(layout);
+    console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
+    
+    // Registra sempre Inter come font di fallback per primo
+    await registerInterFont();
+    
+    // Registra tutti i font del layout in sequenza
+    for (const fontFamily of fonts) {
+      await registerSingleFont(fontFamily);
+    }
+    
+    console.log('✅ Tutti i font sono stati registrati con successo');
+  } catch (error) {
+    console.error('❌ Errore durante la registrazione dei font:', error);
+    throw error;
+  }
 };
