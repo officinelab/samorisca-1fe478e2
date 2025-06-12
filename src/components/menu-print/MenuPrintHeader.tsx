@@ -3,10 +3,8 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Printer, FileDown, Eye, EyeOff, Settings, Loader2 } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { usePdfExport } from "@/hooks/print/usePdfExport";
-import { useMenuData } from "@/hooks/useMenuData";
 import { PrintLayout } from "@/types/printLayout";
 
 interface MenuPrintHeaderProps {
@@ -25,52 +23,10 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   currentLayout
 }) => {
   const { exportToPdf, isExporting } = usePdfExport();
-  const { 
-    categories, 
-    products, 
-    allergens, 
-    restaurantLogo,
-    isLoading: isMenuDataLoading 
-  } = useMenuData();
 
   const handleExportPdf = async () => {
-    console.log('🎯 Pulsante Salva PDF cliccato');
-    console.log('📋 Stato attuale:', {
-      hasCurrentLayout: !!currentLayout,
-      isMenuDataLoading,
-      categoriesCount: categories?.length || 0,
-      productsKeys: Object.keys(products || {}),
-      allergensCount: allergens?.length || 0,
-      hasRestaurantLogo: !!restaurantLogo
-    });
-
-    if (!currentLayout) {
-      console.error('❌ Nessun layout corrente disponibile');
-      toast.error('Nessun layout disponibile per l\'esportazione');
-      return;
-    }
-
-    if (isMenuDataLoading) {
-      console.warn('⏳ Dati del menu ancora in caricamento...');
-      toast.error('Dati del menu ancora in caricamento, riprova tra poco');
-      return;
-    }
-
-    if (!categories || categories.length === 0) {
-      console.error('❌ Nessuna categoria disponibile');
-      toast.error('Nessuna categoria disponibile per l\'esportazione');
-      return;
-    }
-
-    await exportToPdf({
-      currentLayout,
-      categories,
-      products,
-      allergens,
-      restaurantLogo,
-      language: 'it',
-      printAllergens: true
-    });
+    console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
+    await exportToPdf();
   };
 
   return (
@@ -115,7 +71,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
         
         <Button 
           onClick={handleExportPdf}
-          disabled={isExporting || !currentLayout || isMenuDataLoading}
+          disabled={isExporting}
         >
           {isExporting ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

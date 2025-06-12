@@ -53,7 +53,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   const margins = getMargins();
 
   return (
-    <div className="space-y-8">
+    <div className="menu-print-preview-container space-y-8">
       {/* Cover Pages */}
       <Card>
         <CardHeader>
