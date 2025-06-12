@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
@@ -376,6 +377,6 @@ export const mapSupabaseToLayout = (data: any): PrintLayout => {
         marginBottom: 20,
         marginLeft: 15
       }
-    },
+    }
   };
 };
