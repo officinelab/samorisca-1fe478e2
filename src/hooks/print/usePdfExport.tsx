@@ -16,6 +16,9 @@ interface UsePdfExportProps {
   printAllergens?: boolean;
 }
 
+// Set per tenere traccia dei font già registrati
+const registeredFonts = new Set<string>();
+
 // Funzione per ottenere i font unici dal layout
 const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
   const fonts = new Set<string>();
@@ -57,12 +60,8 @@ const registerLayoutFonts = async (layout: PrintLayout) => {
   console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
   
   for (const fontFamily of fonts) {
-    // Controlla se il font è già registrato
-    const isRegistered = Font.getRegisteredFonts().some(
-      registeredFont => registeredFont.family === fontFamily
-    );
-    
-    if (!isRegistered) {
+    // Controlla se il font è già stato registrato usando il nostro Set
+    if (!registeredFonts.has(fontFamily)) {
       console.log(`📝 Registrazione font: ${fontFamily}`);
       try {
         // Registra il font con Google Fonts
@@ -80,6 +79,8 @@ const registerLayoutFonts = async (layout: PrintLayout) => {
             },
           ],
         });
+        // Aggiungi il font al Set dei font registrati
+        registeredFonts.add(fontFamily);
       } catch (error) {
         console.warn(`⚠️ Impossibile registrare il font ${fontFamily}, uso fallback:`, error);
         // Fallback ai font di sistema
@@ -90,6 +91,8 @@ const registerLayoutFonts = async (layout: PrintLayout) => {
             { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2', fontWeight: 'bold' },
           ],
         });
+        // Aggiungi comunque il font al Set per evitare tentativi ripetuti
+        registeredFonts.add(fontFamily);
       }
     }
   }
