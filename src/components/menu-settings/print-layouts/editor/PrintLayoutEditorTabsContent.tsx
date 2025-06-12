@@ -67,7 +67,7 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
       {activeTab === "generale" && (
         <GeneralTab
           layout={props.editedLayout}
-          onChange={props.handleGeneralChange}
+          onGeneralChange={props.handleGeneralChange}
         />
       )}
 
@@ -89,11 +89,11 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
       {activeTab === "copertina" && (
         <CoverLayoutTab
           layout={props.editedLayout}
-          onLogoChange={props.handleCoverLogoChange}
-          onTitleChange={props.handleCoverTitleChange}
-          onTitleMarginChange={props.handleCoverTitleMarginChange}
-          onSubtitleChange={props.handleCoverSubtitleChange}
-          onSubtitleMarginChange={props.handleCoverSubtitleMarginChange}
+          onCoverLogoChange={props.handleCoverLogoChange}
+          onCoverTitleChange={props.handleCoverTitleChange}
+          onCoverTitleMarginChange={props.handleCoverTitleMarginChange}
+          onCoverSubtitleChange={props.handleCoverSubtitleChange}
+          onCoverSubtitleMarginChange={props.handleCoverSubtitleMarginChange}
         />
       )}
 
@@ -109,52 +109,52 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
       {activeTab === "notecategorie" && (
         <CategoryNotesTab
           layout={props.editedLayout}
-          onIconChange={props.handleCategoryNotesIconChange}
-          onTitleChange={props.handleCategoryNotesTitleChange}
-          onTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
-          onTextChange={props.handleCategoryNotesTextChange}
-          onTextMarginChange={props.handleCategoryNotesTextMarginChange}
+          onCategoryNotesIconChange={props.handleCategoryNotesIconChange}
+          onCategoryNotesTitleChange={props.handleCategoryNotesTitleChange}
+          onCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
+          onCategoryNotesTextChange={props.handleCategoryNotesTextChange}
+          onCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
         />
       )}
 
       {activeTab === "spaziatura" && (
         <SpacingTab
           layout={props.editedLayout}
-          onChange={props.handleSpacingChange}
+          onSpacingChange={props.handleSpacingChange}
         />
       )}
 
       {activeTab === "prezzoservizio" && (
         <ServicePriceTab
           layout={props.editedLayout}
-          onChange={props.handleServicePriceChange}
-          onMarginChange={props.handleServicePriceMarginChange}
+          onServicePriceChange={props.handleServicePriceChange}
+          onServicePriceMarginChange={props.handleServicePriceMarginChange}
         />
       )}
 
       {activeTab === "allergeni" && (
         <AllergensLayoutTab
           layout={props.editedLayout}
-          onTitleChange={props.handleAllergensTitleChange}
-          onTitleMarginChange={props.handleAllergensTitleMarginChange}
-          onDescriptionChange={props.handleAllergensDescriptionChange}
-          onDescriptionMarginChange={props.handleAllergensDescriptionMarginChange}
-          onItemNumberChange={props.handleAllergensItemNumberChange}
-          onItemNumberMarginChange={props.handleAllergensItemNumberMarginChange}
-          onItemTitleChange={props.handleAllergensItemTitleChange}
-          onItemTitleMarginChange={props.handleAllergensItemTitleMarginChange}
-          onItemDescriptionChange={props.handleAllergensItemDescriptionChange}
-          onItemDescriptionMarginChange={props.handleAllergensItemDescriptionMarginChange}
-          onItemChange={props.handleAllergensItemChange}
+          onAllergensTitleChange={props.handleAllergensTitleChange}
+          onAllergensTitleMarginChange={props.handleAllergensTitleMarginChange}
+          onAllergensDescriptionChange={props.handleAllergensDescriptionChange}
+          onAllergensDescriptionMarginChange={props.handleAllergensDescriptionMarginChange}
+          onAllergensItemNumberChange={props.handleAllergensItemNumberChange}
+          onAllergensItemNumberMarginChange={props.handleAllergensItemNumberMarginChange}
+          onAllergensItemTitleChange={props.handleAllergensItemTitleChange}
+          onAllergensItemTitleMarginChange={props.handleAllergensItemTitleMarginChange}
+          onAllergensItemDescriptionChange={props.handleAllergensItemDescriptionChange}
+          onAllergensItemDescriptionMarginChange={props.handleAllergensItemDescriptionMarginChange}
+          onAllergensItemChange={props.handleAllergensItemChange}
         />
       )}
 
       {activeTab === "caratteristicheprodotto" && (
         <ProductFeaturesTab
           layout={props.editedLayout}
-          onIconChange={props.handleProductFeaturesIconChange}
-          onTitleChange={props.handleProductFeaturesTitleChange}
-          onTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
+          onProductFeaturesIconChange={props.handleProductFeaturesIconChange}
+          onProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
+          onProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
         />
       )}
 
