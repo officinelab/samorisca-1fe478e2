@@ -5,7 +5,7 @@ export const modernLayout: PrintLayout = {
   name: "Layout Moderno",
   type: "custom",
   isDefault: false,
-  productSchema: "schema2",
+  productSchema: "schema1",
   elements: {
     category: {
       fontFamily: "Arial",
