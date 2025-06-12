@@ -6,31 +6,6 @@ import { PrintLayout } from '@/types/printLayout';
 import { Category, Product, Allergen } from '@/types/database';
 import NewMenuPdfDocument from '@/components/menu-print/pdf/NewMenuPdfDocument';
 
-// Register Google Fonts for PDF
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2' },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2', fontWeight: 'bold' },
-  ],
-});
-
-Font.register({
-  family: 'Roboto',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2' },
-    { src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfBBc4AMP6lQ.woff2', fontWeight: 'bold' },
-  ],
-});
-
-Font.register({
-  family: 'Playfair Display',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/playfairdisplay/v30/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtXK-F2qO0isEw.woff2' },
-    { src: 'https://fonts.gstatic.com/s/playfairdisplay/v30/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDYbtXK-F2qO0isEw.woff2', fontWeight: 'bold' },
-  ],
-});
-
 interface UsePdfExportProps {
   currentLayout?: PrintLayout;
   categories: Category[];
@@ -40,6 +15,85 @@ interface UsePdfExportProps {
   language?: string;
   printAllergens?: boolean;
 }
+
+// Funzione per ottenere i font unici dal layout
+const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
+  const fonts = new Set<string>();
+  
+  // Font dalla copertina
+  if (layout.cover?.title?.fontFamily) {
+    fonts.add(layout.cover.title.fontFamily);
+  }
+  if (layout.cover?.subtitle?.fontFamily) {
+    fonts.add(layout.cover.subtitle.fontFamily);
+  }
+  
+  // Font dagli elementi del menu
+  if (layout.elements) {
+    Object.values(layout.elements).forEach(element => {
+      if (element && typeof element === 'object' && 'fontFamily' in element) {
+        fonts.add(element.fontFamily);
+      }
+    });
+  }
+  
+  // Font dagli allergeni
+  if (layout.allergens?.title?.fontFamily) {
+    fonts.add(layout.allergens.title.fontFamily);
+  }
+  if (layout.allergens?.item?.number?.fontFamily) {
+    fonts.add(layout.allergens.item.number.fontFamily);
+  }
+  if (layout.allergens?.item?.title?.fontFamily) {
+    fonts.add(layout.allergens.item.title.fontFamily);
+  }
+  
+  return fonts;
+};
+
+// Funzione per registrare dinamicamente i font
+const registerLayoutFonts = async (layout: PrintLayout) => {
+  const fonts = getUniqueFontsFromLayout(layout);
+  console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
+  
+  for (const fontFamily of fonts) {
+    // Controlla se il font è già registrato
+    const isRegistered = Font.getRegisteredFonts().some(
+      registeredFont => registeredFont.family === fontFamily
+    );
+    
+    if (!isRegistered) {
+      console.log(`📝 Registrazione font: ${fontFamily}`);
+      try {
+        // Registra il font con Google Fonts
+        const fontName = fontFamily.replace(/\s+/g, '+');
+        Font.register({
+          family: fontFamily,
+          fonts: [
+            { 
+              src: `https://fonts.gstatic.com/s/${fontName.toLowerCase()}/v30/${fontName}-Regular.ttf`,
+              fontWeight: 'normal'
+            },
+            { 
+              src: `https://fonts.gstatic.com/s/${fontName.toLowerCase()}/v30/${fontName}-Bold.ttf`,
+              fontWeight: 'bold'
+            },
+          ],
+        });
+      } catch (error) {
+        console.warn(`⚠️ Impossibile registrare il font ${fontFamily}, uso fallback:`, error);
+        // Fallback ai font di sistema
+        Font.register({
+          family: fontFamily,
+          fonts: [
+            { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2' },
+            { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2', fontWeight: 'bold' },
+          ],
+        });
+      }
+    }
+  }
+};
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -79,6 +133,9 @@ export const usePdfExport = () => {
     setIsExporting(true);
     
     try {
+      console.log('🔤 Registrazione font dal layout...');
+      await registerLayoutFonts(currentLayout);
+      
       console.log('📄 Creazione documento PDF...');
       
       const pdfDocument = (
