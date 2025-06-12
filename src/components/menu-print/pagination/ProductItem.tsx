@@ -14,38 +14,104 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
     <div className="menu-item" style={{
       marginBottom: customLayout ? `${customLayout.spacing.betweenProducts}mm` : '5mm',
     }}>
-      {React.createElement('div', {
-        className: 'product-component',
-        dangerouslySetInnerHTML: {
-          __html: `
-            <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
-              <div style="font-weight: bold; font-size: ${customLayout?.elements.title.fontSize || 12}pt; width: auto; margin-right: 10px; max-width: 60%;">
-                ${product[`title_${language}`] || product.title}
-              </div>
-              ${product.allergens && product.allergens.length > 0 
-                ? `<div style="width: auto; font-size: ${customLayout?.elements.allergensList.fontSize || 10}pt; white-space: nowrap; margin-right: 10px;">
-                    ${product.allergens.map(allergen => allergen.number).join(", ")}
-                  </div>` 
-                : ''}
-              <div style="flex-grow: 1; position: relative; top: -3px; border-bottom: 1px dotted #000;"></div>
-              <div style="text-align: right; font-weight: bold; width: auto; white-space: nowrap; margin-left: 10px;">
-                € ${product.price_standard}
-              </div>
+      {/* Schema 1 - Struttura a 2 colonne (90% + 10%) */}
+      <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
+        {/* Prima colonna - 90% */}
+        <div style={{ width: '90%' }}>
+          {/* Titolo del prodotto */}
+          <div style={{
+            fontWeight: 'bold',
+            fontSize: `${customLayout?.elements.title.fontSize || 12}pt`,
+            marginBottom: '1mm'
+          }}>
+            {product[`title_${language}`] || product.title}
+          </div>
+          
+          {/* Descrizione in italiano */}
+          {product.description && (
+            <div style={{
+              fontSize: `${customLayout?.elements.description.fontSize || 10}pt`,
+              fontStyle: 'italic',
+              marginBottom: '1mm'
+            }}>
+              {product.description}
             </div>
-            ${(product[`description_${language}`] || product.description) 
-              ? `<div style="font-size: ${customLayout?.elements.description.fontSize || 10}pt; font-style: italic; margin-top: 2mm; width: 100%; max-width: 95%;">
-                  ${product[`description_${language}`] || product.description}
-                </div>` 
-              : ''}
-            ${product.has_multiple_prices 
-              ? `<div style="margin-top: 1mm; font-size: ${customLayout?.elements.priceVariants.fontSize || 10}pt; display: flex; justify-content: flex-end; gap: 1rem;">
-                  ${product.price_variant_1_name ? `<div>${product.price_variant_1_name}: € ${product.price_variant_1_value}</div>` : ''}
-                  ${product.price_variant_2_name ? `<div>${product.price_variant_2_name}: € ${product.price_variant_2_value}</div>` : ''}
-                </div>` 
-              : ''}
-          `
-        }
-      })}
+          )}
+          
+          {/* Traduzione descrizione in inglese */}
+          {(product[`description_${language}`] && language !== 'it' && product[`description_${language}`] !== product.description) && (
+            <div style={{
+              fontSize: `${customLayout?.elements.descriptionEng.fontSize || 10}pt`,
+              fontStyle: 'italic',
+              marginBottom: '1mm'
+            }}>
+              {product[`description_${language}`]}
+            </div>
+          )}
+          
+          {/* Allergeni */}
+          {product.allergens && product.allergens.length > 0 && (
+            <div style={{
+              fontSize: `${customLayout?.elements.allergensList.fontSize || 9}pt`,
+              marginBottom: '1mm'
+            }}>
+              Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
+            </div>
+          )}
+          
+          {/* Caratteristiche prodotto */}
+          {product.features && product.features.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '1mm' }}>
+              {product.features.map((feature) => (
+                <div key={feature.id}>
+                  {feature.icon_url && (
+                    <img 
+                      src={feature.icon_url} 
+                      alt={feature.displayTitle || feature.title}
+                      style={{
+                        width: `${customLayout?.elements.productFeatures.iconSize || 16}px`,
+                        height: `${customLayout?.elements.productFeatures.iconSize || 16}px`
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Seconda colonna - 10% */}
+        <div style={{ width: '10%', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '1mm' }}>
+          {/* Prezzo standard */}
+          <div style={{
+            fontWeight: 'bold',
+            fontSize: `${customLayout?.elements.price.fontSize || 12}pt`
+          }}>
+            € {product.price_standard}
+          </div>
+          
+          {/* Suffisso prezzo */}
+          {product.has_price_suffix && product.price_suffix && (
+            <div style={{ fontSize: '9pt', fontStyle: 'italic' }}>
+              {product.price_suffix}
+            </div>
+          )}
+          
+          {/* Prezzo variante 1 */}
+          {product.has_multiple_prices && product.price_variant_1_value && (
+            <div style={{ fontSize: `${customLayout?.elements.priceVariants.fontSize || 10}pt` }}>
+              € {product.price_variant_1_value}
+            </div>
+          )}
+          
+          {/* Nome variante 1 */}
+          {product.has_multiple_prices && product.price_variant_1_name && (
+            <div style={{ fontSize: '9pt', fontStyle: 'italic' }}>
+              {product.price_variant_1_name}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

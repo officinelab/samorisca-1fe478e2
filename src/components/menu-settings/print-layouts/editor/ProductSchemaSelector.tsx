@@ -2,7 +2,6 @@
 import React from 'react';
 import { ProductSchema } from '@/types/printLayout';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card } from '@/components/ui/card';
 
 interface ProductSchemaSelectorProps {
@@ -15,86 +14,54 @@ const ProductSchemaSelector: React.FC<ProductSchemaSelectorProps> = ({ value, on
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Schema del Prodotto</h3>
       <p className="text-sm text-muted-foreground">
-        Scegli come visualizzare ogni voce del menu sul layout di stampa
+        Layout della singola voce di menu con struttura a 2 colonne (90% + 10%)
       </p>
 
-      <RadioGroup value={value} onValueChange={onChange as (value: string) => void} className="grid grid-cols-1 gap-4 pt-2">
-        <div>
-          <RadioGroupItem value="schema1" id="schema1" className="peer sr-only" />
-          <Label 
-            htmlFor="schema1" 
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-          >
-            <div className="flex w-full flex-col gap-2">
-              <div className="flex justify-between items-start gap-2 mb-1">
-                <div className="font-semibold">Schema 1 - Classico</div>
-                <div className="text-xs bg-primary/20 px-2 py-1 rounded">Default</div>
+      <div className="pt-2">
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-start gap-2 mb-2">
+              <div className="font-semibold text-primary">Schema 1 - Classico</div>
+              <div className="text-xs bg-primary/20 px-2 py-1 rounded">Attivo</div>
+            </div>
+            
+            <div className="text-sm text-muted-foreground mb-3">
+              Struttura a 2 colonne per ogni voce del menu
+            </div>
+
+            <Card className="p-3 bg-background border shadow-sm">
+              <div className="flex gap-2">
+                {/* Prima colonna - 90% */}
+                <div className="flex-1 border-r border-dashed border-gray-300 pr-2">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Prima Colonna (90%)</div>
+                  <div className="space-y-1 text-xs">
+                    <div className="font-medium">Nome Piatto</div>
+                    <div className="text-muted-foreground italic">Descrizione del piatto in italiano</div>
+                    <div className="text-muted-foreground italic">English description (se presente)</div>
+                    <div className="text-muted-foreground">Allergeni: 1, 2, 3</div>
+                    <div className="flex gap-1">
+                      <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
+                      <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
+                      <span className="text-xs">Icone caratteristiche</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Seconda colonna - 10% */}
+                <div className="w-20">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Seconda Colonna (10%)</div>
+                  <div className="space-y-1 text-xs text-right">
+                    <div className="font-semibold">€ 10.00</div>
+                    <div className="text-muted-foreground">cad.</div>
+                    <div className="text-muted-foreground">€ 8.00</div>
+                    <div className="text-muted-foreground">Medio</div>
+                  </div>
+                </div>
               </div>
-              <Card className="p-3 bg-background border shadow-sm">
-                <div className="flex justify-between items-baseline w-full border-b border-dotted border-gray-300 mb-2 pb-1">
-                  <div className="font-medium">Nome Piatto</div>
-                  <div className="ml-auto text-sm">1, 2, 3</div>
-                  <div className="ml-2 font-semibold">€ 10.00</div>
-                </div>
-                <div className="text-xs text-muted-foreground italic">Descrizione del piatto...</div>
-                <div className="text-xs flex justify-end gap-2 mt-1">
-                  <span>Medio: € 8.00</span>
-                  <span>Grande: € 12.00</span>
-                </div>
-              </Card>
-            </div>
-          </Label>
-        </div>
-
-        <div>
-          <RadioGroupItem value="schema2" id="schema2" className="peer sr-only" />
-          <Label 
-            htmlFor="schema2" 
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-          >
-            <div className="flex w-full flex-col gap-2">
-              <div className="font-semibold mb-1">Schema 2 - Compatto</div>
-              <Card className="p-3 bg-background border shadow-sm">
-                <div className="flex justify-between items-center w-full border-b border-gray-200 mb-2 pb-1">
-                  <div className="font-medium">Nome Piatto</div>
-                  <div className="font-semibold">€ 10.00</div>
-                </div>
-                <div className="flex justify-between items-center text-xs mb-1">
-                  <span className="text-muted-foreground">Allergeni: 1, 2, 3</span>
-                  <span>Medio: € 8 | Grande: € 12</span>
-                </div>
-                <div className="text-xs text-muted-foreground italic">Descrizione del piatto...</div>
-              </Card>
-            </div>
-          </Label>
-        </div>
-
-        <div>
-          <RadioGroupItem value="schema3" id="schema3" className="peer sr-only" />
-          <Label 
-            htmlFor="schema3" 
-            className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-          >
-            <div className="flex w-full flex-col gap-2">
-              <div className="font-semibold mb-1">Schema 3 - Espanso</div>
-              <Card className="p-3 bg-background border shadow-sm">
-                <div className="font-medium border-b border-gray-200 pb-1 mb-1">Nome Piatto</div>
-                <div className="text-xs text-muted-foreground italic mb-2">Descrizione del piatto...</div>
-                <div className="bg-gray-100 p-2 rounded text-xs flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <span className="font-semibold">€ 10.00</span>
-                    <span>Allergeni: 1, 2, 3</span>
-                  </div>
-                  <div className="border-t border-dotted border-gray-300 pt-1 flex gap-4">
-                    <span>Medio: € 8.00</span>
-                    <span>Grande: € 12.00</span>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </Label>
-        </div>
-      </RadioGroup>
+            </Card>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

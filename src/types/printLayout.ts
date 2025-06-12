@@ -1,3 +1,4 @@
+
 // Struttura aggiornata e commentata secondo la nuova specifica
 
 export type FontStyle = 'normal' | 'italic' | 'bold';
@@ -53,7 +54,8 @@ export type PageMargins = {
   marginLeft: number;
 };
 
-export type ProductSchema = 'schema1' | 'schema2' | 'schema3';
+// Solo Schema 1 - Classico rimane disponibile
+export type ProductSchema = 'schema1';
 
 // HEADER: rimane opzionale
 export type PrintLayoutHeader = {
