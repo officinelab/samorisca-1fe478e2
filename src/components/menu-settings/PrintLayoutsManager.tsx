@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import PrintLayoutEditor from "./print-layouts/PrintLayoutEditor";
@@ -32,11 +31,16 @@ const PrintLayoutsManager = () => {
     }
   }, [error]);
 
-  // Unico handler: aggiorna il layout predefinito
+  // Handler per aggiornare il layout e notificare altre componenti
   const handleUpdateLayout = (updatedLayout: PrintLayout) => {
     updateLayout(updatedLayout);
     toast.success("Layout aggiornato con successo");
     setDefaultLayout(updatedLayout);
+    
+    // Emetti un evento personalizzato per notificare che il layout è stato aggiornato
+    window.dispatchEvent(new CustomEvent('layoutUpdated', {
+      detail: { layout: updatedLayout }
+    }));
   };
 
   if (isLoading) {
