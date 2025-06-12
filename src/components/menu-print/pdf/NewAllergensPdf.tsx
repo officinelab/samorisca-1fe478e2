@@ -3,20 +3,13 @@ import React from 'react';
 import { Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen } from '@/types/database';
+import { getSafeFont } from '@/hooks/print/fontRegistry';
 
 interface NewAllergensPdfProps {
   currentLayout: PrintLayout;
   allergens: Allergen[];
   language: string;
 }
-
-// Funzione helper per ottenere un font safe
-const getSafeFont = (fontFamily?: string): string => {
-  if (!fontFamily) return 'Inter';
-  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
-  const cleanFont = fontFamily.split(',')[0].trim();
-  return cleanFont || 'Inter';
-};
 
 const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
   currentLayout,
@@ -77,7 +70,7 @@ const NewAllergensPdf: React.FC<NewAllergensPdfProps> = ({
       right: '15mm',
       fontSize: 10,
       color: '#888',
-      fontFamily: 'Inter',
+      fontFamily: 'Helvetica',
     },
   });
 

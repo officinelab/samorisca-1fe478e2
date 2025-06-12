@@ -1,10 +1,32 @@
 
 import { Font } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
-import { fontUrlMap, INTER_FONT_URLS } from './fontMappings';
 
 // Set per tenere traccia dei font già registrati
 const registeredFonts = new Set<string>();
+
+// Font di sistema sicuri per il fallback
+const SYSTEM_FONTS = ['Helvetica', 'Times-Roman', 'Courier'];
+
+// Mapping dei font personalizzati a font di sistema
+const fontFallbackMap: Record<string, string> = {
+  'Playfair Display': 'Times-Roman',
+  'Open Sans': 'Helvetica',
+  'Roboto': 'Helvetica',
+  'Lato': 'Helvetica',
+  'Montserrat': 'Helvetica',
+  'Poppins': 'Helvetica',
+  'Source Sans Pro': 'Helvetica',
+  'Oswald': 'Helvetica',
+  'Raleway': 'Helvetica',
+  'PT Sans': 'Helvetica',
+  'Lora': 'Times-Roman',
+  'Nunito': 'Helvetica',
+  'Merriweather': 'Times-Roman',
+  'Ubuntu': 'Helvetica',
+  'Crimson Text': 'Times-Roman',
+  'Inter': 'Helvetica'
+};
 
 // Funzione per ottenere i font unici dal layout
 export const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
@@ -41,78 +63,20 @@ export const getUniqueFontsFromLayout = (layout: PrintLayout): Set<string> => {
   return fonts;
 };
 
-// Registra il font Inter come fallback
-const registerInterFont = async (): Promise<void> => {
-  if (!registeredFonts.has('Inter')) {
-    try {
-      console.log('🔤 Registrazione font Inter...');
-      
-      Font.register({
-        family: 'Inter',
-        fonts: [
-          { 
-            src: INTER_FONT_URLS.normal,
-            fontWeight: 'normal'
-          },
-          { 
-            src: INTER_FONT_URLS.bold,
-            fontWeight: 'bold'
-          }
-        ],
-      });
-      
-      registeredFonts.add('Inter');
-      console.log('✅ Font Inter registrato con successo');
-    } catch (error) {
-      console.error('❌ Errore registrazione font Inter:', error);
-      throw new Error(`Errore durante la registrazione del font Inter: ${error}`);
-    }
-  }
-};
-
-// Registra un singolo font con tutte le sue varianti
-const registerSingleFont = async (fontFamily: string): Promise<void> => {
-  const cleanFontName = fontFamily.split(',')[0].trim();
+// Funzione per ottenere un font sicuro
+export const getSafeFont = (fontFamily?: string): string => {
+  if (!fontFamily) return 'Helvetica';
   
-  if (registeredFonts.has(cleanFontName)) {
-    console.log(`✓ Font ${cleanFontName} già registrato`);
-    return;
-  }
-
-  console.log(`🔤 Registrazione font: ${cleanFontName}`);
+  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
+  const cleanFont = fontFamily.split(',')[0].trim();
   
-  try {
-    // Controlla se abbiamo URL specifici per questo font
-    const fontUrls = fontUrlMap[cleanFontName];
-    
-    if (!fontUrls) {
-      console.warn(`⚠️ Font ${cleanFontName} non trovato nella mappa, uso Inter come fallback`);
-      registeredFonts.add(cleanFontName); // Marca come "registrato" per evitare tentativi ripetuti
-      return;
-    }
-
-    console.log(`📥 URL font ${cleanFontName}:`, fontUrls);
-
-    Font.register({
-      family: cleanFontName,
-      fonts: [
-        { 
-          src: fontUrls.normal,
-          fontWeight: 'normal'
-        },
-        { 
-          src: fontUrls.bold,
-          fontWeight: 'bold'
-        }
-      ],
-    });
-    
-    registeredFonts.add(cleanFontName);
-    console.log(`✅ Font ${cleanFontName} registrato con successo`);
-  } catch (error) {
-    console.error(`❌ Errore durante la registrazione del font ${cleanFontName}:`, error);
-    throw new Error(`Errore durante la registrazione del font ${cleanFontName}: ${error}`);
+  // Se è già un font di sistema, usalo direttamente
+  if (SYSTEM_FONTS.includes(cleanFont)) {
+    return cleanFont;
   }
+  
+  // Altrimenti usa il fallback mappato
+  return fontFallbackMap[cleanFont] || 'Helvetica';
 };
 
 // Funzione principale per registrare dinamicamente i font
@@ -123,17 +87,11 @@ export const registerLayoutFonts = async (layout: PrintLayout): Promise<void> =>
     const fonts = getUniqueFontsFromLayout(layout);
     console.log('🔤 Font rilevati dal layout:', Array.from(fonts));
     
-    // Registra sempre Inter come font di fallback per primo
-    await registerInterFont();
-    
-    // Registra tutti i font del layout in sequenza
-    for (const fontFamily of fonts) {
-      await registerSingleFont(fontFamily);
-    }
-    
-    console.log('✅ Tutti i font sono stati registrati con successo');
+    // Per ora usiamo solo font di sistema, nessuna registrazione necessaria
+    console.log('✅ Utilizzo font di sistema sicuri - nessuna registrazione necessaria');
   } catch (error) {
     console.error('❌ Errore durante la registrazione dei font:', error);
-    throw error;
+    // Non lanciare l'errore, continua con i font di sistema
+    console.log('⚠️ Continuo con font di sistema di default');
   }
 };

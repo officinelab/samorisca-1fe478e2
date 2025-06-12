@@ -55,7 +55,7 @@ export const usePdfExport = () => {
     setIsExporting(true);
     
     try {
-      console.log('🔤 Registrazione font dal layout...');
+      console.log('🔤 Preparazione font (utilizzo font di sistema)...');
       await registerLayoutFonts(currentLayout);
       
       console.log('📄 Creazione documento PDF...');
@@ -95,17 +95,16 @@ export const usePdfExport = () => {
     } catch (error) {
       console.error('❌ Errore durante l\'esportazione PDF:', error);
       
-      // Messaggio di errore più dettagliato
-      let errorMessage = 'Errore sconosciuto';
+      // Messaggio di errore più semplice
+      let errorMessage = 'Errore durante la generazione del PDF';
       if (error instanceof Error) {
-        errorMessage = error.message;
-        // Se è un errore di font, suggerisci una soluzione
-        if (errorMessage.includes('font') || errorMessage.includes('Font')) {
-          errorMessage += '. Prova a usare un layout con font diversi o contatta il supporto.';
-        }
+        console.error('Dettagli errore:', error.message);
+        errorMessage = error.message.includes('font') 
+          ? 'Errore nel caricamento dei font. Riprova tra qualche secondo.'
+          : 'Errore durante la generazione del PDF. Verifica i dati del menu.';
       }
       
-      toast.error(`Errore durante l'esportazione del PDF: ${errorMessage}`);
+      toast.error(errorMessage);
     } finally {
       setIsExporting(false);
     }

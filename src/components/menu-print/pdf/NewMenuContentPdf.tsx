@@ -6,6 +6,7 @@ import { Category, Product } from '@/types/database';
 import ProductHeader from './components/ProductHeader';
 import ProductDetails from './components/ProductDetails';
 import CategoryTitle from './components/CategoryTitle';
+import { getSafeFont } from '@/hooks/print/fontRegistry';
 
 interface NewMenuContentPdfProps {
   currentLayout: PrintLayout;
@@ -13,14 +14,6 @@ interface NewMenuContentPdfProps {
   products: Product[];
   language: string;
 }
-
-// Funzione helper per ottenere un font safe
-const getSafeFont = (fontFamily?: string): string => {
-  if (!fontFamily) return 'Inter';
-  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
-  const cleanFont = fontFamily.split(',')[0].trim();
-  return cleanFont || 'Inter';
-};
 
 const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
   currentLayout,
@@ -125,7 +118,7 @@ const NewMenuContentPdf: React.FC<NewMenuContentPdfProps> = ({
       right: '15mm',
       fontSize: 10,
       color: '#888',
-      fontFamily: 'Inter',
+      fontFamily: 'Helvetica',
     },
   });
 

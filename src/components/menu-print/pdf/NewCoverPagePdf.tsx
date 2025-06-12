@@ -2,20 +2,13 @@
 import React from 'react';
 import { Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
+import { getSafeFont } from '@/hooks/print/fontRegistry';
 
 interface NewCoverPagePdfProps {
   currentLayout: PrintLayout;
   restaurantLogo?: string | null;
   isEmpty?: boolean;
 }
-
-// Funzione helper per ottenere un font safe
-const getSafeFont = (fontFamily?: string): string => {
-  if (!fontFamily) return 'Inter';
-  // Rimuovi parti dopo la virgola (es. "Playfair Display, serif" -> "Playfair Display")
-  const cleanFont = fontFamily.split(',')[0].trim();
-  return cleanFont || 'Inter';
-};
 
 const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
   currentLayout,
@@ -43,7 +36,7 @@ const NewCoverPagePdf: React.FC<NewCoverPagePdfProps> = ({
       fontSize: 14,
       color: '#999',
       textAlign: 'center',
-      fontFamily: 'Inter',
+      fontFamily: 'Helvetica',
     },
     logoContainer: {
       marginTop: `${cover.logo.marginTop || 0}mm`,
