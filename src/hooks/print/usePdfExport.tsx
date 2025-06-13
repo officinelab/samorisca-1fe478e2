@@ -104,25 +104,35 @@ export const usePdfExport = () => {
     }
   };
 
-  // Funzione per il posizionamento del logo che rispetta l'allineamento
+  // CORREZIONE: Funzione per il posizionamento del logo che replica esattamente l'anteprima
   const addImageToPdf = async (
     pdf: jsPDF,
     imageUrl: string,
-    x: number,
     y: number,
-    maxWidthMm: number,
-    maxHeightMm: number,
+    maxWidthPercent: number,
+    maxHeightPercent: number,
     alignment: 'left' | 'center' | 'right' = 'center',
     pageWidth: number = 210,
+    pageHeight: number = 297,
     leftMargin: number = 0,
-    rightMargin: number = 0
+    rightMargin: number = 0,
+    topMargin: number = 0,
+    bottomMargin: number = 0
   ): Promise<number> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       
       img.onload = () => {
-        // Calcola dimensioni mantenendo proporzioni
+        // CORREZIONE: Calcola l'area disponibile esattamente come nell'anteprima
+        const contentWidth = pageWidth - leftMargin - rightMargin;
+        const contentHeight = pageHeight - topMargin - bottomMargin;
+        
+        // CORREZIONE: Applica le percentuali esattamente come nell'anteprima CSS
+        const maxWidthMm = contentWidth * (maxWidthPercent / 100);
+        const maxHeightMm = contentHeight * (maxHeightPercent / 100);
+        
+        // Calcola dimensioni mantenendo proporzioni (come CSS object-fit: contain)
         const imgRatio = img.width / img.height;
         let finalWidth = maxWidthMm;
         let finalHeight = maxWidthMm / imgRatio;
@@ -132,33 +142,42 @@ export const usePdfExport = () => {
           finalWidth = maxHeightMm * imgRatio;
         }
         
-        // Calcola posizione X basata sull'allineamento corretto
-        let finalX = x;
-        const contentWidth = pageWidth - leftMargin - rightMargin;
-        
-        console.log('🖼️ Logo positioning:', {
-          alignment,
-          pageWidth,
-          leftMargin,
-          rightMargin,
-          contentWidth,
-          finalWidth
-        });
+        // CORREZIONE: Calcola posizione X esattamente come CSS flexbox
+        let finalX = leftMargin;
         
         switch (alignment) {
           case 'left':
+            // CSS: justify-content: flex-start
             finalX = leftMargin;
             break;
           case 'right':
-            finalX = pageWidth - rightMargin - finalWidth;
+            // CSS: justify-content: flex-end
+            finalX = leftMargin + contentWidth - finalWidth;
             break;
           case 'center':
           default:
+            // CSS: justify-content: center
             finalX = leftMargin + (contentWidth - finalWidth) / 2;
             break;
         }
         
-        console.log('🖼️ Final logo position:', { finalX, y, finalWidth, finalHeight });
+        console.log('🖼️ Logo detailed positioning:', {
+          alignment,
+          pageWidth,
+          pageHeight,
+          contentWidth,
+          contentHeight,
+          maxWidthPercent,
+          maxHeightPercent,
+          maxWidthMm,
+          maxHeightMm,
+          imgRatio,
+          finalWidth,
+          finalHeight,
+          finalX,
+          y,
+          margins: { top: topMargin, right: rightMargin, bottom: bottomMargin, left: leftMargin }
+        });
         
         try {
           const canvas = document.createElement('canvas');
@@ -262,38 +281,45 @@ export const usePdfExport = () => {
     
     const pageWidth = 210; // A4 width in mm
     const pageHeight = 297; // A4 height in mm
-    const contentWidth = pageWidth - margins.marginLeft - margins.marginRight;
     
     let currentY = margins.marginTop;
     
     console.log('📄 Cover page margins:', margins);
+    console.log('🖼️ Logo config from layout:', {
+      visible: cover.logo?.visible,
+      imageUrl: cover.logo?.imageUrl,
+      maxWidth: cover.logo?.maxWidth,
+      maxHeight: cover.logo?.maxHeight,
+      alignment: cover.logo?.alignment,
+      marginTop: cover.logo?.marginTop,
+      marginBottom: cover.logo?.marginBottom
+    });
     
     // Logo
     if (cover.logo?.visible && cover.logo?.imageUrl) {
       currentY += cover.logo.marginTop || 0;
       
-      const logoMaxWidth = contentWidth * ((cover.logo.maxWidth || 80) / 100);
-      const logoMaxHeight = (pageHeight - margins.marginTop - margins.marginBottom) * ((cover.logo.maxHeight || 50) / 100);
-      
-      console.log('🖼️ Logo config before positioning:', {
-        alignment: cover.logo.alignment,
-        maxWidth: logoMaxWidth,
-        maxHeight: logoMaxHeight,
-        marginTop: cover.logo.marginTop,
-        marginBottom: cover.logo.marginBottom
+      console.log('🖼️ Logo positioning with corrected logic:', {
+        currentY,
+        maxWidthPercent: cover.logo.maxWidth || 80,
+        maxHeightPercent: cover.logo.maxHeight || 50,
+        alignment: cover.logo.alignment
       });
       
+      // CORREZIONE: Usa la nuova funzione che replica esattamente l'anteprima
       const logoHeight = await addImageToPdf(
         pdf,
         cover.logo.imageUrl,
-        margins.marginLeft,
         currentY,
-        logoMaxWidth,
-        logoMaxHeight,
+        cover.logo.maxWidth || 80,  // Percentuale esatta dall'anteprima
+        cover.logo.maxHeight || 50, // Percentuale esatta dall'anteprima
         cover.logo.alignment || 'center',
         pageWidth,
+        pageHeight,
         margins.marginLeft,
-        margins.marginRight
+        margins.marginRight,
+        margins.marginTop,
+        margins.marginBottom
       );
       
       currentY += logoHeight + (cover.logo.marginBottom || 0);
