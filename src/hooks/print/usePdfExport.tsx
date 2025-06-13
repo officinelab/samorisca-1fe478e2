@@ -141,7 +141,7 @@ export const usePdfExport = () => {
           contentHeight
         });
         
-        // CORREZIONE: Applica le percentuali esattamente come nell'anteprima CSS
+        // CORREZIONE CRITICA: Applica le percentuali correttamente al contenuto disponibile
         const maxWidthMm = contentWidth * (maxWidthPercent / 100);
         const maxHeightMm = contentHeight * (maxHeightPercent / 100);
         
@@ -149,7 +149,9 @@ export const usePdfExport = () => {
           maxWidthPercent,
           maxHeightPercent,
           maxWidthMm,
-          maxHeightMm
+          maxHeightMm,
+          'contentWidth * maxWidthPercent/100': `${contentWidth} * ${maxWidthPercent}/100 = ${maxWidthMm}`,
+          'contentHeight * maxHeightPercent/100': `${contentHeight} * ${maxHeightPercent}/100 = ${maxHeightMm}`
         });
         
         // Calcola dimensioni mantenendo proporzioni (come CSS object-fit: contain)
@@ -157,6 +159,7 @@ export const usePdfExport = () => {
         let finalWidth = maxWidthMm;
         let finalHeight = maxWidthMm / imgRatio;
         
+        // Se l'altezza supera il limite, ricalcola basandoti sull'altezza
         if (finalHeight > maxHeightMm) {
           finalHeight = maxHeightMm;
           finalWidth = maxHeightMm * imgRatio;
@@ -166,8 +169,12 @@ export const usePdfExport = () => {
           imgWidth: img.width,
           imgHeight: img.height,
           imgRatio,
+          maxWidthMm,
+          maxHeightMm,
           finalWidth,
-          finalHeight
+          finalHeight,
+          'finalWidth calculation': `min(${maxWidthMm}, ${maxHeightMm * imgRatio})`,
+          'finalHeight calculation': `min(${maxHeightMm}, ${maxWidthMm / imgRatio})`
         });
         
         // CORREZIONE: Calcola posizione X esattamente come CSS flexbox
@@ -208,7 +215,8 @@ export const usePdfExport = () => {
           finalWidth, 
           finalHeight,
           calculatedFromAlignment: alignment,
-          shouldBeAtRightEdge: leftMargin + contentWidth - finalWidth
+          shouldBeAtRightEdge: leftMargin + contentWidth - finalWidth,
+          'percentages applied': `W:${maxWidthPercent}% H:${maxHeightPercent}% of content area`
         });
         
         try {
