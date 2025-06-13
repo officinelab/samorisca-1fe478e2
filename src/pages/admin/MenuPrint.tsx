@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import MenuPrintHeader from '@/components/menu-print/MenuPrintHeader';
 import MenuPrintPreview from '@/components/menu-print/MenuPrintPreview';
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
+import { useMenuPrintLayoutSync } from "@/hooks/menu-print/useMenuPrintLayoutSync";
 
 const MenuPrint = () => {
   const [showMargins, setShowMargins] = useState(false);
@@ -13,19 +14,7 @@ const MenuPrint = () => {
   const currentLayout = layouts?.[0];
   
   // Listen for layout updates from the settings dialog
-  useEffect(() => {
-    const handleLayoutUpdate = (event: CustomEvent) => {
-      console.log("Layout aggiornato, ricarico i layout...", event.detail);
-      forceRefresh();
-    };
-
-    // Listen for the custom event dispatched when layouts are saved
-    window.addEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
-    };
-  }, [forceRefresh]);
+  useMenuPrintLayoutSync(forceRefresh);
   
   // Debug log per verificare il layout corrente
   useEffect(() => {
