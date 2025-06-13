@@ -53,9 +53,13 @@ export class ContentPageGenerator {
     
     const filteredCategories = categories.filter(cat => selectedCategories.includes(cat.id));
 
+    console.log(`🏗️ Generazione pagine per ${filteredCategories.length} categorie con schema: ${this.layout.productSchema}`);
+
     for (const category of filteredCategories) {
       const categoryProducts = products[category.id] || [];
       const notes = categoryNotes[category.id] || [];
+      
+      console.log(`📂 Processando categoria: ${category.title} con ${categoryProducts.length} prodotti`);
       
       // Calcola dimensioni della categoria
       const categoryDimensions = calculateCategoryHeight(
@@ -68,6 +72,7 @@ export class ContentPageGenerator {
 
       // Se la categoria intera non entra nella pagina corrente, crea nuova pagina
       if (currentPage.usedHeight + categoryDimensions.totalHeight > this.availablePageHeight && currentPage.items.length > 0) {
+        console.log(`📄 Creando nuova pagina per categoria: ${category.title}`);
         pages.push(currentPage);
         currentPage = this.createNewPage(pages.length + 1);
       }
@@ -92,13 +97,16 @@ export class ContentPageGenerator {
         }, notesHeight);
       }
 
-      // Aggiungi prodotti
+      // Aggiungi prodotti uno per uno
       for (let i = 0; i < categoryProducts.length; i++) {
         const product = categoryProducts[i];
         const productHeight = categoryDimensions.products[i].totalHeight;
 
+        console.log(`🍽️ Processando prodotto: ${product.title} (altezza: ${productHeight}mm)`);
+
         // Se il prodotto non entra, crea nuova pagina e ripeti il titolo categoria
         if (currentPage.usedHeight + productHeight > this.availablePageHeight) {
+          console.log(`📄 Prodotto non entra, creando nuova pagina e ripetendo titolo categoria`);
           pages.push(currentPage);
           currentPage = this.createNewPage(pages.length + 1);
           
@@ -126,6 +134,7 @@ export class ContentPageGenerator {
       pages.push(currentPage);
     }
 
+    console.log(`✅ Generazione completata: ${pages.length} pagine create`);
     return pages;
   }
 
@@ -142,5 +151,7 @@ export class ContentPageGenerator {
     page.items.push(item);
     page.usedHeight += height;
     page.availableHeight = this.availablePageHeight - page.usedHeight;
+    
+    console.log(`➕ Aggiunto ${item.type} alla pagina ${page.pageNumber}, altezza usata: ${page.usedHeight}mm`);
   }
 }
