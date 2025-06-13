@@ -126,7 +126,7 @@ export const usePdfExport = () => {
       img.onload = () => {
         console.log('🟢 Image onload triggered successfully');
         
-        // CORREZIONE: Calcola l'area disponibile esattamente come nell'anteprima
+        // Calcola l'area disponibile esattamente come nell'anteprima
         const contentWidth = pageWidth - leftMargin - rightMargin;
         const contentHeight = pageHeight - topMargin - bottomMargin;
         
@@ -177,7 +177,7 @@ export const usePdfExport = () => {
           'finalHeight calculation': `min(${maxHeightMm}, ${maxWidthMm / imgRatio})`
         });
         
-        // CORREZIONE: Calcola posizione X esattamente come CSS flexbox
+        // CORREZIONE CRITICA: Calcola posizione X esattamente come CSS flexbox
         let finalX = leftMargin;
         
         console.log('🎯 ALIGNMENT SWITCH - Input:', { 
@@ -193,9 +193,9 @@ export const usePdfExport = () => {
             console.log('🎯 CASE LEFT EXECUTED: finalX =', finalX);
             break;
           case 'right':
-            // CSS: justify-content: flex-end
-            finalX = leftMargin + contentWidth - finalWidth;
-            console.log('🎯 CASE RIGHT EXECUTED: finalX =', finalX, 'calculation:', leftMargin, '+', contentWidth, '-', finalWidth);
+            // CSS: justify-content: flex-end - CORREZIONE: calcolo corretto per allineamento a destra
+            finalX = pageWidth - rightMargin - finalWidth;
+            console.log('🎯 CASE RIGHT EXECUTED: finalX =', finalX, 'calculation:', pageWidth, '-', rightMargin, '-', finalWidth);
             break;
           case 'center':
             // CSS: justify-content: center
@@ -215,7 +215,7 @@ export const usePdfExport = () => {
           finalWidth, 
           finalHeight,
           calculatedFromAlignment: alignment,
-          shouldBeAtRightEdge: leftMargin + contentWidth - finalWidth,
+          shouldBeAtRightEdge: pageWidth - rightMargin - finalWidth,
           'percentages applied': `W:${maxWidthPercent}% H:${maxHeightPercent}% of content area`
         });
         
@@ -342,7 +342,9 @@ export const usePdfExport = () => {
       'typeof alignment': typeof cover.logo?.alignment,
       'alignment value': JSON.stringify(cover.logo?.alignment),
       'visible': cover.logo?.visible,
-      'imageUrl exists': !!cover.logo?.imageUrl
+      'imageUrl exists': !!cover.logo?.imageUrl,
+      'maxWidth from layout': cover.logo?.maxWidth,
+      'maxHeight from layout': cover.logo?.maxHeight
     });
     
     // Logo
@@ -352,12 +354,16 @@ export const usePdfExport = () => {
       // CORREZIONE CRITICA: Assicurati che l'alignment sia quello giusto
       const logoAlignment = cover.logo.alignment || 'center';
       
+      // CORREZIONE: Usa i valori corretti dal layout invece di valori hardcoded
+      const logoMaxWidth = cover.logo.maxWidth || 80;
+      const logoMaxHeight = cover.logo.maxHeight || 50;
+      
       console.log('🖼️ Logo positioning - ALIGNMENT CHECK:', {
         'originalAlignment': cover.logo.alignment,
         'finalAlignment': logoAlignment,
         'currentY': currentY,
-        'maxWidthPercent': cover.logo.maxWidth || 80,
-        'maxHeightPercent': cover.logo.maxHeight || 50,
+        'maxWidthPercent from layout': logoMaxWidth,
+        'maxHeightPercent from layout': logoMaxHeight,
         'pageWidth': pageWidth,
         'pageHeight': pageHeight,
         'marginLeft': margins.marginLeft,
@@ -366,13 +372,12 @@ export const usePdfExport = () => {
         'marginBottom': margins.marginBottom
       });
       
-      // VERIFICA: Stampa tutti i parametri che passiamo alla funzione
       console.log('🎯 Parametri passati ad addImageToPdf:', {
         imageUrl: cover.logo.imageUrl,
         y: currentY,
-        maxWidthPercent: cover.logo.maxWidth || 80,
-        maxHeightPercent: cover.logo.maxHeight || 50,
-        alignment: logoAlignment,  // <-- QUESTO DEVE ESSERE 'left' se nell'anteprima è a sinistra
+        maxWidthPercent: logoMaxWidth,
+        maxHeightPercent: logoMaxHeight,
+        alignment: logoAlignment,
         pageWidth,
         pageHeight,
         leftMargin: margins.marginLeft,
@@ -385,9 +390,9 @@ export const usePdfExport = () => {
         pdf,
         cover.logo.imageUrl,
         currentY,
-        cover.logo.maxWidth || 80,
-        cover.logo.maxHeight || 50,
-        logoAlignment,  // <-- USA la variabile locale per sicurezza
+        logoMaxWidth,
+        logoMaxHeight,
+        logoAlignment,
         pageWidth,
         pageHeight,
         margins.marginLeft,
