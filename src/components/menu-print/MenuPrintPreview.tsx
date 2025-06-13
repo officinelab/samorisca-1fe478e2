@@ -31,7 +31,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
 
   const [language, setLanguage] = useState('it');
   const [printAllergens, setPrintAllergens] = useState(false);
-  const [layoutId, setLayoutId] = useState(currentLayout?.id || '');
 
   // Dimensioni pagina A4 in mm
   const A4_WIDTH_MM = 210;
@@ -51,13 +50,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       setSelectedCategories(categories.map(cat => cat.id));
     }
   }, [categories, selectedCategories.length, setSelectedCategories]);
-
-  // Aggiorna layoutId quando cambia currentLayout
-  useEffect(() => {
-    if (currentLayout?.id) {
-      setLayoutId(currentLayout.id);
-    }
-  }, [currentLayout]);
 
   if (isLoading) {
     return (
@@ -117,8 +109,6 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       <PrintOptions
         language={language}
         setLanguage={setLanguage}
-        layoutId={layoutId}
-        setLayoutId={setLayoutId}
         printAllergens={printAllergens}
         setPrintAllergens={setPrintAllergens}
         showPageBoundaries={showMargins}

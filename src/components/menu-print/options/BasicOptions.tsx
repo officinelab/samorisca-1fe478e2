@@ -2,13 +2,10 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LayoutSelector } from "./LayoutSelector";
 
 interface BasicOptionsProps {
   language: string;
   setLanguage: (language: string) => void;
-  layoutId: string;
-  setLayoutId: (layoutId: string) => void;
   printAllergens: boolean;
   setPrintAllergens: (print: boolean) => void;
   showPageBoundaries: boolean;
@@ -21,8 +18,6 @@ interface BasicOptionsProps {
 const BasicOptions = ({
   language,
   setLanguage,
-  layoutId,
-  setLayoutId,
   printAllergens,
   setPrintAllergens,
   showPageBoundaries,
@@ -31,14 +26,6 @@ const BasicOptions = ({
 }: BasicOptionsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Selezione Layout */}
-      <div className="space-y-2">
-        <LayoutSelector
-          selectedLayoutId={layoutId}
-          setSelectedLayoutId={setLayoutId}
-        />
-      </div>
-
       {/* Selezione Lingua */}
       <div className="space-y-2">
         <Label htmlFor="language-select" className="text-sm font-medium">
