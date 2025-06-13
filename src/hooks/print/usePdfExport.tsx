@@ -3,6 +3,22 @@ import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { useMenuLayouts } from '@/hooks/useMenuLayouts';
 
+// Mappa i font comuni ai font disponibili in jsPDF
+const mapFontFamily = (fontFamily: string): string => {
+  // Pulisci il font name
+  const cleanFont = fontFamily.replace(/['"]/g, '').toLowerCase();
+  
+  // Mappa font comuni ai font standard di jsPDF
+  if (cleanFont.includes('times') || cleanFont.includes('serif') && !cleanFont.includes('sans')) {
+    return 'times';
+  } else if (cleanFont.includes('courier') || cleanFont.includes('mono')) {
+    return 'courier';
+  } else {
+    // Default a helvetica per sans-serif e altri
+    return 'helvetica';
+  }
+};
+
 // Aggiungi font personalizzati se necessario
 const loadGoogleFont = async (fontName: string): Promise<string> => {
   try {
@@ -47,7 +63,8 @@ export const usePdfExport = () => {
     y: number,
     maxWidthMm: number,
     maxHeightMm: number,
-    alignment: 'left' | 'center' | 'right' = 'center'
+    alignment: 'left' | 'center' | 'right' = 'center',
+    pageWidth: number = 210
   ): Promise<number> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -67,9 +84,11 @@ export const usePdfExport = () => {
         // Calcola posizione X basata sull'allineamento
         let finalX = x;
         if (alignment === 'center') {
-          finalX = x + (maxWidthMm - finalWidth) / 2;
+          // Per centrare: usa il centro della pagina meno metà larghezza immagine
+          finalX = (pageWidth / 2) - (finalWidth / 2);
         } else if (alignment === 'right') {
-          finalX = x + maxWidthMm - finalWidth;
+          // Per allineare a destra: larghezza pagina meno margine destro meno larghezza immagine
+          finalX = pageWidth - x - finalWidth;
         }
         
         try {
@@ -135,7 +154,8 @@ export const usePdfExport = () => {
         currentY,
         logoMaxWidth,
         logoMaxHeight,
-        cover.logo.alignment
+        cover.logo.alignment,
+        pageWidth
       );
       
       currentY += logoHeight + (cover.logo.marginBottom || 0);
@@ -150,9 +170,16 @@ export const usePdfExport = () => {
       pdf.setTextColor(titleColor.r, titleColor.g, titleColor.b);
       pdf.setFontSize(cover.title.fontSize || 22);
       
-      // Gestisci font family - per ora usiamo helvetica come fallback
+      // Gestisci font family
+      const fontFamily = mapFontFamily(cover.title.fontFamily || 'helvetica');
       const fontStyle = mapFontStyle(cover.title.fontStyle || 'normal');
-      pdf.setFont('helvetica', fontStyle);
+      
+      try {
+        pdf.setFont(fontFamily, fontStyle);
+      } catch (e) {
+        console.warn(`Font ${fontFamily} con stile ${fontStyle} non disponibile, uso helvetica`);
+        pdf.setFont('helvetica', fontStyle);
+      }
       
       // Calcola posizione X basata sull'allineamento
       let titleX = margins.left;
@@ -182,8 +209,16 @@ export const usePdfExport = () => {
       pdf.setTextColor(subtitleColor.r, subtitleColor.g, subtitleColor.b);
       pdf.setFontSize(cover.subtitle.fontSize || 16);
       
+      // Gestisci font family
+      const fontFamily = mapFontFamily(cover.subtitle.fontFamily || 'helvetica');
       const fontStyle = mapFontStyle(cover.subtitle.fontStyle || 'normal');
-      pdf.setFont('helvetica', fontStyle);
+      
+      try {
+        pdf.setFont(fontFamily, fontStyle);
+      } catch (e) {
+        console.warn(`Font ${fontFamily} con stile ${fontStyle} non disponibile, uso helvetica`);
+        pdf.setFont('helvetica', fontStyle);
+      }
       
       // Calcola posizione X basata sull'allineamento
       let subtitleX = margins.left;
@@ -240,6 +275,48 @@ export const usePdfExport = () => {
       margins.top + 30,
       { align: 'center' }
     );
+    
+    // Esempio di come verranno applicati i margini degli elementi
+    if (layout.elements) {
+      pdf.setFontSize(10);
+      pdf.text(
+        'I margini degli elementi saranno:',
+        margins.left,
+        margins.top + 50
+      );
+      
+      let y = margins.top + 60;
+      
+      // Mostra i margini configurati per ogni elemento
+      if (layout.elements.title) {
+        const titleMargins = layout.elements.title.margin || { top: 0, right: 0, bottom: 0, left: 0 };
+        pdf.text(
+          `Titolo prodotto: margini (${titleMargins.top}, ${titleMargins.right}, ${titleMargins.bottom}, ${titleMargins.left})`,
+          margins.left,
+          y
+        );
+        y += 10;
+      }
+      
+      if (layout.elements.description) {
+        const descMargins = layout.elements.description.margin || { top: 0, right: 0, bottom: 0, left: 0 };
+        pdf.text(
+          `Descrizione: margini (${descMargins.top}, ${descMargins.right}, ${descMargins.bottom}, ${descMargins.left})`,
+          margins.left,
+          y
+        );
+        y += 10;
+      }
+      
+      if (layout.elements.price) {
+        const priceMargins = layout.elements.price.margin || { top: 0, right: 0, bottom: 0, left: 0 };
+        pdf.text(
+          `Prezzo: margini (${priceMargins.top}, ${priceMargins.right}, ${priceMargins.bottom}, ${priceMargins.left})`,
+          margins.left,
+          y
+        );
+      }
+    }
   };
 
   // Genera pagina allergeni (placeholder per ora)
