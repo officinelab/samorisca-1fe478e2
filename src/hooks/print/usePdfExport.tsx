@@ -1,4 +1,87 @@
-import { useState } from 'react';
+// Genera la prima pagina di copertina con contenuto
+  const generateCoverPage1 = async (pdf: jsPDF, layout: PrintLayout) => {
+    const cover = layout.cover;
+    // CORREZIONE: Usa la funzione getPageMargins per i margini della copertina
+    const margins = getPageMargins(layout, 'cover');
+    
+    const pageWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    
+    let currentY = margins.marginTop;
+    
+    console.log('📄 Cover page margins from layout:', margins);
+    console.log('🖼️ Logo config from layout:', {
+      visible: cover.logo?.visible,
+      imageUrl: cover.logo?.imageUrl,
+      maxWidth: cover.logo?.maxWidth,
+      maxHeight: cover.logo?.maxHeight,
+      alignment: cover.logo?.alignment,
+      marginTop: cover.logo?.marginTop,
+      marginBottom: cover.logo?.marginBottom
+    });
+    
+    // CONTROLLO: Verifica che i margini siano corretti
+    console.log('🔍 Margini copertina dettagliati:', {
+      coverMarginTop: layout.page.coverMarginTop,
+      coverMarginRight: layout.page.coverMarginRight,
+      coverMarginBottom: layout.page.coverMarginBottom,
+      coverMarginLeft: layout.page.coverMarginLeft
+    });
+    
+    // Logo
+    if (cover.logo?.visible && cover.logo?.imageUrl) {
+      currentY += cover.logo.marginTop || 0;
+      
+      console.log('🖼️ Logo positioning with corrected logic:', {
+        currentY,
+        maxWidthPercent: cover.logo.maxWidth || 80,
+        maxHeightPercent: cover.logo.maxHeight || 50,
+        alignment: cover.logo.alignment,
+        pageWidth,
+        pageHeight,
+        marginLeft: margins.marginLeft,
+        marginRight: margins.marginRight,
+        marginTop: margins.marginTop,
+        marginBottom: margins.marginBottom
+      });
+      
+      // CORREZIONE: Usa la nuova funzione che replica esattamente l'anteprima
+      const logoHeight = await addImageToPdf(
+        pdf,
+        cover.logo.imageUrl,
+        currentY,
+        cover.logo.maxWidth || 80,  // Percentuale esatta dall'anteprima
+        cover.logo.maxHeight || 50, // Percentuale esatta dall'anteprima
+        cover.logo.alignment || 'center',
+        pageWidth,
+        pageHeight,
+        margins.marginLeft,
+        margins.marginRight,
+        margins.marginTop,
+        margins.marginBottom
+      );
+      
+      console.log('🖼️ Logo height returned:', logoHeight);
+      currentY += logoHeight + (cover.logo.marginBottom || 0);
+    }
+    
+    // Titolo
+    if (cover.title?.visible && cover.title?.menuTitle) {
+      currentY += cover.title.margin?.top || 0;
+      
+      console.log('📝 Title positioning:', {
+        text: cover.title.menuTitle,
+        fontSize: cover.title.fontSize,
+        alignment: cover.title.alignment,
+        currentY,
+        marginLeft: margins.marginLeft,
+        marginRight: margins.marginRight
+      });
+      
+      const titleHeight = addTextToPdf(
+        pdf,
+        cover.title.menuTitle,
+        cover.title.fontSize ||import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { useMenuLayouts } from '@/hooks/useMenuLayouts';
@@ -285,35 +368,60 @@ export const usePdfExport = () => {
     let currentY = margins.marginTop;
     
     console.log('📄 Cover page margins:', margins);
-    console.log('🖼️ Logo config from layout:', {
-      visible: cover.logo?.visible,
-      imageUrl: cover.logo?.imageUrl,
-      maxWidth: cover.logo?.maxWidth,
-      maxHeight: cover.logo?.maxHeight,
-      alignment: cover.logo?.alignment,
-      marginTop: cover.logo?.marginTop,
-      marginBottom: cover.logo?.marginBottom
+    
+    // DEBUGGING: Verifica ESATTA dell'allineamento del logo
+    console.log('🔍 DEBUGGING LOGO ALIGNMENT:', {
+      'cover.logo': cover.logo,
+      'cover.logo?.alignment': cover.logo?.alignment,
+      'typeof alignment': typeof cover.logo?.alignment,
+      'alignment value': JSON.stringify(cover.logo?.alignment),
+      'visible': cover.logo?.visible,
+      'imageUrl exists': !!cover.logo?.imageUrl
     });
     
     // Logo
     if (cover.logo?.visible && cover.logo?.imageUrl) {
       currentY += cover.logo.marginTop || 0;
       
-      console.log('🖼️ Logo positioning with corrected logic:', {
-        currentY,
-        maxWidthPercent: cover.logo.maxWidth || 80,
-        maxHeightPercent: cover.logo.maxHeight || 50,
-        alignment: cover.logo.alignment
+      // CORREZIONE CRITICA: Assicurati che l'alignment sia quello giusto
+      const logoAlignment = cover.logo.alignment || 'center';
+      
+      console.log('🖼️ Logo positioning - ALIGNMENT CHECK:', {
+        'originalAlignment': cover.logo.alignment,
+        'finalAlignment': logoAlignment,
+        'currentY': currentY,
+        'maxWidthPercent': cover.logo.maxWidth || 80,
+        'maxHeightPercent': cover.logo.maxHeight || 50,
+        'pageWidth': pageWidth,
+        'pageHeight': pageHeight,
+        'marginLeft': margins.marginLeft,
+        'marginRight': margins.marginRight,
+        'marginTop': margins.marginTop,
+        'marginBottom': margins.marginBottom
       });
       
-      // CORREZIONE: Usa la nuova funzione che replica esattamente l'anteprima
+      // VERIFICA: Stampa tutti i parametri che passiamo alla funzione
+      console.log('🎯 Parametri passati ad addImageToPdf:', {
+        imageUrl: cover.logo.imageUrl,
+        y: currentY,
+        maxWidthPercent: cover.logo.maxWidth || 80,
+        maxHeightPercent: cover.logo.maxHeight || 50,
+        alignment: logoAlignment,  // <-- QUESTO DEVE ESSERE 'left' se nell'anteprima è a sinistra
+        pageWidth,
+        pageHeight,
+        leftMargin: margins.marginLeft,
+        rightMargin: margins.marginRight,
+        topMargin: margins.marginTop,
+        bottomMargin: margins.marginBottom
+      });
+      
       const logoHeight = await addImageToPdf(
         pdf,
         cover.logo.imageUrl,
         currentY,
-        cover.logo.maxWidth || 80,  // Percentuale esatta dall'anteprima
-        cover.logo.maxHeight || 50, // Percentuale esatta dall'anteprima
-        cover.logo.alignment || 'center',
+        cover.logo.maxWidth || 80,
+        cover.logo.maxHeight || 50,
+        logoAlignment,  // <-- USA la variabile locale per sicurezza
         pageWidth,
         pageHeight,
         margins.marginLeft,
