@@ -2,6 +2,7 @@ import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { useMenuLayouts } from '@/hooks/useMenuLayouts';
+import { PrintLayout } from '@/types/printLayout';
 
 // Mappa i font comuni ai font disponibili in jsPDF
 const mapFontFamily = (fontFamily: string): string => {
@@ -33,7 +34,6 @@ const loadGoogleFont = async (fontName: string): Promise<string> => {
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
-  const { layouts, forceRefresh } = useMenuLayouts();
 
   // Converte hex color in RGB per jsPDF
   const hexToRgb = (hex: string) => {
@@ -125,7 +125,7 @@ export const usePdfExport = () => {
   };
 
   // Genera la prima pagina di copertina con contenuto
-  const generateCoverPage1 = async (pdf: jsPDF, layout: any) => {
+  const generateCoverPage1 = async (pdf: jsPDF, layout: PrintLayout) => {
     const cover = layout.cover;
     const margins = {
       top: layout.page.coverMarginTop || 10,
@@ -146,6 +146,14 @@ export const usePdfExport = () => {
       
       const logoMaxWidth = contentWidth * (cover.logo.maxWidth / 100);
       const logoMaxHeight = (pageHeight - margins.top - margins.bottom) * (cover.logo.maxHeight / 100);
+      
+      console.log('🖼️ Logo config:', {
+        alignment: cover.logo.alignment,
+        maxWidth: logoMaxWidth,
+        maxHeight: logoMaxHeight,
+        marginTop: cover.logo.marginTop,
+        marginBottom: cover.logo.marginBottom
+      });
       
       const logoHeight = await addImageToPdf(
         pdf,
@@ -245,7 +253,7 @@ export const usePdfExport = () => {
   };
 
   // Genera pagine contenuto (placeholder per ora)
-  const generateContentPages = (pdf: jsPDF, layout: any) => {
+  const generateContentPages = (pdf: jsPDF, layout: PrintLayout) => {
     pdf.addPage();
     
     const margins = {
@@ -320,7 +328,7 @@ export const usePdfExport = () => {
   };
 
   // Genera pagina allergeni (placeholder per ora)
-  const generateAllergensPage = (pdf: jsPDF, layout: any) => {
+  const generateAllergensPage = (pdf: jsPDF, layout: PrintLayout) => {
     pdf.addPage();
     
     const margins = {
@@ -363,31 +371,24 @@ export const usePdfExport = () => {
     );
   };
 
-  const exportToPdf = async () => {
+  const exportToPdf = async (currentLayout?: PrintLayout) => {
     console.log('🎯 Inizio esportazione PDF vettoriale...');
     
-    // Forza il refresh dei dati prima di esportare
-    console.log('🔄 Aggiornamento dati layout...');
-    await forceRefresh();
+    if (!currentLayout) {
+      toast.error('Nessun layout fornito per l\'esportazione');
+      return;
+    }
+    
+    console.log('📄 Layout utilizzato:', currentLayout.name);
+    console.log('🔍 Configurazione logo:', {
+      alignment: currentLayout.cover?.logo?.alignment,
+      visible: currentLayout.cover?.logo?.visible,
+      imageUrl: currentLayout.cover?.logo?.imageUrl
+    });
     
     setIsExporting(true);
     
     try {
-      // Prendi il layout corrente DOPO il refresh
-      const currentLayout = layouts?.[0];
-      if (!currentLayout) {
-        toast.error('Nessun layout di stampa trovato');
-        return;
-      }
-      
-      console.log('📄 Layout trovato:', currentLayout.name);
-      console.log('🔍 Configurazione logo:', {
-        alignment: currentLayout.cover?.logo?.alignment,
-        visible: currentLayout.cover?.logo?.visible,
-        imageUrl: currentLayout.cover?.logo?.imageUrl
-      });
-      console.log('📊 Layout completo:', JSON.stringify(currentLayout, null, 2));
-      
       // Crea nuovo documento PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -430,5 +431,4 @@ export const usePdfExport = () => {
     exportToPdf,
     isExporting
   };
-};
 };
