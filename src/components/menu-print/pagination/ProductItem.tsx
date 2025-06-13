@@ -2,6 +2,7 @@
 import React from 'react';
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
+import { getElementStyle } from '../utils/styleUtils';
 
 interface ProductItemProps {
   product: Product;
@@ -11,50 +12,56 @@ interface ProductItemProps {
 
 const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayout }) => {
   return (
-    <div className="menu-item" style={{
-      marginBottom: customLayout ? `${customLayout.spacing.betweenProducts}mm` : '5mm',
-    }}>
-      {/* Schema 1 - Struttura a 2 colonne (90% + 10%) */}
+    <div 
+      style={{
+        marginBottom: customLayout ? 
+          `${customLayout.spacing.betweenProducts}mm` : 
+          '5mm',
+        breakInside: 'avoid',
+        pageBreakInside: 'avoid',
+      }} 
+      className="menu-item"
+    >
       <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
         {/* Prima colonna - 90% */}
         <div style={{ width: '90%' }}>
           {/* Titolo del prodotto */}
-          <div style={{
+          <div style={getElementStyle(customLayout?.elements.title, {
             fontWeight: 'bold',
-            fontSize: `${customLayout?.elements.title.fontSize || 12}pt`,
+            fontSize: '12pt',
             marginBottom: '1mm'
-          }}>
+          })}>
             {product[`title_${language}`] || product.title}
           </div>
           
           {/* Descrizione in italiano */}
           {product.description && (
-            <div style={{
-              fontSize: `${customLayout?.elements.description.fontSize || 10}pt`,
+            <div style={getElementStyle(customLayout?.elements.description, {
+              fontSize: '10pt',
               fontStyle: 'italic',
               marginBottom: '1mm'
-            }}>
+            })}>
               {product.description}
             </div>
           )}
           
           {/* Traduzione descrizione in inglese */}
           {(product[`description_${language}`] && language !== 'it' && product[`description_${language}`] !== product.description) && (
-            <div style={{
-              fontSize: `${customLayout?.elements.descriptionEng.fontSize || 10}pt`,
+            <div style={getElementStyle(customLayout?.elements.descriptionEng, {
+              fontSize: '10pt',
               fontStyle: 'italic',
               marginBottom: '1mm'
-            }}>
+            })}>
               {product[`description_${language}`]}
             </div>
           )}
           
           {/* Allergeni */}
           {product.allergens && product.allergens.length > 0 && (
-            <div style={{
-              fontSize: `${customLayout?.elements.allergensList.fontSize || 9}pt`,
+            <div style={getElementStyle(customLayout?.elements.allergensList, {
+              fontSize: '9pt',
               marginBottom: '1mm'
-            }}>
+            })}>
               Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
             </div>
           )}
@@ -81,12 +88,18 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
         </div>
         
         {/* Seconda colonna - 10% */}
-        <div style={{ width: '10%', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '1mm' }}>
+        <div style={{ 
+          width: '10%', 
+          textAlign: 'right', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '1mm' 
+        }}>
           {/* Prezzo standard */}
-          <div style={{
+          <div style={getElementStyle(customLayout?.elements.price, {
             fontWeight: 'bold',
-            fontSize: `${customLayout?.elements.price.fontSize || 12}pt`
-          }}>
+            fontSize: '12pt'
+          })}>
             € {product.price_standard}
           </div>
           
@@ -99,7 +112,9 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, language, customLayo
           
           {/* Prezzo variante 1 */}
           {product.has_multiple_prices && product.price_variant_1_value && (
-            <div style={{ fontSize: `${customLayout?.elements.priceVariants.fontSize || 10}pt` }}>
+            <div style={getElementStyle(customLayout?.elements.priceVariants, {
+              fontSize: '10pt'
+            })}>
               € {product.price_variant_1_value}
             </div>
           )}
