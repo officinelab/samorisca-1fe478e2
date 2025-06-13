@@ -47,3 +47,40 @@ class LanguageCache {
 }
 
 export const languageCache = new LanguageCache();
+
+// Funzioni helper per compatibilità con il codice esistente
+export const getLanguageCachedData = (language: string): any | null => {
+  return languageCache.get(language);
+};
+
+export const setLanguageCachedData = (language: string, data: any): void => {
+  languageCache.set(language, data);
+};
+
+export const clearLanguageCache = (language?: string): void => {
+  if (language) {
+    // Per una lingua specifica, non implementiamo più questa funzionalità
+    // ma manteniamo la funzione per compatibilità
+    console.log(`Clearing cache for language: ${language}`);
+  } else {
+    languageCache.clear();
+  }
+};
+
+export const preloadLanguageData = async (
+  language: string, 
+  fetchFunction: (language: string) => Promise<any>
+): Promise<void> => {
+  try {
+    // Controlla se i dati sono già in cache
+    if (languageCache.has(language)) {
+      return;
+    }
+
+    console.log(`Preloading data for language: ${language}`);
+    const data = await fetchFunction(language);
+    languageCache.set(language, data);
+  } catch (error) {
+    console.error(`Error preloading data for language ${language}:`, error);
+  }
+};
