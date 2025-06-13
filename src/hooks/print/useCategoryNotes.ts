@@ -7,14 +7,6 @@ export interface CategoryNote {
   title: string;
   text: string;
   icon_url?: string;
-  title_en?: string;
-  title_fr?: string;
-  title_de?: string;
-  title_es?: string;
-  text_en?: string;
-  text_fr?: string;
-  text_de?: string;
-  text_es?: string;
 }
 
 export const useCategoryNotes = () => {
@@ -36,15 +28,7 @@ export const useCategoryNotes = () => {
             id,
             title,
             text,
-            icon_url,
-            title_en,
-            title_fr,
-            title_de,
-            title_es,
-            text_en,
-            text_fr,
-            text_de,
-            text_es
+            icon_url
           )
         `);
 
