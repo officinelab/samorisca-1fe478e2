@@ -3,6 +3,11 @@ import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { useMenuLayouts } from '@/hooks/useMenuLayouts';
 import { PrintLayout, PageMargins } from '@/types/printLayout';
+import { ContentPageGenerator } from './generators/ContentPageGenerator';
+import { ContentPagesRenderer } from './generators/ContentPagesRenderer';
+import { useCategoryNotes } from './useCategoryNotes';
+import { useServiceCharge } from './useServiceCharge';
+import { useMenuData } from '@/hooks/useMenuData';
 
 // Mappa i font comuni ai font disponibili in jsPDF
 const mapFontFamily = (fontFamily: string): string => {
@@ -19,6 +24,9 @@ const mapFontFamily = (fontFamily: string): string => {
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
+  const { categoryNotes } = useCategoryNotes();
+  const { serviceChargeValue } = useServiceCharge();
+  const { categories, products } = useMenuData();
 
   // Converte hex color in RGB per jsPDF
   const hexToRgb = (hex: string) => {
@@ -453,76 +461,51 @@ export const usePdfExport = () => {
 
   // Genera pagine contenuto (placeholder per ora)
   const generateContentPages = (pdf: jsPDF, layout: PrintLayout) => {
-    pdf.addPage();
+    console.log('📝 Generazione pagine contenuto con prodotti reali...');
     
-    // CORREZIONE: Usa la funzione getPageMargins per i margini del contenuto
-    // Per ora generiamo solo una pagina, quindi usiamo pageNumber = 3 (dopo le 2 pagine di copertina)
-    const margins = getPageMargins(layout, 'content', 3);
-    
-    console.log('📄 Content page margins:', margins);
-    
-    // Placeholder text con font corretto
-    addTextToPdf(
-      pdf,
-      'Pagina Contenuto Menu',
-      16,
-      'helvetica',
-      'normal',
-      '#666666',
-      'center',
-      margins.marginTop + 20,
-      210,
-      margins.marginLeft,
-      margins.marginRight
-    );
-    
-    addTextToPdf(
-      pdf,
-      'Le pagine del menu verranno generate qui',
-      12,
-      'helvetica',
-      'normal',
-      '#666666',
-      'center',
-      margins.marginTop + 30,
-      210,
-      margins.marginLeft,
-      margins.marginRight
+    // Organizza prodotti per categoria
+    const productsByCategory: Record<string, any[]> = {};
+    Object.values(products).flat().forEach(product => {
+      if (!productsByCategory[product.category_id]) {
+        productsByCategory[product.category_id] = [];
+      }
+      productsByCategory[product.category_id].push(product);
+    });
+
+    // Crea generatore di pagine
+    const pageGenerator = new ContentPageGenerator(
+      layout,
+      297, // A4 height
+      {
+        marginTop: layout.page.marginTop,
+        marginBottom: layout.page.marginBottom
+      }
     );
 
-    // Mostra informazioni sui margini utilizzati
-    let debugY = margins.marginTop + 50;
-    
-    addTextToPdf(
-      pdf,
-      `Margini utilizzati: T:${margins.marginTop} R:${margins.marginRight} B:${margins.marginBottom} L:${margins.marginLeft}`,
-      10,
-      'helvetica',
-      'normal',
-      '#999999',
-      'left',
-      debugY,
-      210,
-      margins.marginLeft,
-      margins.marginRight
+    // Genera struttura delle pagine
+    const contentPages = pageGenerator.generatePages(
+      categories,
+      productsByCategory,
+      categories.map(c => c.id), // Tutte le categorie selezionate
+      categoryNotes
     );
 
-    if (layout.page.useDistinctMarginsForPages) {
-      debugY += 12;
-      addTextToPdf(
-        pdf,
-        `Margini distinti per pagine pari/dispari: ATTIVI`,
-        10,
-        'helvetica',
-        'normal',
-        '#999999',
-        'left',
-        debugY,
-        210,
-        margins.marginLeft,
-        margins.marginRight
-      );
-    }
+    console.log(`📊 Generate ${contentPages.length} pagine di contenuto`);
+
+    // Renderizza le pagine
+    const renderer = new ContentPagesRenderer(
+      pdf,
+      layout,
+      210, // A4 width
+      297, // A4 height
+    );
+
+    // Renderizza dalla pagina 3 (dopo copertina)
+    renderer.renderPages(contentPages, 3, serviceChargeValue);
+    
+    console.log('✅ Pagine contenuto generate con successo');
+    
+    return contentPages.length; // Ritorna numero di pagine generate
   };
 
   // Genera pagina allergeni (placeholder per ora)
@@ -656,11 +639,11 @@ export const usePdfExport = () => {
       console.log('📝 Generazione seconda pagina copertina...');
       generateCoverPage2(pdf);
       
-      // 3. Pagine contenuto menu (placeholder)
-      console.log('📝 Generazione pagine contenuto...');
-      generateContentPages(pdf, currentLayout);
+      // 3. Pagine contenuto menu (CON PRODOTTI REALI)
+      console.log('📝 Generazione pagine contenuto con prodotti...');
+      const contentPagesCount = generateContentPages(pdf, currentLayout);
       
-      // 4. Pagina allergeni (placeholder)
+      // 4. Pagina allergeni (dopo tutte le pagine menu)
       console.log('📝 Generazione pagina allergeni...');
       generateAllergensPage(pdf, currentLayout);
       
@@ -668,8 +651,8 @@ export const usePdfExport = () => {
       const fileName = `menu-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ PDF esportato con successo con tutti i margini corretti');
-      toast.success('PDF esportato con successo! (Margini, font e allineamento corretti)');
+      console.log(`✅ PDF esportato con successo: ${2 + contentPagesCount + 1} pagine totali`);
+      toast.success(`PDF esportato con successo! (${2 + contentPagesCount + 1} pagine generate)`);
       
     } catch (error) {
       console.error('❌ Errore durante l\'esportazione PDF:', error);
