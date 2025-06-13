@@ -124,13 +124,33 @@ export const usePdfExport = () => {
       img.crossOrigin = 'anonymous';
       
       img.onload = () => {
+        console.log('🟢 Image onload triggered successfully');
+        
         // CORREZIONE: Calcola l'area disponibile esattamente come nell'anteprima
         const contentWidth = pageWidth - leftMargin - rightMargin;
         const contentHeight = pageHeight - topMargin - bottomMargin;
         
+        console.log('📐 Area calculations:', {
+          pageWidth,
+          pageHeight,
+          leftMargin,
+          rightMargin,
+          topMargin,
+          bottomMargin,
+          contentWidth,
+          contentHeight
+        });
+        
         // CORREZIONE: Applica le percentuali esattamente come nell'anteprima CSS
         const maxWidthMm = contentWidth * (maxWidthPercent / 100);
         const maxHeightMm = contentHeight * (maxHeightPercent / 100);
+        
+        console.log('📏 Size calculations:', {
+          maxWidthPercent,
+          maxHeightPercent,
+          maxWidthMm,
+          maxHeightMm
+        });
         
         // Calcola dimensioni mantenendo proporzioni (come CSS object-fit: contain)
         const imgRatio = img.width / img.height;
@@ -142,44 +162,43 @@ export const usePdfExport = () => {
           finalWidth = maxHeightMm * imgRatio;
         }
         
-        console.log('🖼️ Logo detailed positioning - BEFORE CALCULATION:', {
-          alignment,
-          pageWidth,
-          pageHeight,
-          contentWidth,
-          contentHeight,
-          maxWidthPercent,
-          maxHeightPercent,
-          maxWidthMm,
-          maxHeightMm,
+        console.log('🖼️ Image dimensions calculated:', {
+          imgWidth: img.width,
+          imgHeight: img.height,
           imgRatio,
           finalWidth,
-          finalHeight,
-          leftMargin,
-          rightMargin
+          finalHeight
         });
         
         // CORREZIONE: Calcola posizione X esattamente come CSS flexbox
         let finalX = leftMargin;
         
-        console.log('🎯 ALIGNMENT SWITCH - Input:', { alignment, type: typeof alignment });
+        console.log('🎯 ALIGNMENT SWITCH - Input:', { 
+          alignment, 
+          type: typeof alignment,
+          stringValue: String(alignment)
+        });
         
         switch (alignment) {
           case 'left':
             // CSS: justify-content: flex-start
             finalX = leftMargin;
-            console.log('🎯 CASE LEFT: finalX =', finalX);
+            console.log('🎯 CASE LEFT EXECUTED: finalX =', finalX);
             break;
           case 'right':
             // CSS: justify-content: flex-end
             finalX = leftMargin + contentWidth - finalWidth;
-            console.log('🎯 CASE RIGHT: finalX =', finalX);
+            console.log('🎯 CASE RIGHT EXECUTED: finalX =', finalX, 'calculation:', leftMargin, '+', contentWidth, '-', finalWidth);
             break;
           case 'center':
-          default:
             // CSS: justify-content: center
             finalX = leftMargin + (contentWidth - finalWidth) / 2;
-            console.log('🎯 CASE CENTER/DEFAULT: finalX =', finalX);
+            console.log('🎯 CASE CENTER EXECUTED: finalX =', finalX);
+            break;
+          default:
+            // CSS: justify-content: center (default)
+            finalX = leftMargin + (contentWidth - finalWidth) / 2;
+            console.log('🎯 CASE DEFAULT EXECUTED: finalX =', finalX);
             break;
         }
         
@@ -188,15 +207,24 @@ export const usePdfExport = () => {
           y, 
           finalWidth, 
           finalHeight,
-          calculatedFromAlignment: alignment 
+          calculatedFromAlignment: alignment,
+          shouldBeAtRightEdge: leftMargin + contentWidth - finalWidth
         });
         
         try {
+          console.log('🎨 Attempting to add image to PDF...');
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0);
+          
+          console.log('📄 PDF addImage params:', {
+            finalX,
+            y,
+            finalWidth,
+            finalHeight
+          });
           
           pdf.addImage(
             canvas.toDataURL('image/jpeg', 0.95),
@@ -207,9 +235,10 @@ export const usePdfExport = () => {
             finalHeight
           );
           
+          console.log('✅ Image added to PDF successfully');
           resolve(finalHeight);
         } catch (error) {
-          console.error('Errore aggiunta immagine:', error);
+          console.error('❌ Error adding image to PDF:', error);
           resolve(0);
         }
       };
