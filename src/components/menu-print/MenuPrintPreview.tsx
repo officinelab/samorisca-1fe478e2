@@ -1,12 +1,14 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PrintLayout } from "@/types/printLayout";
-import CoverPagePreview from './CoverPagePreview';
-import MenuPagePreview from './MenuPagePreview';
+import React, { useState, useEffect } from 'react';
+import { useMenuData } from '@/hooks/useMenuData';
+import { PrintLayout } from '@/types/printLayout';
+import ClassicLayout from './layouts/ClassicLayout';
+import ModernLayout from './layouts/ModernLayout';
+import AllergensLayout from './layouts/AllergensLayout';
+import PrintOptions from './PrintOptions';
 
 interface MenuPrintPreviewProps {
-  currentLayout?: PrintLayout;
+  currentLayout: PrintLayout | undefined;
   showMargins: boolean;
 }
 
@@ -14,126 +16,110 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   currentLayout,
   showMargins
 }) => {
-  // A4 dimensions in mm
+  const {
+    categories,
+    products,
+    allergens,
+    restaurantLogo,
+    isLoading,
+    selectedCategories,
+    setSelectedCategories,
+    handleCategoryToggle,
+    handleToggleAllCategories
+  } = useMenuData();
+
+  const [language, setLanguage] = useState('it');
+  const [printAllergens, setPrintAllergens] = useState(false);
+
+  // Dimensioni pagina A4 in mm
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
-  
-  // Default margins if no layout exists
-  const getMargins = () => {
-    if (!currentLayout?.page) {
-      return {
-        cover: { top: 25, right: 25, bottom: 25, left: 25 },
-        content: { top: 20, right: 20, bottom: 20, left: 20 },
-        allergens: { top: 20, right: 15, bottom: 20, left: 15 }
-      };
+
+  console.log('🖨️ MenuPrintPreview render:', {
+    currentLayout: currentLayout?.name,
+    categoriesCount: categories.length,
+    selectedCategoriesCount: selectedCategories.length,
+    productsCount: Object.keys(products).length,
+    isLoading
+  });
+
+  useEffect(() => {
+    if (categories.length > 0 && selectedCategories.length === 0) {
+      console.log('🔄 Auto-selezionando tutte le categorie');
+      setSelectedCategories(categories.map(cat => cat.id));
     }
-    
-    return {
-      cover: {
-        top: currentLayout.page.coverMarginTop || 25,
-        right: currentLayout.page.coverMarginRight || 25,
-        bottom: currentLayout.page.coverMarginBottom || 25,
-        left: currentLayout.page.coverMarginLeft || 25
-      },
-      content: {
-        top: currentLayout.page.marginTop || 20,
-        right: currentLayout.page.marginRight || 20,
-        bottom: currentLayout.page.marginBottom || 20,
-        left: currentLayout.page.marginLeft || 20
-      },
-      allergens: {
-        top: currentLayout.page.allergensMarginTop || 20,
-        right: currentLayout.page.allergensMarginRight || 15,
-        bottom: currentLayout.page.allergensMarginBottom || 20,
-        left: currentLayout.page.allergensMarginLeft || 15
-      }
+  }, [categories, selectedCategories.length, setSelectedCategories]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Caricamento menu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentLayout) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-gray-600">Nessun layout selezionato</p>
+      </div>
+    );
+  }
+
+  const renderLayout = () => {
+    const layoutProps = {
+      A4_WIDTH_MM,
+      A4_HEIGHT_MM,
+      showPageBoundaries: showMargins,
+      categories,
+      products,
+      selectedCategories,
+      language,
+      allergens,
+      printAllergens,
+      restaurantLogo,
+      customLayout: currentLayout
     };
+
+    console.log('📋 Rendering layout:', currentLayout.type, 'con props:', {
+      categoriesCount: categories.length,
+      selectedCategoriesCount: selectedCategories.length,
+      productsKeys: Object.keys(products),
+      hasProducts: Object.keys(products).length > 0
+    });
+
+    switch (currentLayout.type) {
+      case 'classic':
+        return <ClassicLayout {...layoutProps} />;
+      case 'modern':
+        return <ModernLayout {...layoutProps} />;
+      case 'allergens':
+        return <AllergensLayout {...layoutProps} />;
+      default:
+        return <ClassicLayout {...layoutProps} />;
+    }
   };
-  
-  const margins = getMargins();
 
   return (
-    <div className="menu-print-preview-container space-y-8">
-      {/* Cover Pages */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            Pagine Copertina del Menu
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Margini: {margins.cover.top}mm (alto), {margins.cover.right}mm (destro), 
-            {margins.cover.bottom}mm (basso), {margins.cover.left}mm (sinistro)
-          </p>
-        </CardHeader>
-        <CardContent>
-          {/* First Cover Page */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-4">Prima Pagina - Contenuto Copertina</h3>
-            <CoverPagePreview
-              currentLayout={currentLayout}
-              showMargins={showMargins}
-              pageNumber={1}
-            />
-          </div>
-          
-          {/* Second Cover Page */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Seconda Pagina - Pagina Vuota</h3>
-            <CoverPagePreview
-              currentLayout={currentLayout}
-              showMargins={showMargins}
-              pageNumber={2}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Content Pages */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            Pagine Contenuto del Menu
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Margini: {margins.content.top}mm (alto), {margins.content.right}mm (destro), 
-            {margins.content.bottom}mm (basso), {margins.content.left}mm (sinistro)
-          </p>
-        </CardHeader>
-        <CardContent>
-          <MenuPagePreview
-            pageType="content"
-            margins={margins.content}
-            showMargins={showMargins}
-            width={A4_WIDTH_MM}
-            height={A4_HEIGHT_MM}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Allergens Page */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-orange-500 rounded"></div>
-            Pagine Allergeni e Caratteristiche del Prodotto
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Margini: {margins.allergens.top}mm (alto), {margins.allergens.right}mm (destro), 
-            {margins.allergens.bottom}mm (basso), {margins.allergens.left}mm (sinistro)
-          </p>
-        </CardHeader>
-        <CardContent>
-          <MenuPagePreview
-            pageType="allergens"
-            margins={margins.allergens}
-            showMargins={showMargins}
-            width={A4_WIDTH_MM}
-            height={A4_HEIGHT_MM}
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <PrintOptions
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        categories={categories}
+        language={language}
+        setLanguage={setLanguage}
+        printAllergens={printAllergens}
+        setPrintAllergens={setPrintAllergens}
+        onCategoryToggle={handleCategoryToggle}
+        onToggleAllCategories={handleToggleAllCategories}
+      />
+      
+      <div className="print-preview-container">
+        {renderLayout()}
+      </div>
     </div>
   );
 };

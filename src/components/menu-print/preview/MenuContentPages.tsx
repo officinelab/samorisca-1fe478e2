@@ -33,17 +33,52 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
   const { categoryNotes } = useCategoryNotes();
   const { serviceChargeValue } = useServiceCharge();
 
+  console.log('🖥️ MenuContentPages - Rendering con:', {
+    categorie: categories.length,
+    categorieSelezionate: selectedCategories.length,
+    prodotti: Object.keys(products).length,
+    layout: customLayout?.name,
+    schema: customLayout?.productSchema,
+    categoryNotes: Object.keys(categoryNotes).length
+  });
+
   if (!customLayout) {
     console.warn('❌ Nessun layout personalizzato fornito per MenuContentPages');
     return null;
   }
 
-  console.log('🖥️ MenuContentPages - Rendering con:', {
-    categorie: categories.length,
-    prodotti: Object.keys(products).length,
-    layout: customLayout.name,
-    schema: customLayout.productSchema
-  });
+  if (!categories.length || !selectedCategories.length) {
+    console.warn('❌ Nessuna categoria disponibile o selezionata');
+    return null;
+  }
+
+  // Filtra le categorie selezionate
+  const filteredCategories = categories.filter(cat => selectedCategories.includes(cat.id));
+  console.log('📋 Categorie filtrate:', filteredCategories.map(c => c.title));
+
+  // Verifica che ci siano prodotti
+  const totalProducts = filteredCategories.reduce((acc, cat) => {
+    const categoryProducts = products[cat.id] || [];
+    console.log(`📦 Categoria ${cat.title}: ${categoryProducts.length} prodotti`);
+    return acc + categoryProducts.length;
+  }, 0);
+
+  if (totalProducts === 0) {
+    console.warn('❌ Nessun prodotto trovato nelle categorie selezionate');
+    return (
+      <div
+        className="page bg-white flex items-center justify-center"
+        style={{
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
+          margin: '0 auto 60px auto',
+          border: showPageBoundaries ? '2px dashed #e2e8f0' : 'none',
+        }}
+      >
+        <p className="text-gray-500">Nessun prodotto da visualizzare</p>
+      </div>
+    );
+  }
 
   // Usa lo stesso generatore di pagine del PDF
   const pageGenerator = new ContentPageGenerator(
@@ -58,13 +93,30 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
 
   // Genera le pagine del contenuto
   const contentPages = pageGenerator.generatePages(
-    categories,
+    filteredCategories,
     products,
     selectedCategories,
     categoryNotes
   );
 
   console.log(`📄 Generate ${contentPages.length} pagine di contenuto per l'anteprima`);
+
+  if (contentPages.length === 0) {
+    console.warn('❌ Nessuna pagina generata dal ContentPageGenerator');
+    return (
+      <div
+        className="page bg-white flex items-center justify-center"
+        style={{
+          width: `${A4_WIDTH_MM}mm`,
+          height: `${A4_HEIGHT_MM}mm`,
+          margin: '0 auto 60px auto',
+          border: showPageBoundaries ? '2px dashed #e2e8f0' : 'none',
+        }}
+      >
+        <p className="text-gray-500">Errore nella generazione delle pagine</p>
+      </div>
+    );
+  }
 
   // Calcola margini per ogni pagina
   const getPageMargins = (pageNumber: number) => {
@@ -85,6 +137,8 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
       {contentPages.map((contentPage, index) => {
         const pageNumber = startPageIndex + index;
         const margins = getPageMargins(pageNumber);
+        
+        console.log(`📄 Renderizzando pagina ${pageNumber} con ${contentPage.items.length} elementi`);
         
         return (
           <div
@@ -110,57 +164,60 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
                 className="absolute top-3 left-3 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-bold rounded shadow border border-blue-300"
                 style={{ zIndex: 100 }}
               >
-                Pagina {pageNumber} (Contenuto Menu)
+                Pagina {pageNumber} (Contenuto Menu - {contentPage.items.length} elementi)
               </div>
             )}
 
             {/* Contenuto della pagina */}
             <div className="page-content" style={{ height: '100%', position: 'relative' }}>
-              {contentPage.items.map((item, itemIndex) => (
-                <div key={`item-${itemIndex}`}>
-                  {item.type === 'category-title' && item.category && (
-                    <div
-                      style={getElementStyle(customLayout.elements.category, {
-                        fontWeight: 'bold',
-                        fontSize: '16pt',
-                        marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
-                        marginTop: `${customLayout.elements.category.margin.top}mm`
-                      })}
-                    >
-                      {item.category[`title_${language}`] || item.category.title}
-                      {item.isRepeatedTitle && ' (continua)'}
-                    </div>
-                  )}
+              {contentPage.items.map((item, itemIndex) => {
+                console.log(`🔧 Renderizzando elemento ${itemIndex}: ${item.type}`);
+                
+                return (
+                  <div key={`item-${itemIndex}`}>
+                    {item.type === 'category-title' && item.category && (
+                      <div
+                        style={getElementStyle(customLayout.elements.category, {
+                          fontWeight: 'bold',
+                          fontSize: '16pt',
+                          marginBottom: `${customLayout.spacing.categoryTitleBottomMargin}mm`,
+                          marginTop: `${customLayout.elements.category.margin.top}mm`
+                        })}
+                      >
+                        {item.category[`title_${language}`] || item.category.title}
+                        {item.isRepeatedTitle && ' (continua)'}
+                      </div>
+                    )}
 
-                  {item.type === 'category-notes' && item.notes && item.notes.length > 0 && (
-                    <div style={{ marginBottom: `${customLayout.categoryNotes.text.margin.bottom}mm` }}>
-                      {item.notes.map((note, noteIndex) => (
-                        <div
-                          key={noteIndex}
-                          style={getElementStyle(customLayout.categoryNotes.text, {
-                            fontSize: '10pt',
-                            marginBottom: '2mm'
-                          })}
-                        >
-                          {note[`text_${language}`] || note.text}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                    {item.type === 'category-notes' && item.notes && item.notes.length > 0 && (
+                      <div style={{ marginBottom: `${customLayout.categoryNotes.text.margin.bottom}mm` }}>
+                        {item.notes.map((note, noteIndex) => (
+                          <div
+                            key={noteIndex}
+                            style={getElementStyle(customLayout.categoryNotes.text, {
+                              fontSize: '10pt',
+                              marginBottom: '2mm'
+                            })}
+                          >
+                            {note[`text_${language}`] || note.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                  {item.type === 'product' && item.product && (
-                    <div style={{ marginBottom: `${customLayout.spacing.betweenProducts}mm` }}>
-                      {/* Utilizza lo schema prodotto dal layout */}
-                      <ProductRenderer 
-                        product={item.product} 
-                        layout={customLayout} 
-                        language={language}
-                        schema={customLayout.productSchema}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+                    {item.type === 'product' && item.product && (
+                      <div style={{ marginBottom: `${customLayout.spacing.betweenProducts}mm` }}>
+                        <ProductRenderer 
+                          product={item.product} 
+                          layout={customLayout} 
+                          language={language}
+                          schema={customLayout.productSchema}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* Riga servizio in fondo alla pagina */}
               <div
@@ -210,6 +267,14 @@ const Schema1ProductLayout: React.FC<{ product: Product; layout: PrintLayout; la
   layout, 
   language 
 }) => {
+  console.log(`📋 Schema1 per prodotto: ${product.title}`, {
+    hasDescription: !!product.description,
+    hasEngDescription: !!(product[`description_${language}`] && language !== 'it'),
+    hasAllergens: !!(product.allergens && product.allergens.length > 0),
+    hasFeatures: !!(product.features && product.features.length > 0),
+    hasMultiplePrices: !!product.has_multiple_prices
+  });
+
   return (
     <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
       {/* Prima colonna - 90% */}

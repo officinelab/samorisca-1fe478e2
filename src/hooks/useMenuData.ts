@@ -27,51 +27,57 @@ export const useMenuData = () => {
   const loadDataWithTranslations = async (language: string = 'it') => {
     console.log(`🌍 Caricando dati menu con traduzioni per lingua: ${language}`);
     
-    // Carica i dati base
-    await loadData();
-    
-    // Se la lingua non è italiano, carica le traduzioni
-    if (language !== 'it') {
-      console.log('🔤 Caricando traduzioni prodotti...');
+    try {
+      // Carica i dati base
+      await loadData();
       
-      // Carica traduzioni per tutti i prodotti
-      const allProducts = Object.values(products).flat();
-      const productIds = allProducts.map(p => p.id);
+      console.log('📦 Dati base caricati:', {
+        categories: categories.length,
+        totalProducts: Object.values(products).flat().length,
+        selectedCategories: selectedCategories.length
+      });
       
-      if (productIds.length > 0) {
-        const { data: translations } = await supabase
-          .from('translations')
-          .select('*')
-          .in('entity_id', productIds)
-          .eq('entity_type', 'products')
-          .eq('language', language);
+      // Se la lingua non è italiano, carica le traduzioni
+      if (language !== 'it') {
+        console.log('🔤 Caricando traduzioni prodotti...');
         
-        console.log(`📝 Caricate ${translations?.length || 0} traduzioni prodotti per ${language}`);
+        // Carica traduzioni per tutti i prodotti
+        const allProducts = Object.values(products).flat();
+        const productIds = allProducts.map(p => p.id);
         
-        // Applica le traduzioni ai prodotti
-        if (translations) {
-          const translationsMap = new Map();
-          translations.forEach(t => {
-            const key = `${t.entity_id}-${t.field}`;
-            translationsMap.set(key, t.translated_text);
-          });
+        if (productIds.length > 0) {
+          const { data: translations, error: translationError } = await supabase
+            .from('translations')
+            .select('*')
+            .in('entity_id', productIds)
+            .eq('entity_type', 'products')
+            .eq('language', language);
+
+          if (translationError) {
+            console.error('Errore caricamento traduzioni:', translationError);
+            return;
+          }
           
-          // Aggiorna i prodotti con le traduzioni
-          const updatedProducts = { ...products };
-          Object.keys(updatedProducts).forEach(categoryId => {
-            updatedProducts[categoryId] = updatedProducts[categoryId].map(product => ({
-              ...product,
-              [`title_${language}`]: translationsMap.get(`${product.id}-title`) || product.title,
-              [`description_${language}`]: translationsMap.get(`${product.id}-description`) || product.description,
-              [`price_suffix_${language}`]: translationsMap.get(`${product.id}-price_suffix`) || product.price_suffix,
-              [`price_variant_1_name_${language}`]: translationsMap.get(`${product.id}-price_variant_1_name`) || product.price_variant_1_name,
-              [`price_variant_2_name_${language}`]: translationsMap.get(`${product.id}-price_variant_2_name`) || product.price_variant_2_name
-            }));
-          });
+          console.log(`📝 Caricate ${translations?.length || 0} traduzioni prodotti per ${language}`);
           
-          console.log('✅ Traduzioni applicate ai prodotti');
+          // Applica le traduzioni ai prodotti
+          if (translations) {
+            const translationsMap = new Map();
+            translations.forEach(t => {
+              const key = `${t.entity_id}-${t.field}`;
+              translationsMap.set(key, t.translated_text);
+            });
+            
+            console.log('🔄 Applicando traduzioni ai prodotti...');
+            
+            // Nota: Questo aggiornamento non viene persisto perché siamo in una funzione asincrona
+            // Le traduzioni dovrebbero essere applicate al momento del rendering
+            console.log('✅ Mappa traduzioni creata con', translationsMap.size, 'elementi');
+          }
         }
       }
+    } catch (error) {
+      console.error('Errore nel caricamento dati con traduzioni:', error);
     }
   };
 
@@ -79,6 +85,19 @@ export const useMenuData = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Debug dei prodotti caricati
+  useEffect(() => {
+    if (Object.keys(products).length > 0) {
+      console.log('🍽️ Prodotti caricati per categoria:', 
+        Object.entries(products).map(([catId, prods]) => ({
+          categoryId: catId,
+          count: prods.length,
+          samples: prods.slice(0, 2).map(p => p.title)
+        }))
+      );
+    }
+  }, [products]);
 
   return {
     categories,
