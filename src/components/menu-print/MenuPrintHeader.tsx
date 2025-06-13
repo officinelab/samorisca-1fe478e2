@@ -26,7 +26,11 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
 
   const handleExportPdf = async () => {
     console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
-    await exportToPdf();
+    if (currentLayout) {
+      await exportToPdf(currentLayout);
+    } else {
+      console.error('Nessun layout disponibile per l\'esportazione');
+    }
   };
 
   return (
@@ -71,7 +75,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
         
         <Button 
           onClick={handleExportPdf}
-          disabled={isExporting}
+          disabled={isExporting || !currentLayout}
         >
           {isExporting ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

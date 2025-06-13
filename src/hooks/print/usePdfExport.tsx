@@ -33,7 +33,7 @@ const loadGoogleFont = async (fontName: string): Promise<string> => {
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
-  const { layouts } = useMenuLayouts();
+  const { layouts, forceRefresh } = useMenuLayouts();
 
   // Converte hex color in RGB per jsPDF
   const hexToRgb = (hex: string) => {
@@ -366,10 +366,14 @@ export const usePdfExport = () => {
   const exportToPdf = async () => {
     console.log('🎯 Inizio esportazione PDF vettoriale...');
     
+    // Forza il refresh dei dati prima di esportare
+    console.log('🔄 Aggiornamento dati layout...');
+    await forceRefresh();
+    
     setIsExporting(true);
     
     try {
-      // Prendi il layout corrente
+      // Prendi il layout corrente DOPO il refresh
       const currentLayout = layouts?.[0];
       if (!currentLayout) {
         toast.error('Nessun layout di stampa trovato');
@@ -377,6 +381,12 @@ export const usePdfExport = () => {
       }
       
       console.log('📄 Layout trovato:', currentLayout.name);
+      console.log('🔍 Configurazione logo:', {
+        alignment: currentLayout.cover?.logo?.alignment,
+        visible: currentLayout.cover?.logo?.visible,
+        imageUrl: currentLayout.cover?.logo?.imageUrl
+      });
+      console.log('📊 Layout completo:', JSON.stringify(currentLayout, null, 2));
       
       // Crea nuovo documento PDF
       const pdf = new jsPDF({
@@ -420,4 +430,5 @@ export const usePdfExport = () => {
     exportToPdf,
     isExporting
   };
+};
 };
