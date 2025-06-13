@@ -4,7 +4,7 @@ import { Category, Product, Allergen } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import CoverPage from '../shared/CoverPage';
 import AllergensPage from '../shared/AllergensPage';
-import MenuContentPages from '../preview/MenuContentPages';
+import PaginatedContent from '../pagination/PaginatedContent';
 
 type ClassicLayoutProps = {
   A4_WIDTH_MM: number;
@@ -36,9 +36,14 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
   // Debug log per verificare che il customLayout venga passato correttamente
   useEffect(() => {
     console.log("ClassicLayout - customLayout:", customLayout);
-    console.log("ClassicLayout - schema prodotto:", customLayout?.productSchema);
-    console.log("ClassicLayout - prodotti disponibili:", Object.keys(products).length);
-  }, [customLayout, products]);
+  }, [customLayout]);
+
+  // --- Calcolo il numero di pagine del menu dinamicamente ---
+  // Copertina (1), Vuota (2), poi pagine menu (>=3), infine allergeni (ultimo).
+  // Otteniamo il numero di pagine menu simulando la paginazione
+  // Per evitare import ciclici, lo ricaviamo a runtime da PaginatedContent che già fa le divisioni
+
+  // Lo facciamo gestire direttamente nei componenti figli tramite "startPageIndex" e badge
 
   return (
     <>
@@ -80,8 +85,8 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
         )}
       </div>
 
-      {/* Pagine del contenuto menu: utilizzano lo stesso sistema del PDF */}
-      <MenuContentPages
+      {/* Contenuto paginato: parte dalla pagina 3 */}
+      <PaginatedContent
         A4_WIDTH_MM={A4_WIDTH_MM}
         A4_HEIGHT_MM={A4_HEIGHT_MM}
         showPageBoundaries={showPageBoundaries}
@@ -111,7 +116,9 @@ const ClassicLayout: React.FC<ClassicLayoutProps> = ({
               className="absolute top-3 left-3 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-bold rounded shadow border border-blue-300"
               style={{zIndex: 100}}
             >
-              Pagina Allergeni
+              {/* Il numero è: 3 + numero pagine menu */}
+              {/* Ne ricaviamo il valore in PaginatedContent.tsx (vedi sotto) */}
+              Pagina <span id="allergens-page-number-label" />
             </div>
           )}
         </div>
