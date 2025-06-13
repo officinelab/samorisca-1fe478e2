@@ -2,32 +2,17 @@ import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { useMenuLayouts } from '@/hooks/useMenuLayouts';
-import { PrintLayout } from '@/types/printLayout';
+import { PrintLayout, PageMargins } from '@/types/printLayout';
 
 // Mappa i font comuni ai font disponibili in jsPDF
 const mapFontFamily = (fontFamily: string): string => {
-  // Pulisci il font name
   const cleanFont = fontFamily.replace(/['"]/g, '').toLowerCase();
   
-  // Mappa font comuni ai font standard di jsPDF
-  if (cleanFont.includes('times') || cleanFont.includes('serif') && !cleanFont.includes('sans')) {
+  if (cleanFont.includes('times') || (cleanFont.includes('serif') && !cleanFont.includes('sans'))) {
     return 'times';
   } else if (cleanFont.includes('courier') || cleanFont.includes('mono')) {
     return 'courier';
   } else {
-    // Default a helvetica per sans-serif e altri
-    return 'helvetica';
-  }
-};
-
-// Aggiungi font personalizzati se necessario
-const loadGoogleFont = async (fontName: string): Promise<string> => {
-  try {
-    // Per ora usiamo i font standard di jsPDF
-    // In futuro puoi aggiungere font personalizzati con jsPDF.addFont()
-    return fontName;
-  } catch (error) {
-    console.warn(`Font ${fontName} non disponibile, uso font di default`);
     return 'helvetica';
   }
 };
@@ -47,15 +32,79 @@ export const usePdfExport = () => {
 
   // Mappa font style per jsPDF
   const mapFontStyle = (fontStyle: string): string => {
-    switch (fontStyle) {
-      case 'bold': return 'bold';
-      case 'italic': return 'italic';
-      case 'bold italic': return 'bolditalic';
-      default: return 'normal';
+    const style = fontStyle?.toLowerCase() || '';
+    if (style.includes('bold') && style.includes('italic')) return 'bolditalic';
+    if (style.includes('bold')) return 'bold';
+    if (style.includes('italic')) return 'italic';
+    return 'normal';
+  };
+
+  // NUOVO: Funzione per ottenere i margini corretti per ogni tipo di pagina
+  const getPageMargins = (
+    layout: PrintLayout, 
+    pageType: 'cover' | 'content' | 'allergens',
+    pageNumber?: number
+  ): PageMargins => {
+    const page = layout.page;
+
+    switch (pageType) {
+      case 'cover':
+        // I margini della copertina sono sempre uguali
+        return {
+          marginTop: page.coverMarginTop,
+          marginRight: page.coverMarginRight,
+          marginBottom: page.coverMarginBottom,
+          marginLeft: page.coverMarginLeft
+        };
+
+      case 'content':
+        // Margini del contenuto: controlla se usare margini distinti per pagine pari/dispari
+        if (page.useDistinctMarginsForPages && pageNumber) {
+          const isOddPage = pageNumber % 2 === 1;
+          if (isOddPage && page.oddPages) {
+            return page.oddPages;
+          } else if (!isOddPage && page.evenPages) {
+            return page.evenPages;
+          }
+        }
+        // Margini standard per il contenuto
+        return {
+          marginTop: page.marginTop,
+          marginRight: page.marginRight,
+          marginBottom: page.marginBottom,
+          marginLeft: page.marginLeft
+        };
+
+      case 'allergens':
+        // Margini degli allergeni: controlla se usare margini distinti per pagine pari/dispari
+        if (page.useDistinctMarginsForAllergensPages && pageNumber) {
+          const isOddPage = pageNumber % 2 === 1;
+          if (isOddPage && page.allergensOddPages) {
+            return page.allergensOddPages;
+          } else if (!isOddPage && page.allergensEvenPages) {
+            return page.allergensEvenPages;
+          }
+        }
+        // Margini standard per gli allergeni
+        return {
+          marginTop: page.allergensMarginTop,
+          marginRight: page.allergensMarginRight,
+          marginBottom: page.allergensMarginBottom,
+          marginLeft: page.allergensMarginLeft
+        };
+
+      default:
+        // Fallback ai margini standard del contenuto
+        return {
+          marginTop: page.marginTop,
+          marginRight: page.marginRight,
+          marginBottom: page.marginBottom,
+          marginLeft: page.marginLeft
+        };
     }
   };
 
-  // Carica immagine e la aggiunge al PDF
+  // Funzione per il posizionamento del logo che rispetta l'allineamento
   const addImageToPdf = async (
     pdf: jsPDF,
     imageUrl: string,
@@ -64,7 +113,9 @@ export const usePdfExport = () => {
     maxWidthMm: number,
     maxHeightMm: number,
     alignment: 'left' | 'center' | 'right' = 'center',
-    pageWidth: number = 210
+    pageWidth: number = 210,
+    leftMargin: number = 0,
+    rightMargin: number = 0
   ): Promise<number> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -81,18 +132,35 @@ export const usePdfExport = () => {
           finalWidth = maxHeightMm * imgRatio;
         }
         
-        // Calcola posizione X basata sull'allineamento
+        // Calcola posizione X basata sull'allineamento corretto
         let finalX = x;
-        if (alignment === 'center') {
-          // Per centrare: usa il centro della pagina meno metà larghezza immagine
-          finalX = (pageWidth / 2) - (finalWidth / 2);
-        } else if (alignment === 'right') {
-          // Per allineare a destra: larghezza pagina meno margine destro meno larghezza immagine
-          finalX = pageWidth - x - finalWidth;
+        const contentWidth = pageWidth - leftMargin - rightMargin;
+        
+        console.log('🖼️ Logo positioning:', {
+          alignment,
+          pageWidth,
+          leftMargin,
+          rightMargin,
+          contentWidth,
+          finalWidth
+        });
+        
+        switch (alignment) {
+          case 'left':
+            finalX = leftMargin;
+            break;
+          case 'right':
+            finalX = pageWidth - rightMargin - finalWidth;
+            break;
+          case 'center':
+          default:
+            finalX = leftMargin + (contentWidth - finalWidth) / 2;
+            break;
         }
         
+        console.log('🖼️ Final logo position:', { finalX, y, finalWidth, finalHeight });
+        
         try {
-          // Aggiungi immagine al PDF
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
@@ -124,30 +192,90 @@ export const usePdfExport = () => {
     });
   };
 
+  // Funzione per il testo che rispetta l'allineamento
+  const addTextToPdf = (
+    pdf: jsPDF,
+    text: string,
+    fontSize: number,
+    fontFamily: string,
+    fontStyle: string,
+    fontColor: string,
+    alignment: 'left' | 'center' | 'right',
+    y: number,
+    pageWidth: number,
+    leftMargin: number,
+    rightMargin: number
+  ) => {
+    // Imposta stile testo
+    const color = hexToRgb(fontColor);
+    pdf.setTextColor(color.r, color.g, color.b);
+    pdf.setFontSize(fontSize);
+    
+    // Usa font personalizzati quando disponibili
+    const mappedFont = mapFontFamily(fontFamily);
+    const mappedStyle = mapFontStyle(fontStyle);
+    
+    try {
+      pdf.setFont(mappedFont, mappedStyle);
+    } catch (e) {
+      console.warn(`Font ${mappedFont} con stile ${mappedStyle} non disponibile, uso helvetica`);
+      pdf.setFont('helvetica', mappedStyle);
+    }
+    
+    // Calcola posizione X basata sull'allineamento corretto
+    let textX = leftMargin;
+    const contentWidth = pageWidth - leftMargin - rightMargin;
+    
+    switch (alignment) {
+      case 'left':
+        textX = leftMargin;
+        break;
+      case 'right':
+        textX = pageWidth - rightMargin;
+        break;
+      case 'center':
+      default:
+        textX = leftMargin + (contentWidth / 2);
+        break;
+    }
+    
+    console.log('📝 Text positioning:', {
+      text: text.substring(0, 20) + '...',
+      alignment,
+      textX,
+      y,
+      fontSize,
+      fontFamily: mappedFont
+    });
+    
+    // Aggiungi testo con allineamento corretto
+    pdf.text(text, textX, y, { align: alignment });
+    
+    return fontSize * 0.35; // Ritorna l'altezza approssimativa del testo
+  };
+
   // Genera la prima pagina di copertina con contenuto
   const generateCoverPage1 = async (pdf: jsPDF, layout: PrintLayout) => {
     const cover = layout.cover;
-    const margins = {
-      top: layout.page.coverMarginTop || 10,
-      right: layout.page.coverMarginRight || 10,
-      bottom: layout.page.coverMarginBottom || 10,
-      left: layout.page.coverMarginLeft || 10
-    };
+    // CORREZIONE: Usa la funzione getPageMargins per i margini della copertina
+    const margins = getPageMargins(layout, 'cover');
     
     const pageWidth = 210; // A4 width in mm
     const pageHeight = 297; // A4 height in mm
-    const contentWidth = pageWidth - margins.left - margins.right;
+    const contentWidth = pageWidth - margins.marginLeft - margins.marginRight;
     
-    let currentY = margins.top;
+    let currentY = margins.marginTop;
+    
+    console.log('📄 Cover page margins:', margins);
     
     // Logo
     if (cover.logo?.visible && cover.logo?.imageUrl) {
       currentY += cover.logo.marginTop || 0;
       
-      const logoMaxWidth = contentWidth * (cover.logo.maxWidth / 100);
-      const logoMaxHeight = (pageHeight - margins.top - margins.bottom) * (cover.logo.maxHeight / 100);
+      const logoMaxWidth = contentWidth * ((cover.logo.maxWidth || 80) / 100);
+      const logoMaxHeight = (pageHeight - margins.marginTop - margins.marginBottom) * ((cover.logo.maxHeight || 50) / 100);
       
-      console.log('🖼️ Logo config:', {
+      console.log('🖼️ Logo config before positioning:', {
         alignment: cover.logo.alignment,
         maxWidth: logoMaxWidth,
         maxHeight: logoMaxHeight,
@@ -158,12 +286,14 @@ export const usePdfExport = () => {
       const logoHeight = await addImageToPdf(
         pdf,
         cover.logo.imageUrl,
-        margins.left,
+        margins.marginLeft,
         currentY,
         logoMaxWidth,
         logoMaxHeight,
-        cover.logo.alignment,
-        pageWidth
+        cover.logo.alignment || 'center',
+        pageWidth,
+        margins.marginLeft,
+        margins.marginRight
       );
       
       currentY += logoHeight + (cover.logo.marginBottom || 0);
@@ -173,75 +303,39 @@ export const usePdfExport = () => {
     if (cover.title?.visible && cover.title?.menuTitle) {
       currentY += cover.title.margin?.top || 0;
       
-      // Imposta stile testo
-      const titleColor = hexToRgb(cover.title.fontColor || '#000000');
-      pdf.setTextColor(titleColor.r, titleColor.g, titleColor.b);
-      pdf.setFontSize(cover.title.fontSize || 22);
-      
-      // Gestisci font family
-      const fontFamily = mapFontFamily(cover.title.fontFamily || 'helvetica');
-      const fontStyle = mapFontStyle(cover.title.fontStyle || 'normal');
-      
-      try {
-        pdf.setFont(fontFamily, fontStyle);
-      } catch (e) {
-        console.warn(`Font ${fontFamily} con stile ${fontStyle} non disponibile, uso helvetica`);
-        pdf.setFont('helvetica', fontStyle);
-      }
-      
-      // Calcola posizione X basata sull'allineamento
-      let titleX = margins.left;
-      if (cover.title.alignment === 'center') {
-        titleX = pageWidth / 2;
-      } else if (cover.title.alignment === 'right') {
-        titleX = pageWidth - margins.right;
-      }
-      
-      // Aggiungi testo
-      pdf.text(
+      const titleHeight = addTextToPdf(
+        pdf,
         cover.title.menuTitle,
-        titleX,
+        cover.title.fontSize || 22,
+        cover.title.fontFamily || 'helvetica',
+        cover.title.fontStyle || 'normal',
+        cover.title.fontColor || '#000000',
+        cover.title.alignment || 'center',
         currentY,
-        { align: cover.title.alignment || 'center' }
+        pageWidth,
+        margins.marginLeft,
+        margins.marginRight
       );
       
-      currentY += (cover.title.fontSize || 22) * 0.35 + (cover.title.margin?.bottom || 0);
+      currentY += titleHeight + (cover.title.margin?.bottom || 0);
     }
     
     // Sottotitolo
     if (cover.subtitle?.visible && cover.subtitle?.menuSubtitle) {
       currentY += cover.subtitle.margin?.top || 0;
       
-      // Imposta stile testo
-      const subtitleColor = hexToRgb(cover.subtitle.fontColor || '#000000');
-      pdf.setTextColor(subtitleColor.r, subtitleColor.g, subtitleColor.b);
-      pdf.setFontSize(cover.subtitle.fontSize || 16);
-      
-      // Gestisci font family
-      const fontFamily = mapFontFamily(cover.subtitle.fontFamily || 'helvetica');
-      const fontStyle = mapFontStyle(cover.subtitle.fontStyle || 'normal');
-      
-      try {
-        pdf.setFont(fontFamily, fontStyle);
-      } catch (e) {
-        console.warn(`Font ${fontFamily} con stile ${fontStyle} non disponibile, uso helvetica`);
-        pdf.setFont('helvetica', fontStyle);
-      }
-      
-      // Calcola posizione X basata sull'allineamento
-      let subtitleX = margins.left;
-      if (cover.subtitle.alignment === 'center') {
-        subtitleX = pageWidth / 2;
-      } else if (cover.subtitle.alignment === 'right') {
-        subtitleX = pageWidth - margins.right;
-      }
-      
-      // Aggiungi testo
-      pdf.text(
+      addTextToPdf(
+        pdf,
         cover.subtitle.menuSubtitle,
-        subtitleX,
+        cover.subtitle.fontSize || 16,
+        cover.subtitle.fontFamily || 'helvetica',
+        cover.subtitle.fontStyle || 'normal',
+        cover.subtitle.fontColor || '#000000',
+        cover.subtitle.alignment || 'center',
         currentY,
-        { align: cover.subtitle.alignment || 'center' }
+        pageWidth,
+        margins.marginLeft,
+        margins.marginRight
       );
     }
   };
@@ -256,74 +350,73 @@ export const usePdfExport = () => {
   const generateContentPages = (pdf: jsPDF, layout: PrintLayout) => {
     pdf.addPage();
     
-    const margins = {
-      top: layout.page.marginTop || 5,
-      right: layout.page.marginRight || 40,
-      bottom: layout.page.marginBottom || 5,
-      left: layout.page.marginLeft || 40
-    };
+    // CORREZIONE: Usa la funzione getPageMargins per i margini del contenuto
+    // Per ora generiamo solo una pagina, quindi usiamo pageNumber = 3 (dopo le 2 pagine di copertina)
+    const margins = getPageMargins(layout, 'content', 3);
     
-    // Placeholder text
-    pdf.setTextColor(150, 150, 150);
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'normal');
+    console.log('📄 Content page margins:', margins);
     
-    const pageWidth = 210;
-    pdf.text(
+    // Placeholder text con font corretto
+    addTextToPdf(
+      pdf,
       'Pagina Contenuto Menu',
-      pageWidth / 2,
-      margins.top + 20,
-      { align: 'center' }
+      16,
+      'helvetica',
+      'normal',
+      '#666666',
+      'center',
+      margins.marginTop + 20,
+      210,
+      margins.marginLeft,
+      margins.marginRight
     );
     
-    pdf.setFontSize(12);
-    pdf.text(
+    addTextToPdf(
+      pdf,
       'Le pagine del menu verranno generate qui',
-      pageWidth / 2,
-      margins.top + 30,
-      { align: 'center' }
+      12,
+      'helvetica',
+      'normal',
+      '#666666',
+      'center',
+      margins.marginTop + 30,
+      210,
+      margins.marginLeft,
+      margins.marginRight
     );
+
+    // Mostra informazioni sui margini utilizzati
+    let debugY = margins.marginTop + 50;
     
-    // Esempio di come verranno applicati i margini degli elementi
-    if (layout.elements) {
-      pdf.setFontSize(10);
-      pdf.text(
-        'I margini degli elementi saranno:',
-        margins.left,
-        margins.top + 50
+    addTextToPdf(
+      pdf,
+      `Margini utilizzati: T:${margins.marginTop} R:${margins.marginRight} B:${margins.marginBottom} L:${margins.marginLeft}`,
+      10,
+      'helvetica',
+      'normal',
+      '#999999',
+      'left',
+      debugY,
+      210,
+      margins.marginLeft,
+      margins.marginRight
+    );
+
+    if (layout.page.useDistinctMarginsForPages) {
+      debugY += 12;
+      addTextToPdf(
+        pdf,
+        `Margini distinti per pagine pari/dispari: ATTIVI`,
+        10,
+        'helvetica',
+        'normal',
+        '#999999',
+        'left',
+        debugY,
+        210,
+        margins.marginLeft,
+        margins.marginRight
       );
-      
-      let y = margins.top + 60;
-      
-      // Mostra i margini configurati per ogni elemento
-      if (layout.elements.title) {
-        const titleMargins = layout.elements.title.margin || { top: 0, right: 0, bottom: 0, left: 0 };
-        pdf.text(
-          `Titolo prodotto: margini (${titleMargins.top}, ${titleMargins.right}, ${titleMargins.bottom}, ${titleMargins.left})`,
-          margins.left,
-          y
-        );
-        y += 10;
-      }
-      
-      if (layout.elements.description) {
-        const descMargins = layout.elements.description.margin || { top: 0, right: 0, bottom: 0, left: 0 };
-        pdf.text(
-          `Descrizione: margini (${descMargins.top}, ${descMargins.right}, ${descMargins.bottom}, ${descMargins.left})`,
-          margins.left,
-          y
-        );
-        y += 10;
-      }
-      
-      if (layout.elements.price) {
-        const priceMargins = layout.elements.price.margin || { top: 0, right: 0, bottom: 0, left: 0 };
-        pdf.text(
-          `Prezzo: margini (${priceMargins.top}, ${priceMargins.right}, ${priceMargins.bottom}, ${priceMargins.left})`,
-          margins.left,
-          y
-        );
-      }
     }
   };
 
@@ -331,48 +424,85 @@ export const usePdfExport = () => {
   const generateAllergensPage = (pdf: jsPDF, layout: PrintLayout) => {
     pdf.addPage();
     
-    const margins = {
-      top: layout.page.allergensMarginTop || 20,
-      right: layout.page.allergensMarginRight || 15,
-      bottom: layout.page.allergensMarginBottom || 20,
-      left: layout.page.allergensMarginLeft || 15
-    };
+    // CORREZIONE: Usa la funzione getPageMargins per i margini degli allergeni
+    // Pagina allergeni sarà la 4° pagina (dopo copertina + contenuto)
+    const margins = getPageMargins(layout, 'allergens', 4);
     
-    const pageWidth = 210;
-    let currentY = margins.top;
+    console.log('📄 Allergens page margins:', margins);
+    
+    let currentY = margins.marginTop;
     
     // Titolo allergeni
     if (layout.allergens?.title) {
-      const titleColor = hexToRgb(layout.allergens.title.fontColor || '#000000');
-      pdf.setTextColor(titleColor.r, titleColor.g, titleColor.b);
-      pdf.setFontSize(layout.allergens.title.fontSize || 18);
-      pdf.setFont('helvetica', mapFontStyle(layout.allergens.title.fontStyle || 'bold'));
-      
-      pdf.text(
+      const titleHeight = addTextToPdf(
+        pdf,
         layout.allergens.title.text || 'Allergeni e Intolleranze',
-        pageWidth / 2,
+        layout.allergens.title.fontSize || 18,
+        layout.allergens.title.fontFamily || 'helvetica',
+        layout.allergens.title.fontStyle || 'bold',
+        layout.allergens.title.fontColor || '#000000',
+        layout.allergens.title.alignment || 'center',
         currentY,
-        { align: 'center' }
+        210,
+        margins.marginLeft,
+        margins.marginRight
       );
       
-      currentY += 15;
+      currentY += titleHeight + 15;
     }
     
     // Placeholder per contenuto allergeni
-    pdf.setTextColor(150, 150, 150);
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    
-    pdf.text(
+    addTextToPdf(
+      pdf,
       'Le informazioni sugli allergeni verranno visualizzate qui',
-      pageWidth / 2,
+      12,
+      'helvetica',
+      'normal',
+      '#666666',
+      'center',
       currentY + 10,
-      { align: 'center' }
+      210,
+      margins.marginLeft,
+      margins.marginRight
     );
+
+    // Mostra informazioni sui margini utilizzati
+    let debugY = currentY + 30;
+    
+    addTextToPdf(
+      pdf,
+      `Margini allergeni: T:${margins.marginTop} R:${margins.marginRight} B:${margins.marginBottom} L:${margins.marginLeft}`,
+      10,
+      'helvetica',
+      'normal',
+      '#999999',
+      'left',
+      debugY,
+      210,
+      margins.marginLeft,
+      margins.marginRight
+    );
+
+    if (layout.page.useDistinctMarginsForAllergensPages) {
+      debugY += 12;
+      addTextToPdf(
+        pdf,
+        `Margini distinti allergeni per pagine pari/dispari: ATTIVI`,
+        10,
+        'helvetica',
+        'normal',
+        '#999999',
+        'left',
+        debugY,
+        210,
+        margins.marginLeft,
+        margins.marginRight
+      );
+    }
   };
 
   const exportToPdf = async (currentLayout?: PrintLayout) => {
-    console.log('🎯 Inizio esportazione PDF vettoriale...');
+    console.log('🎯 Inizio esportazione PDF con gestione completa margini...');
     
     if (!currentLayout) {
       toast.error('Nessun layout fornito per l\'esportazione');
@@ -380,10 +510,27 @@ export const usePdfExport = () => {
     }
     
     console.log('📄 Layout utilizzato:', currentLayout.name);
-    console.log('🔍 Configurazione logo:', {
-      alignment: currentLayout.cover?.logo?.alignment,
-      visible: currentLayout.cover?.logo?.visible,
-      imageUrl: currentLayout.cover?.logo?.imageUrl
+    console.log('🔍 Configurazione margini:', {
+      cover: {
+        top: currentLayout.page.coverMarginTop,
+        right: currentLayout.page.coverMarginRight,
+        bottom: currentLayout.page.coverMarginBottom,
+        left: currentLayout.page.coverMarginLeft
+      },
+      content: {
+        top: currentLayout.page.marginTop,
+        right: currentLayout.page.marginRight,
+        bottom: currentLayout.page.marginBottom,
+        left: currentLayout.page.marginLeft,
+        useDistinct: currentLayout.page.useDistinctMarginsForPages
+      },
+      allergens: {
+        top: currentLayout.page.allergensMarginTop,
+        right: currentLayout.page.allergensMarginRight,
+        bottom: currentLayout.page.allergensMarginBottom,
+        left: currentLayout.page.allergensMarginLeft,
+        useDistinct: currentLayout.page.useDistinctMarginsForAllergensPages
+      }
     });
     
     setIsExporting(true);
@@ -416,8 +563,8 @@ export const usePdfExport = () => {
       const fileName = `menu-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ PDF esportato con successo');
-      toast.success('PDF esportato con successo! (Testo vettoriale mantenuto)');
+      console.log('✅ PDF esportato con successo con tutti i margini corretti');
+      toast.success('PDF esportato con successo! (Margini, font e allineamento corretti)');
       
     } catch (error) {
       console.error('❌ Errore durante l\'esportazione PDF:', error);
