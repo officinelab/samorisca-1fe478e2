@@ -11,7 +11,7 @@ interface StyledTextConfig {
   maxWidth?: number;
 }
 
-// Add text with proper styling and wrapping
+// Add text with proper styling and wrapping - FINALE
 export const addStyledText = (
   pdf: jsPDF,
   text: string,
@@ -36,8 +36,9 @@ export const addStyledText = (
   // Handle text wrapping if maxWidth is provided
   if (config.maxWidth) {
     const lines = pdf.splitTextToSize(text, config.maxWidth);
-    // ✅ CORREZIONE: Line height corretto per jsPDF (pt to mm)
-    const lineHeight = config.fontSize * 0.353; // mm
+    
+    // ✅ CORREZIONE FINALE: Line height corretto per jsPDF (pt to mm)
+    const lineHeight = config.fontSize * 0.353; // mm - conversione pt to mm corretta
     
     lines.forEach((line: string, index: number) => {
       pdf.text(line, x, y + (index * lineHeight), { align: config.alignment || 'left' });
@@ -46,7 +47,8 @@ export const addStyledText = (
     return lines.length * lineHeight;
   } else {
     pdf.text(text, x, y, { align: config.alignment || 'left' });
-    // ✅ CORREZIONE: Return height corretto (pt to mm)
+    
+    // ✅ CORREZIONE FINALE: Return height corretto (pt to mm)
     return config.fontSize * 0.353; // Return approximate height in mm
   }
 };
