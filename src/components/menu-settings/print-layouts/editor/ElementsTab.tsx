@@ -122,6 +122,18 @@ const ElementsTab = ({
               </AccordionContent>
             </AccordionItem>
 
+            <AccordionItem value="suffix">
+              <AccordionTrigger>Suffisso</AccordionTrigger>
+              <AccordionContent>
+                <ElementEditor
+                  element={layout.elements.suffix}
+                  onChange={(field, value) => onElementChange("suffix", field, value)}
+                  onMarginChange={(field, value) => onElementMarginChange("suffix", field, value)}
+                  hideMarginControls={true}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
             <AccordionItem value="priceVariants">
               <AccordionTrigger>Varianti Prezzo</AccordionTrigger>
               <AccordionContent>

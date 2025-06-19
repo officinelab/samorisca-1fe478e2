@@ -21,14 +21,32 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
     ? product.allergens.map(allergen => allergen.number).join(', ') 
     : '';
 
-  // Format price with suffix
-  const formatPrice = () => {
+  // Format price with suffix using separate styling
+  const renderPriceWithSuffix = () => {
     if (!product.price_standard) return '';
-    let price = `€${product.price_standard.toFixed(2)}`;
+    
+    const basePrice = `€${product.price_standard.toFixed(2)}`;
+    
     if (product.has_price_suffix && product.price_suffix) {
-      price += ` ${product.price_suffix}`;
+      return (
+        <span>
+          {basePrice}
+          <span
+            style={{
+              fontFamily: elementsConfig.suffix.fontFamily,
+              fontSize: `${elementsConfig.suffix.fontSize}pt`,
+              color: elementsConfig.suffix.fontColor,
+              fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
+            }}
+          >
+            {` ${product.price_suffix}`}
+          </span>
+        </span>
+      );
     }
-    return price;
+    
+    return basePrice;
   };
 
   // Check if we should show English description
@@ -208,7 +226,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
                 marginLeft: `${elementsConfig.price.margin.left}mm`,
               }}
             >
-              {formatPrice()}
+              {renderPriceWithSuffix()}
             </div>
           )}
         </div>
