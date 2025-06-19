@@ -1,4 +1,3 @@
-
 // hooks/menu-content/useMenuPagination.ts
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
@@ -25,6 +24,7 @@ export const useMenuPagination = (
   layout: PrintLayout | null
 ) => {
   const A4_HEIGHT_MM = 297;
+  const SAFETY_MARGIN_MM = 10; // Margine di sicurezza aggiuntivo
 
   // Usa il sistema di pre-render per ottenere le misurazioni reali
   const { measurements, isLoading } = usePreRenderMeasurement(
@@ -54,8 +54,14 @@ export const useMenuPagination = (
       }
     }
 
-    const serviceLineHeight = measurements?.serviceLineHeight || 15;
-    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 5; // 5mm buffer
+    const serviceLineHeight = measurements?.serviceLineHeight || 20; // Default più alto
+    
+    // Calcola altezza disponibile con margine di sicurezza maggiore
+    const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
+    
+    console.log(`📐 Pagina ${pageNumber} - Altezza disponibile: ${totalHeight}mm (margini: T${topMargin} B${bottomMargin}, servizio: ${serviceLineHeight}mm, sicurezza: ${SAFETY_MARGIN_MM}mm)`);
+    
+    return totalHeight;
   };
 
   const createPages = (): PageContent[] => {
@@ -76,23 +82,26 @@ export const useMenuPagination = (
           categories: [...currentPageContent],
           serviceCharge: serviceCoverCharge
         });
+        console.log(`📄 Creata pagina ${currentPageNumber} con ${currentPageContent.length} categorie, altezza totale: ${currentPageHeight}mm`);
         currentPageNumber++;
         currentPageContent = [];
         currentPageHeight = 0;
       }
     };
 
-    categories.forEach(category => {
-      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40;
+    categories.forEach((category, categoryIndex) => {
+      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 50; // Default più alto
       const relatedNoteIds = categoryNotesRelations[category.id] || [];
       const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
-      const categoryNotesHeight = relatedNotes.reduce((sum, note) => 
-        sum + (measurements.categoryNoteHeights.get(note.id) || 20), 0
-      );
+      
+      // L'altezza categoria include già le note nel nuovo sistema
+      const totalCategoryHeaderHeight = categoryTitleHeight;
 
       const products = productsByCategory[category.id] || [];
-      let remainingProducts = [...products]; // Copia di tutti i prodotti da processare
+      let remainingProducts = [...products];
       let categoryHeaderAddedOnCurrentPage = false;
+
+      console.log(`📊 Categoria "${category.title}": ${products.length} prodotti, altezza header: ${totalCategoryHeaderHeight}mm`);
 
       // Continua finché ci sono prodotti rimanenti da processare
       while (remainingProducts.length > 0) {
@@ -101,17 +110,17 @@ export const useMenuPagination = (
 
         // Se non abbiamo ancora aggiunto l'header della categoria in questa pagina
         if (!categoryHeaderAddedOnCurrentPage) {
-          let categoryHeaderHeight = categoryTitleHeight + categoryNotesHeight;
+          let categoryHeaderHeight = totalCategoryHeaderHeight;
           
           // Aggiungi spacing tra categorie se c'è già contenuto nella pagina
           if (currentPageContent.length > 0) {
-            categoryHeaderHeight += layout?.spacing.betweenCategories || 0;
+            categoryHeaderHeight += layout?.spacing.betweenCategories || 15;
           }
 
           // Controlla se l'header della categoria può entrare in questa pagina
           const availableHeight = getAvailableHeight(currentPageNumber);
           if (tempHeight + categoryHeaderHeight > availableHeight && currentPageContent.length > 0) {
-            // L'header non entra, inizia una nuova pagina
+            console.log(`⚠️ Header categoria non entra (${tempHeight} + ${categoryHeaderHeight} > ${availableHeight}), nuova pagina`);
             addNewPage();
             tempHeight = 0;
           }
@@ -124,32 +133,33 @@ export const useMenuPagination = (
         // Prova ad aggiungere quanti più prodotti possibile in questa pagina
         for (let i = 0; i < remainingProducts.length; i++) {
           const product = remainingProducts[i];
-          const productHeight = measurements.productHeights.get(product.id) || 50;
+          const productHeight = measurements.productHeights.get(product.id) || 60; // Default più alto
           let requiredHeight = productHeight;
 
           // Aggiungi spacing tra prodotti (tranne per il primo prodotto nella categoria su questa pagina)
           if (currentCategoryProducts.length > 0) {
-            requiredHeight += layout?.spacing.betweenProducts || 0;
+            requiredHeight += layout?.spacing.betweenProducts || 5;
           }
 
           const availableHeight = getAvailableHeight(currentPageNumber);
           
-          // Controlla se questo prodotto può entrare nella pagina corrente
-          if (tempHeight + requiredHeight <= availableHeight) {
+          // Controlla con un margine di sicurezza extra del 5%
+          const safeRequiredHeight = requiredHeight * 1.05;
+          
+          if (tempHeight + safeRequiredHeight <= availableHeight) {
             // Il prodotto entra nella pagina
             currentCategoryProducts.push(product);
             tempHeight += requiredHeight;
           } else {
-            // Il prodotto non entra, fermiamo qui e il resto andrà nella pagina successiva
+            console.log(`⚠️ Prodotto "${product.title}" non entra (${tempHeight} + ${safeRequiredHeight} > ${availableHeight})`);
             break;
           }
         }
 
         // Se non siamo riusciti ad aggiungere nemmeno un prodotto, forza l'aggiunta del primo
-        // per evitare loop infiniti (può succedere con prodotti molto alti)
         if (currentCategoryProducts.length === 0 && remainingProducts.length > 0) {
           currentCategoryProducts.push(remainingProducts[0]);
-          console.warn(`Prodotto "${remainingProducts[0].title}" troppo alto per la pagina, forzato comunque`);
+          console.warn(`⚠️ Prodotto "${remainingProducts[0].title}" troppo alto per la pagina, forzato comunque`);
         }
 
         // Aggiungi la sezione categoria alla pagina corrente
@@ -168,10 +178,13 @@ export const useMenuPagination = (
 
           // Rimuovi i prodotti processati dalla lista dei rimanenti
           remainingProducts = remainingProducts.slice(currentCategoryProducts.length);
+          
+          console.log(`✅ Aggiunti ${currentCategoryProducts.length} prodotti, rimanenti: ${remainingProducts.length}`);
         }
 
         // Se ci sono ancora prodotti rimanenti, dovranno andare in una nuova pagina
         if (remainingProducts.length > 0) {
+          console.log(`📄 Prodotti rimanenti richiedono nuova pagina`);
           addNewPage();
           categoryHeaderAddedOnCurrentPage = false; // Reset per la nuova pagina
         }
@@ -181,10 +194,10 @@ export const useMenuPagination = (
     // Aggiungi l'ultima pagina se contiene contenuto
     addNewPage();
 
-    console.log(`Paginazione completata: ${pages.length} pagine generate`);
+    console.log(`✅ Paginazione completata: ${pages.length} pagine generate`);
     pages.forEach((page, index) => {
       const totalProducts = page.categories.reduce((sum, cat) => sum + cat.products.length, 0);
-      console.log(`Pagina ${page.pageNumber}: ${page.categories.length} categorie, ${totalProducts} prodotti`);
+      console.log(`📄 Pagina ${page.pageNumber}: ${page.categories.length} sezioni categoria, ${totalProducts} prodotti totali`);
     });
 
     return pages;

@@ -69,241 +69,82 @@ export const usePreRenderMeasurement = (
 
       // Misura ogni categoria
       for (const category of categories) {
-        // Renderizza e misura il titolo categoria
-        const categoryDiv = document.createElement('div');
-        categoryDiv.innerHTML = `
-          <div class="category-title" style="
-            font-size: ${layout.elements.category.fontSize}pt;
-            font-family: ${layout.elements.category.fontFamily};
-            color: ${layout.elements.category.fontColor};
-            font-weight: ${layout.elements.category.fontStyle === 'bold' ? 'bold' : 'normal'};
-            font-style: ${layout.elements.category.fontStyle === 'italic' ? 'italic' : 'normal'};
-            text-align: ${layout.elements.category.alignment};
-            text-transform: uppercase;
-            margin-top: ${layout.elements.category.margin.top}mm;
-            margin-right: ${layout.elements.category.margin.right}mm;
-            margin-bottom: ${layout.spacing.categoryTitleBottomMargin}mm;
-            margin-left: ${layout.elements.category.margin.left}mm;
-            line-height: 1.2;
-          ">
-            ${category.title}
-          </div>
-        `;
-        
+        // Renderizza il componente reale per misurazioni accurate
+        const categoryWrapper = document.createElement('div');
         container.innerHTML = '';
-        container.appendChild(categoryDiv);
+        container.appendChild(categoryWrapper);
         
-        // Forza il browser a calcolare il layout
-        await new Promise(resolve => setTimeout(resolve, 0));
+        // Crea un mini React root per renderizzare il componente reale
+        const { createRoot } = await import('react-dom/client');
+        const root = createRoot(categoryWrapper);
         
-        const categoryHeight = categoryDiv.getBoundingClientRect().height / MM_TO_PX;
-        results.categoryHeights.set(category.id, categoryHeight);
-
-        // Misura le note categoria
+        // Note della categoria
         const relatedNoteIds = categoryNotesRelations[category.id] || [];
         const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
         
-        for (const note of relatedNotes) {
-          const noteDiv = document.createElement('div');
-          noteDiv.innerHTML = `
-            <div class="category-note" style="display: flex; align-items: start; gap: 8px;">
-              ${note.icon_url ? `<img src="${note.icon_url}" style="width: ${layout.categoryNotes.icon.iconSize}px; height: ${layout.categoryNotes.icon.iconSize}px; flex-shrink: 0;">` : ''}
-              <div style="flex: 1;">
-                <div style="
-                  font-size: ${layout.categoryNotes.title.fontSize}pt;
-                  font-family: ${layout.categoryNotes.title.fontFamily};
-                  color: ${layout.categoryNotes.title.fontColor};
-                  font-weight: ${layout.categoryNotes.title.fontStyle === 'bold' ? 'bold' : 'normal'};
-                  font-style: ${layout.categoryNotes.title.fontStyle === 'italic' ? 'italic' : 'normal'};
-                  text-align: ${layout.categoryNotes.title.alignment};
-                  margin-top: ${layout.categoryNotes.title.margin.top}mm;
-                  margin-right: ${layout.categoryNotes.title.margin.right}mm;
-                  margin-bottom: ${layout.categoryNotes.title.margin.bottom}mm;
-                  margin-left: ${layout.categoryNotes.title.margin.left}mm;
-                ">
-                  ${note.title}
-                </div>
-                <div style="
-                  font-size: ${layout.categoryNotes.text.fontSize}pt;
-                  font-family: ${layout.categoryNotes.text.fontFamily};
-                  color: ${layout.categoryNotes.text.fontColor};
-                  font-weight: ${layout.categoryNotes.text.fontStyle === 'bold' ? 'bold' : 'normal'};
-                  font-style: ${layout.categoryNotes.text.fontStyle === 'italic' ? 'italic' : 'normal'};
-                  text-align: ${layout.categoryNotes.text.alignment};
-                  margin-top: ${layout.categoryNotes.text.margin.top}mm;
-                  margin-right: ${layout.categoryNotes.text.margin.right}mm;
-                  margin-bottom: ${layout.categoryNotes.text.margin.bottom}mm;
-                  margin-left: ${layout.categoryNotes.text.margin.left}mm;
-                ">
-                  ${note.text}
-                </div>
-              </div>
-            </div>
-          `;
-          
-          container.innerHTML = '';
-          container.appendChild(noteDiv);
-          await new Promise(resolve => setTimeout(resolve, 0));
-          
-          const noteHeight = noteDiv.getBoundingClientRect().height / MM_TO_PX;
-          results.categoryNoteHeights.set(note.id, noteHeight);
-        }
+        // Renderizza il CategoryRenderer reale
+        await new Promise<void>(resolve => {
+          root.render(
+            <CategoryRenderer
+              category={category}
+              notes={relatedNotes}
+              layout={layout}
+              isRepeatedTitle={false}
+            />
+          );
+          setTimeout(resolve, 50); // Attendi il rendering
+        });
+        
+        // Misura l'altezza totale della categoria (titolo + note)
+        const categoryTotalHeight = categoryWrapper.getBoundingClientRect().height / MM_TO_PX;
+        results.categoryHeights.set(category.id, categoryTotalHeight);
+        
+        // Misura anche le singole note per riferimento
+        relatedNotes.forEach((note, index) => {
+          // Approssima l'altezza di ogni nota basandosi sul totale
+          const estimatedNoteHeight = 10; // Default 10mm per nota
+          results.categoryNoteHeights.set(note.id, estimatedNoteHeight);
+        });
+        
+        root.unmount();
 
         // Misura ogni prodotto
         const products = productsByCategory[category.id] || [];
         for (const product of products) {
-          const productDiv = document.createElement('div');
-          
-          // Costruisci HTML del prodotto seguendo lo schema 1 (90% + 10%)
-          const allergenNumbers = product.allergens && product.allergens.length > 0 
-            ? product.allergens.map(allergen => allergen.number).join(', ') 
-            : '';
-          
-          const hasEnglishDesc = product.description_en && 
-                                product.description_en !== product.description && 
-                                layout.elements.descriptionEng?.visible !== false;
-
-          productDiv.innerHTML = `
-            <div class="product-item" style="display: flex; gap: 8px;">
-              <div style="flex: 1; width: 90%;">
-                <div style="
-                  font-size: ${layout.elements.title.fontSize}pt;
-                  font-family: ${layout.elements.title.fontFamily};
-                  color: ${layout.elements.title.fontColor};
-                  font-weight: ${layout.elements.title.fontStyle === 'bold' ? 'bold' : 'normal'};
-                  font-style: ${layout.elements.title.fontStyle === 'italic' ? 'italic' : 'normal'};
-                  text-align: ${layout.elements.title.alignment};
-                  margin-top: ${layout.elements.title.margin.top}mm;
-                  margin-right: ${layout.elements.title.margin.right}mm;
-                  margin-bottom: ${layout.elements.title.margin.bottom}mm;
-                  margin-left: ${layout.elements.title.margin.left}mm;
-                  line-height: 1.3;
-                ">
-                  ${product.title}
-                </div>
-                
-                ${product.description ? `
-                  <div style="
-                    font-size: ${layout.elements.description.fontSize}pt;
-                    font-family: ${layout.elements.description.fontFamily};
-                    color: ${layout.elements.description.fontColor};
-                    font-weight: ${layout.elements.description.fontStyle === 'bold' ? 'bold' : 'normal'};
-                    font-style: ${layout.elements.description.fontStyle === 'italic' ? 'italic' : 'normal'};
-                    text-align: ${layout.elements.description.alignment};
-                    margin-top: ${layout.elements.description.margin.top}mm;
-                    margin-right: ${layout.elements.description.margin.right}mm;
-                    margin-bottom: ${layout.elements.description.margin.bottom}mm;
-                    margin-left: ${layout.elements.description.margin.left}mm;
-                    line-height: 1.4;
-                  ">
-                    ${product.description}
-                  </div>
-                ` : ''}
-                
-                ${hasEnglishDesc ? `
-                  <div style="
-                    font-size: ${layout.elements.descriptionEng.fontSize}pt;
-                    font-family: ${layout.elements.descriptionEng.fontFamily};
-                    color: ${layout.elements.descriptionEng.fontColor};
-                    font-weight: ${layout.elements.descriptionEng.fontStyle === 'bold' ? 'bold' : 'normal'};
-                    font-style: ${layout.elements.descriptionEng.fontStyle === 'italic' ? 'italic' : 'normal'};
-                    text-align: ${layout.elements.descriptionEng.alignment};
-                    margin-top: ${layout.elements.descriptionEng.margin.top}mm;
-                    margin-right: ${layout.elements.descriptionEng.margin.right}mm;
-                    margin-bottom: ${layout.elements.descriptionEng.margin.bottom}mm;
-                    margin-left: ${layout.elements.descriptionEng.margin.left}mm;
-                    line-height: 1.4;
-                  ">
-                    ${product.description_en}
-                  </div>
-                ` : ''}
-                
-                ${allergenNumbers ? `
-                  <div style="
-                    font-size: ${layout.elements.allergensList.fontSize}pt;
-                    font-family: ${layout.elements.allergensList.fontFamily};
-                    color: ${layout.elements.allergensList.fontColor};
-                    font-weight: ${layout.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal'};
-                    font-style: ${layout.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal'};
-                    text-align: ${layout.elements.allergensList.alignment};
-                    margin-top: ${layout.elements.allergensList.margin.top}mm;
-                    margin-right: ${layout.elements.allergensList.margin.right}mm;
-                    margin-bottom: ${layout.elements.allergensList.margin.bottom}mm;
-                    margin-left: ${layout.elements.allergensList.margin.left}mm;
-                    line-height: 1.5;
-                  ">
-                    Allergeni: ${allergenNumbers}
-                  </div>
-                ` : ''}
-                
-                ${product.features && product.features.length > 0 ? `
-                  <div style="
-                    display: flex;
-                    align-items: center;
-                    gap: ${layout.elements.productFeatures.iconSpacing}px;
-                    margin-top: ${layout.elements.productFeatures.marginTop}mm;
-                    margin-bottom: ${layout.elements.productFeatures.marginBottom}mm;
-                  ">
-                    ${product.features.map(feature => 
-                      feature.icon_url ? `<img src="${feature.icon_url}" style="width: ${layout.elements.productFeatures.iconSize}px; height: ${layout.elements.productFeatures.iconSize}px;">` : ''
-                    ).join('')}
-                  </div>
-                ` : ''}
-                
-                ${product.has_multiple_prices && (product.price_variant_1_name || product.price_variant_2_name) ? `
-                  <div style="
-                    font-size: ${layout.elements.priceVariants.fontSize}pt;
-                    font-family: ${layout.elements.priceVariants.fontFamily};
-                    color: ${layout.elements.priceVariants.fontColor};
-                    font-weight: ${layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal'};
-                    font-style: ${layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal'};
-                    text-align: ${layout.elements.priceVariants.alignment};
-                    margin-top: ${layout.elements.priceVariants.margin.top}mm;
-                    margin-right: ${layout.elements.priceVariants.margin.right}mm;
-                    margin-bottom: ${layout.elements.priceVariants.margin.bottom}mm;
-                    margin-left: ${layout.elements.priceVariants.margin.left}mm;
-                    line-height: 1.5;
-                  ">
-                    ${[
-                      product.price_variant_1_name ? `${product.price_variant_1_name}: €${product.price_variant_1_value?.toFixed(2)}` : '',
-                      product.price_variant_2_name ? `${product.price_variant_2_name}: €${product.price_variant_2_value?.toFixed(2)}` : ''
-                    ].filter(Boolean).join(' • ')}
-                  </div>
-                ` : ''}
-              </div>
-              
-              <div style="flex-shrink: 0; width: 10%;">
-                ${product.price_standard ? `
-                  <div style="
-                    font-size: ${layout.elements.price.fontSize}pt;
-                    font-family: ${layout.elements.price.fontFamily};
-                    color: ${layout.elements.price.fontColor};
-                    font-weight: ${layout.elements.price.fontStyle === 'bold' ? 'bold' : 'normal'};
-                    font-style: ${layout.elements.price.fontStyle === 'italic' ? 'italic' : 'normal'};
-                    text-align: ${layout.elements.price.alignment};
-                    margin-top: ${layout.elements.price.margin.top}mm;
-                    margin-right: ${layout.elements.price.margin.right}mm;
-                    margin-bottom: ${layout.elements.price.margin.bottom}mm;
-                    margin-left: ${layout.elements.price.margin.left}mm;
-                  ">
-                    €${product.price_standard.toFixed(2)}${product.has_price_suffix && product.price_suffix ? ` ${product.price_suffix}` : ''}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `;
-          
+          const productWrapper = document.createElement('div');
+          productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
           container.innerHTML = '';
-          container.appendChild(productDiv);
-          await new Promise(resolve => setTimeout(resolve, 0));
+          container.appendChild(productWrapper);
           
-          const productHeight = productDiv.getBoundingClientRect().height / MM_TO_PX;
-          results.productHeights.set(product.id, productHeight);
+          const productRoot = createRoot(productWrapper);
+          
+          // Renderizza il ProductRenderer reale
+          await new Promise<void>(resolve => {
+            productRoot.render(
+              <ProductRenderer
+                product={product}
+                layout={layout}
+                isLast={false}
+              />
+            );
+            setTimeout(resolve, 50); // Attendi il rendering
+          });
+          
+          // Misura l'altezza reale inclusi tutti gli stili CSS
+          const productHeight = productWrapper.getBoundingClientRect().height / MM_TO_PX;
+          
+          // Aggiungi un buffer di sicurezza del 10% per gestire variazioni
+          const safeProductHeight = productHeight * 1.1;
+          
+          results.productHeights.set(product.id, safeProductHeight);
+          
+          productRoot.unmount();
         }
       }
 
-      // Misura la linea del servizio
+      // Misura la linea del servizio con stili reali
       const serviceDiv = document.createElement('div');
+      serviceDiv.className = 'flex-shrink-0 border-t pt-2';
       serviceDiv.innerHTML = `
         <div style="
           font-size: ${layout.servicePrice.fontSize}pt;
@@ -314,8 +155,9 @@ export const usePreRenderMeasurement = (
           text-align: ${layout.servicePrice.alignment};
           margin-top: ${layout.servicePrice.margin.top}mm;
           margin-bottom: ${layout.servicePrice.margin.bottom}mm;
-          border-top: 1px solid #ccc;
+          line-height: 1.5;
           padding-top: 8px;
+          border-top: 1px solid #e5e7eb;
         ">
           Servizio e Coperto = €${serviceCoverCharge.toFixed(2)}
         </div>
@@ -323,12 +165,20 @@ export const usePreRenderMeasurement = (
       
       container.innerHTML = '';
       container.appendChild(serviceDiv);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 10));
       
-      results.serviceLineHeight = serviceDiv.getBoundingClientRect().height / MM_TO_PX;
+      // Aggiungi buffer anche per la linea servizio
+      results.serviceLineHeight = (serviceDiv.getBoundingClientRect().height / MM_TO_PX) + 5; // +5mm di buffer
 
       setMeasurements(results);
       setIsLoading(false);
+      
+      console.log('📏 Misurazioni complete:', {
+        categorie: results.categoryHeights.size,
+        prodotti: results.productHeights.size,
+        note: results.categoryNoteHeights.size,
+        serviceLineHeight: results.serviceLineHeight
+      });
     };
 
     measureElements();
