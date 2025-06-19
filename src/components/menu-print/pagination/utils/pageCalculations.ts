@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { Category, Product } from "@/types/database";
 
@@ -205,5 +206,3 @@ export const measureElementHeight = (element: HTMLElement): number => {
   
   return rect.height + marginTop + marginBottom;
 };
-
-/**
