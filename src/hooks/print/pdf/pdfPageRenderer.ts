@@ -1,9 +1,8 @@
-
 import jsPDF from 'jspdf';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import { addCategoryToPdf, addCategoryNotesToPdf, addProductToPdf, addServiceChargeToPdf } from './menuContentRenderer';
+import { addCategoryToPdf, addCategoryNotesToPdf, addProductToPdf, addServiceChargeToPdf } from './renderers/menuContentRenderer';
 
 interface PageContent {
   pageNumber: number;

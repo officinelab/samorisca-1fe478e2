@@ -1,6 +1,5 @@
-
 import jsPDF from 'jspdf';
-import { mapFontFamily, mapFontStyle, hexToRgb } from '../utils/fontUtils';
+import { mapFontFamily, mapFontStyle, hexToRgb } from '../utils/pdfUtils';
 
 // Function for adding text with proper styling
 export const addTextToPdf = (
