@@ -1,5 +1,6 @@
+
 import { useState, useCallback } from "react";
-import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
+import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
