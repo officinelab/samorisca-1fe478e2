@@ -1,6 +1,6 @@
 // hooks/print/usePreRenderMeasurement.tsx
-import { useRef, useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useRef, useEffect, useState } from 'react';
+import ReactDOM from 'react-dom/client';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
@@ -75,8 +75,7 @@ export const usePreRenderMeasurement = (
         container.appendChild(categoryWrapper);
         
         // Crea un mini React root per renderizzare il componente reale
-        const { createRoot } = await import('react-dom/client');
-        const root = createRoot(categoryWrapper);
+        const root = ReactDOM.createRoot(categoryWrapper);
         
         // Note della categoria
         const relatedNoteIds = categoryNotesRelations[category.id] || [];
@@ -108,57 +107,57 @@ export const usePreRenderMeasurement = (
         
         root.unmount();
 
-        // Misura ogni prodotto
-        const products = productsByCategory[category.id] || [];
-        for (let i = 0; i < products.length; i++) {
-          const product = products[i];
-          const isLast = i === products.length - 1;
-          
-          const productWrapper = document.createElement('div');
-          // Applica il marginBottom solo se non è l'ultimo prodotto
-          if (!isLast) {
-            productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
-          }
-          container.innerHTML = '';
-          container.appendChild(productWrapper);
-          
-          const productRoot = createRoot(productWrapper);
-          
-          // Renderizza il ProductRenderer reale
-          await new Promise<void>(resolve => {
-            productRoot.render(
-              <ProductRenderer
-                product={product}
-                layout={layout}
-                isLast={isLast}
-              />
-            );
-            setTimeout(resolve, 50); // Attendi il rendering
-          });
-          
-          // Misura l'altezza reale inclusi tutti gli stili CSS
-          const rect = productWrapper.getBoundingClientRect();
-          let productHeight = rect.height / MM_TO_PX;
-          
-          // Se non è l'ultimo prodotto, l'altezza include già il marginBottom
-          // Se è l'ultimo, non c'è margin
-          
-          // Log dettagliato per debug
-          console.log(`📏 Prodotto "${product.title}":`, {
-            heightPx: rect.height,
-            heightMm: productHeight,
-            isLast,
-            hasMarginBottom: !isLast,
-            marginBottom: !isLast ? layout.spacing.betweenProducts : 0
-          });
-          
-          // Aggiungi un buffer di sicurezza più piccolo (5% invece del 10%)
-          const safeProductHeight = productHeight * 1.05;
-          
-          results.productHeights.set(product.id, safeProductHeight);
-          
-          productRoot.unmount();
+      // Misura ogni prodotto
+      const products = productsByCategory[category.id] || [];
+      for (let i = 0; i < products.length; i++) {
+        const product = products[i];
+        const isLast = i === products.length - 1;
+        
+        const productWrapper = document.createElement('div');
+        // Applica il marginBottom solo se non è l'ultimo prodotto
+        if (!isLast) {
+          productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
         }
+        container.innerHTML = '';
+        container.appendChild(productWrapper);
+        
+                  const productRoot = ReactDOM.createRoot(productWrapper);
+        
+        // Renderizza il ProductRenderer reale
+        await new Promise<void>(resolve => {
+          productRoot.render(
+            <ProductRenderer
+              product={product}
+              layout={layout}
+              isLast={isLast}
+            />
+          );
+          setTimeout(resolve, 50); // Attendi il rendering
+        });
+        
+        // Misura l'altezza reale inclusi tutti gli stili CSS
+        const rect = productWrapper.getBoundingClientRect();
+        let productHeight = rect.height / MM_TO_PX;
+        
+        // Se non è l'ultimo prodotto, l'altezza include già il marginBottom
+        // Se è l'ultimo, non c'è margin
+        
+        // Log dettagliato per debug
+        console.log('📏 Prodotto "' + product.title + '":', {
+          heightPx: rect.height,
+          heightMm: productHeight,
+          isLast,
+          hasMarginBottom: !isLast,
+          marginBottom: !isLast ? layout.spacing.betweenProducts : 0
+        });
+        
+        // Aggiungi un buffer di sicurezza più piccolo (5% invece del 10%)
+        const safeProductHeight = productHeight * 1.05;
+        
+        results.productHeights.set(product.id, safeProductHeight);
+        
+        productRoot.unmount();
+      }
       }
 
       // Misura la linea del servizio esattamente come viene renderizzata
@@ -167,7 +166,7 @@ export const usePreRenderMeasurement = (
       container.appendChild(serviceWrapper);
       
       // Renderizza il componente reale del servizio
-      const serviceRoot = createRoot(serviceWrapper);
+      const serviceRoot = ReactDOM.createRoot(serviceWrapper);
       
       await new Promise<void>(resolve => {
         serviceRoot.render(
