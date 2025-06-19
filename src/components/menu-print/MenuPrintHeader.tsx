@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Settings, Download, Eye, EyeOff } from "lucide-react";
-import { PrintLayout } from "@/types/printLayout";
-import { toast } from "@/components/ui/sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Printer, FileDown, Eye, EyeOff, Settings, Loader2 } from "lucide-react";
+import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { usePdfExport } from "@/hooks/print/usePdfExport";
+import { PrintLayout } from "@/types/printLayout";
 
 interface MenuPrintHeaderProps {
   showMargins: boolean;
@@ -12,7 +13,6 @@ interface MenuPrintHeaderProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
   currentLayout?: PrintLayout;
-  menuPages?: any[];
 }
 
 const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
@@ -20,84 +20,72 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   setShowMargins,
   isSettingsOpen,
   setIsSettingsOpen,
-  currentLayout,
-  menuPages = []
+  currentLayout
 }) => {
   const { exportToPdf, isExporting } = usePdfExport();
 
   const handleExportPdf = async () => {
-    console.log('🎯 Pulsante Salva PDF cliccato');
-    if (currentLayout && menuPages && menuPages.length > 0) {
-      await exportToPdf({
-        layout: currentLayout,
-        menuPages: menuPages,
-        businessInfo: {
-          name: currentLayout.cover?.title?.menuTitle || "Menu",
-          subtitle: currentLayout.cover?.subtitle?.menuSubtitle,
-          logo: currentLayout.cover?.logo?.imageUrl
-        }
-      });
+    console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
+    if (currentLayout) {
+      await exportToPdf(currentLayout);
     } else {
-      console.error('Layout o pagine non disponibili:', {
-        hasLayout: !!currentLayout,
-        pagesCount: menuPages?.length || 0
-      });
-      if (!menuPages || menuPages.length === 0) {
-        toast.error('Attendere il caricamento delle pagine prima di esportare');
-      }
+      console.error('Nessun layout disponibile per l\'esportazione');
     }
   };
 
   return (
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">Anteprima Stampa Menu</h1>
-            {currentLayout && (
-              <span className="text-sm text-muted-foreground">
-                Layout: {currentLayout.name}
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowMargins(!showMargins)}
-              className="flex items-center gap-2"
-            >
-              {showMargins ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {showMargins ? 'Nascondi Margini' : 'Mostra Margini'}
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Impostazioni
-            </Button>
-            
-            <Button
-              onClick={handleExportPdf}
-              disabled={isExporting || !currentLayout || menuPages.length === 0}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              {isExporting ? 'Generazione...' : 'Salva PDF'}
-            </Button>
-          </div>
+    <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
+      <div className="flex items-center justify-between p-6">
+        <div>
+          <h1 className="text-2xl font-bold">Stampa Menu</h1>
+          <p className="text-muted-foreground">
+            Gestisci la stampa e il salvataggio del menu in formato PDF
+          </p>
         </div>
         
-        {menuPages.length === 0 && (
-          <div className="mt-2 text-sm text-yellow-600">
-            Attendere il caricamento delle pagine del menu...
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Settings className="w-4 h-4 mr-2" />
+                Impostazioni Stampa
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Impostazioni Layout di Stampa</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4">
+                <PrintLayoutsManager />
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Button
+            variant={showMargins ? "default" : "outline"}
+            onClick={() => setShowMargins(!showMargins)}
+          >
+            {showMargins ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+            {showMargins ? "Nascondi" : "Mostra"} Margini
+          </Button>
+          
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="w-4 h-4 mr-2" />
+            Stampa
+          </Button>
+          
+          <Button 
+            onClick={handleExportPdf}
+            disabled={isExporting || !currentLayout}
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <FileDown className="w-4 h-4 mr-2" />
+            )}
+            {isExporting ? 'Generazione...' : 'Salva PDF'}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
@@ -8,18 +7,13 @@ import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
-  layoutRefreshKey?: number;
-  onPagesCalculated?: (pages: any[]) => void;
+  layoutRefreshKey?: number; // Opzionale, passato dal componente padre
 }
 
-const MenuContentPages: React.FC<MenuContentPagesProps> = ({ 
-  showMargins, 
-  layoutRefreshKey = 0,
-  onPagesCalculated 
-}) => {
+const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layoutRefreshKey = 0 }) => {
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
   
-  // The total refresh key is the sum of the two keys
+  // Il refresh totale è la somma delle due chiavi
   const totalRefreshKey = layoutRefreshKey + localRefreshKey;
   
   const { data, isLoading: isLoadingData, error } = useMenuContentData();
@@ -32,7 +26,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
     activeLayout
   } = data;
 
-  // Use the totalRefreshKey to force re-creation of the pagination hook
+  // Usa il totalRefreshKey per forzare la re-creazione del hook di paginazione
   const paginationKey = `${totalRefreshKey}-${activeLayout?.id || 'no-layout'}`;
   
   const { createPages, isLoadingMeasurements } = useMenuPagination(
@@ -44,11 +38,11 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
     activeLayout
   );
 
-  // Listen for layout update events
+  // Ascolta gli eventi di aggiornamento layout
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
       console.log('📐 MenuContentPages: Layout aggiornato, forzo re-render locale...', event.detail);
-      // Force local re-render
+      // Forza re-render locale
       setLocalRefreshKey(prev => prev + 1);
     };
 
@@ -60,15 +54,6 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
   }, []);
 
   const isLoading = isLoadingData || isLoadingMeasurements;
-  const pages = createPages();
-
-  // Notify parent component when pages are calculated
-  useEffect(() => {
-    if (!isLoading && pages && pages.length > 0 && onPagesCalculated) {
-      console.log('📄 MenuContentPages: Notifica pagine calcolate:', pages.length);
-      onPagesCalculated(pages);
-    }
-  }, [pages, isLoading, onPagesCalculated]);
 
   if (isLoadingData) {
     return (
@@ -143,6 +128,8 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({
       </Card>
     );
   }
+
+  const pages = createPages();
 
   if (pages.length === 0 && !isLoading) {
     return (
