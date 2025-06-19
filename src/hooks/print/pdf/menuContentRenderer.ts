@@ -123,9 +123,11 @@ const addSvgIconToPdf = async (
           // Add to PDF as high-quality PNG
           const dataUrl = canvas.toDataURL('image/png', 1.0);
           pdf.addImage(dataUrl, 'PNG', x, y, sizeMm, sizeMm);
+          
+          resolve(sizeMm);
+        } else {
+          resolve(0);
         }
-        
-        resolve(sizeMm);
       } catch (error) {
         console.error('Error adding SVG icon to PDF:', error);
         resolve(0);
@@ -220,7 +222,7 @@ const addProductFeaturesToPdf = async (
   if (!product.features || product.features.length === 0) return 0;
   
   const featuresConfig = layout.elements.productFeatures;
-  const iconSize = featuresConfig.iconSize || 20; // Aumentato per migliore qualità
+  const iconSize = featuresConfig.iconSize || 20; // Increased for better quality
   const iconSpacing = featuresConfig.iconSpacing || 4;
   const marginTop = featuresConfig.marginTop || 2;
   const marginBottom = featuresConfig.marginBottom || 2;
