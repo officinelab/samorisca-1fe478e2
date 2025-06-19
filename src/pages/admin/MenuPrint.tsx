@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import MenuPrintHeader from '@/components/menu-print/MenuPrintHeader';
 import MenuPrintPreview from '@/components/menu-print/MenuPrintPreview';
@@ -7,30 +8,34 @@ import { useMenuPrintLayoutSync } from "@/hooks/menu-print/useMenuPrintLayoutSyn
 const MenuPrint = () => {
   const [showMargins, setShowMargins] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // Chiave per forzare re-render
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [calculatedMenuPages, setCalculatedMenuPages] = useState<any[]>([]);
   const { layouts, forceRefresh, isLoading } = useMenuLayouts();
   
-  // Use the first available layout or default values
   const currentLayout = layouts?.[0];
   
-  // Listen for layout updates from the settings dialog
   useMenuPrintLayoutSync(() => {
     console.log('🔄 Triggering layout refresh...');
-    forceRefresh(); // Ricarica i layout dal DB
-    setRefreshKey(prev => prev + 1); // Forza re-render dei componenti
+    forceRefresh();
+    setRefreshKey(prev => prev + 1);
+    setCalculatedMenuPages([]);
   });
   
-  // Debug log per verificare il layout corrente
   useEffect(() => {
     console.log("MenuPrint - Layout corrente:", currentLayout);
     console.log("MenuPrint - Refresh key:", refreshKey);
+    console.log("MenuPrint - Pagine calcolate:", calculatedMenuPages.length);
     if (currentLayout) {
       console.log("MenuPrint - Layout name:", currentLayout.name);
       console.log("MenuPrint - Logo config:", currentLayout.cover?.logo);
     }
-  }, [currentLayout, refreshKey]);
+  }, [currentLayout, refreshKey, calculatedMenuPages]);
+
+  const handleMenuPagesCalculated = (pages: any[]) => {
+    console.log('📄 MenuPrint: Ricevute pagine calcolate:', pages.length);
+    setCalculatedMenuPages(pages);
+  };
   
-  // Mostra loading durante il refresh
   if (isLoading && refreshKey > 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -50,13 +55,15 @@ const MenuPrint = () => {
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
         currentLayout={currentLayout}
+        menuPages={calculatedMenuPages}
       />
       
       <div className="pt-6">
         <MenuPrintPreview 
           currentLayout={currentLayout}
           showMargins={showMargins}
-          refreshKey={refreshKey} // Passa il refreshKey
+          refreshKey={refreshKey}
+          onMenuPagesCalculated={handleMenuPagesCalculated}
         />
       </div>
     </div>
