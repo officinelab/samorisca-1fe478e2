@@ -25,14 +25,14 @@ const MenuPdfCoverPage: React.FC<MenuPdfCoverPageProps> = ({
     return {
       flexDirection: 'column' as const,
       padding: `${margins.coverMarginTop}mm ${margins.coverMarginRight}mm ${margins.coverMarginBottom}mm ${margins.coverMarginLeft}mm`,
-      justifyContent: 'center',
-      alignItems: 'center'
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const
     };
   };
 
   return (
     <Page size="A4" style={getPageStyle()}>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center' as const, alignItems: 'center' as const }}>
         {/* Logo */}
         {layout.cover.logo.visible && businessInfo.logo && (
           <View style={{ marginBottom: `${layout.cover.logo.marginBottom}mm` }}>

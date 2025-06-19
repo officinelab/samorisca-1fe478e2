@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Document, Page, View, Text, pdf } from '@react-pdf/renderer';
+import { Document, pdf } from '@react-pdf/renderer';
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
 import React from 'react';
@@ -13,7 +13,7 @@ export const usePdfExport = () => {
       setIsExporting(true);
       console.log('🎯 Avvio esportazione PDF con nuovo sistema...');
 
-      // Importa dinamicamente il componente del documento PDF
+      // Importa dinamicamente il componente del contenuto PDF
       const { default: MenuPdfDocument } = await import('./pdf/MenuPdfDocument');
       
       // Ottieni le informazioni del business (esempio)
@@ -25,11 +25,13 @@ export const usePdfExport = () => {
 
       console.log('📄 Generazione PDF in corso...');
       
-      // Genera il PDF usando React.createElement
-      const documentElement = React.createElement(MenuPdfDocument, { 
-        layout: layout,
-        businessInfo: businessInfo
-      });
+      // Crea il documento PDF completo con Document wrapper
+      const documentElement = React.createElement(Document, {}, 
+        React.createElement(MenuPdfDocument, { 
+          layout: layout,
+          businessInfo: businessInfo
+        })
+      );
 
       const pdfBlob = await pdf(documentElement).toBlob();
       

@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Document, Page, View, Text } from '@react-pdf/renderer';
+import { Document } from '@react-pdf/renderer';
 import { PrintLayout } from '@/types/printLayout';
-import { Category, Product } from '@/types/database';
-import { CategoryNote } from '@/types/categoryNotes';
 import { createPdfStyles } from './styles/pdfStyles';
 import MenuPdfCoverPage from './components/MenuPdfCoverPage';
 import MenuPdfContentPage from './components/MenuPdfContentPage';
@@ -46,7 +44,7 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ layout, businessInfo 
   const menuPages = createPages();
 
   return (
-    <Document>
+    <>
       {/* Prima pagina di copertina */}
       <MenuPdfCoverPage
         layout={layout}
@@ -54,11 +52,6 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ layout, businessInfo 
         styles={styles}
         pageNumber={1}
       />
-      
-      {/* Seconda pagina di copertina (vuota) */}
-      <Page size="A4" style={styles.evenPage}>
-        <View style={{ flex: 1 }} />
-      </Page>
 
       {/* Pagine contenuto menu */}
       {menuPages.map((page, index) => (
@@ -69,7 +62,7 @@ const MenuPdfDocument: React.FC<MenuPdfDocumentProps> = ({ layout, businessInfo 
           styles={styles}
         />
       ))}
-    </Document>
+    </>
   );
 };
 
