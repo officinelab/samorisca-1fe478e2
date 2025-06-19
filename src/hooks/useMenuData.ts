@@ -1,46 +1,29 @@
 
 import { useEffect } from "react";
-import { useMenuDataLoading } from "./menu/useMenuDataLoading";
 import { useRestaurantLogo } from "./menu/useRestaurantLogo";
 
 export const useMenuData = () => {
-  const {
-    categories,
-    products,
-    allergens,
-    labels,
-    features,
-    isLoading,
-    error,
-    loadData,
-    retryLoading,
-    selectedCategories,
-    setSelectedCategories,
-    handleCategoryToggle,
-    handleToggleAllCategories
-  } = useMenuDataLoading();
-
   const { restaurantLogo, updateRestaurantLogo } = useRestaurantLogo();
 
-  // Load data on mount
+  // No need to load menu data for cover page only
   useEffect(() => {
-    loadData();
+    // This hook now only handles restaurant logo
   }, []);
 
   return {
-    categories,
-    products,
-    allergens,
-    labels,
-    features,
+    categories: [],
+    products: {},
+    allergens: [],
+    labels: [],
+    features: [],
     restaurantLogo,
     updateRestaurantLogo,
-    isLoading,
-    error,
-    retryLoading,
-    selectedCategories,
-    setSelectedCategories,
-    handleCategoryToggle,
-    handleToggleAllCategories
+    isLoading: false,
+    error: null,
+    retryLoading: () => {},
+    selectedCategories: [],
+    setSelectedCategories: () => {},
+    handleCategoryToggle: () => {},
+    handleToggleAllCategories: () => {}
   };
 };
