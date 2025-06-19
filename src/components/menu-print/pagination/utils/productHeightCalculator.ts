@@ -11,6 +11,15 @@ const hasProductFeatures = (product: Product): boolean => {
 };
 
 /**
+ * Verifica se deve essere mostrata la descrizione inglese
+ */
+const shouldShowEnglishDescription = (product: Product): boolean => {
+  if (!product.description_en) return false;
+  if (product.description_en === product.description) return false;
+  return true;
+};
+
+/**
  * Calcola l'altezza reale di un prodotto basandosi sul layout e contenuto.
  */
 export const getProductHeight = (
@@ -47,13 +56,13 @@ export const getProductHeight = (
     totalHeight += (descLineHeight * estimatedLines) + (descMargins.top + descMargins.bottom) * MM_TO_PX;
   }
 
-  // 3. Descrizione inglese (se presente e visibile) - usando description_en
-  if (elements.descriptionEng?.visible !== false && product.description_en) {
+  // 3. Descrizione inglese (se presente e visibile) - CORRETTA per usare description_en
+  if (elements.descriptionEng?.visible !== false && shouldShowEnglishDescription(product)) {
     const descEngFontSize = elements.descriptionEng.fontSize || 11;
     const descEngLineHeight = descEngFontSize * 1.4;
     const descEngMargins = elements.descriptionEng.margin;
     
-    const estimatedLines = Math.ceil((product.description_en.length || 0) / 80);
+    const estimatedLines = Math.ceil((product.description_en!.length || 0) / 80);
     totalHeight += (descEngLineHeight * estimatedLines) + (descEngMargins.top + descEngMargins.bottom) * MM_TO_PX;
   }
 
@@ -65,34 +74,49 @@ export const getProductHeight = (
     totalHeight += allergensLineHeight + (allergensMargins.top + allergensMargins.bottom) * MM_TO_PX;
   }
 
-  // 5. Caratteristiche prodotto (icone)
-  if (elements.productFeatures && hasProductFeatures(product)) {
-    const featuresConfig = elements.productFeatures;
-    totalHeight += featuresConfig.iconSize + (featuresConfig.marginTop + featuresConfig.marginBottom) * MM_TO_PX;
+  // 5. Caratteristiche prodotto (icone) - CORRETTA per usare la configurazione corretta
+  if (hasProductFeatures(product) && customLayout.productFeatures?.icon) {
+    const featuresConfig = customLayout.productFeatures.icon;
+    const iconHeightMm = featuresConfig.iconSize / MM_TO_PX * 0.75; // Conversione px -> mm più accurata
+    totalHeight += iconHeightMm + (featuresConfig.marginTop + featuresConfig.marginBottom) * MM_TO_PX;
   }
 
-  // 6. Prezzo
+  // 6. Prezzo - considera l'altezza della colonna prezzo più alta
+  let priceColumnHeight = 0;
+  
+  // Prezzo principale
   if (elements.price?.visible !== false) {
     const priceFontSize = elements.price.fontSize || 14;
     const priceLineHeight = priceFontSize * 1.5;
     const priceMargins = elements.price.margin;
-    totalHeight += priceLineHeight + (priceMargins.top + priceMargins.bottom) * MM_TO_PX;
+    priceColumnHeight += priceLineHeight + (priceMargins.top + priceMargins.bottom) * MM_TO_PX;
   }
 
-  // 7. Varianti prezzo (se presenti) - usando has_multiple_prices e price_variant fields
-  if (elements.priceVariants?.visible !== false && product.has_multiple_prices && 
-      (product.price_variant_1_name || product.price_variant_2_name)) {
+  // Suffisso prezzo (se presente)
+  if (product.has_price_suffix && product.price_suffix) {
+    const suffixFontSize = elements.suffix.fontSize || 12;
+    const suffixLineHeight = suffixFontSize * 1.5;
+    priceColumnHeight += suffixLineHeight;
+  }
+
+  // Varianti prezzo (se presenti)
+  if (product.has_multiple_prices && elements.priceVariants?.visible !== false) {
     const variantsFontSize = elements.priceVariants.fontSize || 12;
     const variantsLineHeight = variantsFontSize * 1.5;
     const variantsMargins = elements.priceVariants.margin;
     
-    // Conta le varianti effettivamente presenti
-    const variantCount = [product.price_variant_1_name, product.price_variant_2_name].filter(Boolean).length;
-    totalHeight += (variantsLineHeight * variantCount) + 
-                   (variantsMargins.top + variantsMargins.bottom) * MM_TO_PX;
+    let variantCount = 0;
+    if (product.price_variant_1_value) variantCount += 2; // prezzo + nome
+    if (product.price_variant_2_value) variantCount += 2; // prezzo + nome
+    
+    priceColumnHeight += (variantsLineHeight * variantCount) + 
+                        (variantsMargins.top + variantsMargins.bottom) * MM_TO_PX;
   }
 
-  // 8. Spacing tra prodotti
+  // Usa l'altezza maggiore tra contenuto principale e colonna prezzo
+  totalHeight = Math.max(totalHeight, priceColumnHeight);
+
+  // 7. Spacing tra prodotti
   const spacing = customLayout.spacing?.betweenProducts || 15;
   totalHeight += spacing * MM_TO_PX;
 

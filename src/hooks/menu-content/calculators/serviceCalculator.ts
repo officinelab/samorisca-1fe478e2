@@ -1,8 +1,9 @@
+
 import { PrintLayout } from '@/types/printLayout';
 import { calculateTextHeight, MM_TO_PX } from '../utils/textMeasurement';
 
 export const calculateServiceLineHeight = (layout: PrintLayout | null): number => {
-  if (!layout) return 15; // Default height in mm
+  if (!layout) return 20; // Aumentato il default per essere più conservativo
 
   const serviceConfig = layout.servicePrice;
   const pageConfig = layout.page;
@@ -29,8 +30,11 @@ export const calculateServiceLineHeight = (layout: PrintLayout | null): number =
   const textHeightMm = textHeightPx / MM_TO_PX;
   const marginMm = serviceConfig.margin.top + serviceConfig.margin.bottom;
   
-  // Aggiungi altezza per il bordo superiore e padding
-  const borderAndPaddingMm = 5; // 1px border + padding convertito in mm
+  // Aggiungi altezza per il bordo superiore e padding - AUMENTATO per essere più conservativo
+  const borderAndPaddingMm = 8; // Aumentato da 5 a 8mm per includere tutti gli spazi
   
-  return textHeightMm + marginMm + borderAndPaddingMm;
+  // Aggiungi un buffer di sicurezza
+  const safetyBufferMm = 3;
+  
+  return textHeightMm + marginMm + borderAndPaddingMm + safetyBufferMm;
 };
