@@ -149,33 +149,6 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
               ))}
             </div>
           )}
-
-          {/* Price Variants */}
-          {product.has_multiple_prices && (product.price_variant_1_name || product.price_variant_2_name) && (
-            <div
-              className="price-variants"
-              style={{
-                fontSize: `${elementsConfig.priceVariants.fontSize}pt`,
-                fontFamily: elementsConfig.priceVariants.fontFamily,
-                color: elementsConfig.priceVariants.fontColor,
-                fontWeight: elementsConfig.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.priceVariants.alignment as any,
-                marginTop: `${elementsConfig.priceVariants.margin.top}mm`,
-                marginRight: `${elementsConfig.priceVariants.margin.right}mm`,
-                marginBottom: `${elementsConfig.priceVariants.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.priceVariants.margin.left}mm`,
-              }}
-            >
-              {product.price_variant_1_name && (
-                <span>{product.price_variant_1_name}: €{product.price_variant_1_value?.toFixed(2)}</span>
-              )}
-              {product.price_variant_1_name && product.price_variant_2_name && <span> • </span>}
-              {product.price_variant_2_name && (
-                <span>{product.price_variant_2_name}: €{product.price_variant_2_value?.toFixed(2)}</span>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Right column: Price (10%) */}
