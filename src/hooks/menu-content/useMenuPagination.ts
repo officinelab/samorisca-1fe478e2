@@ -54,12 +54,21 @@ export const useMenuPagination = (
       }
     }
 
-    const serviceLineHeight = measurements?.serviceLineHeight || 20; // Default più alto
+    // IMPORTANTE: La serviceLineHeight già include i margini del servizio
+    const serviceLineHeight = measurements?.serviceLineHeight || 25; // Default più conservativo
     
-    // Calcola altezza disponibile con margine di sicurezza maggiore
+    // Calcola altezza disponibile
     const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
     
-    console.log(`📐 Pagina ${pageNumber} - Altezza disponibile: ${totalHeight}mm (margini: T${topMargin} B${bottomMargin}, servizio: ${serviceLineHeight}mm, sicurezza: ${SAFETY_MARGIN_MM}mm)`);
+    console.log(`📐 Pagina ${pageNumber} - Calcolo altezza disponibile:`, {
+      A4_HEIGHT_MM,
+      topMargin,
+      bottomMargin,
+      serviceLineHeight,
+      SAFETY_MARGIN_MM,
+      totalHeight,
+      calculation: `${A4_HEIGHT_MM} - ${topMargin} - ${bottomMargin} - ${serviceLineHeight} - ${SAFETY_MARGIN_MM} = ${totalHeight}`
+    });
     
     return totalHeight;
   };
@@ -145,6 +154,20 @@ export const useMenuPagination = (
           
           // Controlla con un margine di sicurezza extra del 5%
           const safeRequiredHeight = requiredHeight * 1.05;
+          
+          // Log dettagliato per ogni prodotto
+          if (i < 3 || tempHeight + safeRequiredHeight > availableHeight) {
+            console.log(`📦 Prodotto ${i+1}/${remainingProducts.length} "${product.title.substring(0, 30)}...":`, {
+              productHeight,
+              spacing: currentCategoryProducts.length > 0 ? layout?.spacing.betweenProducts || 5 : 0,
+              requiredHeight,
+              safeRequiredHeight,
+              currentPageHeight: tempHeight,
+              wouldBe: tempHeight + safeRequiredHeight,
+              availableHeight,
+              fits: tempHeight + safeRequiredHeight <= availableHeight
+            });
+          }
           
           if (tempHeight + safeRequiredHeight <= availableHeight) {
             // Il prodotto entra nella pagina

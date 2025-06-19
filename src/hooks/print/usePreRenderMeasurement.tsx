@@ -110,9 +110,15 @@ export const usePreRenderMeasurement = (
 
         // Misura ogni prodotto
         const products = productsByCategory[category.id] || [];
-        for (const product of products) {
+        for (let i = 0; i < products.length; i++) {
+          const product = products[i];
+          const isLast = i === products.length - 1;
+          
           const productWrapper = document.createElement('div');
-          productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
+          // Applica il marginBottom solo se non è l'ultimo prodotto
+          if (!isLast) {
+            productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
+          }
           container.innerHTML = '';
           container.appendChild(productWrapper);
           
@@ -124,17 +130,30 @@ export const usePreRenderMeasurement = (
               <ProductRenderer
                 product={product}
                 layout={layout}
-                isLast={false}
+                isLast={isLast}
               />
             );
             setTimeout(resolve, 50); // Attendi il rendering
           });
           
           // Misura l'altezza reale inclusi tutti gli stili CSS
-          const productHeight = productWrapper.getBoundingClientRect().height / MM_TO_PX;
+          const rect = productWrapper.getBoundingClientRect();
+          let productHeight = rect.height / MM_TO_PX;
           
-          // Aggiungi un buffer di sicurezza del 10% per gestire variazioni
-          const safeProductHeight = productHeight * 1.1;
+          // Se non è l'ultimo prodotto, l'altezza include già il marginBottom
+          // Se è l'ultimo, non c'è margin
+          
+          // Log dettagliato per debug
+          console.log(`📏 Prodotto "${product.title}":`, {
+            heightPx: rect.height,
+            heightMm: productHeight,
+            isLast,
+            hasMarginBottom: !isLast,
+            marginBottom: !isLast ? layout.spacing.betweenProducts : 0
+          });
+          
+          // Aggiungi un buffer di sicurezza più piccolo (5% invece del 10%)
+          const safeProductHeight = productHeight * 1.05;
           
           results.productHeights.set(product.id, safeProductHeight);
           
@@ -142,33 +161,53 @@ export const usePreRenderMeasurement = (
         }
       }
 
-      // Misura la linea del servizio con stili reali
-      const serviceDiv = document.createElement('div');
-      serviceDiv.className = 'flex-shrink-0 border-t pt-2';
-      serviceDiv.innerHTML = `
-        <div style="
-          font-size: ${layout.servicePrice.fontSize}pt;
-          font-family: ${layout.servicePrice.fontFamily};
-          color: ${layout.servicePrice.fontColor};
-          font-weight: ${layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal'};
-          font-style: ${layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal'};
-          text-align: ${layout.servicePrice.alignment};
-          margin-top: ${layout.servicePrice.margin.top}mm;
-          margin-bottom: ${layout.servicePrice.margin.bottom}mm;
-          line-height: 1.5;
-          padding-top: 8px;
-          border-top: 1px solid #e5e7eb;
-        ">
-          Servizio e Coperto = €${serviceCoverCharge.toFixed(2)}
-        </div>
-      `;
-      
+      // Misura la linea del servizio esattamente come viene renderizzata
+      const serviceWrapper = document.createElement('div');
       container.innerHTML = '';
-      container.appendChild(serviceDiv);
-      await new Promise(resolve => setTimeout(resolve, 10));
+      container.appendChild(serviceWrapper);
       
-      // Aggiungi buffer anche per la linea servizio
-      results.serviceLineHeight = (serviceDiv.getBoundingClientRect().height / MM_TO_PX) + 5; // +5mm di buffer
+      // Renderizza il componente reale del servizio
+      const serviceRoot = createRoot(serviceWrapper);
+      
+      await new Promise<void>(resolve => {
+        serviceRoot.render(
+          <div 
+            className="flex-shrink-0 border-t pt-2"
+            style={{
+              fontSize: `${layout.servicePrice.fontSize}pt`,
+              fontFamily: layout.servicePrice.fontFamily,
+              color: layout.servicePrice.fontColor,
+              fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.servicePrice.alignment as any,
+              marginTop: `${layout.servicePrice.margin.top}mm`,
+              marginBottom: `${layout.servicePrice.margin.bottom}mm`,
+              borderTop: '1px solid #e5e7eb',
+              paddingTop: '8px'
+            }}
+          >
+            Servizio e Coperto = €{serviceCoverCharge.toFixed(2)}
+          </div>
+        );
+        setTimeout(resolve, 50);
+      });
+      
+      // Misura l'altezza totale inclusi tutti i margini e padding
+      const serviceHeight = serviceWrapper.getBoundingClientRect().height / MM_TO_PX;
+      
+      // Log per debug
+      console.log('📏 Altezza linea servizio:', {
+        heightPx: serviceWrapper.getBoundingClientRect().height,
+        heightMm: serviceHeight,
+        marginTop: layout.servicePrice.margin.top,
+        marginBottom: layout.servicePrice.margin.bottom,
+        fontSize: layout.servicePrice.fontSize
+      });
+      
+      // Aggiungi un piccolo buffer di sicurezza (2mm invece di 5mm)
+      results.serviceLineHeight = serviceHeight + 2;
+      
+      serviceRoot.unmount();
 
       setMeasurements(results);
       setIsLoading(false);
