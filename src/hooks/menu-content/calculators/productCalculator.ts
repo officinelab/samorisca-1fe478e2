@@ -42,9 +42,9 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeight += (descEngHeight / MM_TO_PX) + layout.elements.descriptionEng.margin.top + layout.elements.descriptionEng.margin.bottom;
   }
   
-  // Allergens height (if present)
+  // Allergens height (if present) - FIXED: correct condition
   if (product.allergens && product.allergens.length > 0) {
-    const allergensText = product.allergens.map(allergen => allergen.number).join(', ');
+    const allergensText = `Allergeni: ${product.allergens.map(allergen => allergen.number).join(', ')}`;
     const allergensHeight = calculateTextHeight(
       allergensText,
       layout.elements.allergensList.fontSize,
@@ -63,9 +63,14 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   }
 
   // Price variants height (if present)
-  if (product.has_multiple_prices) {
+  if (product.has_multiple_prices && (product.price_variant_1_name || product.price_variant_2_name)) {
+    const priceVariantsText = [
+      product.price_variant_1_name ? `${product.price_variant_1_name}: €${product.price_variant_1_value?.toFixed(2)}` : '',
+      product.price_variant_2_name ? `${product.price_variant_2_name}: €${product.price_variant_2_value?.toFixed(2)}` : ''
+    ].filter(Boolean).join(' • ');
+    
     const priceVariantsHeight = calculateTextHeight(
-      `${product.price_variant_1_name || ''} ${product.price_variant_2_name || ''}`,
+      priceVariantsText,
       layout.elements.priceVariants.fontSize,
       layout.elements.priceVariants.fontFamily,
       availableWidth * MM_TO_PX
@@ -73,8 +78,8 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeight += (priceVariantsHeight / MM_TO_PX) + layout.elements.priceVariants.margin.top + layout.elements.priceVariants.margin.bottom;
   }
 
-  // Add minimum spacing
-  totalHeight += 5; // 5mm minimum spacing
+  // Add minimum spacing - REDUCED for more precision
+  totalHeight += 2; // 2mm minimum spacing instead of 5mm
 
   return totalHeight;
 };

@@ -45,7 +45,7 @@ export const useMenuPagination = (
     }
 
     const serviceLineHeight = heightCalculator.calculateServiceLineHeight();
-    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 10; // 10mm buffer
+    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 5; // 5mm buffer instead of 10mm
   };
 
   const createPages = (): PageContent[] => {
@@ -77,59 +77,79 @@ export const useMenuPagination = (
 
       const products = productsByCategory[category.id] || [];
       let categoryProducts: Product[] = [];
-      let isFirstProductInCategory = true;
+      let categoryHeaderAdded = false;
 
       products.forEach(product => {
         const productHeight = heightCalculator.calculateProductHeight(product);
         const availableHeight = getAvailableHeight(currentPageNumber);
-
-        // Check if we need to add category title + notes (for first product or repeated title)
-        let requiredHeight = productHeight + layout?.spacing.betweenProducts || 0;
         
-        if (isFirstProductInCategory || categoryProducts.length === 0) {
+        // Calculate required height for this product
+        let requiredHeight = productHeight;
+        
+        // Add spacing between products (except for the first product)
+        if (categoryProducts.length > 0) {
+          requiredHeight += layout?.spacing.betweenProducts || 0;
+        }
+        
+        // If this is the first product in the category on this page, add category header
+        if (!categoryHeaderAdded) {
           requiredHeight += categoryTitleHeight + categoryNotesHeight;
+          // Add spacing between categories if there's already content on the page
+          if (currentPageContent.length > 0) {
+            requiredHeight += layout?.spacing.betweenCategories || 0;
+          }
         }
 
-        // If this would exceed the page, start a new page
+        // Check if this product would exceed the page
         if (currentPageHeight + requiredHeight > availableHeight && currentPageContent.length > 0) {
-          // Finish current category on current page if it has products
+          // Finish current category section on current page if it has products
           if (categoryProducts.length > 0) {
             currentPageContent.push({
               category,
-              notes: isFirstProductInCategory ? relatedNotes : [],
+              notes: categoryHeaderAdded ? [] : relatedNotes, // Notes only if header wasn't added yet
               products: [...categoryProducts],
-              isRepeatedTitle: !isFirstProductInCategory
+              isRepeatedTitle: categoryHeaderAdded
             });
             categoryProducts = [];
           }
 
+          // Start new page
           addNewPage();
-          isFirstProductInCategory = false; // Will be repeated title on new page
+          categoryHeaderAdded = false; // Reset for new page
         }
 
         // Add the product to current category
         categoryProducts.push(product);
         
         // Update height calculation
-        if (isFirstProductInCategory) {
+        if (!categoryHeaderAdded) {
+          // Add category header height
           currentPageHeight += categoryTitleHeight + categoryNotesHeight;
-          isFirstProductInCategory = false;
+          // Add spacing between categories if there's already content on the page
+          if (currentPageContent.length > 0) {
+            currentPageHeight += layout?.spacing.betweenCategories || 0;
+          }
+          categoryHeaderAdded = true;
         }
-        currentPageHeight += productHeight + (layout?.spacing.betweenProducts || 0);
+        
+        // Add product height
+        currentPageHeight += productHeight;
+        
+        // Add spacing between products (except for the first product in category)
+        if (categoryProducts.length > 1) {
+          currentPageHeight += layout?.spacing.betweenProducts || 0;
+        }
       });
 
       // Add remaining products for this category
       if (categoryProducts.length > 0) {
         currentPageContent.push({
           category,
-          notes: currentPageContent.length === 0 ? relatedNotes : [], // Only add notes if first category on page
+          notes: categoryHeaderAdded ? [] : relatedNotes, // Notes only if this is the first appearance of category
           products: categoryProducts,
-          isRepeatedTitle: false
+          isRepeatedTitle: categoryHeaderAdded && currentPageContent.some(c => c.category.id === category.id)
         });
       }
-
-      // Add spacing between categories
-      currentPageHeight += layout?.spacing.betweenCategories || 0;
     });
 
     // Add the last page if it has content

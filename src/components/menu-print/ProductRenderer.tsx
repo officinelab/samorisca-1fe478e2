@@ -16,8 +16,10 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
 }) => {
   const elementsConfig = layout.elements;
 
-  // Get allergens numbers if available
-  const allergenNumbers = product.allergens?.map(allergen => allergen.number).join(', ') || '';
+  // Get allergens numbers if available - FIXED: correct condition
+  const allergenNumbers = product.allergens && product.allergens.length > 0 
+    ? product.allergens.map(allergen => allergen.number).join(', ') 
+    : '';
 
   // Format price with suffix
   const formatPrice = () => {
@@ -109,7 +111,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
             </div>
           )}
 
-          {/* Allergens */}
+          {/* Allergens - FIXED: Show only when allergens exist */}
           {allergenNumbers && (
             <div
               className="product-allergens"
