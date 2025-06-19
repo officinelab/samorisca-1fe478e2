@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Document, Page, View, Text, pdf } from '@react-pdf/renderer';
 import { PrintLayout } from "@/types/printLayout";
@@ -18,21 +19,18 @@ export const usePdfExport = () => {
       const businessInfo = {
         name: "Il Mio Ristorante", // Questo dovrebbe venire dalle impostazioni
         subtitle: "Cucina Tradizionale",
-        logo: layout.cover?.logoUrl
+        logo: layout.cover?.logo?.imageUrl
       };
-
-      // Crea il documento PDF
-      const MyDocument = () => (
-        <MenuPdfDocument 
-          layout={layout}
-          businessInfo={businessInfo}
-        />
-      );
 
       console.log('📄 Generazione PDF in corso...');
       
-      // Genera il PDF
-      const pdfBlob = await pdf(<MyDocument />).toBlob();
+      // Genera il PDF usando React.createElement invece di JSX
+      const documentElement = MenuPdfDocument({ 
+        layout: layout,
+        businessInfo: businessInfo
+      });
+
+      const pdfBlob = await pdf(documentElement).toBlob();
       
       // Scarica il file
       const url = URL.createObjectURL(pdfBlob);
