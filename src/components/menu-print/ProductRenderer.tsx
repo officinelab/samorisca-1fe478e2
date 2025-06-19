@@ -17,7 +17,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
   const elementsConfig = layout.elements;
 
   // Get allergens numbers if available
-  const allergenNumbers = product.product_allergens?.map(pa => pa.allergen_id).join(', ') || '';
+  const allergenNumbers = product.allergens?.map(allergen => allergen.number).join(', ') || '';
 
   // Format price with suffix
   const formatPrice = () => {

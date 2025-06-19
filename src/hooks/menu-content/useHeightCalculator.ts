@@ -28,7 +28,7 @@ export const useHeightCalculator = (layout: PrintLayout | null) => {
     if (!context) return fontSize * lineHeight;
 
     context.font = `${fontSize}px ${fontFamily}`;
-    const textWidth = context.textWidth(text);
+    const textWidth = context.measureText(text).width;
     const lines = Math.ceil(textWidth / maxWidth) || 1;
     
     return lines * fontSize * lineHeight;
@@ -110,8 +110,8 @@ export const useHeightCalculator = (layout: PrintLayout | null) => {
     // For now, assuming similar to main description
     
     // Allergens height (if present)
-    if (product.product_allergens && product.product_allergens.length > 0) {
-      const allergensText = product.product_allergens.map(pa => pa.allergen_id).join(', ');
+    if (product.allergens && product.allergens.length > 0) {
+      const allergensText = product.allergens.map(allergen => allergen.number).join(', ');
       const allergensHeight = calculateTextHeight(
         allergensText,
         layout.elements.allergensList.fontSize,

@@ -135,6 +135,24 @@ export const useMenuContentData = () => {
           categoryNotesRelations[relation.category_id].push(relation.note_id);
         });
 
+        // Transform layout data from database format to TypeScript format
+        const transformedLayout: PrintLayout | null = layouts ? {
+          id: layouts.id,
+          name: layouts.name,
+          type: layouts.type as 'classic' | 'custom' | 'modern' | 'allergens',
+          isDefault: layouts.is_default,
+          productSchema: layouts.product_schema as 'schema1',
+          elements: layouts.elements as any,
+          cover: layouts.cover as any,
+          allergens: layouts.allergens as any,
+          categoryNotes: layouts.category_notes as any,
+          productFeatures: layouts.product_features as any,
+          servicePrice: layouts.service_price as any,
+          spacing: layouts.spacing as any,
+          page: layouts.page as any,
+          header: undefined
+        } : null;
+
         setData({
           categories: categories || [],
           productsByCategory,
@@ -142,7 +160,7 @@ export const useMenuContentData = () => {
           categoryNotes: categoryNotes || [],
           categoryNotesRelations,
           serviceCoverCharge: serviceCharge?.value ? Number(serviceCharge.value) : 0,
-          activeLayout: layouts
+          activeLayout: transformedLayout
         });
 
       } catch (err: any) {
