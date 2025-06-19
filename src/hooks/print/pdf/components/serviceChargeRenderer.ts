@@ -2,8 +2,9 @@
 import jsPDF from 'jspdf';
 import { PrintLayout } from '@/types/printLayout';
 import { addStyledText } from './textRenderer';
+import { getStandardizedDimensions } from '../utils/conversionUtils';
 
-// Add service charge line to PDF with proper positioning
+// Add service charge line to PDF con dimensioni standardizzate identiche all'anteprima
 export const addServiceChargeToPdf = (
   pdf: jsPDF,
   serviceCharge: number,
@@ -12,9 +13,14 @@ export const addServiceChargeToPdf = (
   layout: PrintLayout,
   contentWidth: number
 ): number => {
-  const serviceConfig = layout.servicePrice;
+  const dimensions = getStandardizedDimensions(layout);
   
-  // Draw border line
+  console.log('💰 PDF - Service charge rendering con dimensioni standardizzate:', {
+    fontSize: dimensions.pdf.serviceFontSize,
+    margins: dimensions.pdfMargins.service
+  });
+  
+  // Draw border line (identico all'anteprima)
   pdf.setDrawColor(229, 231, 235);
   pdf.setLineWidth(0.1);
   pdf.line(x, y, x + contentWidth, y);
@@ -23,13 +29,13 @@ export const addServiceChargeToPdf = (
   const serviceText = `Servizio e Coperto = €${serviceCharge.toFixed(2)}`;
   
   const textHeight = addStyledText(pdf, serviceText, x, textY, {
-    fontSize: serviceConfig.fontSize,
-    fontFamily: serviceConfig.fontFamily,
-    fontStyle: serviceConfig.fontStyle,
-    fontColor: serviceConfig.fontColor,
-    alignment: serviceConfig.alignment,
+    fontSize: dimensions.pdf.serviceFontSize,
+    fontFamily: layout.servicePrice.fontFamily,
+    fontStyle: layout.servicePrice.fontStyle,
+    fontColor: layout.servicePrice.fontColor,
+    alignment: layout.servicePrice.alignment,
     maxWidth: contentWidth
   });
   
-  return textHeight + serviceConfig.margin.top + serviceConfig.margin.bottom + 6;
+  return textHeight + dimensions.pdfMargins.service.top + dimensions.pdfMargins.service.bottom + 6;
 };

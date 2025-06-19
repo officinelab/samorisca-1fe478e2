@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
+import { Product } from '@/types/database';
+import { getStandardizedDimensions } from '@/hooks/print/pdf/utils/conversionUtils';
 
 interface ProductRendererProps {
   product: Product;
@@ -14,259 +15,249 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
   layout,
   isLast
 }) => {
-  const elementsConfig = layout.elements;
+  const dimensions = getStandardizedDimensions(layout);
+  
+  console.log('🎨 ProductRenderer - Dimensioni standardizzate per prodotto:', product.title, {
+    titleFontSize: dimensions.css.titleFontSize,
+    descriptionFontSize: dimensions.css.descriptionFontSize,
+    iconSize: dimensions.icons.cssSizePx,
+    iconMargins: {
+      top: dimensions.icons.cssMarginTopPx,
+      bottom: dimensions.icons.cssMarginBottomPx
+    },
+    productSpacing: dimensions.spacing.betweenProducts
+  });
 
-  // Get allergens numbers if available - FIXED: correct condition
-  const allergenNumbers = product.allergens && product.allergens.length > 0 
-    ? product.allergens.map(allergen => allergen.number).join(', ') 
-    : '';
+  // Due colonne: 75% contenuto, 25% prezzo
+  const contentWidth = '75%';
+  const priceWidth = '25%';
 
-  // Check if we should show English description
-  const shouldShowEnglishDescription = () => {
-    if (!product.description_en) return false;
-    if (product.description_en === product.description) return false;
-    // Check if descriptionEng is visible (default to true if not specified)
-    return elementsConfig.descriptionEng?.visible !== false;
-  };
+  // Verifica se mostrare descrizione inglese
+  const shouldShowEnglishDescription = product.description_en && 
+    product.description_en !== product.description;
 
   return (
     <div 
-      className="product-item"
+      className="product-item flex justify-between items-start w-full"
       style={{
-        marginBottom: !isLast ? `${layout.spacing.betweenProducts}mm` : '0'
+        marginBottom: !isLast ? `${dimensions.spacing.betweenProducts}mm` : '0',
+        minHeight: 'auto'
       }}
     >
-      {/* Schema 1: Two column layout (90% + 10%) */}
-      <div className="flex items-start gap-2">
-        {/* Left column: Product details (90%) */}
-        <div className="flex-1" style={{ width: '90%' }}>
-          {/* Product Title */}
+      {/* Colonna contenuto - 75% */}
+      <div 
+        className="product-content flex-1"
+        style={{ width: contentWidth, paddingRight: '3mm' }}
+      >
+        {/* Titolo prodotto */}
+        <div
+          className="product-title"
+          style={{
+            fontSize: `${dimensions.css.titleFontSize}px`,
+            fontFamily: layout.elements.title.fontFamily,
+            color: layout.elements.title.fontColor,
+            fontWeight: layout.elements.title.fontStyle === 'bold' ? 'bold' : 'normal',
+            fontStyle: layout.elements.title.fontStyle === 'italic' ? 'italic' : 'normal',
+            textAlign: layout.elements.title.alignment as any,
+            marginTop: `${dimensions.cssMargins.title.top}px`,
+            marginBottom: `${dimensions.cssMargins.title.bottom}px`,
+            marginLeft: `${dimensions.cssMargins.title.left}px`,
+            marginRight: `${dimensions.cssMargins.title.right}px`,
+            lineHeight: 1.3
+          }}
+        >
+          {product.title}
+        </div>
+
+        {/* Descrizione italiana */}
+        {product.description && layout.elements.description?.visible !== false && (
           <div
-            className="product-title"
+            className="product-description"
             style={{
-              fontSize: `${elementsConfig.title.fontSize}pt`,
-              fontFamily: elementsConfig.title.fontFamily,
-              color: elementsConfig.title.fontColor,
-              fontWeight: elementsConfig.title.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: elementsConfig.title.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: elementsConfig.title.alignment as any,
-              marginTop: `${elementsConfig.title.margin.top}mm`,
-              marginRight: `${elementsConfig.title.margin.right}mm`,
-              marginBottom: `${elementsConfig.title.margin.bottom}mm`,
-              marginLeft: `${elementsConfig.title.margin.left}mm`,
+              fontSize: `${dimensions.css.descriptionFontSize}px`,
+              fontFamily: layout.elements.description.fontFamily,
+              color: layout.elements.description.fontColor,
+              fontWeight: layout.elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.elements.description.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.elements.description.alignment as any,
+              marginTop: `${dimensions.cssMargins.description.top}px`,
+              marginBottom: `${dimensions.cssMargins.description.bottom}px`,
+              marginLeft: `${dimensions.cssMargins.description.left}px`,
+              marginRight: `${dimensions.cssMargins.description.right}px`,
+              lineHeight: 1.4
             }}
           >
-            {product.title}
+            {product.description}
           </div>
+        )}
 
-          {/* Product Description (Italian) */}
-          {product.description && (
-            <div
-              className="product-description"
-              style={{
-                fontSize: `${elementsConfig.description.fontSize}pt`,
-                fontFamily: elementsConfig.description.fontFamily,
-                color: elementsConfig.description.fontColor,
-                fontWeight: elementsConfig.description.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.description.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.description.alignment as any,
-                marginTop: `${elementsConfig.description.margin.top}mm`,
-                marginRight: `${elementsConfig.description.margin.right}mm`,
-                marginBottom: `${elementsConfig.description.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.description.margin.left}mm`,
-              }}
-            >
-              {product.description}
-            </div>
-          )}
+        {/* Descrizione inglese */}
+        {shouldShowEnglishDescription && layout.elements.descriptionEng?.visible !== false && (
+          <div
+            className="product-description-eng"
+            style={{
+              fontSize: `${dimensions.css.descriptionEngFontSize}px`,
+              fontFamily: layout.elements.descriptionEng.fontFamily,
+              color: layout.elements.descriptionEng.fontColor,
+              fontWeight: layout.elements.descriptionEng.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.elements.descriptionEng.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.elements.descriptionEng.alignment as any,
+              marginTop: `${dimensions.cssMargins.descriptionEng.top}px`,
+              marginBottom: `${dimensions.cssMargins.descriptionEng.bottom}px`,
+              marginLeft: `${dimensions.cssMargins.descriptionEng.left}px`,
+              marginRight: `${dimensions.cssMargins.descriptionEng.right}px`,
+              lineHeight: 1.4
+            }}
+          >
+            {product.description_en}
+          </div>
+        )}
 
-          {/* English Description */}
-          {shouldShowEnglishDescription() && (
-            <div
-              className="product-description-eng"
-              style={{
-                fontSize: `${elementsConfig.descriptionEng.fontSize}pt`,
-                fontFamily: elementsConfig.descriptionEng.fontFamily,
-                color: elementsConfig.descriptionEng.fontColor,
-                fontWeight: elementsConfig.descriptionEng.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.descriptionEng.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.descriptionEng.alignment as any,
-                marginTop: `${elementsConfig.descriptionEng.margin.top}mm`,
-                marginRight: `${elementsConfig.descriptionEng.margin.right}mm`,
-                marginBottom: `${elementsConfig.descriptionEng.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.descriptionEng.margin.left}mm`,
-              }}
-            >
-              {product.description_en}
-            </div>
-          )}
+        {/* Icone caratteristiche prodotto */}
+        {product.features && product.features.length > 0 && layout.productFeatures?.icon && (
+          <div
+            className="product-features flex items-center gap-1"
+            style={{
+              marginTop: `${dimensions.icons.cssMarginTopPx}px`,
+              marginBottom: `${dimensions.icons.cssMarginBottomPx}px`,
+            }}
+          >
+            {product.features.map((feature, index) => (
+              feature.icon_url && (
+                <img
+                  key={feature.id}
+                  src={feature.icon_url}
+                  alt={feature.name}
+                  className="feature-icon"
+                  style={{
+                    width: `${dimensions.icons.cssSizePx}px`,
+                    height: `${dimensions.icons.cssSizePx}px`,
+                    marginRight: index < product.features.length - 1 ? `${dimensions.icons.cssSpacingPx}px` : '0'
+                  }}
+                />
+              )
+            ))}
+          </div>
+        )}
 
-          {/* Allergens - FIXED: Show only when allergens exist */}
-          {allergenNumbers && (
-            <div
-              className="product-allergens"
-              style={{
-                fontSize: `${elementsConfig.allergensList.fontSize}pt`,
-                fontFamily: elementsConfig.allergensList.fontFamily,
-                color: elementsConfig.allergensList.fontColor,
-                fontWeight: elementsConfig.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.allergensList.alignment as any,
-                marginTop: `${elementsConfig.allergensList.margin.top}mm`,
-                marginRight: `${elementsConfig.allergensList.margin.right}mm`,
-                marginBottom: `${elementsConfig.allergensList.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.allergensList.margin.left}mm`,
-              }}
-            >
-              Allergeni: {allergenNumbers}
-            </div>
-          )}
+        {/* Lista allergeni */}
+        {product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false && (
+          <div
+            className="product-allergens"
+            style={{
+              fontSize: `${dimensions.css.allergensFontSize}px`,
+              fontFamily: layout.elements.allergensList.fontFamily,
+              color: layout.elements.allergensList.fontColor,
+              fontWeight: layout.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.elements.allergensList.alignment as any,
+              marginTop: `${dimensions.cssMargins.allergens.top}px`,
+              marginBottom: `${dimensions.cssMargins.allergens.bottom}px`,
+              marginLeft: `${dimensions.cssMargins.allergens.left}px`,
+              marginRight: `${dimensions.cssMargins.allergens.right}px`,
+              lineHeight: 1.5
+            }}
+          >
+            Allergeni: {product.allergens.map(a => a.number).join(', ')}
+          </div>
+        )}
+      </div>
 
-          {/* Product Features */}
-          {product.features && product.features.length > 0 && (
-            <div
-              className="product-features flex items-center"
-              style={{
-                marginTop: `${layout.productFeatures?.icon?.marginTop || 0}mm`,
-                marginBottom: `${layout.productFeatures?.icon?.marginBottom || 0}mm`,
-                gap: `${layout.productFeatures?.icon?.iconSpacing || 4}px`
-              }}
-            >
-              {product.features.map((feature, index) => (
-                <React.Fragment key={feature.id}>
-                  {feature.icon_url && (
-                    <img
-                      src={feature.icon_url}
-                      alt={feature.title}
-                      title={feature.title}
-                      style={{
-                        width: `${layout.productFeatures?.icon?.iconSize || 16}px`,
-                        height: `${layout.productFeatures?.icon?.iconSize || 16}px`,
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Colonna prezzo - 25% */}
+      <div 
+        className="product-price-column"
+        style={{ 
+          width: priceWidth,
+          textAlign: 'right',
+          flexShrink: 0
+        }}
+      >
+        {/* Prezzo principale */}
+        {product.price_standard && layout.elements.price?.visible !== false && (
+          <div
+            className="product-price"
+            style={{
+              fontSize: `${dimensions.css.priceFontSize}px`,
+              fontFamily: layout.elements.price.fontFamily,
+              color: layout.elements.price.fontColor,
+              fontWeight: layout.elements.price.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.elements.price.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.elements.price.alignment as any,
+              marginTop: `${dimensions.cssMargins.price.top}px`,
+              marginBottom: `${dimensions.cssMargins.price.bottom}px`,
+              marginLeft: `${dimensions.cssMargins.price.left}px`,
+              marginRight: `${dimensions.cssMargins.price.right}px`,
+              lineHeight: 1.5
+            }}
+          >
+            €{product.price_standard.toFixed(2)}
+          </div>
+        )}
 
-        {/* Right column: Price (10%) */}
-        <div className="flex-shrink-0 flex flex-col" style={{ width: '10%' }}>
-          {/* Prima riga - Prezzo principale */}
-          {product.price_standard && (
-            <div
-              className="product-price"
-              style={{
-                fontSize: `${elementsConfig.price.fontSize}pt`,
-                fontFamily: elementsConfig.price.fontFamily,
-                color: elementsConfig.price.fontColor,
-                fontWeight: elementsConfig.price.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.price.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.price.alignment as any,
-                marginTop: `${elementsConfig.price.margin.top}mm`,
-                marginRight: `${elementsConfig.price.margin.right}mm`,
-                marginBottom: `${elementsConfig.price.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.price.margin.left}mm`,
-              }}
-            >
-              €{product.price_standard.toFixed(2)}
-            </div>
-          )}
+        {/* Suffisso prezzo */}
+        {product.has_price_suffix && product.price_suffix && layout.elements.suffix?.visible !== false && (
+          <div
+            className="product-price-suffix"
+            style={{
+              fontSize: `${dimensions.css.suffixFontSize}px`,
+              fontFamily: layout.elements.suffix.fontFamily,
+              color: layout.elements.suffix.fontColor,
+              fontWeight: layout.elements.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.elements.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.elements.suffix.alignment as any,
+              lineHeight: 1.5,
+              marginTop: '2px'
+            }}
+          >
+            {product.price_suffix}
+          </div>
+        )}
 
-          {/* Seconda riga - Suffisso prezzo (se presente) */}
-          {product.has_price_suffix && product.price_suffix && (
-            <div
-              className="product-price-suffix"
-              style={{
-                fontSize: `${elementsConfig.suffix.fontSize}pt`,
-                fontFamily: elementsConfig.suffix.fontFamily,
-                color: elementsConfig.suffix.fontColor,
-                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.suffix.alignment as any,
-              }}
-            >
-              {product.price_suffix}
-            </div>
-          )}
-
-          {/* Righe successive - Varianti prezzo (se presenti) */}
-          {product.has_multiple_prices && product.price_variant_1_value && (
-            <div
-              className="product-price-variant"
-              style={{
-                fontSize: `${elementsConfig.priceVariants.fontSize}pt`,
-                fontFamily: elementsConfig.priceVariants.fontFamily,
-                color: elementsConfig.priceVariants.fontColor,
-                fontWeight: elementsConfig.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.priceVariants.alignment as any,
-                marginTop: `${elementsConfig.priceVariants.margin.top}mm`,
-                marginRight: `${elementsConfig.priceVariants.margin.right}mm`,
-                marginBottom: `${elementsConfig.priceVariants.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.priceVariants.margin.left}mm`,
-              }}
-            >
-              €{product.price_variant_1_value.toFixed(2)}
-            </div>
-          )}
-
-          {/* Nome variante 1 */}
-          {product.has_multiple_prices && product.price_variant_1_name && (
-            <div
-              className="product-price-variant-name"
-              style={{
-                fontSize: `${elementsConfig.suffix.fontSize}pt`,
-                fontFamily: elementsConfig.suffix.fontFamily,
-                color: elementsConfig.suffix.fontColor,
-                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.suffix.alignment as any,
-              }}
-            >
-              {product.price_variant_1_name}
-            </div>
-          )}
-
-          {/* Variante 2 prezzo */}
-          {product.has_multiple_prices && product.price_variant_2_value && (
-            <div
-              className="product-price-variant-2"
-              style={{
-                fontSize: `${elementsConfig.priceVariants.fontSize}pt`,
-                fontFamily: elementsConfig.priceVariants.fontFamily,
-                color: elementsConfig.priceVariants.fontColor,
-                fontWeight: elementsConfig.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.priceVariants.alignment as any,
-                marginTop: `${elementsConfig.priceVariants.margin.top}mm`,
-                marginRight: `${elementsConfig.priceVariants.margin.right}mm`,
-                marginBottom: `${elementsConfig.priceVariants.margin.bottom}mm`,
-                marginLeft: `${elementsConfig.priceVariants.margin.left}mm`,
-              }}
-            >
-              €{product.price_variant_2_value.toFixed(2)}
-            </div>
-          )}
-
-          {/* Nome variante 2 */}
-          {product.has_multiple_prices && product.price_variant_2_name && (
-            <div
-              className="product-price-variant-2-name"
-              style={{
-                fontSize: `${elementsConfig.suffix.fontSize}pt`,
-                fontFamily: elementsConfig.suffix.fontFamily,
-                color: elementsConfig.suffix.fontColor,
-                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
-                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
-                textAlign: elementsConfig.suffix.alignment as any,
-              }}
-            >
-              {product.price_variant_2_name}
-            </div>
-          )}
-        </div>
+        {/* Varianti prezzo */}
+        {product.has_multiple_prices && layout.elements.priceVariants?.visible !== false && (
+          <div
+            className="product-price-variants"
+            style={{
+              marginTop: `${dimensions.cssMargins.variants.top}px`,
+              marginBottom: `${dimensions.cssMargins.variants.bottom}px`,
+              marginLeft: `${dimensions.cssMargins.variants.left}px`,
+              marginRight: `${dimensions.cssMargins.variants.right}px`,
+            }}
+          >
+            {product.price_variant_1_value && product.price_variant_1_name && (
+              <div
+                style={{
+                  fontSize: `${dimensions.css.variantsFontSize}px`,
+                  fontFamily: layout.elements.priceVariants.fontFamily,
+                  color: layout.elements.priceVariants.fontColor,
+                  fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
+                  fontStyle: layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
+                  textAlign: layout.elements.priceVariants.alignment as any,
+                  lineHeight: 1.5,
+                  marginBottom: '2px'
+                }}
+              >
+                {product.price_variant_1_name}: €{product.price_variant_1_value.toFixed(2)}
+              </div>
+            )}
+            
+            {product.price_variant_2_value && product.price_variant_2_name && (
+              <div
+                style={{
+                  fontSize: `${dimensions.css.variantsFontSize}px`,
+                  fontFamily: layout.elements.priceVariants.fontFamily,
+                  color: layout.elements.priceVariants.fontColor,
+                  fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
+                  fontStyle: layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
+                  textAlign: layout.elements.priceVariants.alignment as any,
+                  lineHeight: 1.5
+                }}
+              >
+                {product.price_variant_2_name}: €{product.price_variant_2_value.toFixed(2)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

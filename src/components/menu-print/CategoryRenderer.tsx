@@ -1,8 +1,9 @@
 
 import React from 'react';
+import { PrintLayout } from '@/types/printLayout';
 import { Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import { PrintLayout } from '@/types/printLayout';
+import { getStandardizedDimensions } from '@/hooks/print/pdf/utils/conversionUtils';
 
 interface CategoryRendererProps {
   category: Category;
@@ -17,94 +18,79 @@ const CategoryRenderer: React.FC<CategoryRendererProps> = ({
   layout,
   isRepeatedTitle
 }) => {
-  const categoryConfig = layout.elements.category;
-  const categoryNotesConfig = layout.categoryNotes;
+  const dimensions = getStandardizedDimensions(layout);
+  
+  console.log('🏷️ CategoryRenderer - Dimensioni standardizzate per categoria:', category.title, {
+    categoryFontSize: dimensions.css.categoryFontSize,
+    categoryMargins: dimensions.cssMargins.category,
+    hasNotes: notes.length > 0,
+    isRepeated: isRepeatedTitle
+  });
+
+  // Non mostrare nulla se è un titolo ripetuto
+  if (isRepeatedTitle) {
+    return null;
+  }
 
   return (
     <div className="category-section">
-      {/* Category Title */}
-      <div 
+      {/* Titolo categoria */}
+      <div
         className="category-title"
         style={{
-          fontSize: `${categoryConfig.fontSize}pt`,
-          fontFamily: categoryConfig.fontFamily,
-          color: categoryConfig.fontColor,
-          fontWeight: categoryConfig.fontStyle === 'bold' ? 'bold' : 'normal',
-          fontStyle: categoryConfig.fontStyle === 'italic' ? 'italic' : 'normal',
-          textAlign: categoryConfig.alignment as any,
-          textTransform: 'uppercase',
-          marginTop: `${categoryConfig.margin.top}mm`,
-          marginRight: `${categoryConfig.margin.right}mm`,
-          marginBottom: `${layout.spacing.categoryTitleBottomMargin}mm`,
-          marginLeft: `${categoryConfig.margin.left}mm`,
+          fontSize: `${dimensions.css.categoryFontSize}px`,
+          fontFamily: layout.elements.category.fontFamily,
+          color: layout.elements.category.fontColor,
+          fontWeight: layout.elements.category.fontStyle === 'bold' ? 'bold' : 'normal',
+          fontStyle: layout.elements.category.fontStyle === 'italic' ? 'italic' : 'normal',
+          textAlign: layout.elements.category.alignment as any,
+          marginTop: `${dimensions.cssMargins.category.top}px`,
+          marginBottom: `${dimensions.spacing.categoryTitleBottomMargin}mm`,
+          marginLeft: `${dimensions.cssMargins.category.left}px`,
+          marginRight: `${dimensions.cssMargins.category.right}px`,
+          lineHeight: 1.3,
+          textTransform: 'uppercase'
         }}
       >
         {category.title}
-        {isRepeatedTitle && (
-          <span className="text-xs ml-2 opacity-60">(continua)</span>
-        )}
       </div>
 
-      {/* Category Notes */}
-      {notes.length > 0 && (
-        <div className="category-notes space-y-2 mb-4">
-          {notes.map((note) => (
-            <div key={note.id} className="category-note flex items-start gap-2">
-              {/* Note Icon */}
-              {note.icon_url && (
-                <img
-                  src={note.icon_url}
-                  alt="Nota"
-                  className="flex-shrink-0"
-                  style={{
-                    width: `${categoryNotesConfig.icon.iconSize}px`,
-                    height: `${categoryNotesConfig.icon.iconSize}px`,
-                  }}
-                />
-              )}
-              
-              <div className="flex-1">
-                {/* Note Title */}
-                {categoryNotesConfig.title.visible && (
-                  <div
-                    className="note-title"
-                    style={{
-                      fontSize: `${categoryNotesConfig.title.fontSize}pt`,
-                      fontFamily: categoryNotesConfig.title.fontFamily,
-                      color: categoryNotesConfig.title.fontColor,
-                      fontWeight: categoryNotesConfig.title.fontStyle === 'bold' ? 'bold' : 'normal',
-                      fontStyle: categoryNotesConfig.title.fontStyle === 'italic' ? 'italic' : 'normal',
-                      textAlign: categoryNotesConfig.title.alignment as any,
-                      marginTop: `${categoryNotesConfig.title.margin.top}mm`,
-                      marginRight: `${categoryNotesConfig.title.margin.right}mm`,
-                      marginBottom: `${categoryNotesConfig.title.margin.bottom}mm`,
-                      marginLeft: `${categoryNotesConfig.title.margin.left}mm`,
-                    }}
-                  >
-                    {note.title}
-                  </div>
-                )}
+      {/* Note della categoria */}
+      {notes && notes.length > 0 && (
+        <div className="category-notes" style={{ marginBottom: '5mm' }}>
+          {notes.map((note, index) => (
+            <div key={note.id} className="category-note" style={{ marginBottom: index < notes.length - 1 ? '3mm' : '0' }}>
+              {/* Titolo della nota */}
+              <div
+                className="note-title"
+                style={{
+                  fontSize: `${dimensions.css.categoryFontSize * 0.9}px`, // Leggermente più piccolo del titolo categoria
+                  fontFamily: layout.categoryNotes.title.fontFamily,
+                  color: layout.categoryNotes.title.fontColor,
+                  fontWeight: layout.categoryNotes.title.fontStyle === 'bold' ? 'bold' : 'normal',
+                  fontStyle: layout.categoryNotes.title.fontStyle === 'italic' ? 'italic' : 'normal',
+                  textAlign: layout.categoryNotes.title.alignment as any,
+                  marginBottom: `${layout.categoryNotes.title.margin.bottom}mm`,
+                  lineHeight: 1.4
+                }}
+              >
+                {note.title}
+              </div>
 
-                {/* Note Text */}
-                {categoryNotesConfig.text.visible && (
-                  <div
-                    className="note-text"
-                    style={{
-                      fontSize: `${categoryNotesConfig.text.fontSize}pt`,
-                      fontFamily: categoryNotesConfig.text.fontFamily,
-                      color: categoryNotesConfig.text.fontColor,
-                      fontWeight: categoryNotesConfig.text.fontStyle === 'bold' ? 'bold' : 'normal',
-                      fontStyle: categoryNotesConfig.text.fontStyle === 'italic' ? 'italic' : 'normal',
-                      textAlign: categoryNotesConfig.text.alignment as any,
-                      marginTop: `${categoryNotesConfig.text.margin.top}mm`,
-                      marginRight: `${categoryNotesConfig.text.margin.right}mm`,
-                      marginBottom: `${categoryNotesConfig.text.margin.bottom}mm`,
-                      marginLeft: `${categoryNotesConfig.text.margin.left}mm`,
-                    }}
-                  >
-                    {note.text}
-                  </div>
-                )}
+              {/* Testo della nota */}
+              <div
+                className="note-text"
+                style={{
+                  fontSize: `${dimensions.css.descriptionFontSize * 0.95}px`, // Simile alla descrizione prodotto
+                  fontFamily: layout.categoryNotes.text.fontFamily,
+                  color: layout.categoryNotes.text.fontColor,
+                  fontWeight: layout.categoryNotes.text.fontStyle === 'bold' ? 'bold' : 'normal',
+                  fontStyle: layout.categoryNotes.text.fontStyle === 'italic' ? 'italic' : 'normal',
+                  textAlign: layout.categoryNotes.text.alignment as any,
+                  lineHeight: 1.5
+                }}
+              >
+                {note.text}
               </div>
             </div>
           ))}

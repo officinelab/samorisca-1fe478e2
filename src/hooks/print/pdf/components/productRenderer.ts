@@ -4,8 +4,9 @@ import { PrintLayout } from '@/types/printLayout';
 import { Product } from '@/types/database';
 import { addStyledText } from './textRenderer';
 import { addSvgIconToPdf } from './iconRenderer';
+import { getStandardizedDimensions } from '../utils/conversionUtils';
 
-// Add product features icons with high-quality SVG support
+// Add product features icons con dimensioni standardizzate
 const addProductFeaturesToPdf = async (
   pdf: jsPDF,
   product: Product,
@@ -16,20 +17,23 @@ const addProductFeaturesToPdf = async (
 ): Promise<number> => {
   if (!product.features || product.features.length === 0) return 0;
   
-  const featuresConfig = layout.elements.productFeatures;
-  const iconSize = featuresConfig.iconSize || 20; // Increased for better quality
-  const iconSpacing = featuresConfig.iconSpacing || 4;
-  const marginTop = featuresConfig.marginTop || 2;
-  const marginBottom = featuresConfig.marginBottom || 2;
+  const dimensions = getStandardizedDimensions(layout);
+  
+  console.log('🎯 PDF - Product Features dimensions:', {
+    iconSizeMm: dimensions.icons.pdfSizeMm,
+    marginTopMm: dimensions.icons.pdfMarginTopMm,
+    marginBottomMm: dimensions.icons.pdfMarginBottomMm,
+    spacingMm: dimensions.icons.pdfSpacingMm
+  });
   
   let currentX = x;
-  let totalHeight = marginTop;
+  const startY = y + dimensions.icons.pdfMarginTopMm;
   
-  // Load and add each feature icon with high quality
+  // Load and add each feature icon
   for (const feature of product.features) {
     if (feature.icon_url) {
-      const iconHeight = await addSvgIconToPdf(pdf, feature.icon_url, currentX, y + marginTop, iconSize);
-      currentX += (iconSize * 0.264583) + (iconSpacing * 0.264583);
+      await addSvgIconToPdf(pdf, feature.icon_url, currentX, startY, dimensions.icons.pdfSizeMm);
+      currentX += dimensions.icons.pdfSizeMm + dimensions.icons.pdfSpacingMm;
       
       // Check if we exceed the content width
       if (currentX > x + maxContentWidth) {
@@ -38,10 +42,10 @@ const addProductFeaturesToPdf = async (
     }
   }
   
-  return totalHeight + marginBottom;
+  return dimensions.icons.pdfMarginTopMm + dimensions.icons.pdfSizeMm + dimensions.icons.pdfMarginBottomMm;
 };
 
-// Add product to PDF with proper two-column layout matching preview
+// Add product to PDF con dimensioni standardizzate identiche all'anteprima
 export const addProductToPdf = async (
   pdf: jsPDF,
   product: Product,
@@ -52,104 +56,98 @@ export const addProductToPdf = async (
   isLast: boolean
 ): Promise<number> => {
   let currentY = y;
-  const elements = layout.elements;
+  const dimensions = getStandardizedDimensions(layout);
   
-  // Two-column layout: 75% for content, 25% for price (like preview)
+  console.log('🎯 PDF - Product rendering con dimensioni standardizzate:', product.title, {
+    titleFontSize: dimensions.pdf.titleFontSize,
+    descriptionFontSize: dimensions.pdf.descriptionFontSize,
+    marginBottom: !isLast ? dimensions.spacing.betweenProducts : 0
+  });
+  
+  // Two-column layout: 75% for content, 25% for price (identico all'anteprima)
   const contentColumnWidth = contentWidth * 0.75;
   const priceColumnX = x + contentColumnWidth + 3; // 3mm gap
   const priceColumnWidth = contentWidth * 0.25 - 3;
   
   // Product title in left column
   const titleHeight = addStyledText(pdf, product.title, x, currentY, {
-    fontSize: elements.title.fontSize,
-    fontFamily: elements.title.fontFamily,
-    fontStyle: elements.title.fontStyle,
-    fontColor: elements.title.fontColor,
-    alignment: elements.title.alignment,
+    fontSize: dimensions.pdf.titleFontSize,
+    fontFamily: layout.elements.title.fontFamily,
+    fontStyle: layout.elements.title.fontStyle,
+    fontColor: layout.elements.title.fontColor,
+    alignment: layout.elements.title.alignment,
     maxWidth: contentColumnWidth
   });
-  currentY += titleHeight + elements.title.margin.bottom;
+  currentY += titleHeight + dimensions.pdfMargins.title.bottom;
   
   // Product description (Italian) in left column
-  if (product.description) {
+  if (product.description && layout.elements.description?.visible !== false) {
     const descHeight = addStyledText(pdf, product.description, x, currentY, {
-      fontSize: elements.description.fontSize,
-      fontFamily: elements.description.fontFamily,
-      fontStyle: elements.description.fontStyle,
-      fontColor: elements.description.fontColor,
-      alignment: elements.description.alignment,
+      fontSize: dimensions.pdf.descriptionFontSize,
+      fontFamily: layout.elements.description.fontFamily,
+      fontStyle: layout.elements.description.fontStyle,
+      fontColor: layout.elements.description.fontColor,
+      alignment: layout.elements.description.alignment,
       maxWidth: contentColumnWidth
     });
-    currentY += descHeight + elements.description.margin.bottom;
+    currentY += descHeight + dimensions.pdfMargins.description.bottom;
   }
   
   // Product description (English) in left column
-  if (product.description_en && product.description_en !== product.description) {
+  if (product.description_en && product.description_en !== product.description && layout.elements.descriptionEng?.visible !== false) {
     const descEngHeight = addStyledText(pdf, product.description_en, x, currentY, {
-      fontSize: elements.descriptionEng.fontSize,
-      fontFamily: elements.descriptionEng.fontFamily,
-      fontStyle: elements.descriptionEng.fontStyle,
-      fontColor: elements.descriptionEng.fontColor,
-      alignment: elements.descriptionEng.alignment,
+      fontSize: dimensions.pdf.descriptionEngFontSize,
+      fontFamily: layout.elements.descriptionEng.fontFamily,
+      fontStyle: layout.elements.descriptionEng.fontStyle,
+      fontColor: layout.elements.descriptionEng.fontColor,
+      alignment: layout.elements.descriptionEng.alignment,
       maxWidth: contentColumnWidth
     });
-    currentY += descEngHeight + elements.descriptionEng.margin.bottom;
+    currentY += descEngHeight + dimensions.pdfMargins.descriptionEng.bottom;
   }
   
-  // Product features in left column
-  if (product.features && product.features.length > 0) {
+  // Product features in left column con dimensioni corrette
+  if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
     const featuresHeight = await addProductFeaturesToPdf(pdf, product, x, currentY, layout, contentColumnWidth);
     currentY += featuresHeight;
   }
   
   // Allergens with "Allergeni:" label in left column
-  if (product.allergens && product.allergens.length > 0) {
-    // Add "Allergeni:" label
-    const allergenLabelHeight = addStyledText(pdf, "Allergeni:", x, currentY, {
-      fontSize: elements.allergensList.fontSize,
-      fontFamily: elements.allergensList.fontFamily,
-      fontStyle: 'bold',
-      fontColor: elements.allergensList.fontColor,
-      alignment: elements.allergensList.alignment,
-      maxWidth: contentColumnWidth
-    });
-    currentY += allergenLabelHeight + 1; // 1mm spacing after label
-    
-    // Add allergen numbers
-    const allergensText = product.allergens.map(a => a.number).join(', ');
+  if (product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false) {
+    const allergensText = `Allergeni: ${product.allergens.map(a => a.number).join(', ')}`;
     const allergensHeight = addStyledText(pdf, allergensText, x, currentY, {
-      fontSize: elements.allergensList.fontSize,
-      fontFamily: elements.allergensList.fontFamily,
-      fontStyle: elements.allergensList.fontStyle,
-      fontColor: elements.allergensList.fontColor,
-      alignment: elements.allergensList.alignment,
+      fontSize: dimensions.pdf.allergensFontSize,
+      fontFamily: layout.elements.allergensList.fontFamily,
+      fontStyle: layout.elements.allergensList.fontStyle,
+      fontColor: layout.elements.allergensList.fontColor,
+      alignment: layout.elements.allergensList.alignment,
       maxWidth: contentColumnWidth
     });
-    currentY += allergensHeight + elements.allergensList.margin.bottom;
+    currentY += allergensHeight + dimensions.pdfMargins.allergens.bottom;
   }
   
   // Price in right column at same level as title
   let priceY = y;
   
-  if (product.price_standard) {
+  if (product.price_standard && layout.elements.price?.visible !== false) {
     const priceText = `€${product.price_standard.toFixed(2)}`;
     addStyledText(pdf, priceText, priceColumnX, priceY, {
-      fontSize: elements.price.fontSize,
-      fontFamily: elements.price.fontFamily,
-      fontStyle: elements.price.fontStyle,
-      fontColor: elements.price.fontColor,
+      fontSize: dimensions.pdf.priceFontSize,
+      fontFamily: layout.elements.price.fontFamily,
+      fontStyle: layout.elements.price.fontStyle,
+      fontColor: layout.elements.price.fontColor,
       alignment: 'right',
       maxWidth: priceColumnWidth
     });
     
     // Price suffix
-    if (product.has_price_suffix && product.price_suffix) {
-      priceY += elements.price.fontSize * 0.35 + 2;
+    if (product.has_price_suffix && product.price_suffix && layout.elements.suffix?.visible !== false) {
+      priceY += dimensions.pdf.priceFontSize * 0.35 + 2;
       addStyledText(pdf, product.price_suffix, priceColumnX, priceY, {
-        fontSize: elements.suffix.fontSize,
-        fontFamily: elements.suffix.fontFamily,
-        fontStyle: elements.suffix.fontStyle,
-        fontColor: elements.suffix.fontColor,
+        fontSize: dimensions.pdf.suffixFontSize,
+        fontFamily: layout.elements.suffix.fontFamily,
+        fontStyle: layout.elements.suffix.fontStyle,
+        fontColor: layout.elements.suffix.fontColor,
         alignment: 'right',
         maxWidth: priceColumnWidth
       });
@@ -157,15 +155,15 @@ export const addProductToPdf = async (
   }
   
   // Price variants in right column
-  if (product.has_multiple_prices) {
+  if (product.has_multiple_prices && layout.elements.priceVariants?.visible !== false) {
     if (product.price_variant_1_value && product.price_variant_1_name) {
       priceY += 6;
       const variant1Text = `${product.price_variant_1_name}: €${product.price_variant_1_value.toFixed(2)}`;
       addStyledText(pdf, variant1Text, priceColumnX, priceY, {
-        fontSize: elements.priceVariants.fontSize,
-        fontFamily: elements.priceVariants.fontFamily,
-        fontStyle: elements.priceVariants.fontStyle,
-        fontColor: elements.priceVariants.fontColor,
+        fontSize: dimensions.pdf.variantsFontSize,
+        fontFamily: layout.elements.priceVariants.fontFamily,
+        fontStyle: layout.elements.priceVariants.fontStyle,
+        fontColor: layout.elements.priceVariants.fontColor,
         alignment: 'right',
         maxWidth: priceColumnWidth
       });
@@ -175,19 +173,19 @@ export const addProductToPdf = async (
       priceY += 5;
       const variant2Text = `${product.price_variant_2_name}: €${product.price_variant_2_value.toFixed(2)}`;
       addStyledText(pdf, variant2Text, priceColumnX, priceY, {
-        fontSize: elements.priceVariants.fontSize,
-        fontFamily: elements.priceVariants.fontFamily,
-        fontStyle: elements.priceVariants.fontStyle,
-        fontColor: elements.priceVariants.fontColor,
+        fontSize: dimensions.pdf.variantsFontSize,
+        fontFamily: layout.elements.priceVariants.fontFamily,
+        fontStyle: layout.elements.priceVariants.fontStyle,
+        fontColor: layout.elements.priceVariants.fontColor,
         alignment: 'right',
         maxWidth: priceColumnWidth
       });
     }
   }
   
-  // Add spacing between products (except for last product)
+  // Add spacing between products (except for last product) - identico all'anteprima
   if (!isLast) {
-    currentY += layout.spacing.betweenProducts;
+    currentY += dimensions.spacing.betweenProducts;
   }
   
   return currentY - y;
