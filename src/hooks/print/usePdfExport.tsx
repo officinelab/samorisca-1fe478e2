@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
-import { useMenuLayouts } from '@/hooks/useMenuLayouts';
 import { PrintLayout, PageMargins } from '@/types/printLayout';
+import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
+import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
+import { generateAllMenuContentPages } from './pdf/pdfPageRenderer';
 
 // Mappa i font comuni ai font disponibili in jsPDF
 const mapFontFamily = (fontFamily: string): string => {
@@ -19,6 +22,22 @@ const mapFontFamily = (fontFamily: string): string => {
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Load menu content data for PDF generation
+  const { data: menuData, isLoading: isLoadingMenuData } = useMenuContentData();
+  
+  // Get paginated content
+  const {
+    createPages,
+    isLoadingMeasurements
+  } = useMenuPagination(
+    menuData.categories,
+    menuData.productsByCategory,
+    menuData.categoryNotes,
+    menuData.categoryNotesRelations,
+    menuData.serviceCoverCharge,
+    menuData.activeLayout
+  );
 
   // Converte hex color in RGB per jsPDF
   const hexToRgb = (hex: string) => {
@@ -39,7 +58,7 @@ export const usePdfExport = () => {
     return 'normal';
   };
 
-  // NUOVO: Funzione per ottenere i margini corretti per ogni tipo di pagina
+  // Get page margins for different page types
   const getPageMargins = (
     layout: PrintLayout, 
     pageType: 'cover' | 'content' | 'allergens',
@@ -49,7 +68,6 @@ export const usePdfExport = () => {
 
     switch (pageType) {
       case 'cover':
-        // I margini della copertina sono sempre uguali
         return {
           marginTop: page.coverMarginTop,
           marginRight: page.coverMarginRight,
@@ -58,7 +76,6 @@ export const usePdfExport = () => {
         };
 
       case 'content':
-        // Margini del contenuto: controlla se usare margini distinti per pagine pari/dispari
         if (page.useDistinctMarginsForPages && pageNumber) {
           const isOddPage = pageNumber % 2 === 1;
           if (isOddPage && page.oddPages) {
@@ -67,7 +84,6 @@ export const usePdfExport = () => {
             return page.evenPages;
           }
         }
-        // Margini standard per il contenuto
         return {
           marginTop: page.marginTop,
           marginRight: page.marginRight,
@@ -76,7 +92,6 @@ export const usePdfExport = () => {
         };
 
       case 'allergens':
-        // Margini degli allergeni: controlla se usare margini distinti per pagine pari/dispari
         if (page.useDistinctMarginsForAllergensPages && pageNumber) {
           const isOddPage = pageNumber % 2 === 1;
           if (isOddPage && page.allergensOddPages) {
@@ -85,7 +100,6 @@ export const usePdfExport = () => {
             return page.allergensEvenPages;
           }
         }
-        // Margini standard per gli allergeni
         return {
           marginTop: page.allergensMarginTop,
           marginRight: page.allergensMarginRight,
@@ -94,7 +108,6 @@ export const usePdfExport = () => {
         };
 
       default:
-        // Fallback ai margini standard del contenuto
         return {
           marginTop: page.marginTop,
           marginRight: page.marginRight,
@@ -104,7 +117,7 @@ export const usePdfExport = () => {
     }
   };
 
-  // CORREZIONE: Funzione per il posizionamento del logo che replica esattamente l'anteprima
+  // Function for adding images to PDF with correct positioning
   const addImageToPdf = async (
     pdf: jsPDF,
     imageUrl: string,
@@ -124,115 +137,42 @@ export const usePdfExport = () => {
       img.crossOrigin = 'anonymous';
       
       img.onload = () => {
-        console.log('🟢 Image onload triggered successfully');
-        
-        // Calcola l'area disponibile esattamente come nell'anteprima
         const contentWidth = pageWidth - leftMargin - rightMargin;
         const contentHeight = pageHeight - topMargin - bottomMargin;
         
-        console.log('📐 Area calculations:', {
-          pageWidth,
-          pageHeight,
-          leftMargin,
-          rightMargin,
-          topMargin,
-          bottomMargin,
-          contentWidth,
-          contentHeight
-        });
-        
-        // CORREZIONE CRITICA: Applica le percentuali correttamente al contenuto disponibile
         const maxWidthMm = contentWidth * (maxWidthPercent / 100);
         const maxHeightMm = contentHeight * (maxHeightPercent / 100);
         
-        console.log('📏 Size calculations:', {
-          maxWidthPercent,
-          maxHeightPercent,
-          maxWidthMm,
-          maxHeightMm,
-          'contentWidth * maxWidthPercent/100': `${contentWidth} * ${maxWidthPercent}/100 = ${maxWidthMm}`,
-          'contentHeight * maxHeightPercent/100': `${contentHeight} * ${maxHeightPercent}/100 = ${maxHeightMm}`
-        });
-        
-        // Calcola dimensioni mantenendo proporzioni (come CSS object-fit: contain)
         const imgRatio = img.width / img.height;
         let finalWidth = maxWidthMm;
         let finalHeight = maxWidthMm / imgRatio;
         
-        // Se l'altezza supera il limite, ricalcola basandoti sull'altezza
         if (finalHeight > maxHeightMm) {
           finalHeight = maxHeightMm;
           finalWidth = maxHeightMm * imgRatio;
         }
         
-        console.log('🖼️ Image dimensions calculated:', {
-          imgWidth: img.width,
-          imgHeight: img.height,
-          imgRatio,
-          maxWidthMm,
-          maxHeightMm,
-          finalWidth,
-          finalHeight,
-          'finalWidth calculation': `min(${maxWidthMm}, ${maxHeightMm * imgRatio})`,
-          'finalHeight calculation': `min(${maxHeightMm}, ${maxWidthMm / imgRatio})`
-        });
-        
-        // CORREZIONE CRITICA: Calcola posizione X esattamente come CSS flexbox
         let finalX = leftMargin;
-        
-        console.log('🎯 ALIGNMENT SWITCH - Input:', { 
-          alignment, 
-          type: typeof alignment,
-          stringValue: String(alignment)
-        });
         
         switch (alignment) {
           case 'left':
-            // CSS: justify-content: flex-start
             finalX = leftMargin;
-            console.log('🎯 CASE LEFT EXECUTED: finalX =', finalX);
             break;
           case 'right':
-            // CSS: justify-content: flex-end - CORREZIONE: calcolo corretto per allineamento a destra
             finalX = pageWidth - rightMargin - finalWidth;
-            console.log('🎯 CASE RIGHT EXECUTED: finalX =', finalX, 'calculation:', pageWidth, '-', rightMargin, '-', finalWidth);
             break;
           case 'center':
-            // CSS: justify-content: center
-            finalX = leftMargin + (contentWidth - finalWidth) / 2;
-            console.log('🎯 CASE CENTER EXECUTED: finalX =', finalX);
-            break;
           default:
-            // CSS: justify-content: center (default)
             finalX = leftMargin + (contentWidth - finalWidth) / 2;
-            console.log('🎯 CASE DEFAULT EXECUTED: finalX =', finalX);
             break;
         }
         
-        console.log('🖼️ Final logo position - AFTER CALCULATION:', { 
-          finalX, 
-          y, 
-          finalWidth, 
-          finalHeight,
-          calculatedFromAlignment: alignment,
-          shouldBeAtRightEdge: pageWidth - rightMargin - finalWidth,
-          'percentages applied': `W:${maxWidthPercent}% H:${maxHeightPercent}% of content area`
-        });
-        
         try {
-          console.log('🎨 Attempting to add image to PDF...');
           const canvas = document.createElement('canvas');
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0);
-          
-          console.log('📄 PDF addImage params:', {
-            finalX,
-            y,
-            finalWidth,
-            finalHeight
-          });
           
           pdf.addImage(
             canvas.toDataURL('image/jpeg', 0.95),
@@ -243,16 +183,15 @@ export const usePdfExport = () => {
             finalHeight
           );
           
-          console.log('✅ Image added to PDF successfully');
           resolve(finalHeight);
         } catch (error) {
-          console.error('❌ Error adding image to PDF:', error);
+          console.error('Error adding image to PDF:', error);
           resolve(0);
         }
       };
       
       img.onerror = () => {
-        console.error('Errore caricamento immagine:', imageUrl);
+        console.error('Error loading image:', imageUrl);
         resolve(0);
       };
       
@@ -260,7 +199,7 @@ export const usePdfExport = () => {
     });
   };
 
-  // Funzione per il testo che rispetta l'allineamento
+  // Function for adding text with proper styling
   const addTextToPdf = (
     pdf: jsPDF,
     text: string,
@@ -274,23 +213,20 @@ export const usePdfExport = () => {
     leftMargin: number,
     rightMargin: number
   ) => {
-    // Imposta stile testo
     const color = hexToRgb(fontColor);
     pdf.setTextColor(color.r, color.g, color.b);
     pdf.setFontSize(fontSize);
     
-    // Usa font personalizzati quando disponibili
     const mappedFont = mapFontFamily(fontFamily);
     const mappedStyle = mapFontStyle(fontStyle);
     
     try {
       pdf.setFont(mappedFont, mappedStyle);
     } catch (e) {
-      console.warn(`Font ${mappedFont} con stile ${mappedStyle} non disponibile, uso helvetica`);
+      console.warn(`Font ${mappedFont} with style ${mappedStyle} not available, using helvetica`);
       pdf.setFont('helvetica', mappedStyle);
     }
     
-    // Calcola posizione X basata sull'allineamento corretto
     let textX = leftMargin;
     const contentWidth = pageWidth - leftMargin - rightMargin;
     
@@ -307,84 +243,28 @@ export const usePdfExport = () => {
         break;
     }
     
-    console.log('📝 Text positioning:', {
-      text: text.substring(0, 20) + '...',
-      alignment,
-      textX,
-      y,
-      fontSize,
-      fontFamily: mappedFont
-    });
-    
-    // Aggiungi testo con allineamento corretto
     pdf.text(text, textX, y, { align: alignment });
     
-    return fontSize * 0.35; // Ritorna l'altezza approssimativa del testo
+    return fontSize * 0.35;
   };
 
-  // Genera la prima pagina di copertina con contenuto
+  // Generate first cover page
   const generateCoverPage1 = async (pdf: jsPDF, layout: PrintLayout) => {
     const cover = layout.cover;
-    // CORREZIONE: Usa la funzione getPageMargins per i margini della copertina
     const margins = getPageMargins(layout, 'cover');
     
-    const pageWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
     
     let currentY = margins.marginTop;
-    
-    console.log('📄 Cover page margins:', margins);
-    
-    // DEBUGGING: Verifica ESATTA dell'allineamento del logo
-    console.log('🔍 DEBUGGING LOGO ALIGNMENT:', {
-      'cover.logo': cover.logo,
-      'cover.logo?.alignment': cover.logo?.alignment,
-      'typeof alignment': typeof cover.logo?.alignment,
-      'alignment value': JSON.stringify(cover.logo?.alignment),
-      'visible': cover.logo?.visible,
-      'imageUrl exists': !!cover.logo?.imageUrl,
-      'maxWidth from layout': cover.logo?.maxWidth,
-      'maxHeight from layout': cover.logo?.maxHeight
-    });
     
     // Logo
     if (cover.logo?.visible && cover.logo?.imageUrl) {
       currentY += cover.logo.marginTop || 0;
       
-      // CORREZIONE CRITICA: Assicurati che l'alignment sia quello giusto
       const logoAlignment = cover.logo.alignment || 'center';
-      
-      // CORREZIONE: Usa i valori corretti dal layout invece di valori hardcoded
       const logoMaxWidth = cover.logo.maxWidth || 80;
       const logoMaxHeight = cover.logo.maxHeight || 50;
-      
-      console.log('🖼️ Logo positioning - ALIGNMENT CHECK:', {
-        'originalAlignment': cover.logo.alignment,
-        'finalAlignment': logoAlignment,
-        'currentY': currentY,
-        'maxWidthPercent from layout': logoMaxWidth,
-        'maxHeightPercent from layout': logoMaxHeight,
-        'pageWidth': pageWidth,
-        'pageHeight': pageHeight,
-        'marginLeft': margins.marginLeft,
-        'marginRight': margins.marginRight,
-        'marginTop': margins.marginTop,
-        'marginBottom': margins.marginBottom
-      });
-      
-      console.log('🎯 Parametri passati ad addImageToPdf:', {
-        imageUrl: cover.logo.imageUrl,
-        y: currentY,
-        maxWidthPercent: logoMaxWidth,
-        maxHeightPercent: logoMaxHeight,
-        alignment: logoAlignment,
-        pageWidth,
-        pageHeight,
-        leftMargin: margins.marginLeft,
-        rightMargin: margins.marginRight,
-        topMargin: margins.marginTop,
-        bottomMargin: margins.marginBottom
-      });
       
       const logoHeight = await addImageToPdf(
         pdf,
@@ -404,7 +284,7 @@ export const usePdfExport = () => {
       currentY += logoHeight + (cover.logo.marginBottom || 0);
     }
     
-    // Titolo
+    // Title
     if (cover.title?.visible && cover.title?.menuTitle) {
       currentY += cover.title.margin?.top || 0;
       
@@ -425,7 +305,7 @@ export const usePdfExport = () => {
       currentY += titleHeight + (cover.title.margin?.bottom || 0);
     }
     
-    // Sottotitolo
+    // Subtitle
     if (cover.subtitle?.visible && cover.subtitle?.menuSubtitle) {
       currentY += cover.subtitle.margin?.top || 0;
       
@@ -445,99 +325,50 @@ export const usePdfExport = () => {
     }
   };
 
-  // Genera la seconda pagina di copertina (vuota)
+  // Generate second cover page (empty)
   const generateCoverPage2 = (pdf: jsPDF) => {
     pdf.addPage();
-    // Pagina intenzionalmente vuota
   };
 
-  // Genera pagine contenuto (placeholder per ora)
+  // Generate menu content pages with real data
   const generateContentPages = (pdf: jsPDF, layout: PrintLayout) => {
-    pdf.addPage();
+    console.log('📝 Generating real menu content pages...');
     
-    // CORREZIONE: Usa la funzione getPageMargins per i margini del contenuto
-    // Per ora generiamo solo una pagina, quindi usiamo pageNumber = 3 (dopo le 2 pagine di copertina)
-    const margins = getPageMargins(layout, 'content', 3);
+    const pages = createPages();
     
-    console.log('📄 Content page margins:', margins);
-    
-    // Placeholder text con font corretto
-    addTextToPdf(
-      pdf,
-      'Pagina Contenuto Menu',
-      16,
-      'helvetica',
-      'normal',
-      '#666666',
-      'center',
-      margins.marginTop + 20,
-      210,
-      margins.marginLeft,
-      margins.marginRight
-    );
-    
-    addTextToPdf(
-      pdf,
-      'Le pagine del menu verranno generate qui',
-      12,
-      'helvetica',
-      'normal',
-      '#666666',
-      'center',
-      margins.marginTop + 30,
-      210,
-      margins.marginLeft,
-      margins.marginRight
-    );
-
-    // Mostra informazioni sui margini utilizzati
-    let debugY = margins.marginTop + 50;
-    
-    addTextToPdf(
-      pdf,
-      `Margini utilizzati: T:${margins.marginTop} R:${margins.marginRight} B:${margins.marginBottom} L:${margins.marginLeft}`,
-      10,
-      'helvetica',
-      'normal',
-      '#999999',
-      'left',
-      debugY,
-      210,
-      margins.marginLeft,
-      margins.marginRight
-    );
-
-    if (layout.page.useDistinctMarginsForPages) {
-      debugY += 12;
+    if (pages.length === 0) {
+      console.warn('⚠️ No menu pages to generate');
+      pdf.addPage();
+      const margins = getPageMargins(layout, 'content', 3);
+      
       addTextToPdf(
         pdf,
-        `Margini distinti per pagine pari/dispari: ATTIVI`,
-        10,
+        'Nessun contenuto menu disponibile',
+        16,
         'helvetica',
         'normal',
-        '#999999',
-        'left',
-        debugY,
+        '#666666',
+        'center',
+        margins.marginTop + 20,
         210,
         margins.marginLeft,
         margins.marginRight
       );
+      return;
     }
+    
+    console.log(`📄 Generating ${pages.length} menu content pages`);
+    generateAllMenuContentPages(pdf, pages, layout);
   };
 
-  // Genera pagina allergeni (placeholder per ora)
+  // Generate allergens page
   const generateAllergensPage = (pdf: jsPDF, layout: PrintLayout) => {
     pdf.addPage();
     
-    // CORREZIONE: Usa la funzione getPageMargins per i margini degli allergeni
-    // Pagina allergeni sarà la 4° pagina (dopo copertina + contenuto)
     const margins = getPageMargins(layout, 'allergens', 4);
-    
-    console.log('📄 Allergens page margins:', margins);
     
     let currentY = margins.marginTop;
     
-    // Titolo allergeni
     if (layout.allergens?.title) {
       const titleHeight = addTextToPdf(
         pdf,
@@ -556,7 +387,6 @@ export const usePdfExport = () => {
       currentY += titleHeight + 15;
     }
     
-    // Placeholder per contenuto allergeni
     addTextToPdf(
       pdf,
       'Le informazioni sugli allergeni verranno visualizzate qui',
@@ -570,110 +400,58 @@ export const usePdfExport = () => {
       margins.marginLeft,
       margins.marginRight
     );
-
-    // Mostra informazioni sui margini utilizzati
-    let debugY = currentY + 30;
-    
-    addTextToPdf(
-      pdf,
-      `Margini allergeni: T:${margins.marginTop} R:${margins.marginRight} B:${margins.marginBottom} L:${margins.marginLeft}`,
-      10,
-      'helvetica',
-      'normal',
-      '#999999',
-      'left',
-      debugY,
-      210,
-      margins.marginLeft,
-      margins.marginRight
-    );
-
-    if (layout.page.useDistinctMarginsForAllergensPages) {
-      debugY += 12;
-      addTextToPdf(
-        pdf,
-        `Margini distinti allergeni per pagine pari/dispari: ATTIVI`,
-        10,
-        'helvetica',
-        'normal',
-        '#999999',
-        'left',
-        debugY,
-        210,
-        margins.marginLeft,
-        margins.marginRight
-      );
-    }
   };
 
   const exportToPdf = async (currentLayout?: PrintLayout) => {
-    console.log('🎯 Inizio esportazione PDF con gestione completa margini...');
+    console.log('🎯 Starting complete PDF export with menu content...');
     
     if (!currentLayout) {
       toast.error('Nessun layout fornito per l\'esportazione');
       return;
     }
     
+    if (isLoadingMenuData || isLoadingMeasurements) {
+      toast.error('Dati menu ancora in caricamento, riprova tra poco');
+      return;
+    }
+    
     console.log('📄 Layout utilizzato:', currentLayout.name);
-    console.log('🔍 Configurazione margini:', {
-      cover: {
-        top: currentLayout.page.coverMarginTop,
-        right: currentLayout.page.coverMarginRight,
-        bottom: currentLayout.page.coverMarginBottom,
-        left: currentLayout.page.coverMarginLeft
-      },
-      content: {
-        top: currentLayout.page.marginTop,
-        right: currentLayout.page.marginRight,
-        bottom: currentLayout.page.marginBottom,
-        left: currentLayout.page.marginLeft,
-        useDistinct: currentLayout.page.useDistinctMarginsForPages
-      },
-      allergens: {
-        top: currentLayout.page.allergensMarginTop,
-        right: currentLayout.page.allergensMarginRight,
-        bottom: currentLayout.page.allergensMarginBottom,
-        left: currentLayout.page.allergensMarginLeft,
-        useDistinct: currentLayout.page.useDistinctMarginsForAllergensPages
-      }
+    console.log('📊 Menu data available:', {
+      categories: menuData.categories.length,
+      totalProducts: Object.values(menuData.productsByCategory).flat().length,
+      notes: menuData.categoryNotes.length
     });
     
     setIsExporting(true);
     
     try {
-      // Crea nuovo documento PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
-      // 1. Prima pagina copertina (con contenuto)
-      console.log('📝 Generazione prima pagina copertina...');
+      console.log('📝 Generating first cover page...');
       await generateCoverPage1(pdf, currentLayout);
       
-      // 2. Seconda pagina copertina (vuota)
-      console.log('📝 Generazione seconda pagina copertina...');
+      console.log('📝 Generating second cover page...');
       generateCoverPage2(pdf);
       
-      // 3. Pagine contenuto menu (placeholder)
-      console.log('📝 Generazione pagine contenuto...');
+      console.log('📝 Generating menu content pages...');
       generateContentPages(pdf, currentLayout);
       
-      // 4. Pagina allergeni (placeholder)
-      console.log('📝 Generazione pagina allergeni...');
+      console.log('📝 Generating allergens page...');
       generateAllergensPage(pdf, currentLayout);
       
-      // Salva il PDF
-      const fileName = `menu-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `menu-completo-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ PDF esportato con successo con tutti i margini corretti');
-      toast.success('PDF esportato con successo! (Margini, font e allineamento corretti)');
+      console.log('✅ Complete PDF exported successfully');
+      toast.success('PDF completo esportato con successo! Include copertina e contenuto menu.');
       
     } catch (error) {
-      console.error('❌ Errore durante l\'esportazione PDF:', error);
-      toast.error('Errore durante la generazione del PDF');
+      console.error('❌ Error during PDF export:', error);
+      toast.error('Errore durante la generazione del PDF completo');
     } finally {
       setIsExporting(false);
     }
@@ -681,6 +459,6 @@ export const usePdfExport = () => {
 
   return {
     exportToPdf,
-    isExporting
+    isExporting: isExporting || isLoadingMenuData || isLoadingMeasurements
   };
 };
