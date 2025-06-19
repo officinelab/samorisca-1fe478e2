@@ -127,7 +127,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
                 <img
                   key={feature.id}
                   src={feature.icon_url}
-                  alt={feature.name}
+                  alt={feature.title}
                   className="feature-icon"
                   style={{
                     width: `${dimensions.icons.cssSizePx}px`,
