@@ -1,4 +1,3 @@
-
 import { Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { MM_TO_PX } from "./constants";
@@ -50,38 +49,42 @@ export const getProductHeight = (
     const descLineHeight = descFontSize * 1.4;
     const descMargins = elements.description.margin;
     
-    // Stima il numero di righe basandosi sulla lunghezza del testo
-    // Assumiamo ~80 caratteri per riga
-    const estimatedLines = Math.ceil((product.description.length || 0) / 80);
+    // Stima più accurata del numero di righe basata su larghezza reale
+    // Assumiamo ~60-70 caratteri per riga per una colonna al 90% della larghezza
+    const charsPerLine = 70;
+    const estimatedLines = Math.ceil((product.description.length || 0) / charsPerLine);
     totalHeight += (descLineHeight * estimatedLines) + (descMargins.top + descMargins.bottom) * MM_TO_PX;
   }
 
-  // 3. Descrizione inglese (se presente e visibile) - CORRETTA per usare description_en
+  // 3. Descrizione inglese (se presente e visibile)
   if (elements.descriptionEng?.visible !== false && shouldShowEnglishDescription(product)) {
     const descEngFontSize = elements.descriptionEng.fontSize || 11;
     const descEngLineHeight = descEngFontSize * 1.4;
     const descEngMargins = elements.descriptionEng.margin;
     
-    const estimatedLines = Math.ceil((product.description_en!.length || 0) / 80);
+    const charsPerLine = 70;
+    const estimatedLines = Math.ceil((product.description_en!.length || 0) / charsPerLine);
     totalHeight += (descEngLineHeight * estimatedLines) + (descEngMargins.top + descEngMargins.bottom) * MM_TO_PX;
   }
 
   // 4. Lista allergeni
-  if (elements.allergensList?.visible !== false && product.allergens?.length > 0) {
+  if (elements.allergensList?.visible !== false && product.allergens && product.allergens.length > 0) {
     const allergensFontSize = elements.allergensList.fontSize || 10;
     const allergensLineHeight = allergensFontSize * 1.5;
     const allergensMargins = elements.allergensList.margin;
     totalHeight += allergensLineHeight + (allergensMargins.top + allergensMargins.bottom) * MM_TO_PX;
   }
 
-  // 5. Caratteristiche prodotto (icone) - CORRETTA per usare la configurazione corretta
+  // 5. Caratteristiche prodotto (icone) - CORRETTA
   if (hasProductFeatures(product) && customLayout.productFeatures?.icon) {
     const featuresConfig = customLayout.productFeatures.icon;
-    const iconHeightMm = featuresConfig.iconSize / MM_TO_PX * 0.75; // Conversione px -> mm più accurata
-    totalHeight += iconHeightMm + (featuresConfig.marginTop + featuresConfig.marginBottom) * MM_TO_PX;
+    // Conversione più accurata da px a pt per l'altezza dell'icona
+    const iconSizePt = (featuresConfig.iconSize || 16) * 0.75; // 1px ≈ 0.75pt
+    const iconHeightWithMargins = iconSizePt + (featuresConfig.marginTop + featuresConfig.marginBottom) * MM_TO_PX;
+    totalHeight += iconHeightWithMargins;
   }
 
-  // 6. Prezzo - considera l'altezza della colonna prezzo più alta
+  // 6. Calcolo più accurato per la colonna prezzo
   let priceColumnHeight = 0;
   
   // Prezzo principale
@@ -89,36 +92,49 @@ export const getProductHeight = (
     const priceFontSize = elements.price.fontSize || 14;
     const priceLineHeight = priceFontSize * 1.5;
     const priceMargins = elements.price.margin;
-    priceColumnHeight += priceLineHeight + (priceMargins.top + priceMargins.bottom) * MM_TO_PX;
+    priceColumnHeight = priceLineHeight + (priceMargins.top + priceMargins.bottom) * MM_TO_PX;
   }
 
-  // Suffisso prezzo (se presente)
-  if (product.has_price_suffix && product.price_suffix) {
+  // Suffisso prezzo
+  if (product.has_price_suffix && product.price_suffix && elements.suffix?.visible !== false) {
     const suffixFontSize = elements.suffix.fontSize || 12;
     const suffixLineHeight = suffixFontSize * 1.5;
-    priceColumnHeight += suffixLineHeight;
+    priceColumnHeight += suffixLineHeight + 2; // Piccolo spazio tra prezzo e suffisso
   }
 
-  // Varianti prezzo (se presenti)
+  // Varianti prezzo
   if (product.has_multiple_prices && elements.priceVariants?.visible !== false) {
     const variantsFontSize = elements.priceVariants.fontSize || 12;
     const variantsLineHeight = variantsFontSize * 1.5;
     const variantsMargins = elements.priceVariants.margin;
     
-    let variantCount = 0;
-    if (product.price_variant_1_value) variantCount += 2; // prezzo + nome
-    if (product.price_variant_2_value) variantCount += 2; // prezzo + nome
+    // Conta le varianti effettive
+    let variantLines = 0;
+    if (product.price_variant_1_value) {
+      variantLines++; // Linea per il prezzo
+      if (product.price_variant_1_name) variantLines++; // Linea per il nome
+    }
+    if (product.price_variant_2_value) {
+      variantLines++; // Linea per il prezzo
+      if (product.price_variant_2_name) variantLines++; // Linea per il nome
+    }
     
-    priceColumnHeight += (variantsLineHeight * variantCount) + 
-                        (variantsMargins.top + variantsMargins.bottom) * MM_TO_PX;
+    if (variantLines > 0) {
+      priceColumnHeight += (variantsLineHeight * variantLines) + 
+                          (variantsMargins.top + variantsMargins.bottom) * MM_TO_PX;
+    }
   }
 
   // Usa l'altezza maggiore tra contenuto principale e colonna prezzo
-  totalHeight = Math.max(totalHeight, priceColumnHeight);
+  // ma aggiungi un margine di sicurezza
+  totalHeight = Math.max(totalHeight, priceColumnHeight) + 5; // 5px di margine extra
 
-  // 7. Spacing tra prodotti
+  // 7. Spacing tra prodotti (non aggiungere all'ultimo prodotto della pagina)
   const spacing = customLayout.spacing?.betweenProducts || 15;
   totalHeight += spacing * MM_TO_PX;
+
+  // Aggiungi un piccolo buffer per sicurezza (2mm)
+  totalHeight += 2 * MM_TO_PX;
 
   return totalHeight;
 };
