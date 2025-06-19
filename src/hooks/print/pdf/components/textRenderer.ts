@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { hexToRgb, mapFontFamily, mapFontStyle } from '../utils/pdfUtils';
 
@@ -11,7 +12,7 @@ interface StyledTextConfig {
   maxWidth?: number;
 }
 
-// Add text with proper styling and wrapping - FINALE
+// Text renderer con conversioni IDENTICHE all'anteprima
 export const addStyledText = (
   pdf: jsPDF,
   text: string,
@@ -21,7 +22,7 @@ export const addStyledText = (
 ): number => {
   const color = hexToRgb(config.fontColor);
   pdf.setTextColor(color.r, color.g, color.b);
-  pdf.setFontSize(config.fontSize);
+  pdf.setFontSize(config.fontSize); // jsPDF usa pt nativamente
   
   const mappedFont = mapFontFamily(config.fontFamily);
   const mappedStyle = mapFontStyle(config.fontStyle);
@@ -37,18 +38,18 @@ export const addStyledText = (
   if (config.maxWidth) {
     const lines = pdf.splitTextToSize(text, config.maxWidth);
     
-    // ✅ CORREZIONE FINALE: Line height corretto per jsPDF (pt to mm)
-    const lineHeight = config.fontSize * 0.353; // mm - conversione pt to mm corretta
+    // ✅ LINE HEIGHT CORRETTO per jsPDF - IDENTICO anteprima
+    const lineHeightMm = config.fontSize * 0.352778 * 1.4; // pt→mm con line-height 1.4
     
     lines.forEach((line: string, index: number) => {
-      pdf.text(line, x, y + (index * lineHeight), { align: config.alignment || 'left' });
+      pdf.text(line, x, y + (index * lineHeightMm), { align: config.alignment || 'left' });
     });
     
-    return lines.length * lineHeight;
+    return lines.length * lineHeightMm;
   } else {
     pdf.text(text, x, y, { align: config.alignment || 'left' });
     
-    // ✅ CORREZIONE FINALE: Return height corretto (pt to mm)
-    return config.fontSize * 0.353; // Return approximate height in mm
+    // ✅ Return height corretto pt→mm - IDENTICO anteprima
+    return config.fontSize * 0.352778; // pt→mm conversion
   }
 };
