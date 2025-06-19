@@ -19,7 +19,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   let totalHeightMm = 0;
   const pageConfig = layout.page;
   
-  console.log('🔧 ProductCalculator con layout 75%/25% (come anteprima):', product.title);
+  console.log('🔧 ProductCalculator con Schema 1 (90%/10%) - CORRETTO:', product.title);
   console.log('🔧 ProductCalculator - Dimensioni standardizzate:', {
     titleFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.title.fontSize,
     descriptionFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.description.fontSize,
@@ -27,18 +27,18 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     spacing: dimensions.spacing.betweenProducts
   });
   
-  // ✅ CORREZIONE: Usa 75% come nell'anteprima (non 90%)
+  // ✅ CORREZIONE FINALE: Usa 90% come nell'anteprima corretta e Schema 1
   const pageWidthMm = 210; // A4 width
   const leftMargin = pageConfig.marginLeft || 25;
   const rightMargin = pageConfig.marginRight || 25;
   const contentWidthMm = pageWidthMm - leftMargin - rightMargin;
-  const productDetailsWidthMm = contentWidthMm * 0.75; // ✅ 75% come nell'anteprima
+  const productDetailsWidthMm = contentWidthMm * 0.90; // ✅ 90% (Schema 1 corretto)
   const productDetailsWidthPx = productDetailsWidthMm * CONVERSIONS.MM_TO_PX;
   
-  console.log('🔧 ProductCalculator dimensioni corrette:', {
+  console.log('🔧 ProductCalculator Schema 1 dimensioni CORRETTE:', {
     contentWidthMm: contentWidthMm.toFixed(1),
     productDetailsWidthMm: productDetailsWidthMm.toFixed(1),
-    percentage: '75%'
+    schema: 'Schema 1 (90%/10%) - CORRETTO'
   });
 
   // Calcola altezza del titolo con conversioni standardizzate
@@ -126,13 +126,13 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     });
   }
 
-  // Calcola altezza delle caratteristiche prodotto (icone) - ORA STANDARDIZZATO
+  // Calcola altezza delle caratteristiche prodotto (icone) - STANDARDIZZATO
   if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
     console.log('🔧 ProductCalculator - Adding features height:', dimensions.icons.heightMm, 'mm');
     totalHeightMm += dimensions.icons.heightMm;
   }
 
-  // Calcola l'altezza della colonna prezzo (25%) per confronto
+  // Calcola l'altezza della colonna prezzo (10% nel Schema 1) per confronto
   let priceColumnHeightMm = 0;
   
   // Prezzo principale
@@ -174,7 +174,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   const safetyBufferMm = 3;
   totalHeightMm += safetyBufferMm;
 
-  console.log('🔧 ProductCalculator - Altezza finale con layout 75%/25%:', {
+  console.log('🔧 ProductCalculator - Altezza finale con Schema 1 (90%/10%) CORRETTO:', {
     totalHeightMm: totalHeightMm.toFixed(1),
     priceColumnHeightMm: priceColumnHeightMm.toFixed(1),
     spacingMm,
