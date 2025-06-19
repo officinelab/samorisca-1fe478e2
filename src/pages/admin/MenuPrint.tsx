@@ -23,7 +23,7 @@ const MenuPrint = () => {
   }, [currentLayout]);
   
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
       <MenuPrintHeader 
         showMargins={showMargins}
         setShowMargins={setShowMargins}
@@ -32,10 +32,12 @@ const MenuPrint = () => {
         currentLayout={currentLayout}
       />
       
-      <MenuPrintPreview 
-        currentLayout={currentLayout}
-        showMargins={showMargins}
-      />
+      <div className="pt-6">
+        <MenuPrintPreview 
+          currentLayout={currentLayout}
+          showMargins={showMargins}
+        />
+      </div>
     </div>
   );
 };
