@@ -128,6 +128,37 @@ const ElementsTab = ({
               </AccordionContent>
             </AccordionItem>
 
+            <AccordionItem value="productFeaturesIcons">
+              <AccordionTrigger>Icone caratteristiche prodotto</AccordionTrigger>
+              <AccordionContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Dimensione icone (px)</label>
+                    <input
+                      type="number"
+                      min="8"
+                      max="48"
+                      value={layout.elements.productFeatures?.iconSize || 16}
+                      onChange={(e) => handleLegacyProductFeaturesChange('iconSize', parseInt(e.target.value))}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Spaziatura tra icone (px)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={layout.elements.productFeatures?.iconSpacing || 4}
+                      onChange={(e) => handleLegacyProductFeaturesChange('iconSpacing', parseInt(e.target.value))}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
             <AccordionItem value="suffix">
               <AccordionTrigger>Suffisso</AccordionTrigger>
               <AccordionContent>

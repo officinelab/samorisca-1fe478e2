@@ -64,10 +64,10 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
         marginBottom: !isLast ? `${layout.spacing.betweenProducts}mm` : '0'
       }}
     >
-      {/* Schema 1: Two column layout (90% + 10%) */}
+      {/* Schema 1: Two column layout (88% + 12%) */}
       <div className="flex items-start gap-2">
-        {/* Left column: Product details (90%) */}
-        <div className="flex-1" style={{ width: '90%' }}>
+        {/* Left column: Product details (88%) */}
+        <div className="flex-1" style={{ width: '88%' }}>
           {/* Product Title */}
           <div
             className="product-title"
@@ -153,10 +153,11 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
           {/* Product Features */}
           {product.features && product.features.length > 0 && (
             <div
-              className="product-features flex items-center gap-1"
+              className="product-features flex items-center"
               style={{
                 marginTop: `${elementsConfig.productFeatures.marginTop}mm`,
                 marginBottom: `${elementsConfig.productFeatures.marginBottom}mm`,
+                gap: `${elementsConfig.productFeatures.iconSpacing || 4}px`
               }}
             >
               {product.features.map((feature, index) => (
@@ -167,13 +168,10 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
                       alt={feature.title}
                       title={feature.title}
                       style={{
-                        width: `${elementsConfig.productFeatures.iconSize}px`,
-                        height: `${elementsConfig.productFeatures.iconSize}px`,
+                        width: `${elementsConfig.productFeatures.iconSize || 16}px`,
+                        height: `${elementsConfig.productFeatures.iconSize || 16}px`,
                       }}
                     />
-                  )}
-                  {index < product.features.length - 1 && (
-                    <div style={{ width: `${elementsConfig.productFeatures.iconSpacing}px` }} />
                   )}
                 </React.Fragment>
               ))}
@@ -208,8 +206,8 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
           )}
         </div>
 
-        {/* Right column: Price (10%) */}
-        <div className="flex-shrink-0" style={{ width: '10%' }}>
+        {/* Right column: Price (12%) */}
+        <div className="flex-shrink-0" style={{ width: '12%' }}>
           {product.price_standard && (
             <div
               className="product-price"
