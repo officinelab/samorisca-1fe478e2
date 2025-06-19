@@ -1,5 +1,5 @@
 import { Category, Product } from '@/types/database';
-import { getProductHeight } from '@/components/menu-print/pagination/utils/pageCalculations';
+import { getProductHeight } from '@/components/menu-print/pagination/utils';
 
 /**
  * Calcola l'altezza stimata di una categoria in base ai suoi prodotti
