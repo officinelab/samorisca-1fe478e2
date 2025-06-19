@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
@@ -10,7 +10,8 @@ interface MenuContentPagesProps {
 }
 
 const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
-  const { data, isLoading: isLoadingData, error } = useMenuContentData();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data, isLoading: isLoadingData, error, refetch } = useMenuContentData();
   const {
     categories,
     productsByCategory,
@@ -28,6 +29,23 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     serviceCoverCharge,
     activeLayout
   );
+
+  // Ascolta gli eventi di aggiornamento layout
+  useEffect(() => {
+    const handleLayoutUpdate = (event: CustomEvent) => {
+      console.log('📐 MenuContentPages: Layout aggiornato, ricarico dati...', event.detail);
+      // Ricarica i dati quando il layout cambia
+      refetch?.();
+      // Forza re-render
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
+
+    return () => {
+      window.removeEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
+    };
+  }, [refetch]);
 
   const isLoading = isLoadingData || isLoadingMeasurements;
 
@@ -126,7 +144,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
   }
 
   return (
-    <Card>
+    <Card key={refreshKey}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
@@ -140,7 +158,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
       <CardContent className="space-y-8">
         {pages.map((page) => (
           <MenuContentPagePreview
-            key={page.pageNumber}
+            key={`${page.pageNumber}-${refreshKey}`}
             page={page}
             layout={activeLayout}
             showMargins={showMargins}
