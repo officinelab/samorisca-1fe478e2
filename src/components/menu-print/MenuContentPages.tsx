@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
-import { usePreRenderMeasurement } from '@/hooks/menu-content/usePreRenderMeasurement';
 import MenuContentPagePreview from './MenuContentPagePreview';
 
 interface MenuContentPagesProps {
@@ -21,23 +20,13 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     activeLayout
   } = data;
 
-  // Pre-render measurements for accurate height calculations
-  const { measurements, isCalculating } = usePreRenderMeasurement(
-    categories,
-    productsByCategory,
-    categoryNotes,
-    categoryNotesRelations,
-    activeLayout
-  );
-
   const { createPages } = useMenuPagination(
     categories,
     productsByCategory,
     categoryNotes,
     categoryNotesRelations,
     serviceCoverCharge,
-    activeLayout,
-    measurements
+    activeLayout
   );
 
   if (isLoading) {
@@ -45,7 +34,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded animate-pulse"></div>
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
             Pagine Contenuto del Menu
           </CardTitle>
         </CardHeader>
@@ -94,24 +83,6 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     );
   }
 
-  if (isCalculating) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded animate-pulse"></div>
-            Pagine Contenuto del Menu
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">Calcolo altezze precise per la paginazione...</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const pages = createPages();
 
   if (pages.length === 0) {
@@ -141,7 +112,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {pages.length} pagina{pages.length !== 1 ? 'e' : ''} generata{pages.length !== 1 ? 'e' : ''} 
-          con tutti i prodotti del menu (altezze calcolate con precisione)
+          con tutti i prodotti del menu
         </p>
       </CardHeader>
       <CardContent className="space-y-8">

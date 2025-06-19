@@ -15,23 +15,15 @@ interface PageContent {
   serviceCharge: number;
 }
 
-interface MeasurementData {
-  categoryTitles: Map<string, number>;
-  categoryNotes: Map<string, number>;
-  products: Map<string, number>;
-  serviceLineHeight: number;
-}
-
 export const useMenuPagination = (
   categories: Category[],
   productsByCategory: Record<string, Product[]>,
   categoryNotes: CategoryNote[],
   categoryNotesRelations: Record<string, string[]>,
   serviceCoverCharge: number,
-  layout: PrintLayout | null,
-  measurements?: MeasurementData | null
+  layout: PrintLayout | null
 ) => {
-  const heightCalculator = useHeightCalculator(layout, measurements);
+  const heightCalculator = useHeightCalculator(layout);
   const A4_HEIGHT_MM = 297;
 
   const getAvailableHeight = (pageNumber: number): number => {
@@ -53,7 +45,7 @@ export const useMenuPagination = (
     }
 
     const serviceLineHeight = heightCalculator.calculateServiceLineHeight();
-    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 3; // 3mm buffer reduced from 5mm
+    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 5; // 5mm buffer instead of 10mm
   };
 
   const createPages = (): PageContent[] => {
