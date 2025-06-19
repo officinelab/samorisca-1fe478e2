@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Product } from '@/types/database';
@@ -17,20 +16,16 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
 }) => {
   const dimensions = getStandardizedDimensions(layout);
   
-  console.log('🎨 ProductRenderer - Dimensioni standardizzate per prodotto:', product.title, {
+  console.log('🎨 ProductRenderer - Rendering con Schema 1 (90%/10%):', product.title, {
     titleFontSize: dimensions.css.titleFontSize,
     descriptionFontSize: dimensions.css.descriptionFontSize,
     iconSize: dimensions.icons.cssSizePx,
-    iconMargins: {
-      top: dimensions.icons.cssMarginTopPx,
-      bottom: dimensions.icons.cssMarginBottomPx
-    },
     productSpacing: dimensions.spacing.betweenProducts
   });
 
-  // Due colonne: 75% contenuto, 25% prezzo
-  const contentWidth = '75%';
-  const priceWidth = '25%';
+  // ✅ SCHEMA 1: Due colonne 90% contenuto, 10% prezzo (come da template)
+  const contentWidth = '90%';  // ✅ Corretto per Schema 1
+  const priceWidth = '10%';   // ✅ Corretto per Schema 1
 
   // Verifica se mostrare descrizione inglese
   const shouldShowEnglishDescription = product.description_en && 
@@ -44,7 +39,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
         minHeight: 'auto'
       }}
     >
-      {/* Colonna contenuto - 75% */}
+      {/* Colonna contenuto - 90% (Schema 1) */}
       <div 
         className="product-content flex-1"
         style={{ width: contentWidth, paddingRight: '3mm' }}
@@ -163,7 +158,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
         )}
       </div>
 
-      {/* Colonna prezzo - 25% */}
+      {/* Colonna prezzo - 10% (Schema 1) */}
       <div 
         className="product-price-column"
         style={{ 
