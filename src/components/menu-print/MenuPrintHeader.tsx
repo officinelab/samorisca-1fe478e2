@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -13,6 +12,7 @@ interface MenuPrintHeaderProps {
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
   currentLayout?: PrintLayout;
+  menuPages?: any[]; // Le pagine calcolate per il contenuto
 }
 
 const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
@@ -20,14 +20,23 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   setShowMargins,
   isSettingsOpen,
   setIsSettingsOpen,
-  currentLayout
+  currentLayout,
+  menuPages
 }) => {
   const { exportToPdf, isExporting } = usePdfExport();
 
   const handleExportPdf = async () => {
-    console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
+    console.log('🎯 Pulsante Salva PDF cliccato');
     if (currentLayout) {
-      await exportToPdf(currentLayout);
+      await exportToPdf({
+        layout: currentLayout,
+        menuPages: menuPages,
+        businessInfo: {
+          name: currentLayout.cover?.title?.menuTitle || "Menu",
+          subtitle: currentLayout.cover?.subtitle?.menuSubtitle,
+          logo: currentLayout.cover?.logo?.imageUrl
+        }
+      });
     } else {
       console.error('Nessun layout disponibile per l\'esportazione');
     }
@@ -76,7 +85,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
           
           <Button 
             onClick={handleExportPdf}
-            disabled={isExporting || !currentLayout}
+            disabled={isExporting || !currentLayout || !menuPages}
           >
             {isExporting ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
