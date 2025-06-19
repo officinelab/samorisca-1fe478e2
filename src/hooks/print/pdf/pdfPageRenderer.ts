@@ -75,7 +75,7 @@ const getPageMargins = (
   }
 };
 
-// Generate a single menu content page in PDF - FIXED: Async support and better positioning
+// Generate a single menu content page in PDF with proper layout matching preview
 export const generateMenuContentPage = async (
   pdf: jsPDF,
   page: PageContent,
@@ -94,12 +94,12 @@ export const generateMenuContentPage = async (
   const contentWidth = pageWidth - margins.marginLeft - margins.marginRight;
   
   let currentY = margins.marginTop;
-  const maxY = pageHeight - margins.marginBottom - 25; // FIXED: Reserve space for service charge
+  const maxY = pageHeight - margins.marginBottom - 20; // Reserve space for service charge
   
   console.log(`📐 Page ${page.pageNumber} margins:`, margins);
   console.log(`📐 Content width: ${contentWidth}mm, starting Y: ${currentY}mm, max Y: ${maxY}mm`);
   
-  // Render each category section
+  // Render each category section exactly like preview
   for (const categorySection of page.categories) {
     // Category title and notes (only if not repeated)
     if (!categorySection.isRepeatedTitle) {
@@ -133,7 +133,7 @@ export const generateMenuContentPage = async (
       }
     }
     
-    // Render products - FIXED: Async rendering for SVG support
+    // Render products with proper two-column layout
     for (const product of categorySection.products) {
       const isLastProduct = categorySection.products.indexOf(product) === categorySection.products.length - 1;
       
@@ -153,8 +153,8 @@ export const generateMenuContentPage = async (
     }
   }
   
-  // Add service charge at bottom of page - FIXED: Better positioning
-  const serviceY = maxY; // Position at calculated max Y
+  // Add service charge at bottom of page with proper positioning
+  const serviceY = maxY;
   addServiceChargeToPdf(
     pdf,
     page.serviceCharge,
@@ -167,7 +167,7 @@ export const generateMenuContentPage = async (
   console.log(`✅ Page ${page.pageNumber} completed, final Y: ${currentY.toFixed(1)}mm, service at: ${serviceY.toFixed(1)}mm`);
 };
 
-// Generate all menu content pages - FIXED: Async support
+// Generate all menu content pages with async support
 export const generateAllMenuContentPages = async (
   pdf: jsPDF,
   pages: PageContent[],

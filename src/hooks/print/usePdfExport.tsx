@@ -329,9 +329,9 @@ export const usePdfExport = () => {
     pdf.addPage();
   };
 
-  // Generate menu content pages with real data - FIXED: Async support
+  // Generate menu content pages with real data and proper layout
   const generateContentPages = async (pdf: jsPDF, layout: PrintLayout) => {
-    console.log('📝 Generating real menu content pages...');
+    console.log('📝 Generating real menu content pages matching preview...');
     
     const pages = createPages();
     
@@ -356,8 +356,8 @@ export const usePdfExport = () => {
       return;
     }
     
-    console.log(`📄 Generating ${pages.length} menu content pages`);
-    await generateAllMenuContentPages(pdf, pages, layout); // FIXED: Await async function
+    console.log(`📄 Generating ${pages.length} menu content pages with exact preview layout`);
+    await generateAllMenuContentPages(pdf, pages, layout);
   };
 
   // Generate allergens page
@@ -402,7 +402,7 @@ export const usePdfExport = () => {
   };
 
   const exportToPdf = async (currentLayout?: PrintLayout) => {
-    console.log('🎯 Starting complete PDF export with menu content...');
+    console.log('🎯 Starting complete PDF export with menu content matching preview...');
     
     if (!currentLayout) {
       toast.error('Nessun layout fornito per l\'esportazione');
@@ -436,8 +436,8 @@ export const usePdfExport = () => {
       console.log('📝 Generating second cover page...');
       generateCoverPage2(pdf);
       
-      console.log('📝 Generating menu content pages...');
-      await generateContentPages(pdf, currentLayout); // FIXED: Await async function
+      console.log('📝 Generating menu content pages with exact preview layout...');
+      await generateContentPages(pdf, currentLayout);
       
       console.log('📝 Generating allergens page...');
       generateAllergensPage(pdf, currentLayout);
@@ -445,8 +445,8 @@ export const usePdfExport = () => {
       const fileName = `menu-completo-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ Complete PDF exported successfully');
-      toast.success('PDF completo esportato con successo! Include copertina e contenuto menu.');
+      console.log('✅ Complete PDF exported successfully with exact preview layout');
+      toast.success('PDF completo esportato con successo! Layout identico all\'anteprima di stampa.');
       
     } catch (error) {
       console.error('❌ Error during PDF export:', error);
