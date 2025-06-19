@@ -1,6 +1,7 @@
+
 // hooks/print/usePreRenderMeasurement.tsx
 import React, { useRef, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
@@ -76,7 +77,7 @@ export const usePreRenderMeasurement = (
         container.appendChild(categoryWrapper);
         
         // Crea un mini React root per renderizzare il componente reale
-        const root = ReactDOM.createRoot(categoryWrapper);
+        const root = createRoot(categoryWrapper);
         
         // Note della categoria
         const relatedNoteIds = categoryNotesRelations[category.id] || [];
@@ -92,7 +93,7 @@ export const usePreRenderMeasurement = (
               isRepeatedTitle={false}
             />
           );
-          setTimeout(resolve, 50); // Attendi il rendering
+          setTimeout(resolve, 100); // Aumentato il tempo di attesa per un rendering più accurato
         });
         
         // Misura l'altezza totale della categoria (titolo + note)
@@ -108,63 +109,63 @@ export const usePreRenderMeasurement = (
         // Misura anche le singole note per riferimento
         relatedNotes.forEach((note, index) => {
           // Approssima l'altezza di ogni nota basandosi sul totale
-          const estimatedNoteHeight = 10; // Default 10mm per nota
+          const estimatedNoteHeight = 8; // Ridotto da 10mm a 8mm
           results.categoryNoteHeights.set(note.id, estimatedNoteHeight);
         });
         
         root.unmount();
 
-      // Misura ogni prodotto
-      const products = productsByCategory[category.id] || [];
-      for (let i = 0; i < products.length; i++) {
-        const product = products[i];
-        const isLast = i === products.length - 1;
-        
-        const productWrapper = document.createElement('div');
-        // Applica il marginBottom solo se non è l'ultimo prodotto
-        if (!isLast) {
-          productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
+        // Misura ogni prodotto
+        const products = productsByCategory[category.id] || [];
+        for (let i = 0; i < products.length; i++) {
+          const product = products[i];
+          const isLast = i === products.length - 1;
+          
+          const productWrapper = document.createElement('div');
+          // Applica il marginBottom solo se non è l'ultimo prodotto
+          if (!isLast) {
+            productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
+          }
+          container.innerHTML = '';
+          container.appendChild(productWrapper);
+          
+          const productRoot = createRoot(productWrapper);
+          
+          // Renderizza il ProductRenderer reale
+          await new Promise<void>(resolve => {
+            productRoot.render(
+              <ProductRenderer
+                product={product}
+                layout={layout}
+                isLast={isLast}
+              />
+            );
+            setTimeout(resolve, 100); // Aumentato il tempo di attesa
+          });
+          
+          // Misura l'altezza reale inclusi tutti gli stili CSS
+          const rect = productWrapper.getBoundingClientRect();
+          let productHeight = rect.height / MM_TO_PX;
+          
+          // Log dettagliato per debug
+          console.log('📏 Prodotto "' + product.title + '":', {
+            heightPx: rect.height,
+            heightMm: productHeight,
+            isLast,
+            hasMarginBottom: !isLast,
+            marginBottom: !isLast ? layout.spacing.betweenProducts : 0,
+            hasDescriptionEn: !!(product.description_en && product.description_en !== product.description),
+            hasAllergens: !!(product.allergens && product.allergens.length > 0),
+            hasFeatures: !!(product.features && product.features.length > 0)
+          });
+          
+          // Aggiungi un buffer di sicurezza ridotto (3% invece del 5%)
+          const safeProductHeight = productHeight * 1.03;
+          
+          results.productHeights.set(product.id, safeProductHeight);
+          
+          productRoot.unmount();
         }
-        container.innerHTML = '';
-        container.appendChild(productWrapper);
-        
-                  const productRoot = ReactDOM.createRoot(productWrapper);
-        
-        // Renderizza il ProductRenderer reale
-        await new Promise<void>(resolve => {
-          productRoot.render(
-            <ProductRenderer
-              product={product}
-              layout={layout}
-              isLast={isLast}
-            />
-          );
-          setTimeout(resolve, 50); // Attendi il rendering
-        });
-        
-        // Misura l'altezza reale inclusi tutti gli stili CSS
-        const rect = productWrapper.getBoundingClientRect();
-        let productHeight = rect.height / MM_TO_PX;
-        
-        // Se non è l'ultimo prodotto, l'altezza include già il marginBottom
-        // Se è l'ultimo, non c'è margin
-        
-        // Log dettagliato per debug
-        console.log('📏 Prodotto "' + product.title + '":', {
-          heightPx: rect.height,
-          heightMm: productHeight,
-          isLast,
-          hasMarginBottom: !isLast,
-          marginBottom: !isLast ? layout.spacing.betweenProducts : 0
-        });
-        
-        // Aggiungi un buffer di sicurezza più piccolo (5% invece del 10%)
-        const safeProductHeight = productHeight * 1.05;
-        
-        results.productHeights.set(product.id, safeProductHeight);
-        
-        productRoot.unmount();
-      }
       }
 
       // Misura la linea del servizio esattamente come viene renderizzata
@@ -173,7 +174,7 @@ export const usePreRenderMeasurement = (
       container.appendChild(serviceWrapper);
       
       // Renderizza il componente reale del servizio
-      const serviceRoot = ReactDOM.createRoot(serviceWrapper);
+      const serviceRoot = createRoot(serviceWrapper);
       
       await new Promise<void>(resolve => {
         serviceRoot.render(
@@ -195,7 +196,7 @@ export const usePreRenderMeasurement = (
             Servizio e Coperto = €{serviceCoverCharge.toFixed(2)}
           </div>
         );
-        setTimeout(resolve, 50);
+        setTimeout(resolve, 100);
       });
       
       // Misura l'altezza totale inclusi tutti i margini e padding
@@ -211,8 +212,8 @@ export const usePreRenderMeasurement = (
         fontSize: layout.servicePrice.fontSize
       });
       
-      // Aggiungi un piccolo buffer di sicurezza (2mm invece di 5mm)
-      results.serviceLineHeight = serviceHeight + 2;
+      // Aggiungi un piccolo buffer di sicurezza ridotto (1mm invece di 2mm)
+      results.serviceLineHeight = serviceHeight + 1;
       
       serviceRoot.unmount();
 

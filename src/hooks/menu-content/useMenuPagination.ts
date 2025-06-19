@@ -1,3 +1,4 @@
+
 // hooks/menu-content/useMenuPagination.ts
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
@@ -24,7 +25,7 @@ export const useMenuPagination = (
   layout: PrintLayout | null
 ) => {
   const A4_HEIGHT_MM = 297;
-  const SAFETY_MARGIN_MM = 15; // Aumentato da 10 a 15mm per maggiore sicurezza
+  const SAFETY_MARGIN_MM = 8; // Ridotto da 15 a 8mm per maggiore precisione
 
   // Usa il sistema di pre-render per ottenere le misurazioni reali
   const { measurements, isLoading } = usePreRenderMeasurement(
@@ -55,7 +56,7 @@ export const useMenuPagination = (
     }
 
     // IMPORTANTE: La serviceLineHeight già include i margini del servizio
-    const serviceLineHeight = measurements?.serviceLineHeight || 25; // Default più conservativo
+    const serviceLineHeight = measurements?.serviceLineHeight || 20; // Ridotto da 25 a 20mm
     
     // Calcola altezza disponibile
     const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
@@ -91,7 +92,7 @@ export const useMenuPagination = (
           categories: [...currentPageContent],
           serviceCharge: serviceCoverCharge
         });
-        console.log('📄 Creata pagina ' + currentPageNumber + ' con ' + currentPageContent.length + ' categorie, altezza totale: ' + currentPageHeight + 'mm');
+        console.log('📄 Creata pagina ' + currentPageNumber + ' con ' + currentPageContent.length + ' categorie, altezza totale: ' + currentPageHeight.toFixed(2) + 'mm');
         currentPageNumber++;
         currentPageContent = [];
         currentPageHeight = 0;
@@ -99,7 +100,7 @@ export const useMenuPagination = (
     };
 
     categories.forEach((category, categoryIndex) => {
-      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 50; // Default più alto
+      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40; // Ridotto da 50 a 40mm
       const relatedNoteIds = categoryNotesRelations[category.id] || [];
       const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
       
@@ -110,7 +111,7 @@ export const useMenuPagination = (
       let remainingProducts = [...products];
       let categoryHeaderAddedOnCurrentPage = false;
 
-      console.log('📊 Categoria "' + category.title + '": ' + products.length + ' prodotti, altezza header: ' + totalCategoryHeaderHeight + 'mm');
+      console.log('📊 Categoria "' + category.title + '": ' + products.length + ' prodotti, altezza header: ' + totalCategoryHeaderHeight.toFixed(2) + 'mm');
 
       // Continua finché ci sono prodotti rimanenti da processare
       while (remainingProducts.length > 0) {
@@ -123,13 +124,13 @@ export const useMenuPagination = (
           
           // Aggiungi spacing tra categorie se c'è già contenuto nella pagina
           if (currentPageContent.length > 0) {
-            categoryHeaderHeight += layout?.spacing.betweenCategories || 15;
+            categoryHeaderHeight += layout?.spacing.betweenCategories || 12; // Ridotto da 15 a 12mm
           }
 
           // Controlla se l'header della categoria può entrare in questa pagina
           const availableHeight = getAvailableHeight(currentPageNumber);
           if (tempHeight + categoryHeaderHeight > availableHeight && currentPageContent.length > 0) {
-            console.log('⚠️ Header categoria non entra (' + tempHeight + ' + ' + categoryHeaderHeight + ' > ' + availableHeight + '), nuova pagina');
+            console.log('⚠️ Header categoria non entra (' + tempHeight.toFixed(2) + ' + ' + categoryHeaderHeight.toFixed(2) + ' > ' + availableHeight.toFixed(2) + '), nuova pagina');
             addNewPage();
             tempHeight = 0;
           }
@@ -142,31 +143,33 @@ export const useMenuPagination = (
         // Prova ad aggiungere quanti più prodotti possibile in questa pagina
         for (let i = 0; i < remainingProducts.length; i++) {
           const product = remainingProducts[i];
-          const productHeight = measurements.productHeights.get(product.id) || 60; // Default più alto
+          const productHeight = measurements.productHeights.get(product.id) || 45; // Ridotto da 60 a 45mm
           let requiredHeight = productHeight;
 
           // Aggiungi spacing tra prodotti (tranne per il primo prodotto nella categoria su questa pagina)
           if (currentCategoryProducts.length > 0) {
-            requiredHeight += layout?.spacing.betweenProducts || 5;
+            requiredHeight += layout?.spacing.betweenProducts || 4; // Ridotto da 5 a 4mm
           }
 
           const availableHeight = getAvailableHeight(currentPageNumber);
           
-          // Controlla con un margine di sicurezza extra del 10% (aumentato dal 5%)
-          const safeRequiredHeight = requiredHeight * 1.10;
+          // Controlla con un margine di sicurezza ridotto (5% invece del 10%)
+          const safeRequiredHeight = requiredHeight * 1.05;
           
-          // Log dettagliato per ogni prodotto
-          if (i < 3 || tempHeight + safeRequiredHeight > availableHeight) {
-            const productTitle = product.title.length > 30 ? product.title.substring(0, 30) + '...' : product.title;
+          // Log dettagliato per prodotti critici o quando si avvicina al limite
+          const shouldLog = i < 2 || tempHeight + safeRequiredHeight > availableHeight * 0.9;
+          if (shouldLog) {
+            const productTitle = product.title.length > 25 ? product.title.substring(0, 25) + '...' : product.title;
             console.log('📦 Prodotto ' + (i+1) + '/' + remainingProducts.length + ' "' + productTitle + '":', {
-              productHeight,
-              spacing: currentCategoryProducts.length > 0 ? layout?.spacing.betweenProducts || 5 : 0,
-              requiredHeight,
-              safeRequiredHeight,
-              currentPageHeight: tempHeight,
-              wouldBe: tempHeight + safeRequiredHeight,
-              availableHeight,
-              fits: tempHeight + safeRequiredHeight <= availableHeight
+              productHeight: productHeight.toFixed(2),
+              spacing: currentCategoryProducts.length > 0 ? (layout?.spacing.betweenProducts || 4) : 0,
+              requiredHeight: requiredHeight.toFixed(2),
+              safeRequiredHeight: safeRequiredHeight.toFixed(2),
+              currentPageHeight: tempHeight.toFixed(2),
+              wouldBe: (tempHeight + safeRequiredHeight).toFixed(2),
+              availableHeight: availableHeight.toFixed(2),
+              fits: tempHeight + safeRequiredHeight <= availableHeight,
+              utilizzo: ((tempHeight + safeRequiredHeight) / availableHeight * 100).toFixed(1) + '%'
             });
           }
           
@@ -175,7 +178,7 @@ export const useMenuPagination = (
             currentCategoryProducts.push(product);
             tempHeight += requiredHeight;
           } else {
-            console.log('⚠️ Prodotto "' + product.title + '" non entra (' + tempHeight + ' + ' + safeRequiredHeight + ' > ' + availableHeight + ')');
+            console.log('⚠️ Prodotto "' + product.title + '" non entra (' + tempHeight.toFixed(2) + ' + ' + safeRequiredHeight.toFixed(2) + ' > ' + availableHeight.toFixed(2) + ')');
             break;
           }
         }
@@ -183,7 +186,9 @@ export const useMenuPagination = (
         // Se non siamo riusciti ad aggiungere nemmeno un prodotto, forza l'aggiunta del primo
         if (currentCategoryProducts.length === 0 && remainingProducts.length > 0) {
           currentCategoryProducts.push(remainingProducts[0]);
-          console.warn('⚠️ Prodotto "' + remainingProducts[0].title + '" troppo alto per la pagina, forzato comunque');
+          const forcedProductHeight = measurements.productHeights.get(remainingProducts[0].id) || 45;
+          tempHeight += forcedProductHeight;
+          console.warn('⚠️ Prodotto "' + remainingProducts[0].title + '" troppo alto per la pagina, forzato comunque (altezza: ' + forcedProductHeight.toFixed(2) + 'mm)');
         }
 
         // Aggiungi la sezione categoria alla pagina corrente
@@ -203,7 +208,7 @@ export const useMenuPagination = (
           // Rimuovi i prodotti processati dalla lista dei rimanenti
           remainingProducts = remainingProducts.slice(currentCategoryProducts.length);
           
-          console.log('✅ Aggiunti ' + currentCategoryProducts.length + ' prodotti, rimanenti: ' + remainingProducts.length);
+          console.log('✅ Aggiunti ' + currentCategoryProducts.length + ' prodotti, rimanenti: ' + remainingProducts.length + ', altezza pagina: ' + currentPageHeight.toFixed(2) + 'mm');
         }
 
         // Se ci sono ancora prodotti rimanenti, dovranno andare in una nuova pagina
@@ -221,7 +226,9 @@ export const useMenuPagination = (
     console.log('✅ Paginazione completata: ' + pages.length + ' pagine generate');
     pages.forEach((page, index) => {
       const totalProducts = page.categories.reduce((sum, cat) => sum + cat.products.length, 0);
-      console.log('📄 Pagina ' + page.pageNumber + ': ' + page.categories.length + ' sezioni categoria, ' + totalProducts + ' prodotti totali');
+      const totalCategories = page.categories.length;
+      const uniqueCategories = new Set(page.categories.map(c => c.category.id)).size;
+      console.log('📄 Pagina ' + page.pageNumber + ': ' + totalCategories + ' sezioni (' + uniqueCategories + ' categorie uniche), ' + totalProducts + ' prodotti totali');
     });
 
     return pages;

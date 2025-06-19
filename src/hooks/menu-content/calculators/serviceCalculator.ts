@@ -3,7 +3,7 @@ import { PrintLayout } from '@/types/printLayout';
 import { calculateTextHeight, MM_TO_PX } from '../utils/textMeasurement';
 
 export const calculateServiceLineHeight = (layout: PrintLayout | null): number => {
-  if (!layout) return 20; // Aumentato il default per essere più conservativo
+  if (!layout) return 18; // Ridotto da 20 a 18mm per essere più preciso
 
   const serviceConfig = layout.servicePrice;
   const pageConfig = layout.page;
@@ -24,17 +24,27 @@ export const calculateServiceLineHeight = (layout: PrintLayout | null): number =
     fontSizePx,
     serviceConfig.fontFamily,
     availableWidthPx,
-    1.5
+    1.4 // Ridotto da 1.5 a 1.4
   );
   
   const textHeightMm = textHeightPx / MM_TO_PX;
   const marginMm = serviceConfig.margin.top + serviceConfig.margin.bottom;
   
-  // Aggiungi altezza per il bordo superiore e padding - AUMENTATO per essere più conservativo
-  const borderAndPaddingMm = 8; // Aumentato da 5 a 8mm per includere tutti gli spazi
+  // Ridotto l'altezza per bordo e padding da 8 a 6mm
+  const borderAndPaddingMm = 6;
   
-  // Aggiungi un buffer di sicurezza
-  const safetyBufferMm = 3;
+  // Ridotto il buffer di sicurezza da 3 a 2mm
+  const safetyBufferMm = 2;
   
-  return textHeightMm + marginMm + borderAndPaddingMm + safetyBufferMm;
+  const totalHeight = textHeightMm + marginMm + borderAndPaddingMm + safetyBufferMm;
+  
+  console.log('🔧 Calcolo altezza linea servizio:', {
+    textHeightMm: textHeightMm.toFixed(2),
+    marginMm: marginMm.toFixed(2),
+    borderAndPaddingMm,
+    safetyBufferMm,
+    totalHeight: totalHeight.toFixed(2)
+  });
+  
+  return totalHeight;
 };
