@@ -1,235 +1,235 @@
-// hooks/menu-content/useMenuPagination.ts
+// hooks/print/usePreRenderMeasurement.tsx
+import { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { PrintLayout } from '@/types/printLayout';
-import { Product, Category } from '@/types/database';
+import { Category, Product } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import { usePreRenderMeasurement } from '../print/usePreRenderMeasurement';
+import CategoryRenderer from '@/components/menu-print/CategoryRenderer';
+import ProductRenderer from '@/components/menu-print/ProductRenderer';
 
-interface PageContent {
-  pageNumber: number;
-  categories: {
-    category: Category;
-    notes: CategoryNote[];
-    products: Product[];
-    isRepeatedTitle: boolean;
-  }[];
-  serviceCharge: number;
+// Costante di conversione mm to px
+export const MM_TO_PX = 3.7795275591; // 96 DPI
+
+interface MeasurementResult {
+  categoryHeights: Map<string, number>;
+  productHeights: Map<string, number>;
+  categoryNoteHeights: Map<string, number>;
+  serviceLineHeight: number;
 }
 
-export const useMenuPagination = (
+export const usePreRenderMeasurement = (
+  layout: PrintLayout | null,
   categories: Category[],
   productsByCategory: Record<string, Product[]>,
   categoryNotes: CategoryNote[],
   categoryNotesRelations: Record<string, string[]>,
-  serviceCoverCharge: number,
-  layout: PrintLayout | null
+  serviceCoverCharge: number
 ) => {
-  const A4_HEIGHT_MM = 297;
-  const SAFETY_MARGIN_MM = 10; // Margine di sicurezza aggiuntivo
+  const [measurements, setMeasurements] = useState<MeasurementResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const measurementContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Usa il sistema di pre-render per ottenere le misurazioni reali
-  const { measurements, isLoading } = usePreRenderMeasurement(
-    layout,
-    categories,
-    productsByCategory,
-    categoryNotes,
-    categoryNotesRelations,
-    serviceCoverCharge
-  );
+  useEffect(() => {
+    if (!layout || categories.length === 0) return;
 
-  const getAvailableHeight = (pageNumber: number): number => {
-    if (!layout) return 250; // Default available height
+    const measureElements = async () => {
+      setIsLoading(true);
 
-    const margins = layout.page;
-    let topMargin = margins.marginTop;
-    let bottomMargin = margins.marginBottom;
-
-    // Check if using distinct margins for odd/even pages
-    if (margins.useDistinctMarginsForPages && pageNumber > 1) {
-      if (pageNumber % 2 === 1) { // Odd page
-        topMargin = margins.oddPages.marginTop;
-        bottomMargin = margins.oddPages.marginBottom;
-      } else { // Even page
-        topMargin = margins.evenPages.marginTop;
-        bottomMargin = margins.evenPages.marginBottom;
+      // Crea container di misurazione se non esiste
+      if (!measurementContainerRef.current) {
+        measurementContainerRef.current = document.createElement('div');
+        measurementContainerRef.current.style.cssText = `
+          position: fixed;
+          top: -9999px;
+          left: -9999px;
+          width: ${210}mm;
+          visibility: hidden;
+          pointer-events: none;
+          z-index: -1;
+        `;
+        document.body.appendChild(measurementContainerRef.current);
       }
-    }
 
-    // IMPORTANTE: La serviceLineHeight già include i margini del servizio
-    const serviceLineHeight = measurements?.serviceLineHeight || 25; // Default più conservativo
-    
-    // Calcola altezza disponibile
-    const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
-    
-    console.log(`📐 Pagina ${pageNumber} - Calcolo altezza disponibile:`, {
-      A4_HEIGHT_MM,
-      topMargin,
-      bottomMargin,
-      serviceLineHeight,
-      SAFETY_MARGIN_MM,
-      totalHeight,
-      calculation: `${A4_HEIGHT_MM} - ${topMargin} - ${bottomMargin} - ${serviceLineHeight} - ${SAFETY_MARGIN_MM} = ${totalHeight}`
-    });
-    
-    return totalHeight;
-  };
+      const container = measurementContainerRef.current;
+      const results: MeasurementResult = {
+        categoryHeights: new Map(),
+        productHeights: new Map(),
+        categoryNoteHeights: new Map(),
+        serviceLineHeight: 0
+      };
 
-  const createPages = (): PageContent[] => {
-    // Se le misurazioni non sono pronte, restituisci array vuoto
-    if (!measurements || isLoading) {
-      return [];
-    }
+      // Calcola larghezza disponibile considerando i margini
+      const pageMargins = layout.page;
+      const contentWidth = 210 - pageMargins.marginLeft - pageMargins.marginRight;
+      
+      // Imposta la larghezza del container
+      container.style.width = `${contentWidth}mm`;
+      container.style.padding = `0`;
+      container.style.boxSizing = 'border-box';
 
-    const pages: PageContent[] = [];
-    let currentPageNumber = 3; // Starting after cover pages
-    let currentPageHeight = 0;
-    let currentPageContent: PageContent['categories'] = [];
-
-    const addNewPage = () => {
-      if (currentPageContent.length > 0) {
-        pages.push({
-          pageNumber: currentPageNumber,
-          categories: [...currentPageContent],
-          serviceCharge: serviceCoverCharge
+      // Misura ogni categoria
+      for (const category of categories) {
+        // Renderizza il componente reale per misurazioni accurate
+        const categoryWrapper = document.createElement('div');
+        container.innerHTML = '';
+        container.appendChild(categoryWrapper);
+        
+        // Crea un mini React root per renderizzare il componente reale
+        const root = createRoot(categoryWrapper);
+        
+        // Note della categoria
+        const relatedNoteIds = categoryNotesRelations[category.id] || [];
+        const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
+        
+        // Renderizza il CategoryRenderer reale
+        await new Promise<void>(resolve => {
+          root.render(
+            <CategoryRenderer
+              category={category}
+              notes={relatedNotes}
+              layout={layout}
+              isRepeatedTitle={false}
+            />
+          );
+          setTimeout(resolve, 50); // Attendi il rendering
         });
-        console.log(`📄 Creata pagina ${currentPageNumber} con ${currentPageContent.length} categorie, altezza totale: ${currentPageHeight}mm`);
-        currentPageNumber++;
-        currentPageContent = [];
-        currentPageHeight = 0;
+        
+        // Misura l'altezza totale della categoria (titolo + note)
+        const categoryTotalHeight = categoryWrapper.getBoundingClientRect().height / MM_TO_PX;
+        results.categoryHeights.set(category.id, categoryTotalHeight);
+        
+        // Misura anche le singole note per riferimento
+        relatedNotes.forEach((note, index) => {
+          // Approssima l'altezza di ogni nota basandosi sul totale
+          const estimatedNoteHeight = 10; // Default 10mm per nota
+          results.categoryNoteHeights.set(note.id, estimatedNoteHeight);
+        });
+        
+        root.unmount();
+
+        // Misura ogni prodotto
+        const products = productsByCategory[category.id] || [];
+        for (let i = 0; i < products.length; i++) {
+          const product = products[i];
+          const isLast = i === products.length - 1;
+          
+          const productWrapper = document.createElement('div');
+          // Applica il marginBottom solo se non è l'ultimo prodotto
+          if (!isLast) {
+            productWrapper.style.marginBottom = `${layout.spacing.betweenProducts}mm`;
+          }
+          container.innerHTML = '';
+          container.appendChild(productWrapper);
+          
+          const productRoot = createRoot(productWrapper);
+          
+          // Renderizza il ProductRenderer reale
+          await new Promise<void>(resolve => {
+            productRoot.render(
+              <ProductRenderer
+                product={product}
+                layout={layout}
+                isLast={isLast}
+              />
+            );
+            setTimeout(resolve, 50); // Attendi il rendering
+          });
+          
+          // Misura l'altezza reale inclusi tutti gli stili CSS
+          const rect = productWrapper.getBoundingClientRect();
+          let productHeight = rect.height / MM_TO_PX;
+          
+          // Se non è l'ultimo prodotto, l'altezza include già il marginBottom
+          // Se è l'ultimo, non c'è margin
+          
+          // Log dettagliato per debug
+          console.log(`📏 Prodotto "${product.title}":`, {
+            heightPx: rect.height,
+            heightMm: productHeight,
+            isLast,
+            hasMarginBottom: !isLast,
+            marginBottom: !isLast ? layout.spacing.betweenProducts : 0
+          });
+          
+          // Aggiungi un buffer di sicurezza più piccolo (5% invece del 10%)
+          const safeProductHeight = productHeight * 1.05;
+          
+          results.productHeights.set(product.id, safeProductHeight);
+          
+          productRoot.unmount();
+        }
       }
+
+      // Misura la linea del servizio esattamente come viene renderizzata
+      const serviceWrapper = document.createElement('div');
+      container.innerHTML = '';
+      container.appendChild(serviceWrapper);
+      
+      // Renderizza il componente reale del servizio
+      const serviceRoot = createRoot(serviceWrapper);
+      
+      await new Promise<void>(resolve => {
+        serviceRoot.render(
+          <div 
+            className="flex-shrink-0 border-t pt-2"
+            style={{
+              fontSize: `${layout.servicePrice.fontSize}pt`,
+              fontFamily: layout.servicePrice.fontFamily,
+              color: layout.servicePrice.fontColor,
+              fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.servicePrice.alignment as any,
+              marginTop: `${layout.servicePrice.margin.top}mm`,
+              marginBottom: `${layout.servicePrice.margin.bottom}mm`,
+              borderTop: '1px solid #e5e7eb',
+              paddingTop: '8px'
+            }}
+          >
+            Servizio e Coperto = €{serviceCoverCharge.toFixed(2)}
+          </div>
+        );
+        setTimeout(resolve, 50);
+      });
+      
+      // Misura l'altezza totale inclusi tutti i margini e padding
+      const serviceHeight = serviceWrapper.getBoundingClientRect().height / MM_TO_PX;
+      
+      // Log per debug
+      console.log('📏 Altezza linea servizio:', {
+        heightPx: serviceWrapper.getBoundingClientRect().height,
+        heightMm: serviceHeight,
+        marginTop: layout.servicePrice.margin.top,
+        marginBottom: layout.servicePrice.margin.bottom,
+        fontSize: layout.servicePrice.fontSize
+      });
+      
+      // Aggiungi un piccolo buffer di sicurezza (2mm invece di 5mm)
+      results.serviceLineHeight = serviceHeight + 2;
+      
+      serviceRoot.unmount();
+
+      setMeasurements(results);
+      setIsLoading(false);
+      
+      console.log('📏 Misurazioni complete:', {
+        categorie: results.categoryHeights.size,
+        prodotti: results.productHeights.size,
+        note: results.categoryNoteHeights.size,
+        serviceLineHeight: results.serviceLineHeight
+      });
     };
 
-    categories.forEach((category, categoryIndex) => {
-      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 50; // Default più alto
-      const relatedNoteIds = categoryNotesRelations[category.id] || [];
-      const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
-      
-      // L'altezza categoria include già le note nel nuovo sistema
-      const totalCategoryHeaderHeight = categoryTitleHeight;
+    measureElements();
 
-      const products = productsByCategory[category.id] || [];
-      let remainingProducts = [...products];
-      let categoryHeaderAddedOnCurrentPage = false;
-
-      console.log(`📊 Categoria "${category.title}": ${products.length} prodotti, altezza header: ${totalCategoryHeaderHeight}mm`);
-
-      // Continua finché ci sono prodotti rimanenti da processare
-      while (remainingProducts.length > 0) {
-        let currentCategoryProducts: Product[] = [];
-        let tempHeight = currentPageHeight;
-
-        // Se non abbiamo ancora aggiunto l'header della categoria in questa pagina
-        if (!categoryHeaderAddedOnCurrentPage) {
-          let categoryHeaderHeight = totalCategoryHeaderHeight;
-          
-          // Aggiungi spacing tra categorie se c'è già contenuto nella pagina
-          if (currentPageContent.length > 0) {
-            categoryHeaderHeight += layout?.spacing.betweenCategories || 15;
-          }
-
-          // Controlla se l'header della categoria può entrare in questa pagina
-          const availableHeight = getAvailableHeight(currentPageNumber);
-          if (tempHeight + categoryHeaderHeight > availableHeight && currentPageContent.length > 0) {
-            console.log(`⚠️ Header categoria non entra (${tempHeight} + ${categoryHeaderHeight} > ${availableHeight}), nuova pagina`);
-            addNewPage();
-            tempHeight = 0;
-          }
-
-          // Aggiungi l'altezza dell'header
-          tempHeight += categoryHeaderHeight;
-          categoryHeaderAddedOnCurrentPage = true;
-        }
-
-        // Prova ad aggiungere quanti più prodotti possibile in questa pagina
-        for (let i = 0; i < remainingProducts.length; i++) {
-          const product = remainingProducts[i];
-          const productHeight = measurements.productHeights.get(product.id) || 60; // Default più alto
-          let requiredHeight = productHeight;
-
-          // Aggiungi spacing tra prodotti (tranne per il primo prodotto nella categoria su questa pagina)
-          if (currentCategoryProducts.length > 0) {
-            requiredHeight += layout?.spacing.betweenProducts || 5;
-          }
-
-          const availableHeight = getAvailableHeight(currentPageNumber);
-          
-          // Controlla con un margine di sicurezza extra del 5%
-          const safeRequiredHeight = requiredHeight * 1.05;
-          
-          // Log dettagliato per ogni prodotto
-          if (i < 3 || tempHeight + safeRequiredHeight > availableHeight) {
-            console.log(`📦 Prodotto ${i+1}/${remainingProducts.length} "${product.title.substring(0, 30)}...":`, {
-              productHeight,
-              spacing: currentCategoryProducts.length > 0 ? layout?.spacing.betweenProducts || 5 : 0,
-              requiredHeight,
-              safeRequiredHeight,
-              currentPageHeight: tempHeight,
-              wouldBe: tempHeight + safeRequiredHeight,
-              availableHeight,
-              fits: tempHeight + safeRequiredHeight <= availableHeight
-            });
-          }
-          
-          if (tempHeight + safeRequiredHeight <= availableHeight) {
-            // Il prodotto entra nella pagina
-            currentCategoryProducts.push(product);
-            tempHeight += requiredHeight;
-          } else {
-            console.log(`⚠️ Prodotto "${product.title}" non entra (${tempHeight} + ${safeRequiredHeight} > ${availableHeight})`);
-            break;
-          }
-        }
-
-        // Se non siamo riusciti ad aggiungere nemmeno un prodotto, forza l'aggiunta del primo
-        if (currentCategoryProducts.length === 0 && remainingProducts.length > 0) {
-          currentCategoryProducts.push(remainingProducts[0]);
-          console.warn(`⚠️ Prodotto "${remainingProducts[0].title}" troppo alto per la pagina, forzato comunque`);
-        }
-
-        // Aggiungi la sezione categoria alla pagina corrente
-        if (currentCategoryProducts.length > 0) {
-          const isRepeatedTitle = currentPageContent.some(c => c.category.id === category.id);
-          
-          currentPageContent.push({
-            category,
-            notes: !isRepeatedTitle ? relatedNotes : [], // Note solo la prima volta
-            products: [...currentCategoryProducts],
-            isRepeatedTitle
-          });
-
-          // Aggiorna l'altezza della pagina corrente
-          currentPageHeight = tempHeight;
-
-          // Rimuovi i prodotti processati dalla lista dei rimanenti
-          remainingProducts = remainingProducts.slice(currentCategoryProducts.length);
-          
-          console.log(`✅ Aggiunti ${currentCategoryProducts.length} prodotti, rimanenti: ${remainingProducts.length}`);
-        }
-
-        // Se ci sono ancora prodotti rimanenti, dovranno andare in una nuova pagina
-        if (remainingProducts.length > 0) {
-          console.log(`📄 Prodotti rimanenti richiedono nuova pagina`);
-          addNewPage();
-          categoryHeaderAddedOnCurrentPage = false; // Reset per la nuova pagina
-        }
+    // Cleanup
+    return () => {
+      if (measurementContainerRef.current && measurementContainerRef.current.parentNode) {
+        measurementContainerRef.current.parentNode.removeChild(measurementContainerRef.current);
+        measurementContainerRef.current = null;
       }
-    });
+    };
+  }, [layout, categories, productsByCategory, categoryNotes, categoryNotesRelations, serviceCoverCharge]);
 
-    // Aggiungi l'ultima pagina se contiene contenuto
-    addNewPage();
-
-    console.log(`✅ Paginazione completata: ${pages.length} pagine generate`);
-    pages.forEach((page, index) => {
-      const totalProducts = page.categories.reduce((sum, cat) => sum + cat.products.length, 0);
-      console.log(`📄 Pagina ${page.pageNumber}: ${page.categories.length} sezioni categoria, ${totalProducts} prodotti totali`);
-    });
-
-    return pages;
-  };
-
-  return {
-    createPages,
-    getAvailableHeight,
-    isLoadingMeasurements: isLoading,
-    measurements
-  };
+  return { measurements, isLoading };
 };
