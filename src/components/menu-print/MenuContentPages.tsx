@@ -1,16 +1,16 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
 import MenuContentPagePreview from './MenuContentPagePreview';
+import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
 }
 
 const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
-  const { data, isLoading, error } = useMenuContentData();
+  const { data, isLoading: isLoadingData, error } = useMenuContentData();
   const {
     categories,
     productsByCategory,
@@ -20,7 +20,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     activeLayout
   } = data;
 
-  const { createPages } = useMenuPagination(
+  const { createPages, isLoadingMeasurements } = useMenuPagination(
     categories,
     productsByCategory,
     categoryNotes,
@@ -29,7 +29,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     activeLayout
   );
 
-  if (isLoading) {
+  const isLoading = isLoadingData || isLoadingMeasurements;
+
+  if (isLoadingData) {
     return (
       <Card>
         <CardHeader>
@@ -40,6 +42,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
             <div className="text-muted-foreground">Caricamento contenuto menu...</div>
           </div>
         </CardContent>
@@ -83,9 +86,28 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     );
   }
 
+  if (isLoadingMeasurements) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            Pagine Contenuto del Menu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <div className="text-muted-foreground">Calcolo altezze reali degli elementi...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const pages = createPages();
 
-  if (pages.length === 0) {
+  if (pages.length === 0 && !isLoading) {
     return (
       <Card>
         <CardHeader>
