@@ -1,261 +1,198 @@
-import React from 'react';
+import jsPDF from 'jspdf';
 import { PrintLayout } from '@/types/printLayout';
 import { Product } from '@/types/database';
+import { addStyledText } from './textRenderer';
+import { addSvgIconToPdf } from './iconRenderer';
 import { getStandardizedDimensions } from '@/hooks/print/pdf/utils/conversionUtils';
 
-interface ProductRendererProps {
-  product: Product;
-  layout: PrintLayout;
-  isLast: boolean;
-}
-
-const ProductRenderer: React.FC<ProductRendererProps> = ({
-  product,
-  layout,
-  isLast
-}) => {
+// Add product features icons with correct dimensions matching Schema 1
+const addProductFeaturesToPdf = async (
+  pdf: jsPDF,
+  product: Product,
+  x: number,
+  y: number,
+  layout: PrintLayout,
+  maxContentWidth: number
+): Promise<number> => {
+  if (!product.features || product.features.length === 0) return 0;
+  
   const dimensions = getStandardizedDimensions(layout);
   
-  console.log('🎨 ProductRenderer - Rendering con Schema 1 (90%/10%):', product.title, {
-    titleFontSize: dimensions.css.titleFontSize,
-    descriptionFontSize: dimensions.css.descriptionFontSize,
-    iconSize: dimensions.icons.cssSizePx,
-    productSpacing: dimensions.spacing.betweenProducts
+  console.log('🎯 PDF Features con dimensioni Schema 1:', {
+    iconSizeMm: dimensions.icons.pdfSizeMm,
+    marginTopMm: dimensions.icons.pdfMarginTopMm,
+    marginBottomMm: dimensions.icons.pdfMarginBottomMm,
+    spacingMm: dimensions.icons.pdfSpacingMm
   });
-
-  // ✅ SCHEMA 1: Due colonne 90% contenuto, 10% prezzo (come da template)
-  const contentWidth = '90%';  // ✅ Corretto per Schema 1
-  const priceWidth = '10%';   // ✅ Corretto per Schema 1
-
-  // Verifica se mostrare descrizione inglese
-  const shouldShowEnglishDescription = product.description_en && 
-    product.description_en !== product.description;
-
-  return (
-    <div 
-      className="product-item flex justify-between items-start w-full"
-      style={{
-        marginBottom: !isLast ? `${dimensions.spacing.betweenProducts}mm` : '0',
-        minHeight: 'auto'
-      }}
-    >
-      {/* Colonna contenuto - 90% (Schema 1) */}
-      <div 
-        className="product-content flex-1"
-        style={{ width: contentWidth, paddingRight: '3mm' }}
-      >
-        {/* Titolo prodotto */}
-        <div
-          className="product-title"
-          style={{
-            fontSize: `${dimensions.css.titleFontSize}px`,
-            fontFamily: layout.elements.title.fontFamily,
-            color: layout.elements.title.fontColor,
-            fontWeight: layout.elements.title.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: layout.elements.title.fontStyle === 'italic' ? 'italic' : 'normal',
-            textAlign: layout.elements.title.alignment as any,
-            marginTop: `${dimensions.cssMargins.title.top}px`,
-            marginBottom: `${dimensions.cssMargins.title.bottom}px`,
-            marginLeft: `${dimensions.cssMargins.title.left}px`,
-            marginRight: `${dimensions.cssMargins.title.right}px`,
-            lineHeight: 1.3
-          }}
-        >
-          {product.title}
-        </div>
-
-        {/* Descrizione italiana */}
-        {product.description && layout.elements.description?.visible !== false && (
-          <div
-            className="product-description"
-            style={{
-              fontSize: `${dimensions.css.descriptionFontSize}px`,
-              fontFamily: layout.elements.description.fontFamily,
-              color: layout.elements.description.fontColor,
-              fontWeight: layout.elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.description.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.description.alignment as any,
-              marginTop: `${dimensions.cssMargins.description.top}px`,
-              marginBottom: `${dimensions.cssMargins.description.bottom}px`,
-              marginLeft: `${dimensions.cssMargins.description.left}px`,
-              marginRight: `${dimensions.cssMargins.description.right}px`,
-              lineHeight: 1.4
-            }}
-          >
-            {product.description}
-          </div>
-        )}
-
-        {/* Descrizione inglese */}
-        {shouldShowEnglishDescription && layout.elements.descriptionEng?.visible !== false && (
-          <div
-            className="product-description-eng"
-            style={{
-              fontSize: `${dimensions.css.descriptionEngFontSize}px`,
-              fontFamily: layout.elements.descriptionEng.fontFamily,
-              color: layout.elements.descriptionEng.fontColor,
-              fontWeight: layout.elements.descriptionEng.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.descriptionEng.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.descriptionEng.alignment as any,
-              marginTop: `${dimensions.cssMargins.descriptionEng.top}px`,
-              marginBottom: `${dimensions.cssMargins.descriptionEng.bottom}px`,
-              marginLeft: `${dimensions.cssMargins.descriptionEng.left}px`,
-              marginRight: `${dimensions.cssMargins.descriptionEng.right}px`,
-              lineHeight: 1.4
-            }}
-          >
-            {product.description_en}
-          </div>
-        )}
-
-        {/* Icone caratteristiche prodotto */}
-        {product.features && product.features.length > 0 && layout.productFeatures?.icon && (
-          <div
-            className="product-features flex items-center gap-1"
-            style={{
-              marginTop: `${dimensions.icons.cssMarginTopPx}px`,
-              marginBottom: `${dimensions.icons.cssMarginBottomPx}px`,
-            }}
-          >
-            {product.features.map((feature, index) => (
-              feature.icon_url && (
-                <img
-                  key={feature.id}
-                  src={feature.icon_url}
-                  alt={feature.title}
-                  className="feature-icon"
-                  style={{
-                    width: `${dimensions.icons.cssSizePx}px`,
-                    height: `${dimensions.icons.cssSizePx}px`,
-                    marginRight: index < product.features.length - 1 ? `${dimensions.icons.cssSpacingPx}px` : '0'
-                  }}
-                />
-              )
-            ))}
-          </div>
-        )}
-
-        {/* Lista allergeni */}
-        {product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false && (
-          <div
-            className="product-allergens"
-            style={{
-              fontSize: `${dimensions.css.allergensFontSize}px`,
-              fontFamily: layout.elements.allergensList.fontFamily,
-              color: layout.elements.allergensList.fontColor,
-              fontWeight: layout.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.allergensList.alignment as any,
-              marginTop: `${dimensions.cssMargins.allergens.top}px`,
-              marginBottom: `${dimensions.cssMargins.allergens.bottom}px`,
-              marginLeft: `${dimensions.cssMargins.allergens.left}px`,
-              marginRight: `${dimensions.cssMargins.allergens.right}px`,
-              lineHeight: 1.5
-            }}
-          >
-            Allergeni: {product.allergens.map(a => a.number).join(', ')}
-          </div>
-        )}
-      </div>
-
-      {/* Colonna prezzo - 10% (Schema 1) */}
-      <div 
-        className="product-price-column"
-        style={{ 
-          width: priceWidth,
-          textAlign: 'right',
-          flexShrink: 0
-        }}
-      >
-        {/* Prezzo principale */}
-        {product.price_standard && layout.elements.price?.visible !== false && (
-          <div
-            className="product-price"
-            style={{
-              fontSize: `${dimensions.css.priceFontSize}px`,
-              fontFamily: layout.elements.price.fontFamily,
-              color: layout.elements.price.fontColor,
-              fontWeight: layout.elements.price.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.price.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.price.alignment as any,
-              marginTop: `${dimensions.cssMargins.price.top}px`,
-              marginBottom: `${dimensions.cssMargins.price.bottom}px`,
-              marginLeft: `${dimensions.cssMargins.price.left}px`,
-              marginRight: `${dimensions.cssMargins.price.right}px`,
-              lineHeight: 1.5
-            }}
-          >
-            €{product.price_standard.toFixed(2)}
-          </div>
-        )}
-
-        {/* Suffisso prezzo */}
-        {product.has_price_suffix && product.price_suffix && layout.elements.suffix?.visible !== false && (
-          <div
-            className="product-price-suffix"
-            style={{
-              fontSize: `${dimensions.css.suffixFontSize}px`,
-              fontFamily: layout.elements.suffix.fontFamily,
-              color: layout.elements.suffix.fontColor,
-              fontWeight: layout.elements.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.suffix.alignment as any,
-              lineHeight: 1.5,
-              marginTop: '2px'
-            }}
-          >
-            {product.price_suffix}
-          </div>
-        )}
-
-        {/* Varianti prezzo */}
-        {product.has_multiple_prices && layout.elements.priceVariants?.visible !== false && (
-          <div
-            className="product-price-variants"
-            style={{
-              marginTop: `${dimensions.cssMargins.variants.top}px`,
-              marginBottom: `${dimensions.cssMargins.variants.bottom}px`,
-              marginLeft: `${dimensions.cssMargins.variants.left}px`,
-              marginRight: `${dimensions.cssMargins.variants.right}px`,
-            }}
-          >
-            {product.price_variant_1_value && product.price_variant_1_name && (
-              <div
-                style={{
-                  fontSize: `${dimensions.css.variantsFontSize}px`,
-                  fontFamily: layout.elements.priceVariants.fontFamily,
-                  color: layout.elements.priceVariants.fontColor,
-                  fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-                  fontStyle: layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-                  textAlign: layout.elements.priceVariants.alignment as any,
-                  lineHeight: 1.5,
-                  marginBottom: '2px'
-                }}
-              >
-                {product.price_variant_1_name}: €{product.price_variant_1_value.toFixed(2)}
-              </div>
-            )}
-            
-            {product.price_variant_2_value && product.price_variant_2_name && (
-              <div
-                style={{
-                  fontSize: `${dimensions.css.variantsFontSize}px`,
-                  fontFamily: layout.elements.priceVariants.fontFamily,
-                  color: layout.elements.priceVariants.fontColor,
-                  fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
-                  fontStyle: layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
-                  textAlign: layout.elements.priceVariants.alignment as any,
-                  lineHeight: 1.5
-                }}
-              >
-                {product.price_variant_2_name}: €{product.price_variant_2_value.toFixed(2)}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  
+  let currentX = x;
+  const startY = y + dimensions.icons.pdfMarginTopMm;
+  
+  // Load and add each feature icon
+  for (const feature of product.features) {
+    if (feature.icon_url) {
+      await addSvgIconToPdf(pdf, feature.icon_url, currentX, startY, dimensions.icons.pdfSizeMm);
+      currentX += dimensions.icons.pdfSizeMm + dimensions.icons.pdfSpacingMm;
+      
+      // Check if we exceed the content width
+      if (currentX > x + maxContentWidth) {
+        break;
+      }
+    }
+  }
+  
+  return dimensions.icons.pdfMarginTopMm + dimensions.icons.pdfSizeMm + dimensions.icons.pdfMarginBottomMm;
 };
 
-export default ProductRenderer;
+// Add product to PDF with Schema 1 layout (90%/10%) - FINALE
+export const addProductToPdf = async (
+  pdf: jsPDF,
+  product: Product,
+  x: number,
+  y: number,
+  layout: PrintLayout,
+  contentWidth: number,
+  isLast: boolean
+): Promise<number> => {
+  let currentY = y;
+  const dimensions = getStandardizedDimensions(layout);
+  
+  console.log('🎯 PDF Product rendering con Schema 1 (90%/10%) - FINALE:', product.title, {
+    titleFontSize: dimensions.pdf.titleFontSize,
+    descriptionFontSize: dimensions.pdf.descriptionFontSize,
+    marginBottom: !isLast ? dimensions.spacing.betweenProducts : 0
+  });
+  
+  // ✅ SCHEMA 1 FINALE: Layout 90%/10% come definito nei template
+  const contentColumnWidth = contentWidth * 0.90; // 90% per contenuto (Schema 1)
+  const gap = 3; // 3mm gap
+  const priceColumnX = x + contentColumnWidth + gap;
+  const priceColumnWidth = contentWidth * 0.10 - gap; // 10% per prezzo (Schema 1)
+  
+  console.log('📐 Schema 1 - Layout colonne PDF FINALE:', {
+    contentColumnWidth: contentColumnWidth.toFixed(1),
+    priceColumnWidth: priceColumnWidth.toFixed(1),
+    schema: 'Schema 1 (90%/10%) - FINALE'
+  });
+  
+  // Product title in left column (90%)
+  const titleHeight = addStyledText(pdf, product.title, x, currentY, {
+    fontSize: dimensions.pdf.titleFontSize, // USA DIMENSIONI STANDARDIZZATE
+    fontFamily: layout.elements.title.fontFamily,
+    fontStyle: layout.elements.title.fontStyle,
+    fontColor: layout.elements.title.fontColor,
+    alignment: layout.elements.title.alignment,
+    maxWidth: contentColumnWidth
+  });
+  currentY += titleHeight + dimensions.pdfMargins.title.bottom;
+  
+  // Product description (Italian) in left column
+  if (product.description && layout.elements.description?.visible !== false) {
+    const descHeight = addStyledText(pdf, product.description, x, currentY, {
+      fontSize: dimensions.pdf.descriptionFontSize, // USA DIMENSIONI STANDARDIZZATE
+      fontFamily: layout.elements.description.fontFamily,
+      fontStyle: layout.elements.description.fontStyle,
+      fontColor: layout.elements.description.fontColor,
+      alignment: layout.elements.description.alignment,
+      maxWidth: contentColumnWidth
+    });
+    currentY += descHeight + dimensions.pdfMargins.description.bottom;
+  }
+  
+  // Product description (English) in left column
+  if (product.description_en && product.description_en !== product.description && layout.elements.descriptionEng?.visible !== false) {
+    const descEngHeight = addStyledText(pdf, product.description_en, x, currentY, {
+      fontSize: dimensions.pdf.descriptionEngFontSize, // USA DIMENSIONI STANDARDIZZATE
+      fontFamily: layout.elements.descriptionEng.fontFamily,
+      fontStyle: layout.elements.descriptionEng.fontStyle,
+      fontColor: layout.elements.descriptionEng.fontColor,
+      alignment: layout.elements.descriptionEng.alignment,
+      maxWidth: contentColumnWidth
+    });
+    currentY += descEngHeight + dimensions.pdfMargins.descriptionEng.bottom;
+  }
+  
+  // Product features in left column con dimensioni standardizzate
+  if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
+    const featuresHeight = await addProductFeaturesToPdf(pdf, product, x, currentY, layout, contentColumnWidth);
+    currentY += featuresHeight;
+  }
+  
+  // Allergens with "Allergeni:" label in left column
+  if (product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false) {
+    const allergensText = `Allergeni: ${product.allergens.map(a => a.number).join(', ')}`;
+    const allergensHeight = addStyledText(pdf, allergensText, x, currentY, {
+      fontSize: dimensions.pdf.allergensFontSize, // USA DIMENSIONI STANDARDIZZATE
+      fontFamily: layout.elements.allergensList.fontFamily,
+      fontStyle: layout.elements.allergensList.fontStyle,
+      fontColor: layout.elements.allergensList.fontColor,
+      alignment: layout.elements.allergensList.alignment,
+      maxWidth: contentColumnWidth
+    });
+    currentY += allergensHeight + dimensions.pdfMargins.allergens.bottom;
+  }
+  
+  // ✅ PRICE IN RIGHT COLUMN (10%) - STESSA Y DEL TITOLO
+  let priceY = y; // Inizia dalla stessa posizione del titolo
+  
+  if (product.price_standard && layout.elements.price?.visible !== false) {
+    const priceText = `€${product.price_standard.toFixed(2)}`;
+    addStyledText(pdf, priceText, priceColumnX, priceY, {
+      fontSize: dimensions.pdf.priceFontSize, // USA DIMENSIONI STANDARDIZZATE
+      fontFamily: layout.elements.price.fontFamily,
+      fontStyle: layout.elements.price.fontStyle,
+      fontColor: layout.elements.price.fontColor,
+      alignment: 'right',
+      maxWidth: priceColumnWidth
+    });
+    
+    // Price suffix
+    if (product.has_price_suffix && product.price_suffix && layout.elements.suffix?.visible !== false) {
+      priceY += dimensions.pdf.priceFontSize * 0.353 + 2; // Usa line height corretto
+      addStyledText(pdf, product.price_suffix, priceColumnX, priceY, {
+        fontSize: dimensions.pdf.suffixFontSize, // USA DIMENSIONI STANDARDIZZATE
+        fontFamily: layout.elements.suffix.fontFamily,
+        fontStyle: layout.elements.suffix.fontStyle,
+        fontColor: layout.elements.suffix.fontColor,
+        alignment: 'right',
+        maxWidth: priceColumnWidth
+      });
+    }
+  }
+  
+  // Price variants in right column
+  if (product.has_multiple_prices && layout.elements.priceVariants?.visible !== false) {
+    if (product.price_variant_1_value && product.price_variant_1_name) {
+      priceY += 6;
+      const variant1Text = `${product.price_variant_1_name}: €${product.price_variant_1_value.toFixed(2)}`;
+      addStyledText(pdf, variant1Text, priceColumnX, priceY, {
+        fontSize: dimensions.pdf.variantsFontSize, // USA DIMENSIONI STANDARDIZZATE
+        fontFamily: layout.elements.priceVariants.fontFamily,
+        fontStyle: layout.elements.priceVariants.fontStyle,
+        fontColor: layout.elements.priceVariants.fontColor,
+        alignment: 'right',
+        maxWidth: priceColumnWidth
+      });
+    }
+    
+    if (product.price_variant_2_value && product.price_variant_2_name) {
+      priceY += 5;
+      const variant2Text = `${product.price_variant_2_name}: €${product.price_variant_2_value.toFixed(2)}`;
+      addStyledText(pdf, variant2Text, priceColumnX, priceY, {
+        fontSize: dimensions.pdf.variantsFontSize, // USA DIMENSIONI STANDARDIZZATE
+        fontFamily: layout.elements.priceVariants.fontFamily,
+        fontStyle: layout.elements.priceVariants.fontStyle,
+        fontColor: layout.elements.priceVariants.fontColor,
+        alignment: 'right',
+        maxWidth: priceColumnWidth
+      });
+    }
+  }
+  
+  // ✅ Add spacing between products (except for last product) - identico all'anteprima
+  if (!isLast) {
+    currentY += dimensions.spacing.betweenProducts; // USA SPACING STANDARDIZZATO
+  }
+  
+  return currentY - y;
+};
