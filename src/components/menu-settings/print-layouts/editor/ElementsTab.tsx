@@ -1,6 +1,7 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import ElementEditor from "../ElementEditor";
 
@@ -133,52 +134,52 @@ const ElementsTab = ({
               <AccordionContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Dimensione icone (px)</label>
-                    <input
+                    <Label htmlFor="icon-size">Dimensione icone (px)</Label>
+                    <Input
+                      id="icon-size"
                       type="number"
                       min="8"
                       max="48"
                       value={layout.productFeatures?.icon?.iconSize || 16}
                       onChange={(e) => handleProductFeaturesIconChange('iconSize', parseInt(e.target.value) || 16)}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Spaziatura tra icone (px)</label>
-                    <input
+                    <Label htmlFor="icon-spacing">Spaziatura tra icone (px)</Label>
+                    <Input
+                      id="icon-spacing"
                       type="number"
                       min="0"
                       max="20"
                       value={layout.productFeatures?.icon?.iconSpacing || 4}
                       onChange={(e) => handleProductFeaturesIconChange('iconSpacing', parseInt(e.target.value) || 4)}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Margine superiore (mm)</label>
-                    <input
+                    <Label htmlFor="margin-top">Margine superiore (mm)</Label>
+                    <Input
+                      id="margin-top"
                       type="number"
                       min="0"
                       max="10"
                       step="0.1"
                       value={layout.productFeatures?.icon?.marginTop || 0}
                       onChange={(e) => handleProductFeaturesIconChange('marginTop', parseFloat(e.target.value) || 0)}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Margine inferiore (mm)</label>
-                    <input
+                    <Label htmlFor="margin-bottom">Margine inferiore (mm)</Label>
+                    <Input
+                      id="margin-bottom"
                       type="number"
                       min="0"
                       max="10"
                       step="0.1"
                       value={layout.productFeatures?.icon?.marginBottom || 0}
                       onChange={(e) => handleProductFeaturesIconChange('marginBottom', parseFloat(e.target.value) || 0)}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
                 </div>
