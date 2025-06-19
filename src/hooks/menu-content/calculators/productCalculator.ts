@@ -18,6 +18,9 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   let totalHeightMm = 0;
   const pageConfig = layout.page;
   
+  console.log('🔧 ProductCalculator - Product:', product.title);
+  console.log('🔧 ProductCalculator - Layout productFeatures:', layout.productFeatures);
+  
   // Calcola la larghezza disponibile per il contenuto
   const pageWidthMm = 210;
   const leftMargin = pageConfig.marginLeft || 25;
@@ -89,12 +92,22 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeightMm += allergensHeightMm + allergensMarginMm;
   }
 
-  // Calcola altezza delle caratteristiche prodotto (icone) - CORRETTA per usare la configurazione corretta
+  // Calcola altezza delle caratteristiche prodotto (icone) - FIXED: Usa la configurazione corretta e standardizza la conversione
   if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
     const featuresConfig = layout.productFeatures.icon;
-    const iconHeightMm = featuresConfig.iconSize / MM_TO_PX * 0.75; // Conversione più accurata
-    const featuresMarginMm = featuresConfig.marginTop + featuresConfig.marginBottom;
-    totalHeightMm += iconHeightMm + featuresMarginMm;
+    
+    console.log('🔧 ProductCalculator - Features config:', featuresConfig);
+    
+    // Conversione standardizzata: px -> mm (1px = 0.264583mm)
+    const iconSizeMm = (featuresConfig.iconSize || 16) * 0.264583;
+    const marginsTopBottomMm = (featuresConfig.marginTop || 0) + (featuresConfig.marginBottom || 0);
+    const totalFeatureHeightMm = iconSizeMm + marginsTopBottomMm;
+    
+    console.log('🔧 ProductCalculator - Icon size:', featuresConfig.iconSize, 'px =', iconSizeMm, 'mm');
+    console.log('🔧 ProductCalculator - Margins top+bottom:', marginsTopBottomMm, 'mm');
+    console.log('🔧 ProductCalculator - Total feature height:', totalFeatureHeightMm, 'mm');
+    
+    totalHeightMm += totalFeatureHeightMm;
   }
 
   // Calcola l'altezza della colonna prezzo per confronto
@@ -138,6 +151,8 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   // Aggiungi un buffer di sicurezza per evitare tagli
   const safetyBufferMm = 5;
   totalHeightMm += safetyBufferMm;
+
+  console.log('🔧 ProductCalculator - Final total height:', totalHeightMm, 'mm');
 
   return totalHeightMm;
 };

@@ -37,6 +37,9 @@ export const usePreRenderMeasurement = (
     const measureElements = async () => {
       setIsLoading(true);
 
+      console.log('🔧 usePreRenderMeasurement - Starting measurements with layout:', layout.id);
+      console.log('🔧 usePreRenderMeasurement - ProductFeatures config:', layout.productFeatures);
+
       // Crea container di misurazione se non esiste
       if (!measurementContainerRef.current) {
         measurementContainerRef.current = document.createElement('div');
@@ -93,14 +96,14 @@ export const usePreRenderMeasurement = (
               isRepeatedTitle={false}
             />
           );
-          setTimeout(resolve, 100); // Aumentato il tempo di attesa per un rendering più accurato
+          setTimeout(resolve, 150); // Aumentato il tempo di attesa per un rendering più accurato
         });
         
         // Misura l'altezza totale della categoria (titolo + note)
         const categoryTotalHeight = categoryWrapper.getBoundingClientRect().height * PX_TO_MM;
         results.categoryHeights.set(category.id, categoryTotalHeight);
         
-        console.log('📏 Categoria "' + category.title + '" altezza:', {
+        console.log('🔧 usePreRenderMeasurement - Categoria "' + category.title + '" altezza:', {
           heightPx: categoryWrapper.getBoundingClientRect().height,
           heightMm: categoryTotalHeight,
           hasNotes: relatedNotes.length > 0
@@ -140,7 +143,7 @@ export const usePreRenderMeasurement = (
                 isLast={isLast}
               />
             );
-            setTimeout(resolve, 100); // Aumentato il tempo di attesa
+            setTimeout(resolve, 150); // Aumentato il tempo di attesa
           });
           
           // Misura l'altezza reale inclusi tutti gli stili CSS
@@ -148,7 +151,7 @@ export const usePreRenderMeasurement = (
           let productHeight = rect.height / MM_TO_PX;
           
           // Log dettagliato per debug
-          console.log('📏 Prodotto "' + product.title + '":', {
+          console.log('🔧 usePreRenderMeasurement - Prodotto "' + product.title + '":', {
             heightPx: rect.height,
             heightMm: productHeight,
             isLast,
@@ -156,7 +159,8 @@ export const usePreRenderMeasurement = (
             marginBottom: !isLast ? layout.spacing.betweenProducts : 0,
             hasDescriptionEn: !!(product.description_en && product.description_en !== product.description),
             hasAllergens: !!(product.allergens && product.allergens.length > 0),
-            hasFeatures: !!(product.features && product.features.length > 0)
+            hasFeatures: !!(product.features && product.features.length > 0),
+            featuresConfig: layout.productFeatures?.icon
           });
           
           // Aggiungi un buffer di sicurezza ridotto (3% invece del 5%)
@@ -196,7 +200,7 @@ export const usePreRenderMeasurement = (
             Servizio e Coperto = €{serviceCoverCharge.toFixed(2)}
           </div>
         );
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 150);
       });
       
       // Misura l'altezza totale inclusi tutti i margini e padding
@@ -204,7 +208,7 @@ export const usePreRenderMeasurement = (
       const serviceHeight = serviceRect.height * PX_TO_MM;
       
       // Log per debug
-      console.log('📏 Altezza linea servizio:', {
+      console.log('🔧 usePreRenderMeasurement - Altezza linea servizio:', {
         heightPx: serviceRect.height,
         heightMm: serviceHeight,
         marginTop: layout.servicePrice.margin.top,
@@ -220,11 +224,12 @@ export const usePreRenderMeasurement = (
       setMeasurements(results);
       setIsLoading(false);
       
-      console.log('📏 Misurazioni complete:', {
+      console.log('🔧 usePreRenderMeasurement - Misurazioni complete:', {
         categorie: results.categoryHeights.size,
         prodotti: results.productHeights.size,
         note: results.categoryNoteHeights.size,
-        serviceLineHeight: results.serviceLineHeight
+        serviceLineHeight: results.serviceLineHeight,
+        layoutId: layout.id
       });
     };
 

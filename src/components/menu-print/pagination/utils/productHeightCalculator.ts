@@ -1,3 +1,4 @@
+
 import { Product } from "@/types/database";
 import { PrintLayout } from "@/types/printLayout";
 import { MM_TO_PX } from "./constants";
@@ -34,6 +35,9 @@ export const getProductHeight = (
 
   const elements = customLayout.elements;
   let totalHeight = 0;
+
+  console.log('🔧 ProductHeightCalculator - Product:', product.title);
+  console.log('🔧 ProductHeightCalculator - Layout productFeatures:', customLayout.productFeatures);
 
   // 1. Titolo prodotto
   if (elements.title?.visible !== false) {
@@ -75,13 +79,26 @@ export const getProductHeight = (
     totalHeight += allergensLineHeight + (allergensMargins.top + allergensMargins.bottom) * MM_TO_PX;
   }
 
-  // 5. Caratteristiche prodotto (icone) - CORRETTA
+  // 5. Caratteristiche prodotto (icone) - FIXED: Usa la configurazione corretta dal layout
   if (hasProductFeatures(product) && customLayout.productFeatures?.icon) {
     const featuresConfig = customLayout.productFeatures.icon;
-    // Conversione più accurata da px a pt per l'altezza dell'icona
-    const iconSizePt = (featuresConfig.iconSize || 16) * 0.75; // 1px ≈ 0.75pt
-    const iconHeightWithMargins = iconSizePt + (featuresConfig.marginTop + featuresConfig.marginBottom) * MM_TO_PX;
-    totalHeight += iconHeightWithMargins;
+    
+    console.log('🔧 ProductHeightCalculator - Features config:', featuresConfig);
+    
+    // Conversione standardizzata: px -> mm (1px = 0.264583mm)
+    const iconSizeMm = (featuresConfig.iconSize || 16) * 0.264583;
+    const marginsTopBottomMm = (featuresConfig.marginTop || 0) + (featuresConfig.marginBottom || 0);
+    const totalFeatureHeightMm = iconSizeMm + marginsTopBottomMm;
+    
+    console.log('🔧 ProductHeightCalculator - Icon size:', featuresConfig.iconSize, 'px =', iconSizeMm, 'mm');
+    console.log('🔧 ProductHeightCalculator - Margins top+bottom:', marginsTopBottomMm, 'mm');
+    console.log('🔧 ProductHeightCalculator - Total feature height:', totalFeatureHeightMm, 'mm');
+    
+    // Converti in pixel per la consistenza con il resto del calcolo
+    const totalFeatureHeightPx = totalFeatureHeightMm * MM_TO_PX;
+    totalHeight += totalFeatureHeightPx;
+    
+    console.log('🔧 ProductHeightCalculator - Total feature height in px:', totalFeatureHeightPx);
   }
 
   // 6. Calcolo più accurato per la colonna prezzo
@@ -135,6 +152,8 @@ export const getProductHeight = (
 
   // Aggiungi un piccolo buffer per sicurezza (2mm)
   totalHeight += 2 * MM_TO_PX;
+
+  console.log('🔧 ProductHeightCalculator - Final total height:', totalHeight, 'px');
 
   return totalHeight;
 };
