@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 
 export const defaultLayout: PrintLayout = {
@@ -196,7 +195,10 @@ export const defaultLayout: PrintLayout = {
   },
   productFeatures: {
     icon: {
-      iconSize: 16
+      iconSize: 16,
+      iconSpacing: 4,
+      marginTop: 0,
+      marginBottom: 0
     },
     title: {
       visible: true,

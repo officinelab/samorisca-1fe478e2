@@ -90,7 +90,10 @@ export function ensurePageMargins(layout: PrintLayout): PrintLayout {
   // Product Features fallback
   const productFeatures: ProductFeaturesConfig = {
     icon: {
-      iconSize: layout.productFeatures?.icon?.iconSize ?? 16
+      iconSize: layout.productFeatures?.icon?.iconSize ?? 16,
+      iconSpacing: layout.productFeatures?.icon?.iconSpacing ?? 4,
+      marginTop: layout.productFeatures?.icon?.marginTop ?? 0,
+      marginBottom: layout.productFeatures?.icon?.marginBottom ?? 0
     },
     title: {
       visible: typeof layout.productFeatures?.title?.visible === "boolean" ? layout.productFeatures.title.visible : true,

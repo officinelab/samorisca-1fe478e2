@@ -195,7 +195,10 @@ export const modernLayout: PrintLayout = {
   },
   productFeatures: {
     icon: {
-      iconSize: 18
+      iconSize: 18,
+      iconSpacing: 6,
+      marginTop: 2,
+      marginBottom: 2
     },
     title: {
       visible: true,
