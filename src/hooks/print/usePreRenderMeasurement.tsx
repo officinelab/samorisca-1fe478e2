@@ -7,8 +7,9 @@ import { CategoryNote } from '@/types/categoryNotes';
 import CategoryRenderer from '@/components/menu-print/CategoryRenderer';
 import ProductRenderer from '@/components/menu-print/ProductRenderer';
 
-// Costante di conversione mm to px
-export const MM_TO_PX = 3.7795275591; // 96 DPI
+// Costante di conversione mm to px (96 DPI)
+export const MM_TO_PX = 3.7795275591; // 1mm = 3.78px @ 96DPI
+export const PX_TO_MM = 0.26458333; // 1px = 0.264mm @ 96DPI
 
 interface MeasurementResult {
   categoryHeights: Map<string, number>;
@@ -95,8 +96,14 @@ export const usePreRenderMeasurement = (
         });
         
         // Misura l'altezza totale della categoria (titolo + note)
-        const categoryTotalHeight = categoryWrapper.getBoundingClientRect().height / MM_TO_PX;
+        const categoryTotalHeight = categoryWrapper.getBoundingClientRect().height * PX_TO_MM;
         results.categoryHeights.set(category.id, categoryTotalHeight);
+        
+        console.log('📏 Categoria "' + category.title + '" altezza:', {
+          heightPx: categoryWrapper.getBoundingClientRect().height,
+          heightMm: categoryTotalHeight,
+          hasNotes: relatedNotes.length > 0
+        });
         
         // Misura anche le singole note per riferimento
         relatedNotes.forEach((note, index) => {
@@ -192,11 +199,12 @@ export const usePreRenderMeasurement = (
       });
       
       // Misura l'altezza totale inclusi tutti i margini e padding
-      const serviceHeight = serviceWrapper.getBoundingClientRect().height / MM_TO_PX;
+      const serviceRect = serviceWrapper.getBoundingClientRect();
+      const serviceHeight = serviceRect.height * PX_TO_MM;
       
       // Log per debug
       console.log('📏 Altezza linea servizio:', {
-        heightPx: serviceWrapper.getBoundingClientRect().height,
+        heightPx: serviceRect.height,
         heightMm: serviceHeight,
         marginTop: layout.servicePrice.margin.top,
         marginBottom: layout.servicePrice.margin.bottom,
