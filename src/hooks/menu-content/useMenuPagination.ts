@@ -1,8 +1,8 @@
-
+// hooks/menu-content/useMenuPagination.ts
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import { useHeightCalculator } from './useHeightCalculator';
+import { usePreRenderMeasurement } from '../print/usePreRenderMeasurement';
 
 interface PageContent {
   pageNumber: number;
@@ -23,8 +23,17 @@ export const useMenuPagination = (
   serviceCoverCharge: number,
   layout: PrintLayout | null
 ) => {
-  const heightCalculator = useHeightCalculator(layout);
   const A4_HEIGHT_MM = 297;
+
+  // Usa il sistema di pre-render per ottenere le misurazioni reali
+  const { measurements, isLoading } = usePreRenderMeasurement(
+    layout,
+    categories,
+    productsByCategory,
+    categoryNotes,
+    categoryNotesRelations,
+    serviceCoverCharge
+  );
 
   const getAvailableHeight = (pageNumber: number): number => {
     if (!layout) return 250; // Default available height
@@ -44,11 +53,16 @@ export const useMenuPagination = (
       }
     }
 
-    const serviceLineHeight = heightCalculator.calculateServiceLineHeight();
-    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 5; // 5mm buffer instead of 10mm
+    const serviceLineHeight = measurements?.serviceLineHeight || 15;
+    return A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - 5; // 5mm buffer
   };
 
   const createPages = (): PageContent[] => {
+    // Se le misurazioni non sono pronte, restituisci array vuoto
+    if (!measurements || isLoading) {
+      return [];
+    }
+
     const pages: PageContent[] = [];
     let currentPageNumber = 3; // Starting after cover pages
     let currentPageHeight = 0;
@@ -68,11 +82,13 @@ export const useMenuPagination = (
     };
 
     categories.forEach(category => {
-      const categoryTitleHeight = heightCalculator.calculateCategoryTitleHeight(category);
+      // Usa le misurazioni reali dal pre-render
+      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40;
+      
       const relatedNoteIds = categoryNotesRelations[category.id] || [];
       const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
       const categoryNotesHeight = relatedNotes.reduce((sum, note) => 
-        sum + heightCalculator.calculateCategoryNoteHeight(note), 0
+        sum + (measurements.categoryNoteHeights.get(note.id) || 20), 0
       );
 
       const products = productsByCategory[category.id] || [];
@@ -80,7 +96,8 @@ export const useMenuPagination = (
       let categoryHeaderAdded = false;
 
       products.forEach(product => {
-        const productHeight = heightCalculator.calculateProductHeight(product);
+        // Usa l'altezza reale del prodotto dal pre-render
+        const productHeight = measurements.productHeights.get(product.id) || 50;
         const availableHeight = getAvailableHeight(currentPageNumber);
         
         // Calculate required height for this product
@@ -106,7 +123,7 @@ export const useMenuPagination = (
           if (categoryProducts.length > 0) {
             currentPageContent.push({
               category,
-              notes: categoryHeaderAdded ? [] : relatedNotes, // Notes only if header wasn't added yet
+              notes: categoryHeaderAdded ? [] : relatedNotes,
               products: [...categoryProducts],
               isRepeatedTitle: categoryHeaderAdded
             });
@@ -145,7 +162,7 @@ export const useMenuPagination = (
       if (categoryProducts.length > 0) {
         currentPageContent.push({
           category,
-          notes: categoryHeaderAdded ? [] : relatedNotes, // Notes only if this is the first appearance of category
+          notes: categoryHeaderAdded ? [] : relatedNotes,
           products: categoryProducts,
           isRepeatedTitle: categoryHeaderAdded && currentPageContent.some(c => c.category.id === category.id)
         });
@@ -160,6 +177,8 @@ export const useMenuPagination = (
 
   return {
     createPages,
-    getAvailableHeight
+    getAvailableHeight,
+    isLoadingMeasurements: isLoading,
+    measurements
   };
 };
