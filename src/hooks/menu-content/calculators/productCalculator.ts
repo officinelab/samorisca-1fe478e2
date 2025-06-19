@@ -1,8 +1,6 @@
-
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { calculateTextHeight } from '../utils/textMeasurement';
-import { getStandardizedDimensions, CONVERSIONS } from '@/hooks/print/pdf/utils/conversionUtils';
 
 /**
  * Verifica se deve essere mostrata la descrizione inglese
@@ -16,29 +14,28 @@ const shouldShowEnglishDescription = (product: Product): boolean => {
 export const calculateProductHeight = (product: Product, layout: PrintLayout | null): number => {
   if (!layout) return 80; // Default height in mm
 
-  const dimensions = getStandardizedDimensions(layout);
   let totalHeightMm = 0;
   const pageConfig = layout.page;
   
-  console.log('🔧 ProductCalculator (aggiornato) - Product:', product.title);
-  console.log('🔧 ProductCalculator - Dimensioni standardizzate:', {
-    titleFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.title.fontSize,
-    descriptionFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.description.fontSize,
-    iconSizeMm: dimensions.icons.heightMm,
-    spacing: dimensions.spacing.betweenProducts
-  });
+  console.log('🔧 ProductCalculator con layout 90%:', product.title);
   
-  // Calcola la larghezza disponibile per il contenuto (75% come nell'anteprima)
-  const pageWidthMm = 210;
+  // ✅ CORREZIONE: Usa 90% come nell'anteprima (era 75%)
+  const pageWidthMm = 210; // A4 width
   const leftMargin = pageConfig.marginLeft || 25;
   const rightMargin = pageConfig.marginRight || 25;
   const contentWidthMm = pageWidthMm - leftMargin - rightMargin;
-  const productDetailsWidthMm = contentWidthMm * 0.75; // 75% per i dettagli
-  const productDetailsWidthPx = productDetailsWidthMm * CONVERSIONS.MM_TO_PX;
+  const productDetailsWidthMm = contentWidthMm * 0.90; // ✅ Cambiato da 0.75 a 0.90
+  const productDetailsWidthPx = productDetailsWidthMm * 3.7795275591; // MM_TO_PX
+  
+  console.log('🔧 ProductCalculator dimensioni:', {
+    contentWidthMm: contentWidthMm.toFixed(1),
+    productDetailsWidthMm: productDetailsWidthMm.toFixed(1),
+    percentage: '90%'
+  });
 
-  // Calcola altezza del titolo con conversioni standardizzate
+  // Calcola altezza del titolo
   if (layout.elements.title?.visible !== false) {
-    const titleFontSizePx = dimensions.css.titleFontSize;
+    const titleFontSizePx = layout.elements.title.fontSize * 1.333; // pt to px
     const titleHeightPx = calculateTextHeight(
       product.title,
       titleFontSizePx,
@@ -46,14 +43,20 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
       productDetailsWidthPx,
       1.3
     );
-    const titleHeightMm = titleHeightPx * CONVERSIONS.PX_TO_MM;
+    const titleHeightMm = titleHeightPx * 0.26458333; // PX_TO_MM
     const titleMarginMm = layout.elements.title.margin.top + layout.elements.title.margin.bottom;
     totalHeightMm += titleHeightMm + titleMarginMm;
+    
+    console.log('🔧 Title height:', {
+      titleHeightPx: titleHeightPx.toFixed(1),
+      titleHeightMm: titleHeightMm.toFixed(1),
+      titleMarginMm
+    });
   }
 
   // Calcola altezza della descrizione italiana
   if (product.description && layout.elements.description?.visible !== false) {
-    const descFontSizePx = dimensions.css.descriptionFontSize;
+    const descFontSizePx = layout.elements.description.fontSize * 1.333;
     const descHeightPx = calculateTextHeight(
       product.description,
       descFontSizePx,
@@ -61,14 +64,20 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
       productDetailsWidthPx,
       1.4
     );
-    const descHeightMm = descHeightPx * CONVERSIONS.PX_TO_MM;
+    const descHeightMm = descHeightPx * 0.26458333;
     const descMarginMm = layout.elements.description.margin.top + layout.elements.description.margin.bottom;
     totalHeightMm += descHeightMm + descMarginMm;
+    
+    console.log('🔧 Description height:', {
+      descHeightPx: descHeightPx.toFixed(1),
+      descHeightMm: descHeightMm.toFixed(1),
+      descMarginMm
+    });
   }
 
   // Calcola altezza della descrizione inglese
   if (shouldShowEnglishDescription(product) && layout.elements.descriptionEng?.visible !== false) {
-    const descEngFontSizePx = dimensions.css.descriptionEngFontSize;
+    const descEngFontSizePx = layout.elements.descriptionEng.fontSize * 1.333;
     const descEngHeightPx = calculateTextHeight(
       product.description_en!,
       descEngFontSizePx,
@@ -76,15 +85,21 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
       productDetailsWidthPx,
       1.4
     );
-    const descEngHeightMm = descEngHeightPx * CONVERSIONS.PX_TO_MM;
+    const descEngHeightMm = descEngHeightPx * 0.26458333;
     const descEngMarginMm = layout.elements.descriptionEng.margin.top + layout.elements.descriptionEng.margin.bottom;
     totalHeightMm += descEngHeightMm + descEngMarginMm;
+    
+    console.log('🔧 Description ENG height:', {
+      descEngHeightPx: descEngHeightPx.toFixed(1),
+      descEngHeightMm: descEngHeightMm.toFixed(1),
+      descEngMarginMm
+    });
   }
   
   // Calcola altezza degli allergeni
   if (product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false) {
     const allergensText = `Allergeni: ${product.allergens.map(a => a.number).join(', ')}`;
-    const allergensFontSizePx = dimensions.css.allergensFontSize;
+    const allergensFontSizePx = layout.elements.allergensList.fontSize * 1.333;
     const allergensHeightPx = calculateTextHeight(
       allergensText,
       allergensFontSizePx,
@@ -92,23 +107,41 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
       productDetailsWidthPx,
       1.5
     );
-    const allergensHeightMm = allergensHeightPx * CONVERSIONS.PX_TO_MM;
+    const allergensHeightMm = allergensHeightPx * 0.26458333;
     const allergensMarginMm = layout.elements.allergensList.margin.top + layout.elements.allergensList.margin.bottom;
     totalHeightMm += allergensHeightMm + allergensMarginMm;
+    
+    console.log('🔧 Allergens height:', {
+      allergensHeightPx: allergensHeightPx.toFixed(1),
+      allergensHeightMm: allergensHeightMm.toFixed(1),
+      allergensMarginMm
+    });
   }
 
-  // Calcola altezza delle caratteristiche prodotto (icone) - ORA STANDARDIZZATO
+  // Calcola altezza delle caratteristiche prodotto (icone)
   if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
-    console.log('🔧 ProductCalculator - Adding features height:', dimensions.icons.heightMm, 'mm');
-    totalHeightMm += dimensions.icons.heightMm;
+    const iconSizePx = layout.productFeatures.icon.iconSize; // px
+    const marginTopMm = layout.productFeatures.icon.marginTop; // mm
+    const marginBottomMm = layout.productFeatures.icon.marginBottom; // mm
+    const iconSizeMm = iconSizePx * 0.26458333; // px to mm
+    const featuresHeightMm = marginTopMm + iconSizeMm + marginBottomMm;
+    totalHeightMm += featuresHeightMm;
+    
+    console.log('🔧 Features height:', {
+      iconSizePx,
+      iconSizeMm: iconSizeMm.toFixed(1),
+      marginTopMm,
+      marginBottomMm,
+      featuresHeightMm: featuresHeightMm.toFixed(1)
+    });
   }
 
-  // Calcola l'altezza della colonna prezzo (25%) per confronto
+  // Calcola l'altezza della colonna prezzo (10%) per confronto
   let priceColumnHeightMm = 0;
   
   // Prezzo principale
   if (layout.elements.price?.visible !== false) {
-    const priceFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.price.fontSize;
+    const priceFontSizeMm = layout.elements.price.fontSize * 0.352778; // pt to mm
     const priceHeightMm = priceFontSizeMm * 1.5;
     const priceMarginMm = layout.elements.price.margin.top + layout.elements.price.margin.bottom;
     priceColumnHeightMm += priceHeightMm + priceMarginMm;
@@ -116,14 +149,14 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
 
   // Suffisso prezzo
   if (product.has_price_suffix && product.price_suffix) {
-    const suffixFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.suffix.fontSize;
+    const suffixFontSizeMm = layout.elements.suffix.fontSize * 0.352778; // pt to mm
     const suffixHeightMm = suffixFontSizeMm * 1.5;
     priceColumnHeightMm += suffixHeightMm;
   }
 
   // Varianti prezzo
   if (product.has_multiple_prices && layout.elements.priceVariants?.visible !== false) {
-    const variantsFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.priceVariants.fontSize;
+    const variantsFontSizeMm = layout.elements.priceVariants.fontSize * 0.352778; // pt to mm
     const variantsLineHeightMm = variantsFontSizeMm * 1.5;
     const variantsMarginMm = layout.elements.priceVariants.margin.top + layout.elements.priceVariants.margin.bottom;
     
@@ -142,10 +175,15 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   totalHeightMm += spacingMm;
 
   // Aggiungi un buffer di sicurezza ridotto
-  const safetyBufferMm = 3;
+  const safetyBufferMm = 2; // Ridotto da 3 a 2mm
   totalHeightMm += safetyBufferMm;
 
-  console.log('🔧 ProductCalculator - Final total height (standardized):', totalHeightMm, 'mm');
+  console.log('🔧 ProductCalculator - Altezza finale con layout 90%:', {
+    totalHeightMm: totalHeightMm.toFixed(1),
+    priceColumnHeightMm: priceColumnHeightMm.toFixed(1),
+    spacingMm,
+    safetyBufferMm
+  });
 
   return totalHeightMm;
 };

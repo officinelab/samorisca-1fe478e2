@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { hexToRgb, mapFontFamily, mapFontStyle } from '../utils/pdfUtils';
 
@@ -37,7 +36,8 @@ export const addStyledText = (
   // Handle text wrapping if maxWidth is provided
   if (config.maxWidth) {
     const lines = pdf.splitTextToSize(text, config.maxWidth);
-    const lineHeight = config.fontSize * 0.35; // mm
+    // ✅ CORREZIONE: Line height corretto per jsPDF (pt to mm)
+    const lineHeight = config.fontSize * 0.353; // mm
     
     lines.forEach((line: string, index: number) => {
       pdf.text(line, x, y + (index * lineHeight), { align: config.alignment || 'left' });
@@ -46,6 +46,7 @@ export const addStyledText = (
     return lines.length * lineHeight;
   } else {
     pdf.text(text, x, y, { align: config.alignment || 'left' });
-    return config.fontSize * 0.35; // Return approximate height in mm
+    // ✅ CORREZIONE: Return height corretto (pt to mm)
+    return config.fontSize * 0.353; // Return approximate height in mm
   }
 };
