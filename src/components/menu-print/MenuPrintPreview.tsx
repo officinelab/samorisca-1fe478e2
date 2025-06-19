@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
 import CoverPagePreview from './CoverPagePreview';
+import MenuContentPages from './MenuContentPages';
 
 interface MenuPrintPreviewProps {
   currentLayout?: PrintLayout;
@@ -73,6 +74,9 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Menu Content Pages */}
+      <MenuContentPages showMargins={showMargins} />
     </div>
   );
 };
