@@ -155,9 +155,9 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
             <div
               className="product-features flex items-center"
               style={{
-                marginTop: `${elementsConfig.productFeatures.marginTop || 0}mm`,
-                marginBottom: `${elementsConfig.productFeatures.marginBottom || 0}mm`,
-                gap: `${elementsConfig.productFeatures.iconSpacing || 4}px`
+                marginTop: `${layout.productFeatures?.icon?.marginTop || 0}mm`,
+                marginBottom: `${layout.productFeatures?.icon?.marginBottom || 0}mm`,
+                gap: `${layout.productFeatures?.icon?.iconSpacing || 4}px`
               }}
             >
               {product.features.map((feature, index) => (
@@ -168,8 +168,8 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
                       alt={feature.title}
                       title={feature.title}
                       style={{
-                        width: `${elementsConfig.productFeatures.iconSize || 16}px`,
-                        height: `${elementsConfig.productFeatures.iconSize || 16}px`,
+                        width: `${layout.productFeatures?.icon?.iconSize || 16}px`,
+                        height: `${layout.productFeatures?.icon?.iconSize || 16}px`,
                       }}
                     />
                   )}

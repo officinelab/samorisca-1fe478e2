@@ -32,6 +32,9 @@ export type PrintLayoutElementConfig = {
 export type ProductFeaturesConfig = {
   icon: {
     iconSize: number;      // dimensione delle icone in px
+    iconSpacing: number;   // spaziatura tra le icone in px
+    marginTop: number;     // margine superiore in mm
+    marginBottom: number;  // margine inferiore in mm
   };
   title: PrintLayoutElementConfig;    // Titolo delle caratteristiche prodotto
 };

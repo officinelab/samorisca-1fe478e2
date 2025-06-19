@@ -28,18 +28,13 @@ const ElementsTab = ({
   onElementMarginChange,
   onProductFeaturesChange 
 }: ElementsTabProps) => {
-  // Handle legacy productFeatures in elements - convert to new structure calls
-  const handleLegacyProductFeaturesChange = (field: string, value: number) => {
-    // Map old field names to new ProductFeaturesConfig structure
-    if (field === 'iconSize') {
-      onProductFeaturesChange('icon', { iconSize: value });
-    } else if (field === 'iconSpacing') {
-      onProductFeaturesChange('icon', { iconSpacing: value });
-    } else if (field === 'marginTop') {
-      onProductFeaturesChange('icon', { marginTop: value });
-    } else if (field === 'marginBottom') {
-      onProductFeaturesChange('icon', { marginBottom: value });
-    }
+  // Handle productFeatures icon configuration changes
+  const handleProductFeaturesIconChange = (field: keyof ProductFeaturesConfig["icon"], value: number) => {
+    const currentIcon = layout.productFeatures?.icon || { iconSize: 16, iconSpacing: 4, marginTop: 0, marginBottom: 0 };
+    onProductFeaturesChange('icon', {
+      ...currentIcon,
+      [field]: value
+    });
   };
 
   // Create a suffix element with default margin for ElementEditor compatibility
@@ -143,8 +138,8 @@ const ElementsTab = ({
                       type="number"
                       min="8"
                       max="48"
-                      value={layout.elements.productFeatures?.iconSize || 16}
-                      onChange={(e) => handleLegacyProductFeaturesChange('iconSize', parseInt(e.target.value))}
+                      value={layout.productFeatures?.icon?.iconSize || 16}
+                      onChange={(e) => handleProductFeaturesIconChange('iconSize', parseInt(e.target.value))}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -155,8 +150,8 @@ const ElementsTab = ({
                       type="number"
                       min="0"
                       max="20"
-                      value={layout.elements.productFeatures?.iconSpacing || 4}
-                      onChange={(e) => handleLegacyProductFeaturesChange('iconSpacing', parseInt(e.target.value))}
+                      value={layout.productFeatures?.icon?.iconSpacing || 4}
+                      onChange={(e) => handleProductFeaturesIconChange('iconSpacing', parseInt(e.target.value))}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -168,8 +163,8 @@ const ElementsTab = ({
                       min="0"
                       max="10"
                       step="0.1"
-                      value={layout.elements.productFeatures?.marginTop || 0}
-                      onChange={(e) => handleLegacyProductFeaturesChange('marginTop', parseFloat(e.target.value))}
+                      value={layout.productFeatures?.icon?.marginTop || 0}
+                      onChange={(e) => handleProductFeaturesIconChange('marginTop', parseFloat(e.target.value))}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -181,8 +176,8 @@ const ElementsTab = ({
                       min="0"
                       max="10"
                       step="0.1"
-                      value={layout.elements.productFeatures?.marginBottom || 0}
-                      onChange={(e) => handleLegacyProductFeaturesChange('marginBottom', parseFloat(e.target.value))}
+                      value={layout.productFeatures?.icon?.marginBottom || 0}
+                      onChange={(e) => handleProductFeaturesIconChange('marginBottom', parseFloat(e.target.value))}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>

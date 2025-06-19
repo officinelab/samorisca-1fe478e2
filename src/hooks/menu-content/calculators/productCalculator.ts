@@ -84,9 +84,9 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
 
   // Calcola altezza delle caratteristiche prodotto (icone) con i nuovi margini
   if (product.features && product.features.length > 0) {
-    const featuresConfig = layout.elements.productFeatures;
-    const iconHeightMm = (featuresConfig.iconSize || 16) / MM_TO_PX;
-    const featuresMarginMm = (featuresConfig.marginTop || 0) + (featuresConfig.marginBottom || 0);
+    const featuresConfig = layout.productFeatures?.icon;
+    const iconHeightMm = (featuresConfig?.iconSize || 16) / MM_TO_PX;
+    const featuresMarginMm = (featuresConfig?.marginTop || 0) + (featuresConfig?.marginBottom || 0);
     totalHeightMm += iconHeightMm + featuresMarginMm;
   }
 
