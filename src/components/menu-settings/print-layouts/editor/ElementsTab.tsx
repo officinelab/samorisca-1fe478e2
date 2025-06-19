@@ -139,7 +139,7 @@ const ElementsTab = ({
                       min="8"
                       max="48"
                       value={layout.productFeatures?.icon?.iconSize || 16}
-                      onChange={(e) => handleProductFeaturesIconChange('iconSize', parseInt(e.target.value))}
+                      onChange={(e) => handleProductFeaturesIconChange('iconSize', parseInt(e.target.value) || 16)}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -151,7 +151,7 @@ const ElementsTab = ({
                       min="0"
                       max="20"
                       value={layout.productFeatures?.icon?.iconSpacing || 4}
-                      onChange={(e) => handleProductFeaturesIconChange('iconSpacing', parseInt(e.target.value))}
+                      onChange={(e) => handleProductFeaturesIconChange('iconSpacing', parseInt(e.target.value) || 4)}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -164,7 +164,7 @@ const ElementsTab = ({
                       max="10"
                       step="0.1"
                       value={layout.productFeatures?.icon?.marginTop || 0}
-                      onChange={(e) => handleProductFeaturesIconChange('marginTop', parseFloat(e.target.value))}
+                      onChange={(e) => handleProductFeaturesIconChange('marginTop', parseFloat(e.target.value) || 0)}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
@@ -177,7 +177,7 @@ const ElementsTab = ({
                       max="10"
                       step="0.1"
                       value={layout.productFeatures?.icon?.marginBottom || 0}
-                      onChange={(e) => handleProductFeaturesIconChange('marginBottom', parseFloat(e.target.value))}
+                      onChange={(e) => handleProductFeaturesIconChange('marginBottom', parseFloat(e.target.value) || 0)}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
