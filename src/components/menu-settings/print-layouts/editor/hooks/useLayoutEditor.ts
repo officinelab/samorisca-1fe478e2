@@ -1,16 +1,17 @@
+
 import { useState, useCallback } from "react";
 import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
 import { useElementsTab } from "./useElementsTab";
 import { useCoverTab } from "./useCoverTab";
+import { useAllergensTab } from "./useAllergensTab";
+import { useCategoryNotesTab } from "./useCategoryNotesTab";
+import { useProductFeaturesTab } from "./useProductFeaturesTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 import { useCoverMarginsTab } from "./useCoverMarginsTab";
-import { useAllergensTab } from "./useAllergensTab";
 import { useAllergensMarginsTab } from "./useAllergensMarginsTab";
-import { useCategoryNotesTab } from "./useCategoryNotesTab";
-import { useProductFeaturesTab } from "./useProductFeaturesTab";
 import { useServicePriceTab } from "./useServicePriceTab";
 import { ensurePageMargins } from "./utils/ensurePageMargins";
 
@@ -19,24 +20,14 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
   const [activeTab, setActiveTab] = useState("generale");
 
   // General
-  const {
-    handleElementChange,
-    handleElementMarginChange,
-  } = useElementsTab(editedLayout, setEditedLayout);
+  const { handleGeneralChange } = useGeneralTab(setEditedLayout);
 
-  const handleVisibilityChange = (elementKey: keyof PrintLayout["elements"], visible: boolean) => {
-    setEditedLayout((prev) => {
-      return {
-        ...prev,
-        elements: {
-          ...prev.elements,
-          [elementKey]: {
-            ...prev.elements[elementKey],
-            visible: visible,
-          },
-        },
-      };
-    });
+  // Elements - non usare margin su suffix
+  const { handleElementChange, handleElementMarginChange: origHandleElementMarginChange } = useElementsTab(setEditedLayout);
+  // migliora la margin change: ignora se elementKey === "suffix"
+  const handleElementMarginChange = (elementKey: keyof PrintLayout["elements"], marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
+    if (elementKey === "suffix") return; // suffix non gestisce margin
+    origHandleElementMarginChange(elementKey, marginKey, value);
   };
 
   // Product Features (existing in elements)
@@ -60,85 +51,121 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
 
   // Cover tab
   const {
-    handleLogoChange,
+    handleCoverLogoChange,
     handleCoverTitleChange,
+    handleCoverTitleMarginChange,
     handleCoverSubtitleChange,
-  } = useCoverTab(editedLayout, setEditedLayout);
+    handleCoverSubtitleMarginChange
+  } = useCoverTab(setEditedLayout);
 
-  // Spacing tab
+  // Allergens
   const {
-    handleSpacingChange,
-  } = useSpacingTab(editedLayout, setEditedLayout);
+    handleAllergensTitleChange,
+    handleAllergensTitleMarginChange,
+    handleAllergensDescriptionChange,
+    handleAllergensDescriptionMarginChange,
+    handleAllergensItemNumberChange,
+    handleAllergensItemNumberMarginChange,
+    handleAllergensItemTitleChange,
+    handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
+    handleAllergensItemChange
+  } = useAllergensTab(setEditedLayout);
 
-  // Page settings tab
+  // Category Notes
   const {
-    handlePageConfigChange,
-  } = usePageSettingsTab(editedLayout, setEditedLayout);
-
-  // Cover margins tab
-  const {
-    handleCoverMarginsChange,
-  } = useCoverMarginsTab(editedLayout, setEditedLayout);
-
-  // Allergens tab
-  const {
-    handleAllergensChange,
-    handleAllergensItemChange,
-  } = useAllergensTab(editedLayout, setEditedLayout);
-
-  // Allergens margins tab
-  const {
-    handleAllergensMarginsChange,
-  } = useAllergensMarginsTab(editedLayout, setEditedLayout);
-
-  // Category notes tab
-  const {
-    handleCategoryNotesChange,
     handleCategoryNotesIconChange,
     handleCategoryNotesTitleChange,
+    handleCategoryNotesTitleMarginChange,
     handleCategoryNotesTextChange,
-  } = useCategoryNotesTab(editedLayout, setEditedLayout);
+    handleCategoryNotesTextMarginChange
+  } = useCategoryNotesTab(setEditedLayout);
 
-  // Product features tab
+  // Product Features (new layout section)
   const {
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
-  } = useProductFeaturesTab(editedLayout, setEditedLayout);
+    handleProductFeaturesTitleMarginChange
+  } = useProductFeaturesTab(setEditedLayout);
 
-  // Service price tab
+  // Service Price tab
   const {
     handleServicePriceChange,
-  } = useServicePriceTab(editedLayout, setEditedLayout);
+    handleServicePriceMarginChange
+  } = useServicePriceTab(setEditedLayout);
+
+  // Spacing
+  const { handleSpacingChange } = useSpacingTab(setEditedLayout);
+
+  // Page settings (existing)
+  const {
+    handlePageMarginChange,
+    handleOddPageMarginChange,
+    handleEvenPageMarginChange,
+    handleToggleDistinctMargins
+  } = usePageSettingsTab(setEditedLayout);
+
+  // Cover margins (new)
+  const { handleCoverMarginChange } = useCoverMarginsTab(setEditedLayout);
+
+  // Allergens margins (new)
+  const {
+    handleAllergensMarginChange,
+    handleAllergensOddPageMarginChange,
+    handleAllergensEvenPageMarginChange,
+    handleToggleDistinctAllergensMargins
+  } = useAllergensMarginsTab(setEditedLayout);
 
   const handleSave = () => {
-    const layoutWithSyncedMargins = syncPageMargins(editedLayout);
-    onSave(layoutWithSyncedMargins);
+    const finalLayout = ensurePageMargins(syncPageMargins(editedLayout));
+    onSave(finalLayout);
   };
 
   return {
     editedLayout,
     activeTab,
     setActiveTab,
+    handleGeneralChange,
     handleElementChange,
     handleElementMarginChange,
-    handleVisibilityChange,
-    handleProductFeaturesChange,
-    handleLogoChange,
-    handleCoverTitleChange,
-    handleCoverSubtitleChange,
     handleSpacingChange,
-    handlePageConfigChange,
-    handleCoverMarginsChange,
-    handleAllergensChange,
+    handlePageMarginChange,
+    handleOddPageMarginChange,
+    handleEvenPageMarginChange,
+    handleToggleDistinctMargins,
+    handleCoverLogoChange,
+    handleCoverTitleChange,
+    handleCoverTitleMarginChange,
+    handleCoverSubtitleChange,
+    handleCoverSubtitleMarginChange,
+    handleAllergensTitleChange,
+    handleAllergensTitleMarginChange,
+    handleAllergensDescriptionChange,
+    handleAllergensDescriptionMarginChange,
+    handleAllergensItemNumberChange,
+    handleAllergensItemNumberMarginChange,
+    handleAllergensItemTitleChange,
+    handleAllergensItemTitleMarginChange,
+    handleAllergensItemDescriptionChange,
+    handleAllergensItemDescriptionMarginChange,
     handleAllergensItemChange,
-    handleAllergensMarginsChange,
-    handleCategoryNotesChange,
     handleCategoryNotesIconChange,
     handleCategoryNotesTitleChange,
+    handleCategoryNotesTitleMarginChange,
     handleCategoryNotesTextChange,
+    handleCategoryNotesTextMarginChange,
+    handleProductFeaturesChange,
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
+    handleProductFeaturesTitleMarginChange,
     handleServicePriceChange,
+    handleServicePriceMarginChange,
+    handleCoverMarginChange,
+    handleAllergensMarginChange,
+    handleAllergensOddPageMarginChange,
+    handleAllergensEvenPageMarginChange,
+    handleToggleDistinctAllergensMargins,
     handleSave
   };
 };
