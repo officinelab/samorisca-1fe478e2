@@ -1,3 +1,4 @@
+
 // hooks/menu-content/useMenuPagination.ts
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
@@ -82,9 +83,7 @@ export const useMenuPagination = (
     };
 
     categories.forEach(category => {
-      // Usa le misurazioni reali dal pre-render
       const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40;
-      
       const relatedNoteIds = categoryNotesRelations[category.id] || [];
       const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
       const categoryNotesHeight = relatedNotes.reduce((sum, note) => 
@@ -92,85 +91,101 @@ export const useMenuPagination = (
       );
 
       const products = productsByCategory[category.id] || [];
-      let categoryProducts: Product[] = [];
-      let categoryHeaderAdded = false;
+      let remainingProducts = [...products]; // Copia di tutti i prodotti da processare
+      let categoryHeaderAddedOnCurrentPage = false;
 
-      products.forEach(product => {
-        // Usa l'altezza reale del prodotto dal pre-render
-        const productHeight = measurements.productHeights.get(product.id) || 50;
-        const availableHeight = getAvailableHeight(currentPageNumber);
-        
-        // Calculate required height for this product
-        let requiredHeight = productHeight;
-        
-        // Add spacing between products (except for the first product)
-        if (categoryProducts.length > 0) {
-          requiredHeight += layout?.spacing.betweenProducts || 0;
-        }
-        
-        // If this is the first product in the category on this page, add category header
-        if (!categoryHeaderAdded) {
-          requiredHeight += categoryTitleHeight + categoryNotesHeight;
-          // Add spacing between categories if there's already content on the page
+      // Continua finché ci sono prodotti rimanenti da processare
+      while (remainingProducts.length > 0) {
+        let currentCategoryProducts: Product[] = [];
+        let tempHeight = currentPageHeight;
+
+        // Se non abbiamo ancora aggiunto l'header della categoria in questa pagina
+        if (!categoryHeaderAddedOnCurrentPage) {
+          let categoryHeaderHeight = categoryTitleHeight + categoryNotesHeight;
+          
+          // Aggiungi spacing tra categorie se c'è già contenuto nella pagina
           if (currentPageContent.length > 0) {
-            requiredHeight += layout?.spacing.betweenCategories || 0;
+            categoryHeaderHeight += layout?.spacing.betweenCategories || 0;
+          }
+
+          // Controlla se l'header della categoria può entrare in questa pagina
+          const availableHeight = getAvailableHeight(currentPageNumber);
+          if (tempHeight + categoryHeaderHeight > availableHeight && currentPageContent.length > 0) {
+            // L'header non entra, inizia una nuova pagina
+            addNewPage();
+            tempHeight = 0;
+          }
+
+          // Aggiungi l'altezza dell'header
+          tempHeight += categoryHeaderHeight;
+          categoryHeaderAddedOnCurrentPage = true;
+        }
+
+        // Prova ad aggiungere quanti più prodotti possibile in questa pagina
+        for (let i = 0; i < remainingProducts.length; i++) {
+          const product = remainingProducts[i];
+          const productHeight = measurements.productHeights.get(product.id) || 50;
+          let requiredHeight = productHeight;
+
+          // Aggiungi spacing tra prodotti (tranne per il primo prodotto nella categoria su questa pagina)
+          if (currentCategoryProducts.length > 0) {
+            requiredHeight += layout?.spacing.betweenProducts || 0;
+          }
+
+          const availableHeight = getAvailableHeight(currentPageNumber);
+          
+          // Controlla se questo prodotto può entrare nella pagina corrente
+          if (tempHeight + requiredHeight <= availableHeight) {
+            // Il prodotto entra nella pagina
+            currentCategoryProducts.push(product);
+            tempHeight += requiredHeight;
+          } else {
+            // Il prodotto non entra, fermiamo qui e il resto andrà nella pagina successiva
+            break;
           }
         }
 
-        // Check if this product would exceed the page
-        if (currentPageHeight + requiredHeight > availableHeight && currentPageContent.length > 0) {
-          // Finish current category section on current page if it has products
-          if (categoryProducts.length > 0) {
-            currentPageContent.push({
-              category,
-              notes: categoryHeaderAdded ? [] : relatedNotes,
-              products: [...categoryProducts],
-              isRepeatedTitle: categoryHeaderAdded
-            });
-            categoryProducts = [];
-          }
+        // Se non siamo riusciti ad aggiungere nemmeno un prodotto, forza l'aggiunta del primo
+        // per evitare loop infiniti (può succedere con prodotti molto alti)
+        if (currentCategoryProducts.length === 0 && remainingProducts.length > 0) {
+          currentCategoryProducts.push(remainingProducts[0]);
+          console.warn(`Prodotto "${remainingProducts[0].title}" troppo alto per la pagina, forzato comunque`);
+        }
 
-          // Start new page
+        // Aggiungi la sezione categoria alla pagina corrente
+        if (currentCategoryProducts.length > 0) {
+          const isRepeatedTitle = currentPageContent.some(c => c.category.id === category.id);
+          
+          currentPageContent.push({
+            category,
+            notes: !isRepeatedTitle ? relatedNotes : [], // Note solo la prima volta
+            products: [...currentCategoryProducts],
+            isRepeatedTitle
+          });
+
+          // Aggiorna l'altezza della pagina corrente
+          currentPageHeight = tempHeight;
+
+          // Rimuovi i prodotti processati dalla lista dei rimanenti
+          remainingProducts = remainingProducts.slice(currentCategoryProducts.length);
+        }
+
+        // Se ci sono ancora prodotti rimanenti, dovranno andare in una nuova pagina
+        if (remainingProducts.length > 0) {
           addNewPage();
-          categoryHeaderAdded = false; // Reset for new page
+          categoryHeaderAddedOnCurrentPage = false; // Reset per la nuova pagina
         }
-
-        // Add the product to current category
-        categoryProducts.push(product);
-        
-        // Update height calculation
-        if (!categoryHeaderAdded) {
-          // Add category header height
-          currentPageHeight += categoryTitleHeight + categoryNotesHeight;
-          // Add spacing between categories if there's already content on the page
-          if (currentPageContent.length > 0) {
-            currentPageHeight += layout?.spacing.betweenCategories || 0;
-          }
-          categoryHeaderAdded = true;
-        }
-        
-        // Add product height
-        currentPageHeight += productHeight;
-        
-        // Add spacing between products (except for the first product in category)
-        if (categoryProducts.length > 1) {
-          currentPageHeight += layout?.spacing.betweenProducts || 0;
-        }
-      });
-
-      // Add remaining products for this category
-      if (categoryProducts.length > 0) {
-        currentPageContent.push({
-          category,
-          notes: categoryHeaderAdded ? [] : relatedNotes,
-          products: categoryProducts,
-          isRepeatedTitle: categoryHeaderAdded && currentPageContent.some(c => c.category.id === category.id)
-        });
       }
     });
 
-    // Add the last page if it has content
+    // Aggiungi l'ultima pagina se contiene contenuto
     addNewPage();
+
+    console.log(`Paginazione completata: ${pages.length} pagine generate`);
+    pages.forEach((page, index) => {
+      const totalProducts = page.categories.reduce((sum, cat) => sum + cat.products.length, 0);
+      console.log(`Pagina ${page.pageNumber}: ${page.categories.length} categorie, ${totalProducts} prodotti`);
+    });
 
     return pages;
   };
