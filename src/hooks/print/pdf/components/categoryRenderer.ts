@@ -3,8 +3,9 @@ import { PrintLayout } from '@/types/printLayout';
 import { Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
 import { addStyledText } from './textRenderer';
+import { getStandardizedDimensions } from '@/hooks/print/pdf/utils/conversionUtils';
 
-// Add category title to PDF with correct dimensions
+// Add category title to PDF with dimensions matching preview exactly
 export const addCategoryToPdf = (
   pdf: jsPDF,
   category: Category,
@@ -13,10 +14,15 @@ export const addCategoryToPdf = (
   layout: PrintLayout,
   maxWidth: number
 ): number => {
-  console.log('🏷️ PDF Category rendering:', category.title);
+  const dimensions = getStandardizedDimensions(layout);
+  
+  console.log('🏷️ PDF Category rendering con dimensioni standardizzate:', category.title, {
+    fontSize: dimensions.pdf.categoryFontSize,
+    marginBottom: dimensions.spacing.categoryTitleBottomMargin
+  });
   
   const textHeight = addStyledText(pdf, category.title, x, y, {
-    fontSize: layout.elements.category.fontSize, // USA PT DIRETTO
+    fontSize: dimensions.pdf.categoryFontSize, // USA DIMENSIONI STANDARDIZZATE
     fontFamily: layout.elements.category.fontFamily,
     fontStyle: layout.elements.category.fontStyle,
     fontColor: layout.elements.category.fontColor,
@@ -24,11 +30,11 @@ export const addCategoryToPdf = (
     maxWidth
   });
   
-  // ✅ USA SPACING DIRETTO DAL LAYOUT
-  return textHeight + layout.spacing.categoryTitleBottomMargin;
+  // ✅ USA SPACING STANDARDIZZATO IDENTICO ALL'ANTEPRIMA
+  return textHeight + dimensions.spacing.categoryTitleBottomMargin;
 };
 
-// Add category notes to PDF with correct dimensions
+// Add category notes to PDF with dimensions matching preview exactly
 export const addCategoryNotesToPdf = (
   pdf: jsPDF,
   notes: CategoryNote[],
@@ -39,6 +45,7 @@ export const addCategoryNotesToPdf = (
 ): number => {
   if (notes.length === 0) return 0;
   
+  const dimensions = getStandardizedDimensions(layout);
   let currentY = y;
   
   console.log('📝 PDF Category notes rendering:', notes.length, 'notes');
@@ -46,7 +53,7 @@ export const addCategoryNotesToPdf = (
   notes.forEach((note, index) => {
     // Add note title (leggermente più piccolo del titolo categoria)
     const titleHeight = addStyledText(pdf, note.title, x, currentY, {
-      fontSize: layout.elements.category.fontSize * 0.9, // USA PT DIRETTO con riduzione
+      fontSize: dimensions.pdf.categoryFontSize * 0.9, // ✅ IDENTICO ALL'ANTEPRIMA
       fontFamily: layout.categoryNotes.title.fontFamily,
       fontStyle: layout.categoryNotes.title.fontStyle,
       fontColor: layout.categoryNotes.title.fontColor,
@@ -58,7 +65,7 @@ export const addCategoryNotesToPdf = (
     
     // Add note text (simile alla descrizione prodotto)
     const textHeight = addStyledText(pdf, note.text, x, currentY, {
-      fontSize: layout.elements.description.fontSize * 0.95, // USA PT DIRETTO con riduzione
+      fontSize: dimensions.pdf.descriptionFontSize * 0.95, // ✅ IDENTICO ALL'ANTEPRIMA
       fontFamily: layout.categoryNotes.text.fontFamily,
       fontStyle: layout.categoryNotes.text.fontStyle,
       fontColor: layout.categoryNotes.text.fontColor,
