@@ -24,7 +24,7 @@ export const useMenuPagination = (
   layout: PrintLayout | null
 ) => {
   const A4_HEIGHT_MM = 297;
-  const SAFETY_MARGIN_MM = 10; // Margine di sicurezza aggiuntivo
+  const SAFETY_MARGIN_MM = 15; // Aumentato da 10 a 15mm per maggiore sicurezza
 
   // Usa il sistema di pre-render per ottenere le misurazioni reali
   const { measurements, isLoading } = usePreRenderMeasurement(
@@ -152,8 +152,8 @@ export const useMenuPagination = (
 
           const availableHeight = getAvailableHeight(currentPageNumber);
           
-          // Controlla con un margine di sicurezza extra del 5%
-          const safeRequiredHeight = requiredHeight * 1.05;
+          // Controlla con un margine di sicurezza extra del 10% (aumentato dal 5%)
+          const safeRequiredHeight = requiredHeight * 1.10;
           
           // Log dettagliato per ogni prodotto
           if (i < 3 || tempHeight + safeRequiredHeight > availableHeight) {
