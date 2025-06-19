@@ -37,6 +37,12 @@ const ElementsTab = ({
     // For other fields, we ignore them as they're handled by the new structure
   };
 
+  // Create a suffix element with default margin for ElementEditor compatibility
+  const suffixElementWithMargin = {
+    ...layout.elements.suffix,
+    margin: { top: 0, right: 0, bottom: 0, left: 0 }
+  };
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue="categoria" className="w-full">
@@ -126,7 +132,7 @@ const ElementsTab = ({
               <AccordionTrigger>Suffisso</AccordionTrigger>
               <AccordionContent>
                 <ElementEditor
-                  element={layout.elements.suffix}
+                  element={suffixElementWithMargin}
                   onChange={(field, value) => onElementChange("suffix", field, value)}
                   onMarginChange={(field, value) => onElementMarginChange("suffix", field, value)}
                   hideMarginControls={true}
