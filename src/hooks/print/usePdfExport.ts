@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Document, Page, View, Text, pdf } from '@react-pdf/renderer';
 import { PrintLayout } from "@/types/printLayout";
 import { toast } from "@/components/ui/sonner";
+import React from 'react';
 
 export const usePdfExport = () => {
   const [isExporting, setIsExporting] = useState(false);
@@ -24,8 +25,8 @@ export const usePdfExport = () => {
 
       console.log('📄 Generazione PDF in corso...');
       
-      // Genera il PDF usando React.createElement invece di JSX
-      const documentElement = MenuPdfDocument({ 
+      // Genera il PDF usando React.createElement
+      const documentElement = React.createElement(MenuPdfDocument, { 
         layout: layout,
         businessInfo: businessInfo
       });

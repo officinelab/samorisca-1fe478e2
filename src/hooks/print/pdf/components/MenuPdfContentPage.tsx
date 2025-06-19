@@ -93,12 +93,12 @@ const MenuPdfContentPage: React.FC<MenuPdfContentPageProps> = ({ page, layout, s
                   marginBottom: `${layout.spacing.betweenProducts}mm`
                 }}>
                   <Text style={{
-                    fontSize: layout.categoryNotes.icon.fontSize,
-                    fontFamily: layout.categoryNotes.icon.fontFamily,
-                    color: layout.categoryNotes.icon.fontColor,
+                    fontSize: layout.categoryNotes.icon.iconSize,
+                    fontFamily: layout.categoryNotes.title.fontFamily,
+                    color: layout.categoryNotes.title.fontColor,
                     marginRight: '2mm'
                   }}>
-                    {layout.categoryNotes.icon.icon}
+                    •
                   </Text>
                   <View style={{ flex: 1 }}>
                     <Text style={{
@@ -151,7 +151,7 @@ const MenuPdfContentPage: React.FC<MenuPdfContentPageProps> = ({ page, layout, s
                       textAlign: 'right',
                       width: '15%'
                     }}>
-                      €{product.price.toFixed(2)}
+                      €{product.price_standard?.toFixed(2) || '0.00'}
                     </Text>
                   </View>
 
@@ -168,21 +168,6 @@ const MenuPdfContentPage: React.FC<MenuPdfContentPageProps> = ({ page, layout, s
                       marginBottom: `${layout.elements.description.margin.bottom}mm`
                     }}>
                       {product.description}
-                    </Text>
-                  )}
-
-                  {/* Descrizione inglese */}
-                  {product.description_en && product.description_en !== product.description && (
-                    <Text style={{
-                      fontFamily: layout.elements.description.fontFamily,
-                      fontSize: layout.elements.description.fontSize,
-                      fontWeight: layout.elements.description.fontStyle === 'bold' ? 'bold' : 'normal',
-                      fontStyle: layout.elements.description.fontStyle === 'italic' ? 'italic' : 'normal',
-                      color: layout.elements.description.fontColor,
-                      textAlign: layout.elements.description.alignment,
-                      marginBottom: `${layout.elements.description.margin.bottom}mm`
-                    }}>
-                      {product.description_en}
                     </Text>
                   )}
 
@@ -210,17 +195,17 @@ const MenuPdfContentPage: React.FC<MenuPdfContentPageProps> = ({ page, layout, s
                           color: layout.productFeatures.title.fontColor,
                           marginRight: '3mm'
                         }}>
-                          {layout.productFeatures.icon.icon} {feature.title}
+                          • {feature.title}
                         </Text>
                       ))}
                     </View>
                   )}
 
                   {/* Varianti prezzo */}
-                  {product.price_variants && product.price_variants.length > 0 && (
+                  {product.has_multiple_prices && (
                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: '2mm' }}>
-                      {product.price_variants.map((variant, idx) => (
-                        <Text key={idx} style={{
+                      {product.price_variant_1_name && product.price_variant_1_value && (
+                        <Text style={{
                           fontFamily: layout.elements.priceVariants.fontFamily,
                           fontSize: layout.elements.priceVariants.fontSize,
                           fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
@@ -228,9 +213,21 @@ const MenuPdfContentPage: React.FC<MenuPdfContentPageProps> = ({ page, layout, s
                           color: layout.elements.priceVariants.fontColor,
                           marginLeft: '4mm'
                         }}>
-                          {variant.name}: €{variant.price.toFixed(2)}
+                          {product.price_variant_1_name}: €{product.price_variant_1_value.toFixed(2)}
                         </Text>
-                      ))}
+                      )}
+                      {product.price_variant_2_name && product.price_variant_2_value && (
+                        <Text style={{
+                          fontFamily: layout.elements.priceVariants.fontFamily,
+                          fontSize: layout.elements.priceVariants.fontSize,
+                          fontWeight: layout.elements.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
+                          fontStyle: layout.elements.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
+                          color: layout.elements.priceVariants.fontColor,
+                          marginLeft: '4mm'
+                        }}>
+                          {product.price_variant_2_name}: €{product.price_variant_2_value.toFixed(2)}
+                        </Text>
+                      )}
                     </View>
                   )}
                 </View>
