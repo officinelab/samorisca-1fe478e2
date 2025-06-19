@@ -7,11 +7,16 @@ import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
+  layoutRefreshKey?: number; // Opzionale, passato dal componente padre
 }
 
-const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { data, isLoading: isLoadingData, error, refetch } = useMenuContentData();
+const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layoutRefreshKey = 0 }) => {
+  const [localRefreshKey, setLocalRefreshKey] = useState(0);
+  
+  // Il refresh totale è la somma delle due chiavi
+  const totalRefreshKey = layoutRefreshKey + localRefreshKey;
+  
+  const { data, isLoading: isLoadingData, error } = useMenuContentData();
   const {
     categories,
     productsByCategory,
@@ -21,6 +26,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     activeLayout
   } = data;
 
+  // Usa il totalRefreshKey per forzare la re-creazione del hook di paginazione
+  const paginationKey = `${totalRefreshKey}-${activeLayout?.id || 'no-layout'}`;
+  
   const { createPages, isLoadingMeasurements } = useMenuPagination(
     categories,
     productsByCategory,
@@ -33,11 +41,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
   // Ascolta gli eventi di aggiornamento layout
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
-      console.log('📐 MenuContentPages: Layout aggiornato, ricarico dati...', event.detail);
-      // Ricarica i dati quando il layout cambia
-      refetch?.();
-      // Forza re-render
-      setRefreshKey(prev => prev + 1);
+      console.log('📐 MenuContentPages: Layout aggiornato, forzo re-render locale...', event.detail);
+      // Forza re-render locale
+      setLocalRefreshKey(prev => prev + 1);
     };
 
     window.addEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
@@ -45,7 +51,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
     return () => {
       window.removeEventListener('layoutUpdated', handleLayoutUpdate as EventListener);
     };
-  }, [refetch]);
+  }, []);
 
   const isLoading = isLoadingData || isLoadingMeasurements;
 
@@ -144,11 +150,14 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
   }
 
   return (
-    <Card key={refreshKey}>
+    <Card key={totalRefreshKey}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
           Pagine Contenuto del Menu
+          {totalRefreshKey > 0 && (
+            <span className="text-xs text-muted-foreground ml-2">(Aggiornato)</span>
+          )}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {pages.length} pagina{pages.length !== 1 ? 'e' : ''} generata{pages.length !== 1 ? 'e' : ''} 
@@ -156,9 +165,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins }) => {
         </p>
       </CardHeader>
       <CardContent className="space-y-8">
-        {pages.map((page) => (
+        {pages.map((page, index) => (
           <MenuContentPagePreview
-            key={`${page.pageNumber}-${refreshKey}`}
+            key={`${page.pageNumber}-${totalRefreshKey}-${index}`}
             page={page}
             layout={activeLayout}
             showMargins={showMargins}

@@ -8,11 +8,13 @@ import MenuContentPages from './MenuContentPages';
 interface MenuPrintPreviewProps {
   currentLayout?: PrintLayout;
   showMargins: boolean;
+  refreshKey?: number; // Aggiunto per supportare il refresh
 }
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   currentLayout,
-  showMargins
+  showMargins,
+  refreshKey = 0
 }) => {
   // A4 dimensions in mm
   const A4_WIDTH_MM = 210;
@@ -39,7 +41,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   const margins = getMargins();
 
   return (
-    <div className="menu-print-preview-container space-y-8">
+    <div className="menu-print-preview-container space-y-8" key={`preview-${refreshKey}`}>
       {/* Cover Pages */}
       <Card>
         <CardHeader>
@@ -75,8 +77,11 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
         </CardContent>
       </Card>
 
-      {/* Menu Content Pages */}
-      <MenuContentPages showMargins={showMargins} />
+      {/* Menu Content Pages - Passa il refreshKey */}
+      <MenuContentPages 
+        showMargins={showMargins} 
+        layoutRefreshKey={refreshKey}
+      />
     </div>
   );
 };
