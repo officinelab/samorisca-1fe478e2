@@ -58,6 +58,75 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
 
   const { topMargin, rightMargin, bottomMargin, leftMargin } = getPageMargins();
 
+  const getPageStyle = () => ({
+    width: `${A4_WIDTH_MM}mm`,
+    height: `${A4_HEIGHT_MM}mm`,
+    padding: `${topMargin}mm ${rightMargin}mm ${bottomMargin}mm ${leftMargin}mm`,
+    boxSizing: 'border-box' as const,
+    margin: '0 auto 30px auto',
+    border: showMargins ? '2px solid #e2e8f0' : '1px solid #e2e8f0',
+    boxShadow: showMargins ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0,0,0,0.03)',
+    position: 'relative' as const,
+    backgroundColor: 'white'
+  });
+
+  const getMarginsOverlay = () => {
+    if (!showMargins) return null;
+    
+    return (
+      <>
+        {/* Top margin */}
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: `${topMargin}mm`,
+            borderBottom: '2px dashed red',
+            pointerEvents: 'none'
+          }}
+        />
+        {/* Right margin */}
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: `${rightMargin}mm`,
+            borderLeft: '2px dashed red',
+            pointerEvents: 'none'
+          }}
+        />
+        {/* Bottom margin */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: `${bottomMargin}mm`,
+            borderTop: '2px dashed red',
+            pointerEvents: 'none'
+          }}
+        />
+        {/* Left margin */}
+        <div 
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: `${leftMargin}mm`,
+            borderRight: '2px dashed red',
+            pointerEvents: 'none'
+          }}
+        />
+      </>
+    );
+  };
+
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-4">
@@ -66,16 +135,10 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
       
       <div 
         className="page menu-content-page bg-white relative overflow-hidden"
-        style={{
-          width: `${A4_WIDTH_MM}mm`,
-          height: `${A4_HEIGHT_MM}mm`,
-          padding: `${topMargin}mm ${rightMargin}mm ${bottomMargin}mm ${leftMargin}mm`,
-          boxSizing: 'border-box',
-          margin: '0 auto',
-          border: showMargins ? '2px dashed #e2e8f0' : 'none',
-          boxShadow: showMargins ? '0 2px 8px rgba(0,0,0,0.03)' : 'none'
-        }}
+        style={getPageStyle()}
       >
+        {getMarginsOverlay()}
+        
         {/* Page number badge for preview */}
         {showMargins && (
           <div 
