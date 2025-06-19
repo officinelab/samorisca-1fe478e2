@@ -51,21 +51,7 @@ export const useMenuContentData = () => {
 
         if (categoriesError) throw categoriesError;
 
-        // 3. Fetch all active products with their relationships
-        const { data: products, error: productsError } = await supabase
-          .from('products')
-          .select(`
-            *,
-            label:label_id(*),
-            product_allergens(allergen_id),
-            product_to_features(feature_id)
-          `)
-          .eq('is_active', true)
-          .order('display_order', { ascending: true });
-
-        if (productsError) throw productsError;
-
-        // 4. Fetch allergens
+        // 3. Fetch all allergens
         const { data: allergens, error: allergensError } = await supabase
           .from('allergens')
           .select('*')
@@ -73,7 +59,36 @@ export const useMenuContentData = () => {
 
         if (allergensError) throw allergensError;
 
-        // 5. Fetch product features
+        // 4. Fetch all active products with their relationships
+        const { data: products, error: productsError } = await supabase
+          .from('products')
+          .select(`
+            *,
+            label:label_id(*)
+          `)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        if (productsError) throw productsError;
+
+        // 5. Fetch product-allergen relationships
+        const productIds = products?.map(p => p.id) || [];
+        const { data: productAllergens, error: productAllergensError } = await supabase
+          .from('product_allergens')
+          .select('*')
+          .in('product_id', productIds);
+
+        if (productAllergensError) throw productAllergensError;
+
+        // 6. Fetch product-feature relationships
+        const { data: productFeatures, error: productFeaturesError } = await supabase
+          .from('product_to_features')
+          .select('*')
+          .in('product_id', productIds);
+
+        if (productFeaturesError) throw productFeaturesError;
+
+        // 7. Fetch product features
         const { data: features, error: featuresError } = await supabase
           .from('product_features')
           .select('*')
@@ -81,7 +96,7 @@ export const useMenuContentData = () => {
 
         if (featuresError) throw featuresError;
 
-        // 6. Fetch category notes
+        // 8. Fetch category notes
         const { data: categoryNotes, error: notesError } = await supabase
           .from('category_notes')
           .select('*')
@@ -89,14 +104,14 @@ export const useMenuContentData = () => {
 
         if (notesError) throw notesError;
 
-        // 7. Fetch category notes relations
+        // 9. Fetch category notes relations
         const { data: notesRelations, error: relationsError } = await supabase
           .from('category_notes_categories')
           .select('*');
 
         if (relationsError) throw relationsError;
 
-        // 8. Fetch service cover charge
+        // 10. Fetch service cover charge
         const { data: serviceCharge, error: serviceError } = await supabase
           .from('site_settings')
           .select('value')
@@ -105,8 +120,7 @@ export const useMenuContentData = () => {
 
         if (serviceError && serviceError.code !== 'PGRST116') throw serviceError;
 
-        // 9. Fetch English translations for product descriptions
-        const productIds = products?.map(p => p.id) || [];
+        // 11. Fetch English translations for product descriptions
         const { data: englishTranslations, error: translationsError } = await supabase
           .from('translations')
           .select('*')
@@ -125,27 +139,58 @@ export const useMenuContentData = () => {
           }
         });
 
+        // Create allergens map for quick lookup
+        const allergensMap = new Map(allergens?.map(a => [a.id, a]) || []);
+
+        // Create product-allergen mapping
+        const productAllergenMap = new Map<string, string[]>();
+        productAllergens?.forEach(pa => {
+          if (!productAllergenMap.has(pa.product_id)) {
+            productAllergenMap.set(pa.product_id, []);
+          }
+          productAllergenMap.get(pa.product_id)!.push(pa.allergen_id);
+        });
+
+        // Create features map
+        const featuresMap = new Map(features?.map(f => [f.id, f]) || []);
+
+        // Create product-feature mapping
+        const productFeatureMap = new Map<string, string[]>();
+        productFeatures?.forEach(pf => {
+          if (!productFeatureMap.has(pf.product_id)) {
+            productFeatureMap.set(pf.product_id, []);
+          }
+          productFeatureMap.get(pf.product_id)!.push(pf.feature_id);
+        });
+
         // Process data
         const productsByCategory: Record<string, Product[]> = {};
-        const featuresMap = new Map(features?.map(f => [f.id, f]) || []);
         
-        // Group products by category and enrich with features
+        // Group products by category and enrich with features and allergens
         products?.forEach(product => {
           if (!productsByCategory[product.category_id]) {
             productsByCategory[product.category_id] = [];
           }
           
+          // Add allergens to product
+          const productAllergenIds = productAllergenMap.get(product.id) || [];
+          const productAllergensDetails = productAllergenIds
+            .map(id => allergensMap.get(id))
+            .filter(Boolean) as Allergen[];
+          
           // Add features to product
-          const productFeatures = product.product_to_features?.map(ptf => 
-            featuresMap.get(ptf.feature_id)
-          ).filter(Boolean) as ProductFeature[];
+          const productFeatureIds = productFeatureMap.get(product.id) || [];
+          const productFeaturesDetails = productFeatureIds
+            .map(id => featuresMap.get(id))
+            .filter(Boolean) as ProductFeature[];
           
           // Add English description from translations
           const description_en = translationsMap.get(product.id) || null;
           
           productsByCategory[product.category_id].push({
             ...product,
-            features: productFeatures,
+            features: productFeaturesDetails,
+            allergens: productAllergensDetails,
             description_en
           });
         });
