@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { PrintLayout, PrintLayoutElementConfig } from "@/types/printLayout";
 import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
 import { useGeneralTab } from "./useGeneralTab";
@@ -15,8 +14,8 @@ import { useAllergensMarginsTab } from "./useAllergensMarginsTab";
 import { useServicePriceTab } from "./useServicePriceTab";
 import { ensurePageMargins } from "./utils/ensurePageMargins";
 
-export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: PrintLayout) => void) {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins(initialLayout));
+export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayout) => void) => {
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins(layout));
   const [activeTab, setActiveTab] = useState("generale");
 
   // General
@@ -31,18 +30,23 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
   };
 
   // Product Features (existing in elements)
-  const handleProductFeaturesChange = (field: string, value: number) => {
-    setEditedLayout(prev => ({
-      ...prev,
-      elements: {
-        ...prev.elements,
-        productFeatures: {
-          ...prev.elements.productFeatures,
-          [field]: value
-        }
-      }
-    }));
-  };
+  const handleProductFeaturesChange = useCallback(
+    (field: keyof ProductFeaturesConfig, value: any) => {
+      console.log('handleProductFeaturesChange called:', field, value); // Debug log
+      setEditedLayout((prev) => {
+        const newLayout = {
+          ...prev,
+          productFeatures: {
+            ...prev.productFeatures,
+            [field]: value,
+          },
+        };
+        console.log('New layout productFeatures:', newLayout.productFeatures); // Debug log
+        return newLayout;
+      });
+    },
+    []
+  );
 
   // Cover tab
   const {
@@ -163,4 +167,4 @@ export function useLayoutEditor(initialLayout: PrintLayout, onSave: (layout: Pri
     handleToggleDistinctAllergensMargins,
     handleSave
   };
-}
+};

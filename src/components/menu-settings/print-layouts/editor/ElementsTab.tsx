@@ -32,11 +32,14 @@ const ElementsTab = ({
 }: ElementsTabProps) => {
   // Handle productFeatures icon configuration changes
   const handleProductFeaturesIconChange = (field: keyof ProductFeaturesConfig["icon"], value: number) => {
+    console.log(`Updating ${field} to ${value}`); // Debug log
     const currentIcon = layout.productFeatures?.icon || { iconSize: 16, iconSpacing: 4, marginTop: 0, marginBottom: 0 };
-    onProductFeaturesChange('icon', {
+    const newIcon = {
       ...currentIcon,
       [field]: value
-    });
+    };
+    console.log('New icon config:', newIcon); // Debug log
+    onProductFeaturesChange('icon', newIcon);
   };
 
   // Create a suffix element with default margin for ElementEditor compatibility
@@ -144,6 +147,7 @@ const ElementsTab = ({
                       value={layout.productFeatures?.icon?.iconSize ?? 16}
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
+                        console.log('Input change for iconSize:', value); // Debug log
                         if (!isNaN(value)) {
                           handleProductFeaturesIconChange('iconSize', value);
                         }
@@ -161,6 +165,7 @@ const ElementsTab = ({
                       value={layout.productFeatures?.icon?.iconSpacing ?? 4}
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
+                        console.log('Input change for iconSpacing:', value); // Debug log
                         if (!isNaN(value)) {
                           handleProductFeaturesIconChange('iconSpacing', value);
                         }
@@ -179,6 +184,7 @@ const ElementsTab = ({
                       value={layout.productFeatures?.icon?.marginTop ?? 0}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
+                        console.log('Input change for marginTop:', value); // Debug log
                         if (!isNaN(value)) {
                           handleProductFeaturesIconChange('marginTop', value);
                         }
@@ -197,6 +203,7 @@ const ElementsTab = ({
                       value={layout.productFeatures?.icon?.marginBottom ?? 0}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
+                        console.log('Input change for marginBottom:', value); // Debug log
                         if (!isNaN(value)) {
                           handleProductFeaturesIconChange('marginBottom', value);
                         }
