@@ -75,12 +75,12 @@ const getPageMargins = (
   }
 };
 
-// Generate a single menu content page in PDF
-export const generateMenuContentPage = (
+// Generate a single menu content page in PDF - FIXED: Async support and better positioning
+export const generateMenuContentPage = async (
   pdf: jsPDF,
   page: PageContent,
   layout: PrintLayout
-): void => {
+): Promise<void> => {
   console.log(`📄 Generating PDF page ${page.pageNumber} with ${page.categories.length} category sections`);
   
   // Add new page if this is not the first page being added
@@ -90,20 +90,21 @@ export const generateMenuContentPage = (
   
   const margins = getPageMargins(layout, 'content', page.pageNumber);
   const pageWidth = 210; // A4 width in mm
+  const pageHeight = 297; // A4 height in mm
   const contentWidth = pageWidth - margins.marginLeft - margins.marginRight;
   
   let currentY = margins.marginTop;
-  const maxY = 297 - margins.marginBottom; // A4 height minus bottom margin
+  const maxY = pageHeight - margins.marginBottom - 25; // FIXED: Reserve space for service charge
   
   console.log(`📐 Page ${page.pageNumber} margins:`, margins);
-  console.log(`📐 Content width: ${contentWidth}mm, starting Y: ${currentY}mm`);
+  console.log(`📐 Content width: ${contentWidth}mm, starting Y: ${currentY}mm, max Y: ${maxY}mm`);
   
   // Render each category section
-  page.categories.forEach((categorySection, sectionIndex) => {
+  for (const categorySection of page.categories) {
     // Category title and notes (only if not repeated)
     if (!categorySection.isRepeatedTitle) {
       // Add spacing between categories if not the first section
-      if (sectionIndex > 0) {
+      if (page.categories.indexOf(categorySection) > 0) {
         currentY += layout.spacing.betweenCategories;
       }
       
@@ -132,11 +133,11 @@ export const generateMenuContentPage = (
       }
     }
     
-    // Render products
-    categorySection.products.forEach((product, productIndex) => {
-      const isLastProduct = productIndex === categorySection.products.length - 1;
+    // Render products - FIXED: Async rendering for SVG support
+    for (const product of categorySection.products) {
+      const isLastProduct = categorySection.products.indexOf(product) === categorySection.products.length - 1;
       
-      const productHeight = addProductToPdf(
+      const productHeight = await addProductToPdf(
         pdf,
         product,
         margins.marginLeft,
@@ -149,11 +150,11 @@ export const generateMenuContentPage = (
       currentY += productHeight;
       
       console.log(`📦 Added product "${product.title}" at Y: ${(currentY - productHeight).toFixed(1)}mm, height: ${productHeight.toFixed(1)}mm`);
-    });
-  });
+    }
+  }
   
-  // Add service charge at bottom of page
-  const serviceY = maxY - 20; // Position service line 20mm from bottom
+  // Add service charge at bottom of page - FIXED: Better positioning
+  const serviceY = maxY; // Position at calculated max Y
   addServiceChargeToPdf(
     pdf,
     page.serviceCharge,
@@ -163,21 +164,21 @@ export const generateMenuContentPage = (
     contentWidth
   );
   
-  console.log(`✅ Page ${page.pageNumber} completed, final Y: ${currentY.toFixed(1)}mm`);
+  console.log(`✅ Page ${page.pageNumber} completed, final Y: ${currentY.toFixed(1)}mm, service at: ${serviceY.toFixed(1)}mm`);
 };
 
-// Generate all menu content pages
-export const generateAllMenuContentPages = (
+// Generate all menu content pages - FIXED: Async support
+export const generateAllMenuContentPages = async (
   pdf: jsPDF,
   pages: PageContent[],
   layout: PrintLayout
-): void => {
+): Promise<void> => {
   console.log(`📄 Starting generation of ${pages.length} menu content pages`);
   
-  pages.forEach((page, index) => {
-    console.log(`📄 Generating page ${page.pageNumber} (${index + 1}/${pages.length})`);
-    generateMenuContentPage(pdf, page, layout);
-  });
+  for (const page of pages) {
+    console.log(`📄 Generating page ${page.pageNumber} (${pages.indexOf(page) + 1}/${pages.length})`);
+    await generateMenuContentPage(pdf, page, layout);
+  }
   
   console.log(`✅ All ${pages.length} menu content pages generated successfully`);
 };

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
@@ -330,8 +329,8 @@ export const usePdfExport = () => {
     pdf.addPage();
   };
 
-  // Generate menu content pages with real data
-  const generateContentPages = (pdf: jsPDF, layout: PrintLayout) => {
+  // Generate menu content pages with real data - FIXED: Async support
+  const generateContentPages = async (pdf: jsPDF, layout: PrintLayout) => {
     console.log('📝 Generating real menu content pages...');
     
     const pages = createPages();
@@ -358,7 +357,7 @@ export const usePdfExport = () => {
     }
     
     console.log(`📄 Generating ${pages.length} menu content pages`);
-    generateAllMenuContentPages(pdf, pages, layout);
+    await generateAllMenuContentPages(pdf, pages, layout); // FIXED: Await async function
   };
 
   // Generate allergens page
@@ -438,7 +437,7 @@ export const usePdfExport = () => {
       generateCoverPage2(pdf);
       
       console.log('📝 Generating menu content pages...');
-      generateContentPages(pdf, currentLayout);
+      await generateContentPages(pdf, currentLayout); // FIXED: Await async function
       
       console.log('📝 Generating allergens page...');
       generateAllergensPage(pdf, currentLayout);

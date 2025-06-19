@@ -36,7 +36,7 @@ const mapFontStyle = (fontStyle: string): string => {
   return 'normal';
 };
 
-// Add text with proper styling
+// Add text with proper styling and wrapping
 const addStyledText = (
   pdf: jsPDF,
   text: string,
@@ -79,6 +79,59 @@ const addStyledText = (
     pdf.text(text, x, y, { align: config.alignment || 'left' });
     return config.fontSize * 0.35; // Return approximate height in mm
   }
+};
+
+// Load and add SVG icon to PDF as image
+const addSvgIconToPdf = async (
+  pdf: jsPDF,
+  iconUrl: string,
+  x: number,
+  y: number,
+  size: number
+): Promise<number> => {
+  return new Promise((resolve) => {
+    // Create a temporary image element to load the SVG
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      try {
+        // Create canvas to convert SVG to raster image
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Convert px to mm (1px ≈ 0.264583mm)
+        const sizeMm = size * 0.264583;
+        canvas.width = size;
+        canvas.height = size;
+        
+        if (ctx) {
+          // Fill with transparent background
+          ctx.clearRect(0, 0, size, size);
+          
+          // Draw the SVG image
+          ctx.drawImage(img, 0, 0, size, size);
+          
+          // Add to PDF as JPEG
+          const dataUrl = canvas.toDataURL('image/png', 1.0);
+          pdf.addImage(dataUrl, 'PNG', x, y, sizeMm, sizeMm);
+        }
+        
+        resolve(sizeMm);
+      } catch (error) {
+        console.error('Error adding SVG icon to PDF:', error);
+        resolve(0);
+      }
+    };
+    
+    img.onerror = () => {
+      console.error('Error loading SVG icon:', iconUrl);
+      resolve(0);
+    };
+    
+    // Load the SVG
+    img.src = iconUrl;
+  });
 };
 
 // Add category title to PDF
@@ -147,36 +200,44 @@ export const addCategoryNotesToPdf = (
   return currentY - y;
 };
 
-// Add product features icons (simplified for now)
-const addProductFeaturesToPdf = (
+// Add product features icons with proper SVG support
+const addProductFeaturesToPdf = async (
   pdf: jsPDF,
   product: Product,
   x: number,
   y: number,
-  layout: PrintLayout
-): number => {
+  layout: PrintLayout,
+  maxContentWidth: number
+): Promise<number> => {
   if (!product.features || product.features.length === 0) return 0;
   
   const featuresConfig = layout.elements.productFeatures;
-  const iconSize = featuresConfig.iconSize / 3.78; // Convert px to mm
-  const iconSpacing = featuresConfig.iconSpacing / 3.78; // Convert px to mm
+  const iconSize = featuresConfig.iconSize || 16; // px
+  const iconSpacing = featuresConfig.iconSpacing || 4; // px
+  const marginTop = featuresConfig.marginTop || 2; // mm
+  const marginBottom = featuresConfig.marginBottom || 2; // mm
   
   let currentX = x;
+  let totalHeight = marginTop;
   
-  // For now, just add simple text representation of features
-  // In a full implementation, you would load and add actual icons
-  product.features.forEach((feature, index) => {
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text(`[${feature.title}]`, currentX, y);
-    currentX += iconSize + iconSpacing;
-  });
+  // Load and add each feature icon
+  for (const feature of product.features) {
+    if (feature.icon_url) {
+      const iconHeight = await addSvgIconToPdf(pdf, feature.icon_url, currentX, y + marginTop, iconSize);
+      currentX += (iconSize * 0.264583) + (iconSpacing * 0.264583); // Convert px to mm
+      
+      // Check if we exceed the content width and break to next line if needed
+      if (currentX > x + maxContentWidth) {
+        break; // For now, just stop adding icons if they don't fit
+      }
+    }
+  }
   
-  return featuresConfig.marginTop + featuresConfig.marginBottom;
+  return totalHeight + marginBottom;
 };
 
-// Add product to PDF
-export const addProductToPdf = (
+// Add product to PDF with proper column layout
+export const addProductToPdf = async (
   pdf: jsPDF,
   product: Product,
   x: number,
@@ -184,14 +245,14 @@ export const addProductToPdf = (
   layout: PrintLayout,
   contentWidth: number,
   isLast: boolean
-): number => {
+): Promise<number> => {
   let currentY = y;
   const elements = layout.elements;
   
-  // Calculate columns (90% for content, 10% for price)
-  const contentColumnWidth = contentWidth * 0.9;
-  const priceColumnX = x + contentColumnWidth;
-  const priceColumnWidth = contentWidth * 0.1;
+  // FIXED: Proper column widths - 85% content, 15% price for better text wrapping
+  const contentColumnWidth = contentWidth * 0.85;
+  const priceColumnX = x + contentColumnWidth + 5; // 5mm gap between columns
+  const priceColumnWidth = contentWidth * 0.15 - 5; // Subtract gap
   
   // Product title
   const titleHeight = addStyledText(pdf, product.title, x, currentY, {
@@ -200,11 +261,11 @@ export const addProductToPdf = (
     fontStyle: elements.title.fontStyle,
     fontColor: elements.title.fontColor,
     alignment: elements.title.alignment,
-    maxWidth: contentColumnWidth
+    maxWidth: contentColumnWidth // FIXED: Respect column width
   });
   currentY += titleHeight + elements.title.margin.bottom;
   
-  // Product description (Italian)
+  // Product description (Italian) - FIXED: Proper text wrapping
   if (product.description) {
     const descHeight = addStyledText(pdf, product.description, x, currentY, {
       fontSize: elements.description.fontSize,
@@ -212,12 +273,12 @@ export const addProductToPdf = (
       fontStyle: elements.description.fontStyle,
       fontColor: elements.description.fontColor,
       alignment: elements.description.alignment,
-      maxWidth: contentColumnWidth
+      maxWidth: contentColumnWidth // FIXED: Respect column width
     });
     currentY += descHeight + elements.description.margin.bottom;
   }
   
-  // Product description (English) if different
+  // Product description (English) if different - FIXED: Proper text wrapping
   if (product.description_en && product.description_en !== product.description) {
     const descEngHeight = addStyledText(pdf, product.description_en, x, currentY, {
       fontSize: elements.descriptionEng.fontSize,
@@ -225,18 +286,18 @@ export const addProductToPdf = (
       fontStyle: elements.descriptionEng.fontStyle,
       fontColor: elements.descriptionEng.fontColor,
       alignment: elements.descriptionEng.alignment,
-      maxWidth: contentColumnWidth
+      maxWidth: contentColumnWidth // FIXED: Respect column width
     });
     currentY += descEngHeight + elements.descriptionEng.margin.bottom;
   }
   
-  // Product features
+  // Product features - FIXED: Add SVG icons support
   if (product.features && product.features.length > 0) {
-    const featuresHeight = addProductFeaturesToPdf(pdf, product, x, currentY, layout);
+    const featuresHeight = await addProductFeaturesToPdf(pdf, product, x, currentY, layout, contentColumnWidth);
     currentY += featuresHeight;
   }
   
-  // Allergens
+  // Allergens - FIXED: Proper text wrapping
   if (product.allergens && product.allergens.length > 0) {
     const allergensText = product.allergens.map(a => a.number).join(', ');
     const allergensHeight = addStyledText(pdf, allergensText, x, currentY, {
@@ -245,12 +306,12 @@ export const addProductToPdf = (
       fontStyle: elements.allergensList.fontStyle,
       fontColor: elements.allergensList.fontColor,
       alignment: elements.allergensList.alignment,
-      maxWidth: contentColumnWidth
+      maxWidth: contentColumnWidth // FIXED: Respect column width
     });
     currentY += allergensHeight + elements.allergensList.margin.bottom;
   }
   
-  // Price (in right column)
+  // Price (in right column) - FIXED: Better positioning
   let priceY = y; // Start price at same level as title
   
   if (product.price_standard) {
@@ -266,7 +327,7 @@ export const addProductToPdf = (
     
     // Price suffix
     if (product.has_price_suffix && product.price_suffix) {
-      priceY += elements.price.fontSize * 0.35;
+      priceY += elements.price.fontSize * 0.35 + 2; // mm spacing
       addStyledText(pdf, product.price_suffix, priceColumnX, priceY, {
         fontSize: elements.suffix.fontSize,
         fontFamily: elements.suffix.fontFamily,
@@ -281,7 +342,7 @@ export const addProductToPdf = (
   // Price variants
   if (product.has_multiple_prices) {
     if (product.price_variant_1_value && product.price_variant_1_name) {
-      priceY += 8; // mm spacing
+      priceY += 6; // mm spacing
       const variant1Text = `${product.price_variant_1_name}: €${product.price_variant_1_value.toFixed(2)}`;
       addStyledText(pdf, variant1Text, priceColumnX, priceY, {
         fontSize: elements.priceVariants.fontSize,
@@ -294,7 +355,7 @@ export const addProductToPdf = (
     }
     
     if (product.price_variant_2_value && product.price_variant_2_name) {
-      priceY += 6; // mm spacing
+      priceY += 5; // mm spacing
       const variant2Text = `${product.price_variant_2_name}: €${product.price_variant_2_value.toFixed(2)}`;
       addStyledText(pdf, variant2Text, priceColumnX, priceY, {
         fontSize: elements.priceVariants.fontSize,
@@ -315,7 +376,7 @@ export const addProductToPdf = (
   return currentY - y;
 };
 
-// Add service charge line to PDF
+// Add service charge line to PDF - FIXED: Better positioning
 export const addServiceChargeToPdf = (
   pdf: jsPDF,
   serviceCharge: number,
@@ -331,7 +392,7 @@ export const addServiceChargeToPdf = (
   pdf.setLineWidth(0.1);
   pdf.line(x, y, x + contentWidth, y);
   
-  const textY = y + 4; // 4mm padding after border
+  const textY = y + 6; // 6mm padding after border for better spacing
   const serviceText = `Servizio e Coperto = €${serviceCharge.toFixed(2)}`;
   
   const textHeight = addStyledText(pdf, serviceText, x, textY, {
@@ -340,8 +401,8 @@ export const addServiceChargeToPdf = (
     fontStyle: serviceConfig.fontStyle,
     fontColor: serviceConfig.fontColor,
     alignment: serviceConfig.alignment,
-    maxWidth: contentWidth
+    maxWidth: contentWidth // FIXED: Respect page width
   });
   
-  return textHeight + serviceConfig.margin.top + serviceConfig.margin.bottom + 4; // Include padding
+  return textHeight + serviceConfig.margin.top + serviceConfig.margin.bottom + 6; // Include padding
 };
