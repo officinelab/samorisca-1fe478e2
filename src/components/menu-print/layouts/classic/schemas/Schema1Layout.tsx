@@ -90,7 +90,7 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
         )}
       </div>
       
-      {/* Seconda colonna - 10% */}
+      {/* Seconda colonna - 10% - Gestione prezzo strutturata */}
       <div style={{ 
         width: '10%',
         textAlign: 'right',
@@ -106,33 +106,52 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
           € {product.price_standard}
         </div>
         
-        {/* Seconda riga - Suffisso prezzo */}
+        {/* Seconda riga - Suffisso prezzo (se presente) */}
         {product.has_price_suffix && product.price_suffix && (
-          <div style={{
+          <div style={getElementStyle(customLayout?.elements.suffix, {
             fontSize: '9pt',
             fontStyle: 'italic'
-          }}>
+          })}>
             {product.price_suffix}
           </div>
         )}
         
-        {/* Terza riga - Prezzo Variante 1 (se presente) */}
+        {/* Righe successive - Varianti prezzo (se presenti) */}
         {product.has_multiple_prices && product.price_variant_1_value && (
-          <div style={getElementStyle(customLayout?.elements.priceVariants, {
-            fontSize: '10pt'
-          })}>
-            € {product.price_variant_1_value}
-          </div>
+          <>
+            <div style={getElementStyle(customLayout?.elements.priceVariants, {
+              fontSize: '10pt'
+            })}>
+              € {product.price_variant_1_value}
+            </div>
+            {product.price_variant_1_name && (
+              <div style={getElementStyle(customLayout?.elements.suffix, {
+                fontSize: '9pt',
+                fontStyle: 'italic'
+              })}>
+                {product.price_variant_1_name}
+              </div>
+            )}
+          </>
         )}
         
-        {/* Quarta riga - Nome prezzo variante 1 (se presente) */}
-        {product.has_multiple_prices && product.price_variant_1_name && (
-          <div style={{
-            fontSize: '9pt',
-            fontStyle: 'italic'
-          }}>
-            {product.price_variant_1_name}
-          </div>
+        {/* Variante 2 (se presente) */}
+        {product.has_multiple_prices && product.price_variant_2_value && (
+          <>
+            <div style={getElementStyle(customLayout?.elements.priceVariants, {
+              fontSize: '10pt'
+            })}>
+              € {product.price_variant_2_value}
+            </div>
+            {product.price_variant_2_name && (
+              <div style={getElementStyle(customLayout?.elements.suffix, {
+                fontSize: '9pt',
+                fontStyle: 'italic'
+              })}>
+                {product.price_variant_2_name}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

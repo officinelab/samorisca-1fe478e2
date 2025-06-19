@@ -32,7 +32,7 @@ const ProductSchemaSelector: React.FC<ProductSchemaSelectorProps> = ({ value, on
             <Card className="p-3 bg-background border shadow-sm">
               <div className="flex gap-2">
                 {/* Prima colonna - 90% */}
-                <div className="flex-1 border-r border-dashed border-gray-300 pr-2">
+                <div className="flex-1 border-r border-dashed border-gray-300 pr-2" style={{width: '90%'}}>
                   <div className="text-xs font-medium text-muted-foreground mb-2">Prima Colonna (90%)</div>
                   <div className="space-y-1 text-xs">
                     <div className="font-medium">Nome Piatto</div>
@@ -48,17 +48,28 @@ const ProductSchemaSelector: React.FC<ProductSchemaSelectorProps> = ({ value, on
                 </div>
                 
                 {/* Seconda colonna - 10% */}
-                <div className="w-20">
+                <div style={{width: '10%'}}>
                   <div className="text-xs font-medium text-muted-foreground mb-2">Seconda Colonna (10%)</div>
                   <div className="space-y-1 text-xs text-right">
                     <div className="font-semibold">€ 10.00</div>
                     <div className="text-muted-foreground">cad.</div>
                     <div className="text-muted-foreground">€ 8.00</div>
                     <div className="text-muted-foreground">Medio</div>
+                    <div className="text-muted-foreground">€ 12.00</div>
+                    <div className="text-muted-foreground">Grande</div>
                   </div>
                 </div>
               </div>
             </Card>
+
+            <div className="text-xs text-muted-foreground mt-2">
+              <strong>Struttura colonna prezzo:</strong>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Prima riga: Prezzo principale</li>
+                <li>Seconda riga: Suffisso prezzo (se presente)</li>
+                <li>Righe successive: Varianti di prezzo con relativi nomi</li>
+              </ul>
+            </div>
           </div>
         </Card>
       </div>
