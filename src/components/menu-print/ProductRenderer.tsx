@@ -155,8 +155,8 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
             <div
               className="product-features flex items-center"
               style={{
-                marginTop: `${elementsConfig.productFeatures.marginTop}mm`,
-                marginBottom: `${elementsConfig.productFeatures.marginBottom}mm`,
+                marginTop: `${elementsConfig.productFeatures.marginTop || 0}mm`,
+                marginBottom: `${elementsConfig.productFeatures.marginBottom || 0}mm`,
                 gap: `${elementsConfig.productFeatures.iconSpacing || 4}px`
               }}
             >

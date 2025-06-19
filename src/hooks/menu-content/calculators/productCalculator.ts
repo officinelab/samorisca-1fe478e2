@@ -1,3 +1,4 @@
+
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { calculateTextHeight, MM_TO_PX } from '../utils/textMeasurement';
@@ -14,8 +15,8 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   const rightMargin = pageConfig.marginRight || 25;
   const contentWidthMm = pageWidthMm - leftMargin - rightMargin;
   
-  // Schema 1: 90% per i dettagli del prodotto
-  const productDetailsWidthMm = contentWidthMm * 0.9;
+  // Schema 1: 88% per i dettagli del prodotto
+  const productDetailsWidthMm = contentWidthMm * 0.88;
   const productDetailsWidthPx = productDetailsWidthMm * MM_TO_PX;
 
   // Calcola altezza del titolo
@@ -81,11 +82,11 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeightMm += allergensHeightMm + allergensMarginMm;
   }
 
-  // Calcola altezza delle caratteristiche prodotto (icone)
+  // Calcola altezza delle caratteristiche prodotto (icone) con i nuovi margini
   if (product.features && product.features.length > 0) {
     const featuresConfig = layout.elements.productFeatures;
-    const iconHeightMm = featuresConfig.iconSize / MM_TO_PX;
-    const featuresMarginMm = featuresConfig.marginTop + featuresConfig.marginBottom;
+    const iconHeightMm = (featuresConfig.iconSize || 16) / MM_TO_PX;
+    const featuresMarginMm = (featuresConfig.marginTop || 0) + (featuresConfig.marginBottom || 0);
     totalHeightMm += iconHeightMm + featuresMarginMm;
   }
 
@@ -110,7 +111,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeightMm += variantsHeightMm + variantsMarginMm;
   }
 
-  // Nota: Il prezzo è nella colonna del 10% quindi non influisce sull'altezza totale
+  // Nota: Il prezzo è nella colonna del 12% quindi non influisce sull'altezza totale
   // perché è allineato con il titolo
 
   // Aggiungi un minimo di spacing per sicurezza

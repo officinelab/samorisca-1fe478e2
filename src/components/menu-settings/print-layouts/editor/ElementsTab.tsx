@@ -33,8 +33,13 @@ const ElementsTab = ({
     // Map old field names to new ProductFeaturesConfig structure
     if (field === 'iconSize') {
       onProductFeaturesChange('icon', { iconSize: value });
+    } else if (field === 'iconSpacing') {
+      onProductFeaturesChange('icon', { iconSpacing: value });
+    } else if (field === 'marginTop') {
+      onProductFeaturesChange('icon', { marginTop: value });
+    } else if (field === 'marginBottom') {
+      onProductFeaturesChange('icon', { marginBottom: value });
     }
-    // For other fields, we ignore them as they're handled by the new structure
   };
 
   // Create a suffix element with default margin for ElementEditor compatibility
@@ -152,6 +157,32 @@ const ElementsTab = ({
                       max="20"
                       value={layout.elements.productFeatures?.iconSpacing || 4}
                       onChange={(e) => handleLegacyProductFeaturesChange('iconSpacing', parseInt(e.target.value))}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Margine superiore (mm)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      value={layout.elements.productFeatures?.marginTop || 0}
+                      onChange={(e) => handleLegacyProductFeaturesChange('marginTop', parseFloat(e.target.value))}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Margine inferiore (mm)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      value={layout.elements.productFeatures?.marginBottom || 0}
+                      onChange={(e) => handleLegacyProductFeaturesChange('marginBottom', parseFloat(e.target.value))}
                       className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
