@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Label } from "@/components/ui/label";
@@ -140,8 +141,13 @@ const ElementsTab = ({
                       type="number"
                       min="8"
                       max="48"
-                      value={layout.productFeatures?.icon?.iconSize || 16}
-                      onChange={(e) => handleProductFeaturesIconChange('iconSize', parseInt(e.target.value) || 16)}
+                      value={layout.productFeatures?.icon?.iconSize ?? 16}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value)) {
+                          handleProductFeaturesIconChange('iconSize', value);
+                        }
+                      }}
                     />
                   </div>
                   
@@ -152,8 +158,13 @@ const ElementsTab = ({
                       type="number"
                       min="0"
                       max="20"
-                      value={layout.productFeatures?.icon?.iconSpacing || 4}
-                      onChange={(e) => handleProductFeaturesIconChange('iconSpacing', parseInt(e.target.value) || 4)}
+                      value={layout.productFeatures?.icon?.iconSpacing ?? 4}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value)) {
+                          handleProductFeaturesIconChange('iconSpacing', value);
+                        }
+                      }}
                     />
                   </div>
 
@@ -165,8 +176,13 @@ const ElementsTab = ({
                       min="0"
                       max="10"
                       step="0.1"
-                      value={layout.productFeatures?.icon?.marginTop || 0}
-                      onChange={(e) => handleProductFeaturesIconChange('marginTop', parseFloat(e.target.value) || 0)}
+                      value={layout.productFeatures?.icon?.marginTop ?? 0}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value)) {
+                          handleProductFeaturesIconChange('marginTop', value);
+                        }
+                      }}
                     />
                   </div>
 
@@ -178,8 +194,13 @@ const ElementsTab = ({
                       min="0"
                       max="10"
                       step="0.1"
-                      value={layout.productFeatures?.icon?.marginBottom || 0}
-                      onChange={(e) => handleProductFeaturesIconChange('marginBottom', parseFloat(e.target.value) || 0)}
+                      value={layout.productFeatures?.icon?.marginBottom ?? 0}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value)) {
+                          handleProductFeaturesIconChange('marginBottom', value);
+                        }
+                      }}
                     />
                   </div>
                 </div>
