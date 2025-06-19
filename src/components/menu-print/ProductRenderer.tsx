@@ -29,6 +29,14 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
     return price;
   };
 
+  // Check if we should show English description
+  const shouldShowEnglishDescription = () => {
+    if (!product.description_en) return false;
+    if (product.description_en === product.description) return false;
+    // Check if descriptionEng is visible (default to true if not specified)
+    return elementsConfig.descriptionEng?.visible !== false;
+  };
+
   return (
     <div 
       className="product-item"
@@ -59,7 +67,7 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
             {product.title}
           </div>
 
-          {/* Product Description */}
+          {/* Product Description (Italian) */}
           {product.description && (
             <div
               className="product-description"
@@ -80,8 +88,26 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
             </div>
           )}
 
-          {/* English Description - would need to fetch from translations table */}
-          {/* TODO: Implement English description rendering */}
+          {/* English Description */}
+          {shouldShowEnglishDescription() && (
+            <div
+              className="product-description-eng"
+              style={{
+                fontSize: `${elementsConfig.descriptionEng.fontSize}pt`,
+                fontFamily: elementsConfig.descriptionEng.fontFamily,
+                color: elementsConfig.descriptionEng.fontColor,
+                fontWeight: elementsConfig.descriptionEng.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.descriptionEng.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.descriptionEng.alignment as any,
+                marginTop: `${elementsConfig.descriptionEng.margin.top}mm`,
+                marginRight: `${elementsConfig.descriptionEng.margin.right}mm`,
+                marginBottom: `${elementsConfig.descriptionEng.margin.bottom}mm`,
+                marginLeft: `${elementsConfig.descriptionEng.margin.left}mm`,
+              }}
+            >
+              {product.description_en}
+            </div>
+          )}
 
           {/* Allergens */}
           {allergenNumbers && (

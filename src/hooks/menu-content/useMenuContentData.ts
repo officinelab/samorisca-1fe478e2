@@ -105,6 +105,26 @@ export const useMenuContentData = () => {
 
         if (serviceError && serviceError.code !== 'PGRST116') throw serviceError;
 
+        // 9. Fetch English translations for product descriptions
+        const productIds = products?.map(p => p.id) || [];
+        const { data: englishTranslations, error: translationsError } = await supabase
+          .from('translations')
+          .select('*')
+          .eq('entity_type', 'products')
+          .eq('field', 'description')
+          .eq('language', 'en')
+          .in('entity_id', productIds);
+
+        if (translationsError) throw translationsError;
+
+        // Create translations map
+        const translationsMap = new Map<string, string>();
+        englishTranslations?.forEach(translation => {
+          if (translation.translated_text) {
+            translationsMap.set(translation.entity_id, translation.translated_text);
+          }
+        });
+
         // Process data
         const productsByCategory: Record<string, Product[]> = {};
         const featuresMap = new Map(features?.map(f => [f.id, f]) || []);
@@ -120,9 +140,13 @@ export const useMenuContentData = () => {
             featuresMap.get(ptf.feature_id)
           ).filter(Boolean) as ProductFeature[];
           
+          // Add English description from translations
+          const description_en = translationsMap.get(product.id) || null;
+          
           productsByCategory[product.category_id].push({
             ...product,
-            features: productFeatures
+            features: productFeatures,
+            description_en
           });
         });
 

@@ -29,8 +29,18 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     totalHeight += (descHeight / MM_TO_PX) + layout.elements.description.margin.top + layout.elements.description.margin.bottom;
   }
 
-  // English description height (if present) - would need to fetch from translations
-  // For now, assuming similar to main description
+  // English description height (if present and different from Italian)
+  if (product.description_en && 
+      product.description_en !== product.description && 
+      layout.elements.descriptionEng?.visible !== false) {
+    const descEngHeight = calculateTextHeight(
+      product.description_en,
+      layout.elements.descriptionEng.fontSize,
+      layout.elements.descriptionEng.fontFamily,
+      availableWidth * MM_TO_PX
+    );
+    totalHeight += (descEngHeight / MM_TO_PX) + layout.elements.descriptionEng.margin.top + layout.elements.descriptionEng.margin.bottom;
+  }
   
   // Allergens height (if present)
   if (product.allergens && product.allergens.length > 0) {

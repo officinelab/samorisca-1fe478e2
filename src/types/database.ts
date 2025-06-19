@@ -68,35 +68,31 @@ export interface ProductFeature {
 
 export interface Product {
   id: string;
-  category_id: string;
   title: string;
-  description: string | null;
-  image_url: string | null;
-  is_active: boolean;
+  description?: string;
+  description_en?: string | null; // Added for English translations
+  image_url?: string;
+  price_standard?: number;
+  price_variant_1_name?: string;
+  price_variant_1_value?: number;
+  price_variant_2_name?: string;
+  price_variant_2_value?: number;
+  price_suffix?: string;
+  has_multiple_prices?: boolean;
+  has_price_suffix?: boolean;
+  is_active?: boolean;
   display_order: number;
-  price_standard?: number | null;
-  has_multiple_prices?: boolean | null;
-  price_variant_1_name?: string | null;
-  price_variant_1_value?: number | null;
-  price_variant_2_name?: string | null;
-  price_variant_2_value?: number | null;
-  has_price_suffix?: boolean | null;
-  price_suffix?: string | null;
-  label_id?: string | null;
+  category_id: string;
+  label_id?: string;
+  label?: ProductLabel;
   created_at?: string;
   updated_at?: string;
+  
+  // Relational data
   allergens?: Allergen[];
   features?: ProductFeature[];
-  label?: ProductLabel;
-  title_en?: string | null;
-  title_fr?: string | null;
-  title_es?: string | null;
-  title_de?: string | null;
-  description_en?: string | null;
-  description_fr?: string | null;
-  description_es?: string | null;
-  description_de?: string | null;
-  // Campi di visualizzazione per le traduzioni
+  
+  // Display fields for translations
   displayTitle?: string;
   displayDescription?: string;
 }
