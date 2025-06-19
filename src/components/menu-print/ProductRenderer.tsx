@@ -21,34 +21,6 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
     ? product.allergens.map(allergen => allergen.number).join(', ') 
     : '';
 
-  // Format price with suffix using separate styling
-  const renderPriceWithSuffix = () => {
-    if (!product.price_standard) return '';
-    
-    const basePrice = `€${product.price_standard.toFixed(2)}`;
-    
-    if (product.has_price_suffix && product.price_suffix) {
-      return (
-        <span>
-          {basePrice}
-          <span
-            style={{
-              fontFamily: elementsConfig.suffix.fontFamily,
-              fontSize: `${elementsConfig.suffix.fontSize}pt`,
-              color: elementsConfig.suffix.fontColor,
-              fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
-            }}
-          >
-            {` ${product.price_suffix}`}
-          </span>
-        </span>
-      );
-    }
-    
-    return basePrice;
-  };
-
   // Check if we should show English description
   const shouldShowEnglishDescription = () => {
     if (!product.description_en) return false;
@@ -64,10 +36,10 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
         marginBottom: !isLast ? `${layout.spacing.betweenProducts}mm` : '0'
       }}
     >
-      {/* Schema 1: Two column layout (88% + 12%) */}
+      {/* Schema 1: Two column layout (90% + 10%) */}
       <div className="flex items-start gap-2">
-        {/* Left column: Product details (88%) */}
-        <div className="flex-1" style={{ width: '88%' }}>
+        {/* Left column: Product details (90%) */}
+        <div className="flex-1" style={{ width: '90%' }}>
           {/* Product Title */}
           <div
             className="product-title"
@@ -206,8 +178,9 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
           )}
         </div>
 
-        {/* Right column: Price (12%) */}
-        <div className="flex-shrink-0" style={{ width: '12%' }}>
+        {/* Right column: Price (10%) */}
+        <div className="flex-shrink-0 flex flex-col" style={{ width: '10%' }}>
+          {/* Prima riga - Prezzo principale */}
           {product.price_standard && (
             <div
               className="product-price"
@@ -224,7 +197,100 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
                 marginLeft: `${elementsConfig.price.margin.left}mm`,
               }}
             >
-              {renderPriceWithSuffix()}
+              €{product.price_standard.toFixed(2)}
+            </div>
+          )}
+
+          {/* Seconda riga - Suffisso prezzo (se presente) */}
+          {product.has_price_suffix && product.price_suffix && (
+            <div
+              className="product-price-suffix"
+              style={{
+                fontSize: `${elementsConfig.suffix.fontSize}pt`,
+                fontFamily: elementsConfig.suffix.fontFamily,
+                color: elementsConfig.suffix.fontColor,
+                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.suffix.alignment as any,
+              }}
+            >
+              {product.price_suffix}
+            </div>
+          )}
+
+          {/* Righe successive - Varianti prezzo (se presenti) */}
+          {product.has_multiple_prices && product.price_variant_1_value && (
+            <div
+              className="product-price-variant"
+              style={{
+                fontSize: `${elementsConfig.priceVariants.fontSize}pt`,
+                fontFamily: elementsConfig.priceVariants.fontFamily,
+                color: elementsConfig.priceVariants.fontColor,
+                fontWeight: elementsConfig.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.priceVariants.alignment as any,
+                marginTop: `${elementsConfig.priceVariants.margin.top}mm`,
+                marginRight: `${elementsConfig.priceVariants.margin.right}mm`,
+                marginBottom: `${elementsConfig.priceVariants.margin.bottom}mm`,
+                marginLeft: `${elementsConfig.priceVariants.margin.left}mm`,
+              }}
+            >
+              €{product.price_variant_1_value.toFixed(2)}
+            </div>
+          )}
+
+          {/* Nome variante 1 */}
+          {product.has_multiple_prices && product.price_variant_1_name && (
+            <div
+              className="product-price-variant-name"
+              style={{
+                fontSize: `${elementsConfig.suffix.fontSize}pt`,
+                fontFamily: elementsConfig.suffix.fontFamily,
+                color: elementsConfig.suffix.fontColor,
+                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.suffix.alignment as any,
+              }}
+            >
+              {product.price_variant_1_name}
+            </div>
+          )}
+
+          {/* Variante 2 prezzo */}
+          {product.has_multiple_prices && product.price_variant_2_value && (
+            <div
+              className="product-price-variant-2"
+              style={{
+                fontSize: `${elementsConfig.priceVariants.fontSize}pt`,
+                fontFamily: elementsConfig.priceVariants.fontFamily,
+                color: elementsConfig.priceVariants.fontColor,
+                fontWeight: elementsConfig.priceVariants.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.priceVariants.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.priceVariants.alignment as any,
+                marginTop: `${elementsConfig.priceVariants.margin.top}mm`,
+                marginRight: `${elementsConfig.priceVariants.margin.right}mm`,
+                marginBottom: `${elementsConfig.priceVariants.margin.bottom}mm`,
+                marginLeft: `${elementsConfig.priceVariants.margin.left}mm`,
+              }}
+            >
+              €{product.price_variant_2_value.toFixed(2)}
+            </div>
+          )}
+
+          {/* Nome variante 2 */}
+          {product.has_multiple_prices && product.price_variant_2_name && (
+            <div
+              className="product-price-variant-2-name"
+              style={{
+                fontSize: `${elementsConfig.suffix.fontSize}pt`,
+                fontFamily: elementsConfig.suffix.fontFamily,
+                color: elementsConfig.suffix.fontColor,
+                fontWeight: elementsConfig.suffix.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: elementsConfig.suffix.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: elementsConfig.suffix.alignment as any,
+              }}
+            >
+              {product.price_variant_2_name}
             </div>
           )}
         </div>
