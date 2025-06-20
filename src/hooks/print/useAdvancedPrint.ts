@@ -12,12 +12,33 @@ export const useAdvancedPrint = () => {
       return;
     }
 
-    // Extract all page elements
-    const pages = menuContainer.querySelectorAll('[data-page-preview]');
+    // Extract cover pages and content pages separately to avoid duplicates
+    const coverSection = menuContainer.querySelector('[data-page-preview="cover"]');
+    const contentSection = menuContainer.querySelector('[data-page-preview="content-pages"]');
+    
+    const pages: Element[] = [];
+    
+    // Add cover pages (avoiding duplicates)
+    if (coverSection) {
+      const coverPage1 = coverSection.querySelector('[data-page-preview="cover-1"]');
+      const coverPage2 = coverSection.querySelector('[data-page-preview="cover-2"]');
+      
+      if (coverPage1) pages.push(coverPage1);
+      if (coverPage2) pages.push(coverPage2);
+    }
+    
+    // Add content pages
+    if (contentSection) {
+      const contentPages = contentSection.querySelectorAll('[data-page-preview^="content-"]');
+      contentPages.forEach(page => pages.push(page));
+    }
+
     if (pages.length === 0) {
       console.error('No pages found to print');
       return;
     }
+
+    console.log(`📄 Found ${pages.length} pages to print:`, pages.map(p => p.getAttribute('data-page-preview')));
 
     // Create a new window for printing
     const printWindow = window.open('', '_blank', 'width=800,height=600');
