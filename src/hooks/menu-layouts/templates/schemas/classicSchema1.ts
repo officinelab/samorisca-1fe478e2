@@ -263,6 +263,5 @@ export const classicSchema1: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
-  },
-  pageBreaks: { categoryIds: [] }
+  }
 };

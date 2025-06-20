@@ -1,284 +1,167 @@
 
-import React from 'react';
-import { PrintLayout } from '@/types/printLayout';
-import GeneralTab from './GeneralTab';
-import PageSettingsTab from './PageSettingsTab';
-import CoverLayoutTab from './CoverLayoutTab';
-import ElementsTab from './ElementsTab';
-import CategoryNotesTab from './CategoryNotesTab';
-import PageBreaksTab from './PageBreaksTab';
-import SpacingTab from './SpacingTab';
-import ServicePriceTab from './ServicePriceTab';
-import AllergensLayoutTab from './AllergensLayoutTab';
-import ProductFeaturesTab from './ProductFeaturesTab';
-import SaveLayoutSection from './components/SaveLayoutSection';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
-type TabKey =
-  | "generale"
-  | "pagina"
-  | "copertina"
-  | "elementi"
-  | "notecategorie"
-  | "interruzionipagina"
-  | "spaziatura"
-  | "prezzoservizio"
-  | "allergeni"
-  | "caratteristicheprodotto";
+import React from "react";
+import { PageMargins, PrintLayout } from "@/types/printLayout";
+import GeneralTab from "./GeneralTab";
+import PageSettingsTab from "./PageSettingsTab";
+import CoverLayoutTab from "./CoverLayoutTab";
+import ElementsTab from "./ElementsTab";
+import CategoryNotesTab from "./CategoryNotesTab";
+import SpacingTab from "./SpacingTab";
+import ServicePriceTab from "./ServicePriceTab";
+import AllergensLayoutTab from "./AllergensLayoutTab";
+import ProductFeaturesTab from "./ProductFeaturesTab";
+import SaveLayoutSection from "./components/SaveLayoutSection";
 
 interface PrintLayoutEditorTabsContentProps {
-  activeTab: TabKey;
+  activeTab: string;
   editedLayout: PrintLayout;
   handleGeneralChange: (field: string, value: any) => void;
-  handleElementChange: (element: string, field: string, value: any) => void;
-  handleElementMarginChange: (element: string, side: string, value: number) => void;
-  handleSpacingChange: (field: string, value: number) => void;
-  handlePageMarginChange: (side: string, value: number) => void;
-  handleOddPageMarginChange: (side: string, value: number) => void;
-  handleEvenPageMarginChange: (side: string, value: number) => void;
-  handleToggleDistinctMargins: (enabled: boolean) => void;
+  handleElementChange: (elementKey: keyof PrintLayout["elements"], field: string, value: any) => void;
+  handleElementMarginChange: (elementKey: keyof PrintLayout["elements"], marginKey: keyof PrintLayout["elements"]["title"]["margin"], value: number) => void;
+  handleSpacingChange: (field: keyof PrintLayout["spacing"], value: number) => void;
+  handlePageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleOddPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleEvenPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleToggleDistinctMargins: (useDistinct: boolean) => void;
   handleCoverLogoChange: (field: string, value: any) => void;
   handleCoverTitleChange: (field: string, value: any) => void;
-  handleCoverTitleMarginChange: (side: string, value: number) => void;
+  handleCoverTitleMarginChange: (marginKey: keyof PrintLayout["cover"]["title"]["margin"], value: number) => void;
   handleCoverSubtitleChange: (field: string, value: any) => void;
-  handleCoverSubtitleMarginChange: (side: string, value: number) => void;
+  handleCoverSubtitleMarginChange: (marginKey: keyof PrintLayout["cover"]["subtitle"]["margin"], value: number) => void;
   handleAllergensTitleChange: (field: string, value: any) => void;
-  handleAllergensTitleMarginChange: (side: string, value: number) => void;
+  handleAllergensTitleMarginChange: (marginKey: keyof PrintLayout["allergens"]["title"]["margin"], value: number) => void;
   handleAllergensDescriptionChange: (field: string, value: any) => void;
-  handleAllergensDescriptionMarginChange: (side: string, value: number) => void;
+  handleAllergensDescriptionMarginChange: (marginKey: keyof PrintLayout["allergens"]["description"]["margin"], value: number) => void;
   handleAllergensItemNumberChange: (field: string, value: any) => void;
-  handleAllergensItemNumberMarginChange: (side: string, value: number) => void;
+  handleAllergensItemNumberMarginChange: (marginKey: keyof PrintLayout["allergens"]["item"]["number"]["margin"], value: number) => void;
   handleAllergensItemTitleChange: (field: string, value: any) => void;
-  handleAllergensItemTitleMarginChange: (side: string, value: number) => void;
+  handleAllergensItemTitleMarginChange: (marginKey: keyof PrintLayout["allergens"]["item"]["title"]["margin"], value: number) => void;
   handleAllergensItemDescriptionChange: (field: string, value: any) => void;
-  handleAllergensItemDescriptionMarginChange: (side: string, value: number) => void;
+  handleAllergensItemDescriptionMarginChange: (marginKey: keyof PrintLayout["allergens"]["item"]["description"]["margin"], value: number) => void;
   handleAllergensItemChange: (field: string, value: any) => void;
-  handleCategoryNotesIconChange: (field: string, value: any) => void;
+  handleCategoryNotesIconChange: (field: string, value: number) => void;
   handleCategoryNotesTitleChange: (field: string, value: any) => void;
-  handleCategoryNotesTitleMarginChange: (side: string, value: number) => void;
+  handleCategoryNotesTitleMarginChange: (marginKey: keyof PrintLayout["categoryNotes"]["title"]["margin"], value: number) => void;
   handleCategoryNotesTextChange: (field: string, value: any) => void;
-  handleCategoryNotesTextMarginChange: (side: string, value: number) => void;
-  handleProductFeaturesChange: (field: string, value: any) => void;
-  handleProductFeaturesIconChange: (field: string, value: any) => void;
+  handleCategoryNotesTextMarginChange: (marginKey: keyof PrintLayout["categoryNotes"]["text"]["margin"], value: number) => void;
+  handleProductFeaturesChange: (field: string, value: number) => void;
+  handleProductFeaturesIconChange: (field: string, value: number) => void;
   handleProductFeaturesTitleChange: (field: string, value: any) => void;
-  handleProductFeaturesTitleMarginChange: (side: string, value: number) => void;
+  handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayout["productFeatures"]["title"]["margin"], value: number) => void;
   handleServicePriceChange: (field: string, value: any) => void;
-  handleServicePriceMarginChange: (side: string, value: number) => void;
-  handleCoverMarginChange: (side: string, value: number) => void;
-  handleAllergensMarginChange: (side: string, value: number) => void;
-  handleAllergensOddPageMarginChange: (side: string, value: number) => void;
-  handleAllergensEvenPageMarginChange: (side: string, value: number) => void;
-  handleToggleDistinctAllergensMargins: (enabled: boolean) => void;
-  handlePageBreaksChange: (pageBreaks: any) => void;
+  handleServicePriceMarginChange: (marginKey: keyof PrintLayout["servicePrice"]["margin"], value: number) => void;
+  handleCoverMarginChange: (field: string, value: number) => void;
+  handleAllergensMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleAllergensOddPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleAllergensEvenPageMarginChange: (field: keyof PageMargins, value: number) => void;
+  handleToggleDistinctAllergensMargins: (useDistinct: boolean) => void;
   handleSaveWithValidation: () => void;
   validationError: string | null;
 }
 
-const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> = ({
-  activeTab,
-  editedLayout,
-  handleGeneralChange,
-  handleElementChange,
-  handleElementMarginChange,
-  handleSpacingChange,
-  handlePageMarginChange,
-  handleOddPageMarginChange,
-  handleEvenPageMarginChange,
-  handleToggleDistinctMargins,
-  handleCoverLogoChange,
-  handleCoverTitleChange,
-  handleCoverTitleMarginChange,
-  handleCoverSubtitleChange,
-  handleCoverSubtitleMarginChange,
-  handleAllergensTitleChange,
-  handleAllergensTitleMarginChange,
-  handleAllergensDescriptionChange,
-  handleAllergensDescriptionMarginChange,
-  handleAllergensItemNumberChange,
-  handleAllergensItemNumberMarginChange,
-  handleAllergensItemTitleChange,
-  handleAllergensItemTitleMarginChange,
-  handleAllergensItemDescriptionChange,
-  handleAllergensItemDescriptionMarginChange,
-  handleAllergensItemChange,
-  handleCategoryNotesIconChange,
-  handleCategoryNotesTitleChange,
-  handleCategoryNotesTitleMarginChange,
-  handleCategoryNotesTextChange,
-  handleCategoryNotesTextMarginChange,
-  handleProductFeaturesChange,
-  handleProductFeaturesIconChange,
-  handleProductFeaturesTitleChange,
-  handleProductFeaturesTitleMarginChange,
-  handleServicePriceChange,
-  handleServicePriceMarginChange,
-  handleCoverMarginChange,
-  handleAllergensMarginChange,
-  handleAllergensOddPageMarginChange,
-  handleAllergensEvenPageMarginChange,
-  handleToggleDistinctAllergensMargins,
-  handlePageBreaksChange,
-  handleSaveWithValidation,
-  validationError
-}) => {
-  // Fetch categories for page breaks configuration
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "generale":
-        return (
-          <GeneralTab
-            layout={editedLayout}
-            onGeneralChange={handleGeneralChange}
-          />
-        );
-      
-      case "pagina":
-        return (
-          <PageSettingsTab
-            page={editedLayout.page}
-            onPageMarginChange={handlePageMarginChange}
-            onOddPageMarginChange={handleOddPageMarginChange}
-            onEvenPageMarginChange={handleEvenPageMarginChange}
-            onToggleDistinctMargins={handleToggleDistinctMargins}
-            onCoverMarginChange={handleCoverMarginChange}
-            onAllergensMarginChange={handleAllergensMarginChange}
-            onAllergensOddPageMarginChange={handleAllergensOddPageMarginChange}
-            onAllergensEvenPageMarginChange={handleAllergensEvenPageMarginChange}
-            onToggleDistinctAllergensMargins={handleToggleDistinctAllergensMargins}
-          />
-        );
-      
-      case "copertina":
-        return (
-          <CoverLayoutTab
-            cover={editedLayout.cover}
-            onLogoChange={handleCoverLogoChange}
-            onTitleChange={handleCoverTitleChange}
-            onTitleMarginChange={handleCoverTitleMarginChange}
-            onSubtitleChange={handleCoverSubtitleChange}
-            onSubtitleMarginChange={handleCoverSubtitleMarginChange}
-          />
-        );
-      
-      case "elementi":
-        return (
-          <ElementsTab
-            elements={editedLayout.elements}
-            onElementChange={handleElementChange}
-            onElementMarginChange={handleElementMarginChange}
-          />
-        );
-      
-      case "notecategorie":
-        return (
-          <CategoryNotesTab
-            categoryNotes={editedLayout.categoryNotes}
-            onIconChange={handleCategoryNotesIconChange}
-            onTitleChange={handleCategoryNotesTitleChange}
-            onTitleMarginChange={handleCategoryNotesTitleMarginChange}
-            onTextChange={handleCategoryNotesTextChange}
-            onTextMarginChange={handleCategoryNotesTextMarginChange}
-          />
-        );
-      
-      case "interruzionipagina":
-        return (
-          <PageBreaksTab
-            pageBreaks={editedLayout.pageBreaks}
-            categories={categories}
-            onPageBreaksChange={(categoryId: string, checked: boolean) => {
-              const currentIds = editedLayout.pageBreaks.categoryIds;
-              let newCategoryIds: string[];
-              
-              if (checked) {
-                newCategoryIds = currentIds.includes(categoryId) 
-                  ? currentIds 
-                  : [...currentIds, categoryId];
-              } else {
-                newCategoryIds = currentIds.filter(id => id !== categoryId);
-              }
-              
-              handlePageBreaksChange({ categoryIds: newCategoryIds });
-            }}
-          />
-        );
-      
-      case "spaziatura":
-        return (
-          <SpacingTab
-            spacing={editedLayout.spacing}
-            onSpacingChange={handleSpacingChange}
-          />
-        );
-      
-      case "prezzoservizio":
-        return (
-          <ServicePriceTab
-            servicePrice={editedLayout.servicePrice}
-            onServicePriceChange={handleServicePriceChange}
-            onServicePriceMarginChange={handleServicePriceMarginChange}
-          />
-        );
-      
-      case "allergeni":
-        return (
-          <AllergensLayoutTab
-            allergens={editedLayout.allergens}
-            onTitleChange={handleAllergensTitleChange}
-            onTitleMarginChange={handleAllergensTitleMarginChange}
-            onDescriptionChange={handleAllergensDescriptionChange}
-            onDescriptionMarginChange={handleAllergensDescriptionMarginChange}
-            onItemNumberChange={handleAllergensItemNumberChange}
-            onItemNumberMarginChange={handleAllergensItemNumberMarginChange}
-            onItemTitleChange={handleAllergensItemTitleChange}
-            onItemTitleMarginChange={handleAllergensItemTitleMarginChange}
-            onItemDescriptionChange={handleAllergensItemDescriptionChange}
-            onItemDescriptionMarginChange={handleAllergensItemDescriptionMarginChange}
-            onItemChange={handleAllergensItemChange}
-          />
-        );
-      
-      case "caratteristicheprodotto":
-        return (
-          <ProductFeaturesTab
-            productFeatures={editedLayout.productFeatures}
-            onProductFeaturesChange={handleProductFeaturesChange}
-            onIconChange={handleProductFeaturesIconChange}
-            onTitleChange={handleProductFeaturesTitleChange}
-            onTitleMarginChange={handleProductFeaturesTitleMarginChange}
-          />
-        );
-      
-      default:
-        return <div>Scheda non trovata</div>;
-    }
-  };
+const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> = (props) => {
+  const { activeTab } = props;
 
   return (
-    <div className="flex-1 min-w-0">
-      <div className="p-6">
-        {renderTabContent()}
-        
-        <SaveLayoutSection
-          onSave={handleSaveWithValidation}
-          validationError={validationError}
+    <div className="p-6 space-y-6">
+      {activeTab === "generale" && (
+        <GeneralTab
+          layout={props.editedLayout}
+          onGeneralChange={props.handleGeneralChange}
         />
-      </div>
+      )}
+
+      {activeTab === "pagina" && (
+        <PageSettingsTab
+          layout={props.editedLayout}
+          onPageMarginChange={props.handlePageMarginChange}
+          onOddPageMarginChange={props.handleOddPageMarginChange}
+          onEvenPageMarginChange={props.handleEvenPageMarginChange}
+          onToggleDistinctMargins={props.handleToggleDistinctMargins}
+          onCoverMarginChange={props.handleCoverMarginChange}
+          onAllergensMarginChange={props.handleAllergensMarginChange}
+          onAllergensOddPageMarginChange={props.handleAllergensOddPageMarginChange}
+          onAllergensEvenPageMarginChange={props.handleAllergensEvenPageMarginChange}
+          onToggleDistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
+        />
+      )}
+
+      {activeTab === "copertina" && (
+        <CoverLayoutTab
+          layout={props.editedLayout}
+          onCoverLogoChange={props.handleCoverLogoChange}
+          onCoverTitleChange={props.handleCoverTitleChange}
+          onCoverTitleMarginChange={props.handleCoverTitleMarginChange}
+          onCoverSubtitleChange={props.handleCoverSubtitleChange}
+          onCoverSubtitleMarginChange={props.handleCoverSubtitleMarginChange}
+        />
+      )}
+
+      {activeTab === "elementi" && (
+        <ElementsTab
+          layout={props.editedLayout}
+          onElementChange={props.handleElementChange}
+          onElementMarginChange={props.handleElementMarginChange}
+          onProductFeaturesChange={props.handleProductFeaturesChange}
+        />
+      )}
+
+      {activeTab === "notecategorie" && (
+        <CategoryNotesTab
+          layout={props.editedLayout}
+          onCategoryNotesIconChange={props.handleCategoryNotesIconChange}
+          onCategoryNotesTitleChange={props.handleCategoryNotesTitleChange}
+          onCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
+          onCategoryNotesTextChange={props.handleCategoryNotesTextChange}
+          onCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
+        />
+      )}
+
+      {activeTab === "spaziatura" && (
+        <SpacingTab
+          layout={props.editedLayout}
+          onSpacingChange={props.handleSpacingChange}
+        />
+      )}
+
+      {activeTab === "prezzoservizio" && (
+        <ServicePriceTab
+          layout={props.editedLayout}
+          onServicePriceChange={props.handleServicePriceChange}
+          onServicePriceMarginChange={props.handleServicePriceMarginChange}
+        />
+      )}
+
+      {activeTab === "allergeni" && (
+        <AllergensLayoutTab
+          layout={props.editedLayout}
+          onAllergensTitleChange={props.handleAllergensTitleChange}
+          onAllergensTitleMarginChange={props.handleAllergensTitleMarginChange}
+          onAllergensDescriptionChange={props.handleAllergensDescriptionChange}
+          onAllergensDescriptionMarginChange={props.handleAllergensDescriptionMarginChange}
+          onAllergensItemNumberChange={props.handleAllergensItemNumberChange}
+          onAllergensItemNumberMarginChange={props.handleAllergensItemNumberMarginChange}
+          onAllergensItemTitleChange={props.handleAllergensItemTitleChange}
+          onAllergensItemTitleMarginChange={props.handleAllergensItemTitleMarginChange}
+          onAllergensItemDescriptionChange={props.handleAllergensItemDescriptionChange}
+          onAllergensItemDescriptionMarginChange={props.handleAllergensItemDescriptionMarginChange}
+          onAllergensItemChange={props.handleAllergensItemChange}
+        />
+      )}
+
+      {activeTab === "caratteristicheprodotto" && (
+        <ProductFeaturesTab
+          layout={props.editedLayout}
+          onProductFeaturesIconChange={props.handleProductFeaturesIconChange}
+          onProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
+          onProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
+        />
+      )}
+
+      <SaveLayoutSection
+        onSave={props.handleSaveWithValidation}
+        validationError={props.validationError}
+      />
     </div>
   );
 };

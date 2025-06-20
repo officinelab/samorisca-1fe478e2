@@ -255,6 +255,5 @@ export const classicLayout: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
-  },
-  pageBreaks: { categoryIds: [] }
+  }
 };

@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Product, Allergen, ProductFeature } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import { PrintLayout, PageBreaksConfig } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface MenuContentData {
   categories: Category[];
@@ -216,7 +217,6 @@ export const useMenuContentData = () => {
           categoryNotes: layouts.category_notes as any,
           productFeatures: layouts.product_features as any,
           servicePrice: layouts.service_price as any,
-          pageBreaks: (layouts.page_breaks as PageBreaksConfig) || { categoryIds: [] },
           spacing: layouts.spacing as any,
           page: layouts.page as any,
           header: undefined

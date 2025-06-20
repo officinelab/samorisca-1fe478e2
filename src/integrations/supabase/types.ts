@@ -176,7 +176,6 @@ export type Database = {
           is_default: boolean
           name: string
           page: Json
-          page_breaks: Json
           product_features: Json
           product_schema: string
           service_price: Json
@@ -194,7 +193,6 @@ export type Database = {
           is_default?: boolean
           name: string
           page: Json
-          page_breaks?: Json
           product_features?: Json
           product_schema: string
           service_price?: Json
@@ -212,7 +210,6 @@ export type Database = {
           is_default?: boolean
           name?: string
           page?: Json
-          page_breaks?: Json
           product_features?: Json
           product_schema?: string
           service_price?: Json

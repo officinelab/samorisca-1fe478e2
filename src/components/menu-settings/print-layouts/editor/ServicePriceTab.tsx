@@ -1,19 +1,33 @@
 
-import React from 'react';
-import { PrintLayout } from '@/types/printLayout';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintLayout, PrintLayoutElementConfig, ServicePriceConfig } from "@/types/printLayout";
+import ElementEditor from "../ElementEditor";
 
 interface ServicePriceTabProps {
   layout: PrintLayout;
-  servicePrice: any;
-  onServicePriceChange: (field: string, value: any) => void;
-  onServicePriceMarginChange: (side: string, value: number) => void;
+  onServicePriceChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  onServicePriceMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
 }
 
-const ServicePriceTab: React.FC<ServicePriceTabProps> = ({ layout }) => {
+const ServicePriceTab = ({ 
+  layout, 
+  onServicePriceChange, 
+  onServicePriceMarginChange 
+}: ServicePriceTabProps) => {
   return (
-    <div className="space-y-4">
-      <h3>Prezzo Servizio</h3>
-      <p>Configurazioni prezzo servizio del layout (da implementare)</p>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Configurazione Prezzo Servizio</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ElementEditor
+            element={layout.servicePrice}
+            onChange={onServicePriceChange}
+            onMarginChange={onServicePriceMarginChange}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
