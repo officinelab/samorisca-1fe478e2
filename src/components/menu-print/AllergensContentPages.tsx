@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAllergensData } from '@/hooks/menu-content/useAllergensData';
+import { useAllergensPagination } from '@/hooks/menu-content/useAllergensPagination';
 import AllergensPagePreview from './AllergensPagePreview';
 import { Loader2 } from 'lucide-react';
 
@@ -15,6 +16,7 @@ const AllergensContentPages: React.FC<AllergensContentPagesProps> = ({
   layoutRefreshKey = 0 
 }) => {
   const { allergens, productFeatures, activeLayout, isLoading, error } = useAllergensData();
+  const { pages, totalPages } = useAllergensPagination(allergens, productFeatures, activeLayout);
 
   if (isLoading) {
     return (
@@ -82,18 +84,30 @@ const AllergensContentPages: React.FC<AllergensContentPagesProps> = ({
           )}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Pagina con {allergens.length} allergeni e {productFeatures.length} caratteristiche prodotto
+          {totalPages} {totalPages === 1 ? 'pagina' : 'pagine'} con {allergens.length} allergeni e {productFeatures.length} caratteristiche prodotto
         </p>
       </CardHeader>
       <CardContent>
-        <div data-page-preview="allergens-1">
-          <AllergensPagePreview
-            layout={activeLayout}
-            allergens={allergens}
-            productFeatures={productFeatures}
-            showMargins={showMargins}
-            pageNumber={1}
-          />
+        <div className="space-y-6">
+          {pages.map((page, index) => (
+            <div key={`allergens-page-${page.pageNumber}`} data-page-preview={`allergens-${page.pageNumber}`}>
+              <h3 className="text-lg font-semibold mb-4 print:hidden">
+                Pagina {page.pageNumber} di {totalPages}
+                {page.hasProductFeatures && page.allergens.length === 0 && (
+                  <span className="text-sm text-muted-foreground ml-2">(Solo Caratteristiche Prodotto)</span>
+                )}
+              </h3>
+              <AllergensPagePreview
+                layout={activeLayout}
+                allergens={page.allergens}
+                productFeatures={page.hasProductFeatures ? page.productFeatures : []}
+                showMargins={showMargins}
+                pageNumber={page.pageNumber}
+                isFirstPage={page.pageNumber === 1}
+                showTitleAndDescription={page.pageNumber === 1}
+              />
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Allergen, ProductFeature } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
+import { mapSupabaseToLayout } from '@/hooks/menu-layouts/services/core/layoutTransformer';
 
 interface AllergensData {
   allergens: Allergen[];
@@ -71,26 +72,9 @@ export const useAllergensData = (): AllergensData => {
 
       console.log('✅ Active layout loaded:', data?.name);
       
-      // Transform the Supabase data to match PrintLayout interface
+      // Use the existing transformer to properly handle the data types
       if (data) {
-        const transformedLayout: PrintLayout = {
-          id: data.id,
-          name: data.name,
-          type: data.type,
-          isDefault: data.is_default,
-          productSchema: data.product_schema,
-          page: data.page,
-          cover: data.cover,
-          elements: data.elements,
-          spacing: data.spacing,
-          allergens: data.allergens,
-          categoryNotes: data.category_notes,
-          productFeatures: data.product_features,
-          servicePrice: data.service_price,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at
-        };
-        return transformedLayout;
+        return mapSupabaseToLayout(data);
       }
       
       return null;
