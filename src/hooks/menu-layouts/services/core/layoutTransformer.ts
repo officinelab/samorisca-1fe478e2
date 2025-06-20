@@ -48,6 +48,7 @@ export function transformDbToLayout(dbLayout: any): PrintLayout {
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
+    pageBreaks: dbLayout.page_breaks || { categoryIds: [] },
     spacing: dbLayout.spacing,
     page: pageWithDefaults
   };
@@ -66,6 +67,7 @@ export function transformLayoutToDb(layout: PrintLayout): any {
     category_notes: layout.categoryNotes,
     product_features: layout.productFeatures,
     service_price: layout.servicePrice,
+    page_breaks: layout.pageBreaks,
     spacing: layout.spacing,
     page: layout.page
   };
@@ -92,6 +94,7 @@ export const mapSupabaseToLayout = (data: any): PrintLayout => {
       alignment: "left",
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     },
+    pageBreaks: data.page_breaks || { categoryIds: [] },
     spacing: data.spacing,
     page: {
       ...data.page,

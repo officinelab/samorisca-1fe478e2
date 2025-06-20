@@ -18,6 +18,7 @@ type TabKey =
   | "copertina"
   | "elementi"
   | "notecategorie"
+  | "interruzionipagina"
   | "spaziatura"
   | "prezzoservizio"
   | "allergeni"
@@ -68,6 +69,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleAllergensOddPageMarginChange,
     handleAllergensEvenPageMarginChange,
     handleToggleDistinctAllergensMargins,
+    handlePageBreaksChange,
     handleSave
   } = useLayoutEditor(layout, onSave);
 
@@ -166,6 +168,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleAllergensOddPageMarginChange={handleAllergensOddPageMarginChange}
               handleAllergensEvenPageMarginChange={handleAllergensEvenPageMarginChange}
               handleToggleDistinctAllergensMargins={handleToggleDistinctAllergensMarginsWrapper}
+              handlePageBreaksChange={handlePageBreaksChange}
               handleSaveWithValidation={handleSaveWithValidation}
               validationError={validationError}
             />

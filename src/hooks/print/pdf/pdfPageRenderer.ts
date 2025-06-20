@@ -99,6 +99,19 @@ export const generateMenuContentPage = async (
   console.log(`📐 Page ${page.pageNumber} margins:`, margins);
   console.log(`📐 Content width: ${contentWidth}mm, starting Y: ${currentY}mm, max Y: ${maxY}mm`);
   
+  // Log page breaks information if present
+  if (layout.pageBreaks?.categoryIds?.length > 0) {
+    console.log(`🔗 Page breaks configured for categories:`, layout.pageBreaks.categoryIds);
+    
+    // Check if this page starts due to a page break
+    const categoriesInPage = page.categories.map(cs => cs.category.id);
+    const hasPageBreakCategories = categoriesInPage.some(id => layout.pageBreaks.categoryIds.includes(id));
+    
+    if (hasPageBreakCategories) {
+      console.log(`📄 Page ${page.pageNumber} contains categories with page breaks configured`);
+    }
+  }
+  
   // Render each category section exactly like preview
   for (const categorySection of page.categories) {
     // Category title and notes (only if not repeated)
@@ -176,10 +189,15 @@ export const generateAllMenuContentPages = async (
 ): Promise<void> => {
   console.log(`📄 Starting generation of ${pages.length} menu content pages`);
   
+  // Log page breaks summary
+  if (layout.pageBreaks?.categoryIds?.length > 0) {
+    console.log(`🔗 Page breaks will be applied for ${layout.pageBreaks.categoryIds.length} categories`);
+  }
+  
   for (const page of pages) {
     console.log(`📄 Generating page ${page.pageNumber} (${pages.indexOf(page) + 1}/${pages.length})`);
     await generateMenuContentPage(pdf, page, layout);
   }
   
-  console.log(`✅ All ${pages.length} menu content pages generated successfully`);
+  console.log(`✅ All ${pages.length} menu content pages generated successfully with page breaks support`);
 };

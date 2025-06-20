@@ -1,126 +1,573 @@
+import { useState, useCallback } from 'react';
+import { PrintLayout, PageBreaksConfig } from '@/types/printLayout';
 
-import { useState, useCallback } from "react";
-import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/types/printLayout";
-import { syncPageMargins } from "@/hooks/menu-layouts/layoutOperations";
-import { useGeneralTab } from "./useGeneralTab";
-import { useElementsTab } from "./useElementsTab";
-import { useCoverTab } from "./useCoverTab";
-import { useAllergensTab } from "./useAllergensTab";
-import { useCategoryNotesTab } from "./useCategoryNotesTab";
-import { useProductFeaturesTab } from "./useProductFeaturesTab";
-import { useSpacingTab } from "./useSpacingTab";
-import { usePageSettingsTab } from "./usePageSettingsTab";
-import { useCoverMarginsTab } from "./useCoverMarginsTab";
-import { useAllergensMarginsTab } from "./useAllergensMarginsTab";
-import { useServicePriceTab } from "./useServicePriceTab";
-import { ensurePageMargins } from "./utils/ensurePageMargins";
+type TabKey =
+  | "generale"
+  | "pagina"
+  | "copertina"
+  | "elementi"
+  | "notecategorie"
+  | "interruzionipagina"
+  | "spaziatura"
+  | "prezzoservizio"
+  | "allergeni"
+  | "caratteristicheprodotto";
 
 export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayout) => void) => {
-  const [editedLayout, setEditedLayout] = useState<PrintLayout>(ensurePageMargins(layout));
-  const [activeTab, setActiveTab] = useState("generale");
+  const [editedLayout, setEditedLayout] = useState<PrintLayout>(layout);
+  const [activeTab, setActiveTab] = useState<TabKey>("generale");
 
-  // General
-  const { handleGeneralChange } = useGeneralTab(setEditedLayout);
+  const handleGeneralChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
 
-  // Elements - non usare margin su suffix
-  const { handleElementChange, handleElementMarginChange: origHandleElementMarginChange } = useElementsTab(setEditedLayout);
-  // migliora la margin change: ignora se elementKey === "suffix"
-  const handleElementMarginChange = (elementKey: keyof PrintLayout["elements"], marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
-    if (elementKey === "suffix") return; // suffix non gestisce margin
-    origHandleElementMarginChange(elementKey, marginKey, value);
-  };
+  const handleElementChange = useCallback((element: string, field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      elements: {
+        ...prev.elements,
+        [element]: {
+          ...prev.elements[element],
+          [field]: value
+        }
+      }
+    }));
+  }, []);
 
-  // Product Features (existing in elements)
-  const handleProductFeaturesChange = useCallback(
-    (field: keyof ProductFeaturesConfig, value: any) => {
-      console.log('handleProductFeaturesChange called:', field, value); // Debug log
-      setEditedLayout((prev) => {
-        const newLayout = {
-          ...prev,
-          productFeatures: {
-            ...prev.productFeatures,
-            [field]: value,
-          },
-        };
-        console.log('New layout productFeatures:', newLayout.productFeatures); // Debug log
-        return newLayout;
-      });
-    },
-    []
-  );
+  const handleElementMarginChange = useCallback((element: string, side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      elements: {
+        ...prev.elements,
+        [element]: {
+          ...prev.elements[element],
+          margin: {
+            ...prev.elements[element].margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
 
-  // Cover tab
-  const {
-    handleCoverLogoChange,
-    handleCoverTitleChange,
-    handleCoverTitleMarginChange,
-    handleCoverSubtitleChange,
-    handleCoverSubtitleMarginChange
-  } = useCoverTab(setEditedLayout);
+  const handleSpacingChange = useCallback((field: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      spacing: {
+        ...prev.spacing,
+        [field]: value
+      }
+    }));
+  }, []);
 
-  // Allergens
-  const {
-    handleAllergensTitleChange,
-    handleAllergensTitleMarginChange,
-    handleAllergensDescriptionChange,
-    handleAllergensDescriptionMarginChange,
-    handleAllergensItemNumberChange,
-    handleAllergensItemNumberMarginChange,
-    handleAllergensItemTitleChange,
-    handleAllergensItemTitleMarginChange,
-    handleAllergensItemDescriptionChange,
-    handleAllergensItemDescriptionMarginChange,
-    handleAllergensItemChange
-  } = useAllergensTab(setEditedLayout);
+  const handlePageMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        [side]: value
+      }
+    }));
+  }, []);
 
-  // Category Notes
-  const {
-    handleCategoryNotesIconChange,
-    handleCategoryNotesTitleChange,
-    handleCategoryNotesTitleMarginChange,
-    handleCategoryNotesTextChange,
-    handleCategoryNotesTextMarginChange
-  } = useCategoryNotesTab(setEditedLayout);
+  const handleOddPageMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        oddPages: {
+          ...prev.page.oddPages,
+          [side]: value
+        }
+      }
+    }));
+  }, []);
 
-  // Product Features (new layout section)
-  const {
-    handleProductFeaturesIconChange,
-    handleProductFeaturesTitleChange,
-    handleProductFeaturesTitleMarginChange
-  } = useProductFeaturesTab(setEditedLayout);
+  const handleEvenPageMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        evenPages: {
+          ...prev.page.evenPages,
+          [side]: value
+        }
+      }
+    }));
+  }, []);
 
-  // Service Price tab
-  const {
-    handleServicePriceChange,
-    handleServicePriceMarginChange
-  } = useServicePriceTab(setEditedLayout);
+  const handleToggleDistinctMargins = useCallback((enabled: boolean) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        useDistinctMarginsForPages: enabled
+      }
+    }));
+  }, []);
 
-  // Spacing
-  const { handleSpacingChange } = useSpacingTab(setEditedLayout);
+  const handleCoverLogoChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        logo: {
+          ...prev.cover.logo,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
 
-  // Page settings (existing)
-  const {
-    handlePageMarginChange,
-    handleOddPageMarginChange,
-    handleEvenPageMarginChange,
-    handleToggleDistinctMargins
-  } = usePageSettingsTab(setEditedLayout);
+  const handleCoverTitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        title: {
+          ...prev.cover.title,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
 
-  // Cover margins (new)
-  const { handleCoverMarginChange } = useCoverMarginsTab(setEditedLayout);
+  const handleCoverTitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        title: {
+          ...prev.cover.title,
+          margin: {
+            ...prev.cover.title.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
 
-  // Allergens margins (new)
-  const {
-    handleAllergensMarginChange,
-    handleAllergensOddPageMarginChange,
-    handleAllergensEvenPageMarginChange,
-    handleToggleDistinctAllergensMargins
-  } = useAllergensMarginsTab(setEditedLayout);
+  const handleCoverSubtitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        subtitle: {
+          ...prev.cover.subtitle,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
 
-  const handleSave = () => {
-    const finalLayout = ensurePageMargins(syncPageMargins(editedLayout));
-    onSave(finalLayout);
-  };
+  const handleCoverSubtitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      cover: {
+        ...prev.cover,
+        subtitle: {
+          ...prev.cover.subtitle,
+          margin: {
+            ...prev.cover.subtitle.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensTitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        title: {
+          ...prev.allergens.title,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensTitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        title: {
+          ...prev.allergens.title,
+          margin: {
+            ...prev.allergens.title.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensDescriptionChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        description: {
+          ...prev.allergens.description,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensDescriptionMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        description: {
+          ...prev.allergens.description,
+          margin: {
+            ...prev.allergens.description.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemNumberChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          number: {
+            ...prev.allergens.item.number,
+            [field]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemNumberMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          number: {
+            ...prev.allergens.item.number,
+            margin: {
+              ...prev.allergens.item.number.margin,
+              [side]: value
+            }
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemTitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          title: {
+            ...prev.allergens.item.title,
+            [field]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemTitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          title: {
+            ...prev.allergens.item.title,
+            margin: {
+              ...prev.allergens.item.title.margin,
+              [side]: value
+            }
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemDescriptionChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          description: {
+            ...prev.allergens.item.description,
+            [field]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemDescriptionMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          description: {
+            ...prev.allergens.item.description,
+            margin: {
+              ...prev.allergens.item.description.margin,
+              [side]: value
+            }
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensItemChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      allergens: {
+        ...prev.allergens,
+        item: {
+          ...prev.allergens.item,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleCategoryNotesIconChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      categoryNotes: {
+        ...prev.categoryNotes,
+        icon: {
+          ...prev.categoryNotes.icon,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleCategoryNotesTitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      categoryNotes: {
+        ...prev.categoryNotes,
+        title: {
+          ...prev.categoryNotes.title,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleCategoryNotesTitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      categoryNotes: {
+        ...prev.categoryNotes,
+        title: {
+          ...prev.categoryNotes.title,
+          margin: {
+            ...prev.categoryNotes.title.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleCategoryNotesTextChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      categoryNotes: {
+        ...prev.categoryNotes,
+        text: {
+          ...prev.categoryNotes.text,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleCategoryNotesTextMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      categoryNotes: {
+        ...prev.categoryNotes,
+        text: {
+          ...prev.categoryNotes.text,
+          margin: {
+            ...prev.categoryNotes.text.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleProductFeaturesChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        [field]: value
+      }
+    }));
+  }, []);
+
+  const handleProductFeaturesIconChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        icon: {
+          ...prev.productFeatures.icon,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleProductFeaturesTitleChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        title: {
+          ...prev.productFeatures.title,
+          [field]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleProductFeaturesTitleMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        title: {
+          ...prev.productFeatures.title,
+          margin: {
+            ...prev.productFeatures.title.margin,
+            [side]: value
+          }
+        }
+      }
+    }));
+  }, []);
+
+  const handleServicePriceChange = useCallback((field: string, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      servicePrice: {
+        ...prev.servicePrice,
+        [field]: value
+      }
+    }));
+  }, []);
+
+  const handleServicePriceMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      servicePrice: {
+        ...prev.servicePrice,
+        margin: {
+          ...prev.servicePrice.margin,
+          [side]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleCoverMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        [`coverMargin${side.charAt(0).toUpperCase() + side.slice(1)}`]: value
+      }
+    }));
+  }, []);
+
+  const handleAllergensMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        [`allergensMargin${side.charAt(0).toUpperCase() + side.slice(1)}`]: value
+      }
+    }));
+  }, []);
+
+  const handleAllergensOddPageMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        allergensOddPages: {
+          ...prev.page.allergensOddPages,
+          [side]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleAllergensEvenPageMarginChange = useCallback((side: string, value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        allergensEvenPages: {
+          ...prev.page.allergensEvenPages,
+          [side]: value
+        }
+      }
+    }));
+  }, []);
+
+  const handleToggleDistinctAllergensMargins = useCallback((enabled: boolean) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      page: {
+        ...prev.page,
+        useDistinctMarginsForAllergensPages: enabled
+      }
+    }));
+  }, []);
+
+  const handlePageBreaksChange = useCallback((pageBreaks: PageBreaksConfig) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      pageBreaks
+    }));
+  }, []);
+
+  const handleSave = useCallback(() => {
+    onSave(editedLayout);
+  }, [editedLayout, onSave]);
 
   return {
     editedLayout,
@@ -166,6 +613,7 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
     handleAllergensOddPageMarginChange,
     handleAllergensEvenPageMarginChange,
     handleToggleDistinctAllergensMargins,
+    handlePageBreaksChange,
     handleSave
   };
 };

@@ -50,6 +50,13 @@ export type CategoryNotesConfig = {
   text: PrintLayoutElementConfig;     // Testo della nota categoria
 };
 
+/**
+ * Configurazione per le interruzioni di pagina
+ */
+export type PageBreaksConfig = {
+  categoryIds: string[];  // Array di ID delle categorie che richiedono interruzione di pagina
+};
+
 export type PageMargins = {
   marginTop: number;
   marginRight: number;
@@ -175,6 +182,7 @@ export type PrintLayout = {
   categoryNotes: CategoryNotesConfig;  // configurazione note categorie
   productFeatures: ProductFeaturesConfig;  // NUOVO: configurazione caratteristiche prodotto per stampa
   servicePrice: ServicePriceConfig;  // NUOVO: configurazione prezzo servizio
+  pageBreaks: PageBreaksConfig;  // NUOVO: configurazione interruzioni di pagina
   spacing: MenuSpacing;
   page: PrintLayoutPageConfig;
   header?: PrintLayoutHeader;
