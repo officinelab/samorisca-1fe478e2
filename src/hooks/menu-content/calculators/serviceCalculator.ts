@@ -13,7 +13,7 @@ export const calculateServiceLineHeight = (layout: PrintLayout | null): number =
   // Conversione da pt a px: 1pt = 1.333px
   const fontSizePx = serviceConfig.fontSize * 1.333;
   
-  // Altezza base del testo con line-height di 1.4
+  // Altezza base del testo con line-height di 1.4 (standard web)
   const textHeightPx = fontSizePx * 1.4;
   
   // Converti l'altezza del testo in mm
@@ -22,10 +22,13 @@ export const calculateServiceLineHeight = (layout: PrintLayout | null): number =
   // Aggiungi i margini configurati
   const marginMm = serviceConfig.margin.top + serviceConfig.margin.bottom;
   
-  // Aggiungi un padding interno standard (convertito in mm)
-  const internalPaddingMm = 4; // ~15px convertiti in mm
+  // Padding interno standardizzato: 8px sopra e sotto (convertiti in mm)
+  const internalPaddingMm = (8 * 2) / MM_TO_PX; // 16px totali convertiti in mm
   
-  const totalHeight = textHeightMm + marginMm + internalPaddingMm;
+  // Margine di sicurezza per evitare sovrapposizioni
+  const safetyMarginMm = 2;
+  
+  const totalHeight = textHeightMm + marginMm + internalPaddingMm + safetyMarginMm;
   
   console.log('🔧 Calcolo altezza linea servizio (serviceCalculator):', {
     fontSize: serviceConfig.fontSize,
@@ -35,7 +38,8 @@ export const calculateServiceLineHeight = (layout: PrintLayout | null): number =
     marginTopMm: serviceConfig.margin.top,
     marginBottomMm: serviceConfig.margin.bottom,
     marginMm: marginMm.toFixed(2),
-    internalPaddingMm,
+    internalPaddingMm: internalPaddingMm.toFixed(2),
+    safetyMarginMm,
     totalHeight: totalHeight.toFixed(2),
     fontFamily: serviceConfig.fontFamily,
     alignment: serviceConfig.alignment

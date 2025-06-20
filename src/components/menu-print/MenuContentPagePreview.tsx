@@ -202,7 +202,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
           {/* Service charge line at bottom - solo nelle pagine dispari */}
           {isOddPage && (
             <div 
-              className="flex-shrink-0 pt-2"
+              className="flex-shrink-0"
               style={{
                 fontSize: `${layout.servicePrice.fontSize}pt`,
                 fontFamily: layout.servicePrice.fontFamily,
@@ -211,7 +211,11 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
                 fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
                 textAlign: layout.servicePrice.alignment as any,
                 marginTop: `${layout.servicePrice.margin.top}mm`,
-                marginBottom: `${layout.servicePrice.margin.bottom}mm`
+                marginBottom: `${layout.servicePrice.margin.bottom}mm`,
+                // 🔥 CORREZIONE: Padding standardizzato che corrisponde al calcolo JS
+                paddingTop: '8px',
+                paddingBottom: '8px',
+                lineHeight: '1.4'
               }}
             >
               Servizio e coperto €{page.serviceCharge.toFixed(2)}

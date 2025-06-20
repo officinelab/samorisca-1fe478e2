@@ -40,21 +40,22 @@ export const useMenuPagination = (
   const getAvailableHeight = (pageNumber: number): number => {
     if (!layout) return 250;
 
-    // Usa la funzione di calcolo ottimizzata che considera la linea del servizio
+    // 🔥 CORREZIONE: Usa la funzione di calcolo ottimizzata che considera correttamente pari/dispari
     const pageIndex = pageNumber - 1; // Convert to 0-based index
     const availableHeightPx = calculateAvailableHeight(pageIndex, A4_HEIGHT_MM, layout);
     
     // Converti da pixel a mm per compatibilità con il resto del codice
-    const availableHeightMm = availableHeightPx / 3.7795275591; // MM_TO_PX conversion
+    const availableHeightMm = availableHeightPx / MM_TO_PX;
     
     // Sottrai il margine di sicurezza
     const finalHeight = availableHeightMm - SAFETY_MARGIN_MM;
     
-    console.log('📐 Pagina ' + pageNumber + ' - Altezza disponibile finale:', {
-      availableHeightPx,
-      availableHeightMm,
+    console.log('📐 Pagina ' + pageNumber + ' - Altezza disponibile finale (con correzione pari/dispari):', {
+      availableHeightPx: availableHeightPx.toFixed(2),
+      availableHeightMm: availableHeightMm.toFixed(2),
       SAFETY_MARGIN_MM,
-      finalHeight
+      finalHeight: finalHeight.toFixed(2),
+      isOddPage: pageNumber % 2 === 1
     });
     
     return finalHeight;

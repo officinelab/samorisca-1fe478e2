@@ -1,6 +1,7 @@
 
 import { PrintLayout } from "@/types/printLayout";
 import { MM_TO_PX } from "./constants";
+import { calculateServiceLineHeight } from "@/hooks/menu-content/calculators/serviceCalculator";
 
 /**
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
@@ -38,71 +39,44 @@ export const calculateAvailableHeight = (
     bottomMargin = customLayout.page.marginBottom;
   }
 
-  // Calcola l'altezza del footer (linea servizio e coperto) usando la configurazione del layout
-  const serviceLineHeight = calculateServiceLineHeight(customLayout);
-  
   // Calcola l'altezza disponibile in millimetri prima della conversione in pixel
   const availableHeightMm = A4_HEIGHT_MM - topMargin - bottomMargin;
   const availableHeightPx = availableHeightMm * MM_TO_PX;
   
-  // Sottrai l'altezza del footer dalla disponibilità totale
-  const finalAvailableHeight = availableHeightPx - serviceLineHeight;
+  // 🔥 CORREZIONE: Il servizio appare SOLO nelle pagine dispari
+  const pageNumber = pageIndex + 1; // Converti a numero pagina 1-based
+  const isOddPage = pageNumber % 2 === 1;
   
-  console.log('📐 Calcolo altezza disponibile pagina ' + (pageIndex + 1) + ':', {
-    A4_HEIGHT_MM,
-    topMargin,
-    bottomMargin,
-    serviceLineHeightPx: serviceLineHeight,
-    serviceLineHeightMm: serviceLineHeight / MM_TO_PX,
-    availableHeightMm,
-    availableHeightPx,
-    finalAvailableHeight,
-    serviceConfig: customLayout.servicePrice
-  });
+  let finalAvailableHeight = availableHeightPx;
+  
+  if (isOddPage) {
+    // Solo nelle pagine dispari, sottrai l'altezza del servizio
+    const serviceLineHeightMm = calculateServiceLineHeight(customLayout);
+    const serviceLineHeightPx = serviceLineHeightMm * MM_TO_PX;
+    finalAvailableHeight = availableHeightPx - serviceLineHeightPx;
+    
+    console.log('📐 Calcolo altezza disponibile pagina DISPARI ' + pageNumber + ':', {
+      A4_HEIGHT_MM,
+      topMargin,
+      bottomMargin,
+      serviceLineHeightPx: serviceLineHeightPx.toFixed(2),
+      serviceLineHeightMm: serviceLineHeightMm.toFixed(2),
+      availableHeightMm: availableHeightMm.toFixed(2),
+      availableHeightPx: availableHeightPx.toFixed(2),
+      finalAvailableHeight: finalAvailableHeight.toFixed(2),
+      serviceConfig: customLayout.servicePrice
+    });
+  } else {
+    console.log('📐 Calcolo altezza disponibile pagina PARI ' + pageNumber + ':', {
+      A4_HEIGHT_MM,
+      topMargin,
+      bottomMargin,
+      availableHeightMm: availableHeightMm.toFixed(2),
+      availableHeightPx: availableHeightPx.toFixed(2),
+      finalAvailableHeight: finalAvailableHeight.toFixed(2),
+      note: 'Nessun servizio sottratto (pagina pari)'
+    });
+  }
   
   return finalAvailableHeight;
 };
-
-/**
- * Calcola l'altezza della linea del servizio/coperto usando la configurazione del layout
- */
-function calculateServiceLineHeight(customLayout?: PrintLayout | null): number {
-  if (!customLayout?.servicePrice) {
-    // Default: 15mm per la linea del servizio
-    return 15 * MM_TO_PX;
-  }
-
-  const serviceConfig = customLayout.servicePrice;
-  
-  // Calcola l'altezza del testo basata sulla dimensione del font
-  // Conversione da pt a px: 1pt = 1.333px
-  const fontSizePx = serviceConfig.fontSize * 1.333;
-  
-  // Altezza base del testo con line-height di 1.4
-  const textHeightPx = fontSizePx * 1.4;
-  
-  // Converti i margini da mm a px
-  const marginTopPx = serviceConfig.margin.top * MM_TO_PX;
-  const marginBottomPx = serviceConfig.margin.bottom * MM_TO_PX;
-  
-  // Aggiungi un padding interno standard per il testo (circa 8px sopra e sotto)
-  const internalPaddingPx = 16;
-  
-  // Calcola l'altezza totale
-  const totalHeight = textHeightPx + marginTopPx + marginBottomPx + internalPaddingPx;
-  
-  console.log('💰 Calcolo altezza linea servizio:', {
-    fontSize: serviceConfig.fontSize,
-    fontSizePx,
-    textHeightPx,
-    marginTopMm: serviceConfig.margin.top,
-    marginBottomMm: serviceConfig.margin.bottom,
-    marginTopPx,
-    marginBottomPx,
-    internalPaddingPx,
-    totalHeightPx: totalHeight,
-    totalHeightMm: totalHeight / MM_TO_PX
-  });
-  
-  return totalHeight;
-}
