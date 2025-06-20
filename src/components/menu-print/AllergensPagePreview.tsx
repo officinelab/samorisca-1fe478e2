@@ -54,20 +54,20 @@ const AllergensPagePreview: React.FC<AllergensPagePreviewProps> = ({
       padding: `${margins.marginTop}mm ${margins.marginRight}mm ${margins.marginBottom}mm ${margins.marginLeft}mm`,
       boxSizing: 'border-box',
       margin: '0 auto 20px auto',
-      border: showMargins ? '2px solid #e2e8f0' : 'none',
-      boxShadow: showMargins ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none',
+      border: showMargins ? '1px solid #cbd5e1' : '1px solid #e2e8f0',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
       overflow: 'hidden'
     }}>
-      {/* Margin indicators */}
+      {/* Margin indicators - più visibili quando showMargins è attivo */}
       {showMargins && (
         <>
-          <div className="absolute top-0 left-0 w-full border-t-2 border-dashed border-red-300" 
+          <div className="absolute top-0 left-0 w-full border-t-2 border-dashed border-red-400" 
                style={{ top: `${margins.marginTop}mm` }} />
-          <div className="absolute bottom-0 left-0 w-full border-b-2 border-dashed border-red-300" 
+          <div className="absolute bottom-0 left-0 w-full border-b-2 border-dashed border-red-400" 
                style={{ bottom: `${margins.marginBottom}mm` }} />
-          <div className="absolute top-0 left-0 h-full border-l-2 border-dashed border-red-300" 
+          <div className="absolute top-0 left-0 h-full border-l-2 border-dashed border-red-400" 
                style={{ left: `${margins.marginLeft}mm` }} />
-          <div className="absolute top-0 right-0 h-full border-r-2 border-dashed border-red-300" 
+          <div className="absolute top-0 right-0 h-full border-r-2 border-dashed border-red-400" 
                style={{ right: `${margins.marginRight}mm` }} />
         </>
       )}
