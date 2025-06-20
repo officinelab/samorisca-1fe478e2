@@ -2,9 +2,10 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Printer, FileDown, Eye, EyeOff, Settings, Loader2 } from "lucide-react";
+import { FileDown, Eye, EyeOff, Settings, Loader2, Printer } from "lucide-react";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { usePdfExport } from "@/hooks/print/usePdfExport";
+import { useBrowserPrint } from "@/hooks/print/useBrowserPrint";
 import { PrintLayout } from "@/types/printLayout";
 
 interface MenuPrintHeaderProps {
@@ -23,6 +24,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   currentLayout
 }) => {
   const { exportToPdf, isExporting } = usePdfExport();
+  const { printMenuContent } = useBrowserPrint();
 
   const handleExportPdf = async () => {
     console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
@@ -31,6 +33,11 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
     } else {
       console.error('Nessun layout disponibile per l\'esportazione');
     }
+  };
+
+  const handlePrint = () => {
+    console.log('🖨️ Pulsante Stampa cliccato - nuovo sistema');
+    printMenuContent();
   };
 
   return (
@@ -69,9 +76,9 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
             {showMargins ? "Nascondi" : "Mostra"} Margini
           </Button>
           
-          <Button variant="outline" onClick={() => window.print()}>
+          <Button variant="outline" onClick={handlePrint}>
             <Printer className="w-4 h-4 mr-2" />
-            Stampa
+            Stampa Menu
           </Button>
           
           <Button 

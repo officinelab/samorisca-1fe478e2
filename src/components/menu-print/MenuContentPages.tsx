@@ -150,8 +150,8 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
   }
 
   return (
-    <Card key={totalRefreshKey}>
-      <CardHeader>
+    <Card key={totalRefreshKey} data-page-preview="content-pages">
+      <CardHeader className="print:hidden">
         <CardTitle className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
           Pagine Contenuto del Menu
@@ -166,12 +166,13 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
       </CardHeader>
       <CardContent className="space-y-8">
         {pages.map((page, index) => (
-          <MenuContentPagePreview
-            key={`${page.pageNumber}-${totalRefreshKey}-${index}`}
-            page={page}
-            layout={activeLayout}
-            showMargins={showMargins}
-          />
+          <div key={`${page.pageNumber}-${totalRefreshKey}-${index}`} data-page-preview={`content-${page.pageNumber}`}>
+            <MenuContentPagePreview
+              page={page}
+              layout={activeLayout}
+              showMargins={showMargins}
+            />
+          </div>
         ))}
       </CardContent>
     </Card>

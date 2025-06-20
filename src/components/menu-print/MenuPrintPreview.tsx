@@ -8,7 +8,7 @@ import MenuContentPages from './MenuContentPages';
 interface MenuPrintPreviewProps {
   currentLayout?: PrintLayout;
   showMargins: boolean;
-  refreshKey?: number; // Aggiunto per supportare il refresh
+  refreshKey?: number;
 }
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
@@ -16,11 +16,9 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   showMargins,
   refreshKey = 0
 }) => {
-  // A4 dimensions in mm
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
   
-  // Default margins if no layout exists
   const getMargins = () => {
     if (!currentLayout?.page) {
       return {
@@ -43,8 +41,8 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   return (
     <div className="menu-print-preview-container space-y-8" key={`preview-${refreshKey}`}>
       {/* Cover Pages */}
-      <Card>
-        <CardHeader>
+      <Card data-page-preview="cover">
+        <CardHeader className="print:hidden">
           <CardTitle className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
             Pagine Copertina del Menu
@@ -56,8 +54,8 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
         </CardHeader>
         <CardContent>
           {/* First Cover Page */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-4">Prima Pagina - Contenuto Copertina</h3>
+          <div className="mb-6" data-page-preview="cover-1">
+            <h3 className="text-lg font-semibold mb-4 print:hidden">Prima Pagina - Contenuto Copertina</h3>
             <CoverPagePreview
               currentLayout={currentLayout}
               showMargins={showMargins}
@@ -66,8 +64,8 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
           </div>
           
           {/* Second Cover Page */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Seconda Pagina - Pagina Vuota</h3>
+          <div data-page-preview="cover-2">
+            <h3 className="text-lg font-semibold mb-4 print:hidden">Seconda Pagina - Pagina Vuota</h3>
             <CoverPagePreview
               currentLayout={currentLayout}
               showMargins={showMargins}
@@ -77,7 +75,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
         </CardContent>
       </Card>
 
-      {/* Menu Content Pages - Passa il refreshKey */}
+      {/* Menu Content Pages */}
       <MenuContentPages 
         showMargins={showMargins} 
         layoutRefreshKey={refreshKey}
