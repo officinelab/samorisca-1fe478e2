@@ -23,7 +23,7 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
       }}
     >
       {/* Prima riga: Icona, Numero, Titolo */}
-      <div className="allergen-header" style={{ display: 'flex', alignItems: 'center', gap: '5mm' }}>
+      <div className="allergen-header" style={{ display: 'flex', alignItems: 'flex-start', gap: '3mm' }}>
         {/* Icona allergene */}
         {allergen.icon_url && (
           <div style={{
@@ -56,7 +56,9 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
             marginTop: `${layout.allergens.item.number.margin.top}mm`,
             marginBottom: `${layout.allergens.item.number.margin.bottom}mm`,
             marginLeft: `${layout.allergens.item.number.margin.left}mm`,
-            marginRight: `${layout.allergens.item.number.margin.right}mm`
+            marginRight: `${layout.allergens.item.number.margin.right}mm`,
+            minWidth: '20px',
+            display: layout.allergens.item.number.visible !== false ? 'block' : 'none'
           }}
         >
           {allergen.number}
@@ -76,15 +78,16 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
             marginBottom: `${layout.allergens.item.title.margin.bottom}mm`,
             marginLeft: `${layout.allergens.item.title.margin.left}mm`,
             marginRight: `${layout.allergens.item.title.margin.right}mm`,
-            flex: 1
+            flex: 1,
+            display: layout.allergens.item.title.visible !== false ? 'block' : 'none'
           }}
         >
           {allergen.title}
         </div>
       </div>
 
-      {/* Seconda riga: Descrizione (se presente) */}
-      {allergen.description && (
+      {/* Seconda riga: Descrizione (se presente e visibile) */}
+      {allergen.description && layout.allergens.item.description.visible !== false && (
         <div
           className="allergen-description"
           style={{

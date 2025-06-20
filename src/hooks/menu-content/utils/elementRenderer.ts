@@ -31,6 +31,11 @@ export const renderAndMeasureElement = async (
 };
 
 export const createTitleElement = (layout: PrintLayout) => {
+  // Controlla se il titolo è visibile
+  if (layout.allergens.title.visible === false) {
+    return React.createElement('div', { style: { display: 'none' } });
+  }
+
   return React.createElement('div', {
     style: {
       fontSize: `${layout.allergens.title.fontSize}px`,
@@ -42,12 +47,18 @@ export const createTitleElement = (layout: PrintLayout) => {
       marginTop: `${layout.allergens.title.margin.top}mm`,
       marginBottom: `${layout.allergens.title.margin.bottom}mm`,
       marginLeft: `${layout.allergens.title.margin.left}mm`,
-      marginRight: `${layout.allergens.title.margin.right}mm`
+      marginRight: `${layout.allergens.title.margin.right}mm`,
+      lineHeight: 1.3
     }
   }, layout.allergens.title.text || 'Allergeni e Intolleranze');
 };
 
 export const createDescriptionElement = (layout: PrintLayout) => {
+  // Controlla se la descrizione è visibile
+  if (layout.allergens.description.visible === false) {
+    return React.createElement('div', { style: { display: 'none' } });
+  }
+
   return React.createElement('div', {
     style: {
       fontSize: `${layout.allergens.description.fontSize}px`,
@@ -59,7 +70,8 @@ export const createDescriptionElement = (layout: PrintLayout) => {
       marginTop: `${layout.allergens.description.margin.top}mm`,
       marginBottom: `${layout.allergens.description.margin.bottom}mm`,
       marginLeft: `${layout.allergens.description.margin.left}mm`,
-      marginRight: `${layout.allergens.description.margin.right}mm`
+      marginRight: `${layout.allergens.description.margin.right}mm`,
+      lineHeight: 1.4
     }
   }, layout.allergens.description.text || 'Lista completa degli allergeni presenti nei nostri prodotti');
 };
