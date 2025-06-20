@@ -5,7 +5,7 @@ import { MM_TO_PX } from '@/components/menu-print/pagination/utils/constants';
 
 export const usePageHeightCalculator = (layout: PrintLayout | null) => {
   const A4_HEIGHT_MM = 297;
-  const SAFETY_MARGIN_MM = 20; // 🔥 AUMENTATO da 8mm a 20mm per maggiore sicurezza
+  const SAFETY_MARGIN_MM = 8;
 
   const getAvailableHeight = (pageNumber: number): number => {
     if (!layout) return 250;
@@ -20,10 +20,10 @@ export const usePageHeightCalculator = (layout: PrintLayout | null) => {
     // Subtract safety margin
     const finalHeight = availableHeightMm - SAFETY_MARGIN_MM;
     
-    console.log('📐 Pagina ' + pageNumber + ' - Altezza disponibile finale (MARGINE SICUREZZA AUMENTATO):', {
+    console.log('📐 Pagina ' + pageNumber + ' - Altezza disponibile finale (con correzione pari/dispari):', {
       availableHeightPx: availableHeightPx.toFixed(2),
       availableHeightMm: availableHeightMm.toFixed(2),
-      SAFETY_MARGIN_MM: SAFETY_MARGIN_MM + 'mm (AUMENTATO da 8mm)',
+      SAFETY_MARGIN_MM,
       finalHeight: finalHeight.toFixed(2),
       isOddPage: pageNumber % 2 === 1
     });
