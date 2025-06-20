@@ -6,6 +6,7 @@ import { calculateServiceLineHeight } from "@/hooks/menu-content/calculators/ser
 /**
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
  * Gestisce la distinzione pari/dispari con i margini coerenti fra JS e CSS.
+ * 🔥 VERSIONE MIGLIORATA CON ANTI-TAGLIO
  */
 export const calculateAvailableHeight = (
   pageIndex: number,
@@ -39,6 +40,12 @@ export const calculateAvailableHeight = (
     bottomMargin = customLayout.page.marginBottom;
   }
 
+  // 🔥 CORREZIONE ANTI-TAGLIO: Aggiungi margini extra nascosti
+  const hiddenTopMarginMm = 3; // Margini nascosti del browser/CSS
+  const hiddenBottomMarginMm = 5; // Margini nascosti in fondo pagina
+  topMargin += hiddenTopMarginMm;
+  bottomMargin += hiddenBottomMarginMm;
+
   // Calcola l'altezza disponibile in millimetri prima della conversione in pixel
   const availableHeightMm = A4_HEIGHT_MM - topMargin - bottomMargin;
   const availableHeightPx = availableHeightMm * MM_TO_PX;
@@ -50,30 +57,34 @@ export const calculateAvailableHeight = (
   let finalAvailableHeight = availableHeightPx;
   
   if (isOddPage) {
-    // Solo nelle pagine dispari, sottrai l'altezza del servizio
+    // Solo nelle pagine dispari, sottrai l'altezza del servizio + BUFFER
     const serviceLineHeightMm = calculateServiceLineHeight(customLayout);
-    const serviceLineHeightPx = serviceLineHeightMm * MM_TO_PX;
+    const serviceBufferMm = 5; // 🔥 5mm di buffer extra per la linea del servizio
+    const serviceLineHeightPx = (serviceLineHeightMm + serviceBufferMm) * MM_TO_PX;
     finalAvailableHeight = availableHeightPx - serviceLineHeightPx;
     
-    console.log('📐 Calcolo altezza disponibile pagina DISPARI ' + pageNumber + ':', {
+    console.log('📐 Calcolo altezza disponibile pagina DISPARI ' + pageNumber + ' (ANTI-TAGLIO ATTIVO):', {
       A4_HEIGHT_MM,
-      topMargin,
-      bottomMargin,
+      topMargin: topMargin + 'mm (include +' + hiddenTopMarginMm + 'mm nascosti)',
+      bottomMargin: bottomMargin + 'mm (include +' + hiddenBottomMarginMm + 'mm nascosti)',
       serviceLineHeightPx: serviceLineHeightPx.toFixed(2),
       serviceLineHeightMm: serviceLineHeightMm.toFixed(2),
+      serviceBufferMm: serviceBufferMm + 'mm (NUOVO)',
       availableHeightMm: availableHeightMm.toFixed(2),
       availableHeightPx: availableHeightPx.toFixed(2),
       finalAvailableHeight: finalAvailableHeight.toFixed(2),
+      totalBuffersApplied: (hiddenTopMarginMm + hiddenBottomMarginMm + serviceBufferMm).toFixed(1) + 'mm',
       serviceConfig: customLayout.servicePrice
     });
   } else {
-    console.log('📐 Calcolo altezza disponibile pagina PARI ' + pageNumber + ':', {
+    console.log('📐 Calcolo altezza disponibile pagina PARI ' + pageNumber + ' (ANTI-TAGLIO ATTIVO):', {
       A4_HEIGHT_MM,
-      topMargin,
-      bottomMargin,
+      topMargin: topMargin + 'mm (include +' + hiddenTopMarginMm + 'mm nascosti)',
+      bottomMargin: bottomMargin + 'mm (include +' + hiddenBottomMarginMm + 'mm nascosti)',
       availableHeightMm: availableHeightMm.toFixed(2),
       availableHeightPx: availableHeightPx.toFixed(2),
       finalAvailableHeight: finalAvailableHeight.toFixed(2),
+      totalBuffersApplied: (hiddenTopMarginMm + hiddenBottomMarginMm).toFixed(1) + 'mm',
       note: 'Nessun servizio sottratto (pagina pari)'
     });
   }
