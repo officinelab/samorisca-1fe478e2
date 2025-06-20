@@ -59,38 +59,69 @@ const CategoryRenderer: React.FC<CategoryRendererProps> = ({
       {notes && notes.length > 0 && (
         <div className="category-notes" style={{ marginBottom: '5mm' }}>
           {notes.map((note, index) => (
-            <div key={note.id} className="category-note" style={{ marginBottom: index < notes.length - 1 ? '3mm' : '0' }}>
-              {/* Titolo della nota */}
-              <div
-                className="note-title"
-                style={{
-                  fontSize: `${dimensions.css.categoryFontSize * 0.9}px`, // Leggermente più piccolo del titolo categoria
-                  fontFamily: layout.categoryNotes.title.fontFamily,
-                  color: layout.categoryNotes.title.fontColor,
-                  fontWeight: layout.categoryNotes.title.fontStyle === 'bold' ? 'bold' : 'normal',
-                  fontStyle: layout.categoryNotes.title.fontStyle === 'italic' ? 'italic' : 'normal',
-                  textAlign: layout.categoryNotes.title.alignment as any,
-                  marginBottom: `${layout.categoryNotes.title.margin.bottom}mm`,
-                  lineHeight: 1.4
-                }}
-              >
-                {note.title}
-              </div>
+            <div key={note.id} className="category-note" style={{ 
+              marginBottom: index < notes.length - 1 ? '3mm' : '0',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px'
+            }}>
+              {/* Icona della nota */}
+              {note.icon_url && (
+                <div
+                  className="note-icon"
+                  style={{
+                    width: `${layout.categoryNotes.icon.iconSize}px`,
+                    height: `${layout.categoryNotes.icon.iconSize}px`,
+                    flexShrink: 0,
+                    marginTop: '2px'
+                  }}
+                >
+                  <img
+                    src={note.icon_url}
+                    alt=""
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              )}
 
-              {/* Testo della nota */}
-              <div
-                className="note-text"
-                style={{
-                  fontSize: `${dimensions.css.descriptionFontSize * 0.95}px`, // Simile alla descrizione prodotto
-                  fontFamily: layout.categoryNotes.text.fontFamily,
-                  color: layout.categoryNotes.text.fontColor,
-                  fontWeight: layout.categoryNotes.text.fontStyle === 'bold' ? 'bold' : 'normal',
-                  fontStyle: layout.categoryNotes.text.fontStyle === 'italic' ? 'italic' : 'normal',
-                  textAlign: layout.categoryNotes.text.alignment as any,
-                  lineHeight: 1.5
-                }}
-              >
-                {note.text}
+              {/* Contenuto testuale della nota */}
+              <div className="note-content" style={{ flex: 1 }}>
+                {/* Titolo della nota */}
+                <div
+                  className="note-title"
+                  style={{
+                    fontSize: `${dimensions.css.categoryFontSize * 0.9}px`, // Leggermente più piccolo del titolo categoria
+                    fontFamily: layout.categoryNotes.title.fontFamily,
+                    color: layout.categoryNotes.title.fontColor,
+                    fontWeight: layout.categoryNotes.title.fontStyle === 'bold' ? 'bold' : 'normal',
+                    fontStyle: layout.categoryNotes.title.fontStyle === 'italic' ? 'italic' : 'normal',
+                    textAlign: layout.categoryNotes.title.alignment as any,
+                    marginBottom: `${layout.categoryNotes.title.margin.bottom}mm`,
+                    lineHeight: 1.4
+                  }}
+                >
+                  {note.title}
+                </div>
+
+                {/* Testo della nota */}
+                <div
+                  className="note-text"
+                  style={{
+                    fontSize: `${dimensions.css.descriptionFontSize * 0.95}px`, // Simile alla descrizione prodotto
+                    fontFamily: layout.categoryNotes.text.fontFamily,
+                    color: layout.categoryNotes.text.fontColor,
+                    fontWeight: layout.categoryNotes.text.fontStyle === 'bold' ? 'bold' : 'normal',
+                    fontStyle: layout.categoryNotes.text.fontStyle === 'italic' ? 'italic' : 'normal',
+                    textAlign: layout.categoryNotes.text.alignment as any,
+                    lineHeight: 1.5
+                  }}
+                >
+                  {note.text}
+                </div>
               </div>
             </div>
           ))}

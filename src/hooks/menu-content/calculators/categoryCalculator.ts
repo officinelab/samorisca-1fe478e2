@@ -1,3 +1,4 @@
+
 import { Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
 import { PrintLayout } from '@/types/printLayout';
@@ -49,8 +50,12 @@ export const calculateCategoryNoteHeight = (note: CategoryNote, layout: PrintLay
   const rightMargin = pageConfig.marginRight || 25;
   const availableWidthMm = pageWidthMm - leftMargin - rightMargin;
   
-  // Sottrai lo spazio per l'icona
-  const iconWidthMm = (noteConfig.icon.iconSize / MM_TO_PX) + 2; // 2mm spacing
+  // Calcola lo spazio occupato dall'icona se presente
+  let iconWidthMm = 0;
+  if (note.icon_url) {
+    iconWidthMm = (noteConfig.icon.iconSize / MM_TO_PX) + 3; // 3mm spacing per icona + gap
+  }
+  
   const textAvailableWidthPx = (availableWidthMm - iconWidthMm) * MM_TO_PX;
   
   // Calcola altezza del titolo
@@ -80,7 +85,9 @@ export const calculateCategoryNoteHeight = (note: CategoryNote, layout: PrintLay
   // Somma tutte le altezze
   const titleMarginMm = noteConfig.title.margin.top + noteConfig.title.margin.bottom;
   const textMarginMm = noteConfig.text.margin.top + noteConfig.text.margin.bottom;
-  const iconHeightMm = noteConfig.icon.iconSize / MM_TO_PX;
+  
+  // Calcola l'altezza dell'icona se presente
+  const iconHeightMm = note.icon_url ? (noteConfig.icon.iconSize / MM_TO_PX) : 0;
   
   // L'altezza totale è il massimo tra l'altezza dell'icona e l'altezza del testo
   const contentHeightMm = Math.max(
