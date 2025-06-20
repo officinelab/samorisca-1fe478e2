@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
-import { useOptimizedMenuPagination } from '@/hooks/menu-content/useOptimizedMenuPagination';
+import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
 import MenuContentPagePreview from './MenuContentPagePreview';
 import { Loader2 } from 'lucide-react';
 
@@ -26,8 +26,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     activeLayout
   } = data;
 
-  // Use optimized pagination hook
-  const { createPages, isLoadingMeasurements } = useOptimizedMenuPagination(
+  const paginationKey = `${totalRefreshKey}-${activeLayout?.id || 'no-layout'}`;
+  
+  const { createPages, isLoadingMeasurements } = useMenuPagination(
     categories,
     productsByCategory,
     categoryNotes,
@@ -38,7 +39,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
 
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
-      console.log('📐 MenuContentPages: Layout updated, forcing local re-render...', event.detail);
+      console.log('📐 MenuContentPages: Layout aggiornato, forzo re-render locale...', event.detail);
       setLocalRefreshKey(prev => prev + 1);
     };
 
@@ -106,13 +107,13 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     );
   }
 
-  // Optimized loading state with progress indication
+  // Loading measurements spinner - ora dentro la card invece che in overlay
   if (isLoadingMeasurements) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded animate-pulse"></div>
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
             Pagine Contenuto del Menu
           </CardTitle>
         </CardHeader>
@@ -120,13 +121,8 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
           <div className="flex flex-col items-center justify-center p-16 space-y-4">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
             <div className="text-center">
-              <div className="text-lg font-semibold mb-2">⚡ Calcolo ottimizzato in corso...</div>
-              <div className="text-sm text-muted-foreground">
-                Sistema velocizzato - richiederà solo pochi secondi
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">
-                Cache intelligente • Calcoli paralleli • Approssimazioni matematiche
-              </div>
+              <div className="text-lg font-semibold mb-2">Calcolo altezze reali degli elementi...</div>
+              <div className="text-sm text-muted-foreground">Preparazione del layout di stampa in corso</div>
             </div>
           </div>
         </CardContent>
@@ -161,12 +157,12 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
           <div className="w-4 h-4 bg-green-500 rounded"></div>
           Pagine Contenuto del Menu
           {totalRefreshKey > 0 && (
-            <span className="text-xs text-muted-foreground ml-2">(Aggiornato ⚡)</span>
+            <span className="text-xs text-muted-foreground ml-2">(Aggiornato)</span>
           )}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {pages.length} pagina{pages.length !== 1 ? 'e' : ''} generata{pages.length !== 1 ? 'e' : ''} 
-          con sistema ottimizzato
+          con tutti i prodotti del menu
         </p>
       </CardHeader>
       <CardContent className="space-y-8">
