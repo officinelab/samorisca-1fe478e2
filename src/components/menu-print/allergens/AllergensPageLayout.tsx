@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen, ProductFeature } from '@/types/database';
@@ -80,10 +81,6 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
           layout={layout}
           showTitleAndDescription={showTitleAndDescription}
         />
-
-        {allergens.length > 0 && productFeatures.length > 0 && (
-          <div style={{ height: '30mm' }} />
-        )}
 
         <ProductFeaturesList
           productFeatures={productFeatures}

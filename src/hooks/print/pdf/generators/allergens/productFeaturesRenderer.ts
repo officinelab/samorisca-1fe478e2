@@ -55,8 +55,8 @@ export const renderProductFeatures = async (
     let featureX = marginLeft;
     let featureHeight = 0;
     
-    // Margine top per la prima caratteristica
-    if (i === 0) {
+    // Margine top per la prima caratteristica (solo se non c'è il titolo)
+    if (i === 0 && !customTitle) {
       currentY += layout.productFeatures.icon.marginTop || 0;
     }
     
