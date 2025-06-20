@@ -1,70 +1,21 @@
 
-import React from "react";
-import { PrintLayout } from "@/types/printLayout";
-import CoverTextSection from "./cover/CoverTextSection";
+import React from 'react';
+import { PrintLayoutCover } from '@/types/printLayout';
 
 interface CoverLayoutTabProps {
-  layout: PrintLayout;
-  onCoverLogoChange: (field: keyof PrintLayout['cover']['logo'], value: any) => void;
-  onCoverTitleChange: (field: keyof PrintLayout['cover']['title'], value: any) => void;
-  onCoverTitleMarginChange: (field: keyof PrintLayout['cover']['title']['margin'], value: number) => void;
-  onCoverSubtitleChange: (field: keyof PrintLayout['cover']['subtitle'], value: any) => void;
-  onCoverSubtitleMarginChange: (field: keyof PrintLayout['cover']['subtitle']['margin'], value: number) => void;
+  cover: PrintLayoutCover;
+  onLogoChange: (field: string, value: any) => void;
+  onTitleChange: (field: string, value: any) => void;
+  onTitleMarginChange: (side: string, value: number) => void;
+  onSubtitleChange: (field: string, value: any) => void;
+  onSubtitleMarginChange: (side: string, value: number) => void;
 }
 
-const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({
-  layout,
-  onCoverLogoChange,
-  onCoverTitleChange,
-  onCoverTitleMarginChange,
-  onCoverSubtitleChange,
-  onCoverSubtitleMarginChange
-}) => {
-  // Safe fallback su struttura dati
-  const coverLogo = layout.cover?.logo || {
-    imageUrl: "",
-    maxWidth: 80,
-    maxHeight: 50,
-    alignment: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-    visible: true,
-  };
-
-  const coverTitle = layout.cover?.title || {
-    menuTitle: "",
-    fontFamily: "Arial",
-    fontSize: 24,
-    fontColor: "#000000",
-    fontStyle: "bold",
-    alignment: "center",
-    margin: { top: 20, right: 0, bottom: 10, left: 0 },
-    visible: true,
-  };
-
-  const coverSubtitle = layout.cover?.subtitle || {
-    menuSubtitle: "",
-    fontFamily: "Arial",
-    fontSize: 14,
-    fontColor: "#666666",
-    fontStyle: "italic",
-    alignment: "center",
-    margin: { top: 5, right: 0, bottom: 0, left: 0 },
-    visible: true,
-  };
-
+const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({ cover }) => {
   return (
-    <div className="space-y-6">
-      <CoverTextSection
-        coverLogo={coverLogo}
-        coverTitle={coverTitle}
-        coverSubtitle={coverSubtitle}
-        onCoverLogoChange={onCoverLogoChange}
-        onCoverTitleChange={onCoverTitleChange}
-        onCoverTitleMarginChange={onCoverTitleMarginChange}
-        onCoverSubtitleChange={onCoverSubtitleChange}
-        onCoverSubtitleMarginChange={onCoverSubtitleMarginChange}
-      />
+    <div className="space-y-4">
+      <h3>Layout Copertina</h3>
+      <p>Configurazioni copertina del layout (da implementare)</p>
     </div>
   );
 };

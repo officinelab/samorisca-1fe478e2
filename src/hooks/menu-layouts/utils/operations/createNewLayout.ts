@@ -263,5 +263,6 @@ export const createNewLayout = (name: string): PrintLayout => ({
       marginBottom: 20,
       marginLeft: 15
     }
-  }
+  },
+  pageBreaks: { categoryIds: [] }
 });

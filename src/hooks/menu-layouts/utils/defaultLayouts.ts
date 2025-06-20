@@ -263,7 +263,8 @@ export const defaultLayout: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
-  }
+  },
+  pageBreaks: { categoryIds: [] }
 };
 
 // Array di layout predefiniti - ora contiene solo il layout di default
