@@ -4,6 +4,7 @@ import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
 import CategoryRenderer from './CategoryRenderer';
+import ProductRenderer from './ProductRenderer';
 
 interface PageContent {
   pageNumber: number;
@@ -171,14 +172,23 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
         <div className="flex-1">
           {page.categories.map((categoryData, index) => (
             <div key={`${categoryData.category.id}-${index}`}>
+              {/* Category title and notes */}
               <CategoryRenderer
                 category={categoryData.category}
                 notes={categoryData.notes}
-                products={categoryData.products}
                 layout={layout}
                 isRepeatedTitle={categoryData.isRepeatedTitle}
-                addSpacing={index > 0}
               />
+              
+              {/* Products for this category */}
+              {categoryData.products.map((product, productIndex) => (
+                <ProductRenderer
+                  key={`${product.id}-${productIndex}`}
+                  product={product}
+                  layout={layout}
+                  addSpacing={productIndex > 0}
+                />
+              ))}
             </div>
           ))}
         </div>
