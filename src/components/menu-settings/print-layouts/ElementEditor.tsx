@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,7 +15,8 @@ const ElementEditor = ({ element, onChange, onMarginChange, hideMarginControls =
   const fontFamilies = [
     "Arial", "Helvetica", "Times New Roman", "Georgia", 
     "Verdana", "Courier New", "Impact", "Comic Sans MS",
-    "Trebuchet MS", "Arial Black", "Palatino", "Garamond"
+    "Trebuchet MS", "Arial Black", "Palatino", "Garamond",
+    "Belleza"
   ];
 
   return (
