@@ -127,6 +127,9 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
     );
   };
 
+  // Controlla se la pagina è dispari per mostrare il servizio e coperto
+  const isOddPage = page.pageNumber % 2 === 1;
+
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-4">
@@ -183,22 +186,24 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             ))}
           </div>
 
-          {/* Service charge line at bottom */}
-          <div 
-            className="flex-shrink-0 border-t pt-2"
-            style={{
-              fontSize: `${layout.servicePrice.fontSize}pt`,
-              fontFamily: layout.servicePrice.fontFamily,
-              color: layout.servicePrice.fontColor,
-              fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.servicePrice.alignment as any,
-              marginTop: `${layout.servicePrice.margin.top}mm`,
-              marginBottom: `${layout.servicePrice.margin.bottom}mm`
-            }}
-          >
-            Servizio e Coperto = €{page.serviceCharge.toFixed(2)}
-          </div>
+          {/* Service charge line at bottom - solo nelle pagine dispari */}
+          {isOddPage && (
+            <div 
+              className="flex-shrink-0 pt-2"
+              style={{
+                fontSize: `${layout.servicePrice.fontSize}pt`,
+                fontFamily: layout.servicePrice.fontFamily,
+                color: layout.servicePrice.fontColor,
+                fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
+                fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
+                textAlign: layout.servicePrice.alignment as any,
+                marginTop: `${layout.servicePrice.margin.top}mm`,
+                marginBottom: `${layout.servicePrice.margin.bottom}mm`
+              }}
+            >
+              Servizio e coperto €{page.serviceCharge.toFixed(2)}
+            </div>
+          )}
         </div>
       </div>
     </div>

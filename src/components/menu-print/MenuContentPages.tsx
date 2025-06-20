@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
@@ -7,13 +8,12 @@ import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
-  layoutRefreshKey?: number; // Opzionale, passato dal componente padre
+  layoutRefreshKey?: number;
 }
 
 const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layoutRefreshKey = 0 }) => {
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
   
-  // Il refresh totale è la somma delle due chiavi
   const totalRefreshKey = layoutRefreshKey + localRefreshKey;
   
   const { data, isLoading: isLoadingData, error } = useMenuContentData();
@@ -26,7 +26,6 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     activeLayout
   } = data;
 
-  // Usa il totalRefreshKey per forzare la re-creazione del hook di paginazione
   const paginationKey = `${totalRefreshKey}-${activeLayout?.id || 'no-layout'}`;
   
   const { createPages, isLoadingMeasurements } = useMenuPagination(
@@ -38,11 +37,9 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     activeLayout
   );
 
-  // Ascolta gli eventi di aggiornamento layout
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
       console.log('📐 MenuContentPages: Layout aggiornato, forzo re-render locale...', event.detail);
-      // Forza re-render locale
       setLocalRefreshKey(prev => prev + 1);
     };
 
@@ -110,22 +107,16 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     );
   }
 
+  // Spinner centralizzato durante il caricamento delle misurazioni
   if (isLoadingMeasurements) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            Pagine Contenuto del Menu
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <div className="text-muted-foreground">Calcolo altezze reali degli elementi...</div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+          <div className="text-lg font-semibold mb-2">Calcolo altezze reali degli elementi...</div>
+          <div className="text-sm text-muted-foreground">Preparazione del layout di stampa in corso</div>
+        </div>
+      </div>
     );
   }
 

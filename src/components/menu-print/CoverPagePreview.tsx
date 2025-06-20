@@ -174,16 +174,9 @@ const CoverPagePreview: React.FC<CoverPagePreviewProps> = ({
     );
   };
 
-  // Second page content (empty)
+  // Second page content (completely empty)
   const getSecondPageContent = () => {
-    return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <div className="text-lg font-semibold mb-2">Pagina Vuota</div>
-          <div className="text-sm">Seconda pagina della copertina</div>
-        </div>
-      </div>
-    );
+    return null; // Pagina completamente vuota
   };
 
   return (
