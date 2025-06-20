@@ -1,3 +1,4 @@
+
 export interface Database {
   public: {
     Tables: {
@@ -74,6 +75,16 @@ export interface Database {
           description_fr: string | null
           description_es: string | null
           description_de: string | null
+          image_url: string | null
+          price_standard: number | null
+          has_price_suffix: boolean | null
+          price_suffix: string | null
+          has_multiple_prices: boolean | null
+          price_variant_1_name: string | null
+          price_variant_1_value: number | null
+          price_variant_2_name: string | null
+          price_variant_2_value: number | null
+          label_id: string | null
         }
         Insert: {
           id?: string
@@ -93,6 +104,16 @@ export interface Database {
           description_fr?: string | null
           description_es?: string | null
           description_de?: string | null
+          image_url?: string | null
+          price_standard?: number | null
+          has_price_suffix?: boolean | null
+          price_suffix?: string | null
+          has_multiple_prices?: boolean | null
+          price_variant_1_name?: string | null
+          price_variant_1_value?: number | null
+          price_variant_2_name?: string | null
+          price_variant_2_value?: number | null
+          label_id?: string | null
         }
         Update: {
           id?: string
@@ -112,6 +133,16 @@ export interface Database {
           description_fr?: string | null
           description_es?: string | null
           description_de?: string | null
+          image_url?: string | null
+          price_standard?: number | null
+          has_price_suffix?: boolean | null
+          price_suffix?: string | null
+          has_multiple_prices?: boolean | null
+          price_variant_1_name?: string | null
+          price_variant_1_value?: number | null
+          price_variant_2_name?: string | null
+          price_variant_2_value?: number | null
+          label_id?: string | null
         }
         Relationships: [
           {
@@ -316,18 +347,23 @@ export type Enums<
     : never
 
 export type Category = Tables<'categories'>;
-export type Product = Tables<'products'>;
 export type Allergen = Tables<'allergens'>;
+export type ProductFeature = Tables<'product_features'>;
 
-export interface ProductFeature {
+// Interfaccia per il label del prodotto
+export interface ProductLabel {
   id: string;
   title: string;
-  icon_url?: string;
+  color?: string;
+  text_color?: string;
   display_order: number;
   created_at?: string;
   updated_at?: string;
-  title_en?: string;
-  title_fr?: string;
-  title_es?: string;
-  title_de?: string;
+}
+
+// Tipo Product esteso con tutte le proprietà necessarie
+export interface Product extends Tables<'products'> {
+  allergens?: Allergen[];
+  features?: ProductFeature[];
+  label?: ProductLabel;
 }
