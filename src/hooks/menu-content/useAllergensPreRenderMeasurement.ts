@@ -41,7 +41,7 @@ export const useAllergensPreRenderMeasurement = (
           position: fixed;
           top: -9999px;
           left: -9999px;
-          width: ${210}mm;
+          width: 210mm;
           visibility: hidden;
           pointer-events: none;
           z-index: -1;
@@ -82,8 +82,8 @@ export const useAllergensPreRenderMeasurement = (
         
         await new Promise<void>(resolve => {
           titleRoot.render(
-            <div
-              style={{
+            React.createElement('div', {
+              style: {
                 fontSize: `${layout.allergens.title.fontSize}px`,
                 fontFamily: layout.allergens.title.fontFamily,
                 color: layout.allergens.title.fontColor,
@@ -94,10 +94,8 @@ export const useAllergensPreRenderMeasurement = (
                 marginBottom: `${layout.allergens.title.margin.bottom}mm`,
                 marginLeft: `${layout.allergens.title.margin.left}mm`,
                 marginRight: `${layout.allergens.title.margin.right}mm`
-              }}
-            >
-              {layout.allergens.title.text || 'Allergeni e Intolleranze'}
-            </div>
+              }
+            }, layout.allergens.title.text || 'Allergeni e Intolleranze')
           );
           setTimeout(resolve, 150);
         });
@@ -119,8 +117,8 @@ export const useAllergensPreRenderMeasurement = (
         
         await new Promise<void>(resolve => {
           descRoot.render(
-            <div
-              style={{
+            React.createElement('div', {
+              style: {
                 fontSize: `${layout.allergens.description.fontSize}px`,
                 fontFamily: layout.allergens.description.fontFamily,
                 color: layout.allergens.description.fontColor,
@@ -131,10 +129,8 @@ export const useAllergensPreRenderMeasurement = (
                 marginBottom: `${layout.allergens.description.margin.bottom}mm`,
                 marginLeft: `${layout.allergens.description.margin.left}mm`,
                 marginRight: `${layout.allergens.description.margin.right}mm`
-              }}
-            >
-              {layout.allergens.description.text || 'Lista completa degli allergeni presenti nei nostri prodotti'}
-            </div>
+              }
+            }, layout.allergens.description.text || 'Lista completa degli allergeni presenti nei nostri prodotti')
           );
           setTimeout(resolve, 150);
         });
@@ -156,10 +152,10 @@ export const useAllergensPreRenderMeasurement = (
         
         await new Promise<void>(resolve => {
           allergenRoot.render(
-            <AllergenItem
-              allergen={allergen}
-              layout={layout}
-            />
+            React.createElement(AllergenItem, {
+              allergen: allergen,
+              layout: layout
+            })
           );
           setTimeout(resolve, 150);
         });
@@ -183,11 +179,11 @@ export const useAllergensPreRenderMeasurement = (
         
         await new Promise<void>(resolve => {
           featureRoot.render(
-            <ProductFeatureItem
-              feature={feature}
-              layout={layout}
-              isFirst={i === 0}
-            />
+            React.createElement(ProductFeatureItem, {
+              feature: feature,
+              layout: layout,
+              isFirst: i === 0
+            })
           );
           setTimeout(resolve, 150);
         });
