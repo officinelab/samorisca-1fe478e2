@@ -7,7 +7,7 @@ import {
   Image, 
   Type, 
   StickyNote, 
-  Spacing, 
+  Layout, 
   DollarSign, 
   AlertTriangle, 
   Star,
@@ -42,7 +42,7 @@ const PrintLayoutEditorSidebar: React.FC<PrintLayoutEditorSidebarProps> = ({
     { key: "elementi" as const, label: "Elementi", icon: Type },
     { key: "notecategorie" as const, label: "Note Categorie", icon: StickyNote },
     { key: "interruzionipagina" as const, label: "Interruzioni di Pagina", icon: FileX },
-    { key: "spaziatura" as const, label: "Spaziatura", icon: Spacing },
+    { key: "spaziatura" as const, label: "Spaziatura", icon: Layout },
     { key: "prezzoservizio" as const, label: "Prezzo Servizio", icon: DollarSign },
     { key: "allergeni" as const, label: "Allergeni", icon: AlertTriangle },
     { key: "caratteristicheprodotto" as const, label: "Caratteristiche Prodotto", icon: Star }

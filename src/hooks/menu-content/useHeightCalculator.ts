@@ -5,32 +5,22 @@ import { CategoryNote } from '@/types/categoryNotes';
 import { calculateCategoryTitleHeight, calculateCategoryNoteHeight } from './calculators/categoryCalculator';
 import { calculateProductHeight } from './calculators/productCalculator';
 import { calculateServiceLineHeight } from './calculators/serviceCalculator';
-import { calculateHeights } from './calculators/heightBatchCalculator';
-
-interface HeightCalculation {
-  categoryTitle: number;
-  categoryNote: number;
-  product: number;
-  serviceLine: number;
-}
 
 export const useHeightCalculator = (layout: PrintLayout | null) => {
+  const calculateCategoryHeight = (category: Category, notes: CategoryNote[], currentLayout: PrintLayout) => {
+    const titleHeight = calculateCategoryTitleHeight(category, currentLayout);
+    const notesHeight = notes.reduce((total, note) => {
+      return total + calculateCategoryNoteHeight(note, currentLayout);
+    }, 0);
+    return titleHeight + notesHeight;
+  };
+
   return {
-    calculateCategoryTitleHeight: (category: Category) => calculateCategoryTitleHeight(category, layout),
-    calculateCategoryNoteHeight: (note: CategoryNote) => calculateCategoryNoteHeight(note, layout),
-    calculateProductHeight: (product: Product) => calculateProductHeight(product, layout),
-    calculateServiceLineHeight: () => calculateServiceLineHeight(layout),
-    calculateHeights: (
-      categories: Category[],
-      productsByCategory: Record<string, Product[]>,
-      categoryNotes: CategoryNote[],
-      categoryNotesRelations: Record<string, string[]>
-    ): HeightCalculation[] => calculateHeights(
-      categories,
-      productsByCategory,
-      categoryNotes,
-      categoryNotesRelations,
-      layout
-    )
+    calculateCategoryTitleHeight: (category: Category, currentLayout: PrintLayout) => calculateCategoryTitleHeight(category, currentLayout),
+    calculateCategoryNoteHeight: (note: CategoryNote, currentLayout: PrintLayout) => calculateCategoryNoteHeight(note, currentLayout),
+    calculateProductHeight: (product: Product, currentLayout: PrintLayout) => calculateProductHeight(product, currentLayout),
+    calculateServiceLineHeight: (currentLayout: PrintLayout) => calculateServiceLineHeight(currentLayout),
+    calculateCategoryHeight,
+    isLoading: false
   };
 };

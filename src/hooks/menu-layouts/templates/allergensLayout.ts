@@ -255,5 +255,6 @@ export const allergensLayout: PrintLayout = {
       marginBottom: 20,
       marginLeft: 15
     }
-  }
+  },
+  pageBreaks: { categoryIds: [] }
 };

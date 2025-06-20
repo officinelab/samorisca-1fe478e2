@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { Category, Product } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
@@ -27,12 +26,9 @@ export const useMenuPagination = (
   const [isLoadingMeasurements, setIsLoadingMeasurements] = useState(false);
   
   const { 
-    categoryHeights,
-    productHeights,
-    serviceChargeHeight,
     calculateCategoryHeight,
     calculateProductHeight,
-    calculateServiceChargeHeight,
+    calculateServiceLineHeight,
     isLoading: isCalculating
   } = useHeightCalculator(layout);
 
@@ -159,9 +155,7 @@ export const useMenuPagination = (
     serviceCoverCharge,
     layout,
     calculateCategoryHeight,
-    calculateProductHeight,
-    categoryHeights,
-    productHeights
+    calculateProductHeight
   ]);
 
   return {
