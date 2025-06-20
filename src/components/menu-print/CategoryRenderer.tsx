@@ -24,7 +24,8 @@ const CategoryRenderer: React.FC<CategoryRendererProps> = ({
     categoryFontSize: dimensions.css.categoryFontSize,
     categoryMargins: dimensions.cssMargins.category,
     hasNotes: notes.length > 0,
-    isRepeated: isRepeatedTitle
+    isRepeated: isRepeatedTitle,
+    notesConfig: layout.categoryNotes
   });
 
   // Non mostrare nulla se è un titolo ripetuto
@@ -94,13 +95,16 @@ const CategoryRenderer: React.FC<CategoryRendererProps> = ({
                 <div
                   className="note-title"
                   style={{
-                    fontSize: `${dimensions.css.categoryFontSize * 0.9}px`, // Leggermente più piccolo del titolo categoria
+                    fontSize: `${layout.categoryNotes.title.fontSize}pt`,
                     fontFamily: layout.categoryNotes.title.fontFamily,
                     color: layout.categoryNotes.title.fontColor,
                     fontWeight: layout.categoryNotes.title.fontStyle === 'bold' ? 'bold' : 'normal',
                     fontStyle: layout.categoryNotes.title.fontStyle === 'italic' ? 'italic' : 'normal',
                     textAlign: layout.categoryNotes.title.alignment as any,
+                    marginTop: `${layout.categoryNotes.title.margin.top}mm`,
+                    marginRight: `${layout.categoryNotes.title.margin.right}mm`,
                     marginBottom: `${layout.categoryNotes.title.margin.bottom}mm`,
+                    marginLeft: `${layout.categoryNotes.title.margin.left}mm`,
                     lineHeight: 1.4
                   }}
                 >
@@ -111,12 +115,16 @@ const CategoryRenderer: React.FC<CategoryRendererProps> = ({
                 <div
                   className="note-text"
                   style={{
-                    fontSize: `${dimensions.css.descriptionFontSize * 0.95}px`, // Simile alla descrizione prodotto
+                    fontSize: `${layout.categoryNotes.text.fontSize}pt`,
                     fontFamily: layout.categoryNotes.text.fontFamily,
                     color: layout.categoryNotes.text.fontColor,
                     fontWeight: layout.categoryNotes.text.fontStyle === 'bold' ? 'bold' : 'normal',
                     fontStyle: layout.categoryNotes.text.fontStyle === 'italic' ? 'italic' : 'normal',
                     textAlign: layout.categoryNotes.text.alignment as any,
+                    marginTop: `${layout.categoryNotes.text.margin.top}mm`,
+                    marginRight: `${layout.categoryNotes.text.margin.right}mm`,
+                    marginBottom: `${layout.categoryNotes.text.margin.bottom}mm`,
+                    marginLeft: `${layout.categoryNotes.text.margin.left}mm`,
                     lineHeight: 1.5
                   }}
                 >

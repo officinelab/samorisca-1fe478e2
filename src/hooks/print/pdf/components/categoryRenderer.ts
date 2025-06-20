@@ -36,7 +36,7 @@ export const addCategoryToPdf = (
   return textHeight + dimensions.spacing.categoryTitleBottomMargin;
 };
 
-// Category notes renderer IDENTICO all'anteprima con supporto icone
+// Category notes renderer IDENTICO all'anteprima con configurazione corretta
 export const addCategoryNotesToPdf = async (
   pdf: jsPDF,
   notes: CategoryNote[],
@@ -47,10 +47,13 @@ export const addCategoryNotesToPdf = async (
 ): Promise<number> => {
   if (notes.length === 0) return 0;
   
-  const dimensions = getStandardizedDimensions(layout);
   let currentY = y;
   
-  console.log('📝 PDF Category notes rendering - IDENTICO anteprima:', notes.length, 'notes');
+  console.log('📝 PDF Category notes rendering - Con configurazione corretta:', notes.length, 'notes', {
+    titleConfig: layout.categoryNotes.title,
+    textConfig: layout.categoryNotes.text,
+    iconConfig: layout.categoryNotes.icon
+  });
   
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i];
@@ -65,10 +68,9 @@ export const addCategoryNotesToPdf = async (
       textMaxWidth -= (iconSizeMm + 3);
     }
     
-    // Note title - Font size relativo al category title
-    const titleFontSize = dimensions.pdf.categoryFontSize * 0.9; // 90% del titolo categoria
+    // Note title - Usa configurazione corretta
     const titleHeight = addStyledText(pdf, note.title, noteX, currentY, {
-      fontSize: titleFontSize,
+      fontSize: layout.categoryNotes.title.fontSize, // Usa configurazione diretta
       fontFamily: layout.categoryNotes.title.fontFamily,
       fontStyle: layout.categoryNotes.title.fontStyle,
       fontColor: layout.categoryNotes.title.fontColor,
@@ -78,10 +80,9 @@ export const addCategoryNotesToPdf = async (
     
     currentY += titleHeight + layout.categoryNotes.title.margin.bottom;
     
-    // Note text - Font size relativo alla descrizione
-    const textFontSize = dimensions.pdf.descriptionFontSize * 0.95; // 95% della descrizione
+    // Note text - Usa configurazione corretta
     const textHeight = addStyledText(pdf, note.text, noteX, currentY, {
-      fontSize: textFontSize,
+      fontSize: layout.categoryNotes.text.fontSize, // Usa configurazione diretta
       fontFamily: layout.categoryNotes.text.fontFamily,
       fontStyle: layout.categoryNotes.text.fontStyle,
       fontColor: layout.categoryNotes.text.fontColor,

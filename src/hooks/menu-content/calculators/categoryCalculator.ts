@@ -58,31 +58,31 @@ export const calculateCategoryNoteHeight = (note: CategoryNote, layout: PrintLay
   
   const textAvailableWidthPx = (availableWidthMm - iconWidthMm) * MM_TO_PX;
   
-  // Calcola altezza del titolo
-  const titleFontSizePx = noteConfig.title.fontSize * 1.333;
+  // Calcola altezza del titolo usando la configurazione corretta
+  const titleFontSizePx = noteConfig.title.fontSize * 1.333; // pt to px
   const titleHeightPx = calculateTextHeight(
     note.title,
     titleFontSizePx,
     noteConfig.title.fontFamily,
     textAvailableWidthPx,
-    1.3
+    1.4
   );
 
-  // Calcola altezza del testo
-  const textFontSizePx = noteConfig.text.fontSize * 1.333;
+  // Calcola altezza del testo usando la configurazione corretta
+  const textFontSizePx = noteConfig.text.fontSize * 1.333; // pt to px
   const textHeightPx = calculateTextHeight(
     note.text,
     textFontSizePx,
     noteConfig.text.fontFamily,
     textAvailableWidthPx,
-    1.4
+    1.5
   );
 
   // Converti in mm
   const titleHeightMm = titleHeightPx / MM_TO_PX;
   const textHeightMm = textHeightPx / MM_TO_PX;
   
-  // Somma tutte le altezze
+  // Somma tutte le altezze usando i margini corretti dalla configurazione
   const titleMarginMm = noteConfig.title.margin.top + noteConfig.title.margin.bottom;
   const textMarginMm = noteConfig.text.margin.top + noteConfig.text.margin.bottom;
   
