@@ -11,7 +11,7 @@ import { PrintLayout, PrintLayoutElementConfig, ProductFeaturesConfig } from "@/
 interface ProductFeaturesTabProps {
   layout: PrintLayout;
   onProductFeaturesIconChange: (field: keyof ProductFeaturesConfig["icon"], value: number) => void;
-  onProductFeaturesTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  onProductFeaturesTitleChange: (field: keyof PrintLayoutElementConfig | 'text', value: any) => void;
   onProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
 }
 
