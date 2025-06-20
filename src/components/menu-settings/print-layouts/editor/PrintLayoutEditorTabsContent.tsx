@@ -1,11 +1,13 @@
 
 import React from "react";
 import { PageMargins, PrintLayout } from "@/types/printLayout";
+import { Category } from "@/types/database";
 import GeneralTab from "./GeneralTab";
 import PageSettingsTab from "./PageSettingsTab";
 import CoverLayoutTab from "./CoverLayoutTab";
 import ElementsTab from "./ElementsTab";
 import CategoryNotesTab from "./CategoryNotesTab";
+import PageBreaksTab from "./PageBreaksTab";
 import SpacingTab from "./SpacingTab";
 import ServicePriceTab from "./ServicePriceTab";
 import AllergensLayoutTab from "./AllergensLayoutTab";
@@ -15,6 +17,7 @@ import SaveLayoutSection from "./components/SaveLayoutSection";
 interface PrintLayoutEditorTabsContentProps {
   activeTab: string;
   editedLayout: PrintLayout;
+  categories?: Category[];
   handleGeneralChange: (field: string, value: any) => void;
   handleElementChange: (elementKey: keyof PrintLayout["elements"], field: string, value: any) => void;
   handleElementMarginChange: (elementKey: keyof PrintLayout["elements"], marginKey: keyof PrintLayout["elements"]["title"]["margin"], value: number) => void;
@@ -48,6 +51,7 @@ interface PrintLayoutEditorTabsContentProps {
   handleProductFeaturesIconChange: (field: string, value: number) => void;
   handleProductFeaturesTitleChange: (field: string, value: any) => void;
   handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayout["productFeatures"]["title"]["margin"], value: number) => void;
+  handlePageBreaksChange: (categoryIds: string[]) => void;
   handleServicePriceChange: (field: string, value: any) => void;
   handleServicePriceMarginChange: (marginKey: keyof PrintLayout["servicePrice"]["margin"], value: number) => void;
   handleCoverMarginChange: (field: string, value: number) => void;
@@ -60,7 +64,7 @@ interface PrintLayoutEditorTabsContentProps {
 }
 
 const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> = (props) => {
-  const { activeTab } = props;
+  const { activeTab, categories = [] } = props;
 
   return (
     <div className="p-6 space-y-6">
@@ -82,7 +86,7 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
           onAllergensMarginChange={props.handleAllergensMarginChange}
           onAllergensOddPageMarginChange={props.handleAllergensOddPageMarginChange}
           onAllergensEvenPageMarginChange={props.handleAllergensEvenPageMarginChange}
-          onToggleDistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
+          onToggle DistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
         />
       )}
 
@@ -114,6 +118,14 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
           onCategoryNotesTitleMarginChange={props.handleCategoryNotesTitleMarginChange}
           onCategoryNotesTextChange={props.handleCategoryNotesTextChange}
           onCategoryNotesTextMarginChange={props.handleCategoryNotesTextMarginChange}
+        />
+      )}
+
+      {activeTab === "interruzionipagina" && (
+        <PageBreaksTab
+          layout={props.editedLayout}
+          categories={categories}
+          onPageBreaksChange={props.handlePageBreaksChange}
         />
       )}
 

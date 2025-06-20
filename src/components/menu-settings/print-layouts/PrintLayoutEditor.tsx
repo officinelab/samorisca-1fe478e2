@@ -1,8 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
+import { Category } from "@/types/database";
 import { useLayoutEditor } from "./editor/hooks/useLayoutEditor";
+import { supabase } from "@/integrations/supabase/client";
 import PrintLayoutEditorSidebar from "./editor/PrintLayoutEditorSidebar";
 import PrintLayoutEditorHeader from "./editor/PrintLayoutEditorHeader";
 import PrintLayoutEditorTabsContent from "./editor/PrintLayoutEditorTabsContent";
@@ -18,12 +20,38 @@ type TabKey =
   | "copertina"
   | "elementi"
   | "notecategorie"
+  | "interruzionipagina"
   | "spaziatura"
   | "prezzoservizio"
   | "allergeni"
   | "caratteristicheprodotto";
 
 const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // Load categories for page breaks functionality
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
   const {
     editedLayout,
     activeTab,
@@ -61,6 +89,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
     handleProductFeaturesTitleMarginChange,
+    handlePageBreaksChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,
     handleCoverMarginChange,
@@ -126,6 +155,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
             <PrintLayoutEditorTabsContent
               activeTab={activeTab as TabKey}
               editedLayout={editedLayout}
+              categories={categories}
               handleGeneralChange={handleGeneralChange}
               handleElementChange={handleElementChange}
               handleElementMarginChange={handleElementMarginChange}
@@ -159,6 +189,7 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleProductFeaturesIconChange={handleProductFeaturesIconChange}
               handleProductFeaturesTitleChange={handleProductFeaturesTitleChange}
               handleProductFeaturesTitleMarginChange={handleProductFeaturesTitleMarginChange}
+              handlePageBreaksChange={handlePageBreaksChange}
               handleServicePriceChange={handleServicePriceChange}
               handleServicePriceMarginChange={handleServicePriceMarginChange}
               handleCoverMarginChange={handleCoverMarginChange}

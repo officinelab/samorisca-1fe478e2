@@ -8,6 +8,7 @@ import { useCoverTab } from "./useCoverTab";
 import { useAllergensTab } from "./useAllergensTab";
 import { useCategoryNotesTab } from "./useCategoryNotesTab";
 import { useProductFeaturesTab } from "./useProductFeaturesTab";
+import { usePageBreaksTab } from "./usePageBreaksTab";
 import { useSpacingTab } from "./useSpacingTab";
 import { usePageSettingsTab } from "./usePageSettingsTab";
 import { useCoverMarginsTab } from "./useCoverMarginsTab";
@@ -89,6 +90,11 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
     handleProductFeaturesTitleMarginChange
   } = useProductFeaturesTab(setEditedLayout);
 
+  // Page Breaks (new section)
+  const {
+    handlePageBreaksChange
+  } = usePageBreaksTab(setEditedLayout);
+
   // Service Price tab
   const {
     handleServicePriceChange,
@@ -159,6 +165,7 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
     handleProductFeaturesIconChange,
     handleProductFeaturesTitleChange,
     handleProductFeaturesTitleMarginChange,
+    handlePageBreaksChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,
     handleCoverMarginChange,
