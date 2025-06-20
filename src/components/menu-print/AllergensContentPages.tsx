@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAllergensData } from '@/hooks/menu-content/useAllergensData';
@@ -15,8 +14,11 @@ const AllergensContentPages: React.FC<AllergensContentPagesProps> = ({
   showMargins, 
   layoutRefreshKey = 0 
 }) => {
-  const { allergens, productFeatures, activeLayout, isLoading, error } = useAllergensData();
+  const { allergens, productFeatures, activeLayout, isLoading: dataLoading, error } = useAllergensData();
   const { pages, totalPages } = useAllergensPagination(allergens, productFeatures, activeLayout);
+
+  // Il loading ora include anche le misurazioni degli elementi
+  const isLoading = dataLoading;
 
   if (isLoading) {
     return (
@@ -30,7 +32,9 @@ const AllergensContentPages: React.FC<AllergensContentPagesProps> = ({
         <CardContent>
           <div className="flex items-center justify-center p-8">
             <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <div className="text-muted-foreground">Caricamento allergeni e caratteristiche...</div>
+            <div className="text-muted-foreground">
+              Caricamento e misurazione elementi...
+            </div>
           </div>
         </CardContent>
       </Card>
