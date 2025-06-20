@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
@@ -8,23 +7,13 @@ import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
-  layoutRefreshKey?: number;
+  layoutRefreshKey?: number; // Opzionale, passato dal componente padre
 }
 
 const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layoutRefreshKey = 0 }) => {
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const [lastProcessedLayoutKey, setLastProcessedLayoutKey] = useState(0);
-  const [cachedPages, setCachedPages] = useState<any[]>([]);
-  const [shouldRecalculate, setShouldRecalculate] = useState(false);
   
-  // Check if we need to recalculate based on layout changes
-  useEffect(() => {
-    if (layoutRefreshKey > lastProcessedLayoutKey) {
-      setShouldRecalculate(true);
-      setLastProcessedLayoutKey(layoutRefreshKey);
-    }
-  }, [layoutRefreshKey, lastProcessedLayoutKey]);
-  
+  // Il refresh totale è la somma delle due chiavi
   const totalRefreshKey = layoutRefreshKey + localRefreshKey;
   
   const { data, isLoading: isLoadingData, error } = useMenuContentData();
@@ -37,6 +26,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     activeLayout
   } = data;
 
+  // Usa il totalRefreshKey per forzare la re-creazione del hook di paginazione
   const paginationKey = `${totalRefreshKey}-${activeLayout?.id || 'no-layout'}`;
   
   const { createPages, isLoadingMeasurements } = useMenuPagination(
@@ -48,11 +38,11 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     activeLayout
   );
 
-  // Listen for layout updates
+  // Ascolta gli eventi di aggiornamento layout
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
       console.log('📐 MenuContentPages: Layout aggiornato, forzo re-render locale...', event.detail);
-      setShouldRecalculate(true);
+      // Forza re-render locale
       setLocalRefreshKey(prev => prev + 1);
     };
 
@@ -63,26 +53,24 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     };
   }, []);
 
-  // Cache pages when measurements are complete
-  useEffect(() => {
-    if (!isLoadingMeasurements && !isLoadingData && shouldRecalculate) {
-      const pages = createPages();
-      setCachedPages(pages);
-      setShouldRecalculate(false);
-      console.log('📄 Pages cached:', pages.length);
-    }
-  }, [isLoadingMeasurements, isLoadingData, shouldRecalculate, createPages]);
-
-  const isLoading = isLoadingData || (isLoadingMeasurements && shouldRecalculate);
+  const isLoading = isLoadingData || isLoadingMeasurements;
 
   if (isLoadingData) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin" />
-          <div className="text-lg font-semibold">Caricamento contenuto menu...</div>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            Pagine Contenuto del Menu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <div className="text-muted-foreground">Caricamento contenuto menu...</div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -122,21 +110,28 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     );
   }
 
-  if (isLoading) {
+  if (isLoadingMeasurements) {
     return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin" />
-          <div className="text-lg font-semibold">Calcolo altezze reali degli elementi...</div>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            Pagine Contenuto del Menu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <div className="text-muted-foreground">Calcolo altezze reali degli elementi...</div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  // Use cached pages if available, otherwise create new ones
-  const pages = cachedPages.length > 0 ? cachedPages : createPages();
+  const pages = createPages();
 
-  if (pages.length === 0) {
+  if (pages.length === 0 && !isLoading) {
     return (
       <Card>
         <CardHeader>

@@ -3,8 +3,8 @@ import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
-import CategoryRenderer from './CategoryRenderer';
 import ProductRenderer from './ProductRenderer';
+import CategoryRenderer from './CategoryRenderer';
 
 interface PageContent {
   pageNumber: number;
@@ -30,7 +30,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
 }) => {
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
-  
+
   const getPageMargins = () => {
     const margins = layout.page;
     let topMargin = margins.marginTop;
@@ -39,7 +39,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
     let leftMargin = margins.marginLeft;
 
     // Check if using distinct margins for odd/even pages
-    if (margins.useDistinctMarginsForPages && page.pageNumber > 2) {
+    if (margins.useDistinctMarginsForPages && page.pageNumber > 1) {
       if (page.pageNumber % 2 === 1) { // Odd page
         topMargin = margins.oddPages.marginTop;
         rightMargin = margins.oddPages.marginRight;
@@ -53,29 +53,21 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
       }
     }
 
-    return {
-      top: topMargin,
-      right: rightMargin,
-      bottom: bottomMargin,
-      left: leftMargin
-    };
+    return { topMargin, rightMargin, bottomMargin, leftMargin };
   };
 
-  const pageMargins = getPageMargins();
-  
+  const { topMargin, rightMargin, bottomMargin, leftMargin } = getPageMargins();
+
   const getPageStyle = () => ({
     width: `${A4_WIDTH_MM}mm`,
     height: `${A4_HEIGHT_MM}mm`,
-    padding: `${pageMargins.top}mm ${pageMargins.right}mm ${pageMargins.bottom}mm ${pageMargins.left}mm`,
+    padding: `${topMargin}mm ${rightMargin}mm ${bottomMargin}mm ${leftMargin}mm`,
     boxSizing: 'border-box' as const,
     margin: '0 auto 30px auto',
     border: showMargins ? '2px solid #e2e8f0' : '1px solid #e2e8f0',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    boxShadow: showMargins ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0,0,0,0.03)',
     position: 'relative' as const,
-    backgroundColor: 'white',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    overflow: 'hidden'
+    backgroundColor: 'white'
   });
 
   const getMarginsOverlay = () => {
@@ -90,7 +82,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: `${pageMargins.top}mm`,
+            height: `${topMargin}mm`,
             borderBottom: '2px dashed red',
             pointerEvents: 'none'
           }}
@@ -102,7 +94,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             top: 0,
             right: 0,
             bottom: 0,
-            width: `${pageMargins.right}mm`,
+            width: `${rightMargin}mm`,
             borderLeft: '2px dashed red',
             pointerEvents: 'none'
           }}
@@ -114,7 +106,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             bottom: 0,
             left: 0,
             right: 0,
-            height: `${pageMargins.bottom}mm`,
+            height: `${bottomMargin}mm`,
             borderTop: '2px dashed red',
             pointerEvents: 'none'
           }}
@@ -126,7 +118,7 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             top: 0,
             left: 0,
             bottom: 0,
-            width: `${pageMargins.left}mm`,
+            width: `${leftMargin}mm`,
             borderRight: '2px dashed red',
             pointerEvents: 'none'
           }}
@@ -135,72 +127,79 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
     );
   };
 
-  // Show service charge only on odd pages
-  const shouldShowServiceCharge = page.pageNumber % 2 === 1;
-
-  const getServiceChargeStyle = () => ({
-    marginTop: `${layout.servicePrice.margin.top}mm`,
-    marginRight: `${layout.servicePrice.margin.right}mm`,
-    marginBottom: `${layout.servicePrice.margin.bottom}mm`,
-    marginLeft: `${layout.servicePrice.margin.left}mm`,
-    fontSize: `${layout.servicePrice.fontSize}pt`,
-    fontFamily: layout.servicePrice.fontFamily,
-    fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
-    fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
-    color: layout.servicePrice.fontColor,
-    textAlign: layout.servicePrice.alignment as any,
-    padding: '3mm 0'
-  });
-
   return (
-    <div className="pdf-page-preview menu-content-page-preview" style={getPageStyle()}>
-      {getMarginsOverlay()}
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-4">
+        Pagina {page.pageNumber} - Contenuto Menu
+      </h3>
       
-      {/* Page number badge - only visible in preview */}
-      {showMargins && (
-        <div 
-          className="absolute top-3 left-3 px-4 py-2 bg-green-50 text-green-700 text-sm font-bold rounded shadow border border-green-300"
-          style={{zIndex: 100}}
-        >
-          Pagina {page.pageNumber}
-        </div>
-      )}
-      
-      {/* Content container */}
-      <div className="flex-1 flex flex-col">
-        {/* Categories content */}
-        <div className="flex-1">
-          {page.categories.map((categoryData, index) => (
-            <div key={`${categoryData.category.id}-${index}`}>
-              {/* Category title and notes */}
-              <CategoryRenderer
-                category={categoryData.category}
-                notes={categoryData.notes}
-                layout={layout}
-                isRepeatedTitle={categoryData.isRepeatedTitle}
-              />
-              
-              {/* Products for this category */}
-              {categoryData.products.map((product, productIndex) => (
-                <ProductRenderer
-                  key={`${product.id}-${productIndex}`}
-                  product={product}
-                  layout={layout}
-                  addSpacing={productIndex > 0}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+      <div 
+        className="page menu-content-page bg-white relative overflow-hidden"
+        style={getPageStyle()}
+      >
+        {getMarginsOverlay()}
         
-        {/* Service charge - only on odd pages */}
-        {shouldShowServiceCharge && layout.servicePrice.visible && (
-          <div className="mt-auto">
-            <div style={getServiceChargeStyle()}>
-              Servizio e coperto €{page.serviceCharge.toFixed(2)}
-            </div>
+        {/* Page number badge for preview */}
+        {showMargins && (
+          <div 
+            className="absolute top-3 left-3 px-4 py-2 bg-green-50 text-green-700 text-sm font-bold rounded shadow border border-green-300"
+            style={{zIndex: 100}}
+          >
+            Pagina {page.pageNumber}
           </div>
         )}
+
+        {/* Content area */}
+        <div className="h-full flex flex-col">
+          {/* Main content */}
+          <div className="flex-1 overflow-hidden">
+            {page.categories.map((categorySection, categoryIndex) => (
+              <div key={`${categorySection.category.id}-${categoryIndex}`}>
+                {/* Category title and notes */}
+                <CategoryRenderer
+                  category={categorySection.category}
+                  notes={categorySection.notes}
+                  layout={layout}
+                  isRepeatedTitle={categorySection.isRepeatedTitle}
+                />
+                
+                {/* Products for this category */}
+                <div className="space-y-1">
+                  {categorySection.products.map((product, productIndex) => (
+                    <ProductRenderer
+                      key={product.id}
+                      product={product}
+                      layout={layout}
+                      isLast={productIndex === categorySection.products.length - 1}
+                    />
+                  ))}
+                </div>
+
+                {/* Spacing between categories */}
+                {categoryIndex < page.categories.length - 1 && (
+                  <div style={{ height: `${layout.spacing.betweenCategories}mm` }} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Service charge line at bottom */}
+          <div 
+            className="flex-shrink-0 border-t pt-2"
+            style={{
+              fontSize: `${layout.servicePrice.fontSize}pt`,
+              fontFamily: layout.servicePrice.fontFamily,
+              color: layout.servicePrice.fontColor,
+              fontWeight: layout.servicePrice.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: layout.servicePrice.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: layout.servicePrice.alignment as any,
+              marginTop: `${layout.servicePrice.margin.top}mm`,
+              marginBottom: `${layout.servicePrice.margin.bottom}mm`
+            }}
+          >
+            Servizio e Coperto = €{page.serviceCharge.toFixed(2)}
+          </div>
+        </div>
       </div>
     </div>
   );
