@@ -20,7 +20,13 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   let totalHeightMm = 0;
   const pageConfig = layout.page;
   
-  console.log('🔧 ProductCalculator PRECISO - Schema 1 (90%/10%):', product.title);
+  console.log('🔧 ProductCalculator con Schema 1 (90%/10%) - AGGIORNATO:', product.title);
+  console.log('🔧 ProductCalculator - Dimensioni standardizzate:', {
+    titleFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.title.fontSize,
+    descriptionFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.description.fontSize,
+    iconSizeMm: dimensions.icons.heightMm,
+    spacing: dimensions.spacing.betweenProducts
+  });
   
   // ✅ CORREZIONE: Usa 90% come nell'anteprima corretta e Schema 1
   const pageWidthMm = 210; // A4 width
@@ -29,29 +35,14 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   const contentWidthMm = pageWidthMm - leftMargin - rightMargin;
   const productDetailsWidthMm = contentWidthMm * 0.90; // ✅ 90% (Schema 1 corretto)
   const productDetailsWidthPx = productDetailsWidthMm * CONVERSIONS.MM_TO_PX;
+  
+  console.log('🔧 ProductCalculator Schema 1 dimensioni CORRETTE:', {
+    contentWidthMm: contentWidthMm.toFixed(1),
+    productDetailsWidthMm: productDetailsWidthMm.toFixed(1),
+    schema: 'Schema 1 (90%/10%) - AGGIORNATO'
+  });
 
-  // MARGINI NASCOSTI - Fattori di correzione specifici
-  const HIDDEN_FACTORS = {
-    // Margini CSS impliciti del browser
-    browserDefaultMargins: 1.2,
-    
-    // Line-height che crea spazio extra non calcolato
-    lineHeightDiscrepancy: 0.8,
-    
-    // Font rendering differences tra calcolo e realtà
-    fontRenderingBuffer: 1.0,
-    
-    // Margin collapse imprevisto
-    marginCollapseBuffer: 0.5,
-    
-    // Padding interno degli elementi
-    elementInternalPadding: 0.7,
-    
-    // Arrotondamenti CSS
-    cssRoundingLoss: 0.3
-  };
-
-  // Calcola altezza del titolo con conversioni standardizzate + correzioni
+  // Calcola altezza del titolo con conversioni standardizzate
   if (layout.elements.title?.visible !== false) {
     const titleFontSizePx = dimensions.css.titleFontSize;
     const titleHeightPx = calculateTextHeight(
@@ -63,21 +54,16 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     );
     const titleHeightMm = titleHeightPx * CONVERSIONS.PX_TO_MM;
     const titleMarginMm = layout.elements.title.margin.top + layout.elements.title.margin.bottom;
+    totalHeightMm += titleHeightMm + titleMarginMm;
     
-    // Aggiungi margini nascosti al titolo
-    const titleHiddenMargins = HIDDEN_FACTORS.browserDefaultMargins + HIDDEN_FACTORS.fontRenderingBuffer;
-    totalHeightMm += titleHeightMm + titleMarginMm + titleHiddenMargins;
-    
-    console.log('🔧 Title height PRECISO:', {
+    console.log('🔧 Title height:', {
       titleHeightPx: titleHeightPx.toFixed(1),
       titleHeightMm: titleHeightMm.toFixed(1),
-      titleMarginMm,
-      hiddenMargins: titleHiddenMargins.toFixed(2),
-      totalWithHidden: (titleHeightMm + titleMarginMm + titleHiddenMargins).toFixed(2)
+      titleMarginMm
     });
   }
 
-  // Calcola altezza della descrizione italiana + correzioni
+  // Calcola altezza della descrizione italiana
   if (product.description && layout.elements.description?.visible !== false) {
     const descFontSizePx = dimensions.css.descriptionFontSize;
     const descHeightPx = calculateTextHeight(
@@ -89,26 +75,16 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     );
     const descHeightMm = descHeightPx * CONVERSIONS.PX_TO_MM;
     const descMarginMm = layout.elements.description.margin.top + layout.elements.description.margin.bottom;
+    totalHeightMm += descHeightMm + descMarginMm;
     
-    // Margini nascosti per descrizioni (più alti per testi lunghi)
-    const isLongDescription = product.description.length > 100;
-    const descHiddenMargins = HIDDEN_FACTORS.lineHeightDiscrepancy + 
-                             HIDDEN_FACTORS.elementInternalPadding + 
-                             (isLongDescription ? 2 : 0); // Extra per descrizioni lunghe
-    
-    totalHeightMm += descHeightMm + descMarginMm + descHiddenMargins;
-    
-    console.log('🔧 Description height PRECISO:', {
+    console.log('🔧 Description height:', {
       descHeightPx: descHeightPx.toFixed(1),
       descHeightMm: descHeightMm.toFixed(1),
-      descMarginMm,
-      isLongDescription,
-      hiddenMargins: descHiddenMargins.toFixed(2),
-      totalWithHidden: (descHeightMm + descMarginMm + descHiddenMargins).toFixed(2)
+      descMarginMm
     });
   }
 
-  // Calcola altezza della descrizione inglese + correzioni
+  // Calcola altezza della descrizione inglese
   if (shouldShowEnglishDescription(product) && layout.elements.descriptionEng?.visible !== false) {
     const descEngFontSizePx = dimensions.css.descriptionEngFontSize;
     const descEngHeightPx = calculateTextHeight(
@@ -120,19 +96,16 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     );
     const descEngHeightMm = descEngHeightPx * CONVERSIONS.PX_TO_MM;
     const descEngMarginMm = layout.elements.descriptionEng.margin.top + layout.elements.descriptionEng.margin.bottom;
+    totalHeightMm += descEngHeightMm + descEngMarginMm;
     
-    const descEngHiddenMargins = HIDDEN_FACTORS.lineHeightDiscrepancy + HIDDEN_FACTORS.elementInternalPadding;
-    totalHeightMm += descEngHeightMm + descEngMarginMm + descEngHiddenMargins;
-    
-    console.log('🔧 Description ENG height PRECISO:', {
+    console.log('🔧 Description ENG height:', {
       descEngHeightPx: descEngHeightPx.toFixed(1),
       descEngHeightMm: descEngHeightMm.toFixed(1),
-      descEngMarginMm,
-      hiddenMargins: descEngHiddenMargins.toFixed(2)
+      descEngMarginMm
     });
   }
   
-  // ✅ LOGICA: Riga combinata allergeni + icone caratteristiche + correzioni
+  // ✅ NUOVA LOGICA: Riga combinata allergeni + icone caratteristiche
   const hasAllergens = product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false;
   const hasFeatures = product.features && product.features.length > 0 && layout.productFeatures?.icon;
   
@@ -160,22 +133,19 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
       combinedRowHeightMm = Math.max(combinedRowHeightMm, iconHeightMm);
     }
     
-    // Margini della riga combinata + correzioni nascoste
+    // Aggiungi margini della riga combinata (usa i margini degli allergeni)
     const combinedRowMarginMm = layout.elements.allergensList.margin.top + layout.elements.allergensList.margin.bottom;
-    const combinedRowHiddenMargins = HIDDEN_FACTORS.elementInternalPadding + HIDDEN_FACTORS.marginCollapseBuffer;
+    totalHeightMm += combinedRowHeightMm + combinedRowMarginMm;
     
-    totalHeightMm += combinedRowHeightMm + combinedRowMarginMm + combinedRowHiddenMargins;
-    
-    console.log('🔧 Combined allergens + features row PRECISO:', {
+    console.log('🔧 Combined allergens + features row height:', {
       combinedRowHeightMm: combinedRowHeightMm.toFixed(1),
       combinedRowMarginMm,
-      hiddenMargins: combinedRowHiddenMargins.toFixed(2),
       hasAllergens,
       hasFeatures
     });
   }
 
-  // Calcola l'altezza della colonna prezzo (10% nel Schema 1) per confronto + correzioni
+  // Calcola l'altezza della colonna prezzo (10% nel Schema 1) per confronto
   let priceColumnHeightMm = 0;
   
   // Prezzo principale
@@ -183,16 +153,14 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     const priceFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.price.fontSize;
     const priceHeightMm = priceFontSizeMm * 1.5;
     const priceMarginMm = layout.elements.price.margin.top + layout.elements.price.margin.bottom;
-    const priceHiddenMargins = HIDDEN_FACTORS.fontRenderingBuffer;
-    priceColumnHeightMm += priceHeightMm + priceMarginMm + priceHiddenMargins;
+    priceColumnHeightMm += priceHeightMm + priceMarginMm;
   }
 
   // Suffisso prezzo
   if (product.has_price_suffix && product.price_suffix) {
     const suffixFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.suffix.fontSize;
     const suffixHeightMm = suffixFontSizeMm * 1.5;
-    const suffixHiddenMargins = HIDDEN_FACTORS.fontRenderingBuffer * 0.5;
-    priceColumnHeightMm += suffixHeightMm + suffixHiddenMargins;
+    priceColumnHeightMm += suffixHeightMm;
   }
 
   // Varianti prezzo
@@ -200,46 +168,30 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     const variantsFontSizeMm = CONVERSIONS.PT_TO_MM * layout.elements.priceVariants.fontSize;
     const variantsLineHeightMm = variantsFontSizeMm * 1.5;
     const variantsMarginMm = layout.elements.priceVariants.margin.top + layout.elements.priceVariants.margin.bottom;
-    const variantsHiddenMargins = HIDDEN_FACTORS.lineHeightDiscrepancy;
     
     let variantLines = 0;
     if (product.price_variant_1_value) variantLines += 1;
     if (product.price_variant_2_value) variantLines += 1;
     
-    priceColumnHeightMm += (variantsLineHeightMm * variantLines) + variantsMarginMm + variantsHiddenMargins;
+    priceColumnHeightMm += (variantsLineHeightMm * variantLines) + variantsMarginMm;
   }
 
   // Usa l'altezza maggiore tra le due colonne
   totalHeightMm = Math.max(totalHeightMm, priceColumnHeightMm);
 
-  // Aggiungi spacing tra prodotti (standardizzato) + correzioni
+  // Aggiungi spacing tra prodotti (standardizzato)
   const spacingMm = layout.spacing?.betweenProducts || 15;
-  const spacingHiddenMargins = HIDDEN_FACTORS.marginCollapseBuffer + HIDDEN_FACTORS.cssRoundingLoss;
-  totalHeightMm += spacingMm + spacingHiddenMargins;
+  totalHeightMm += spacingMm;
 
-  // Buffer di sicurezza AUMENTATO significativamente
-  const safetyBufferMm = 8; // Da 3mm a 8mm
+  // Aggiungi un buffer di sicurezza
+  const safetyBufferMm = 3;
   totalHeightMm += safetyBufferMm;
 
-  // Margini nascosti globali finali
-  const globalHiddenMargins = Object.values(HIDDEN_FACTORS).reduce((sum, factor) => sum + factor, 0);
-  totalHeightMm += globalHiddenMargins;
-
-  console.log('🔧 ProductCalculator - Altezza finale PRECISA con margini nascosti:', {
-    baseHeight: (totalHeightMm - globalHiddenMargins - safetyBufferMm).toFixed(1),
-    hiddenFactors: {
-      browserDefaultMargins: HIDDEN_FACTORS.browserDefaultMargins,
-      lineHeightDiscrepancy: HIDDEN_FACTORS.lineHeightDiscrepancy,
-      fontRenderingBuffer: HIDDEN_FACTORS.fontRenderingBuffer,
-      marginCollapseBuffer: HIDDEN_FACTORS.marginCollapseBuffer,
-      elementInternalPadding: HIDDEN_FACTORS.elementInternalPadding,
-      cssRoundingLoss: HIDDEN_FACTORS.cssRoundingLoss,
-      total: globalHiddenMargins.toFixed(2)
-    },
-    safetyBufferMm,
+  console.log('🔧 ProductCalculator - Altezza finale con Schema 1 AGGIORNATO (allergeni+icone):', {
     totalHeightMm: totalHeightMm.toFixed(1),
     priceColumnHeightMm: priceColumnHeightMm.toFixed(1),
-    spacingMm
+    spacingMm,
+    safetyBufferMm
   });
 
   return totalHeightMm;

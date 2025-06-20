@@ -6,7 +6,6 @@ import { calculateServiceLineHeight } from "@/hooks/menu-content/calculators/ser
 /**
  * Calcola l'altezza disponibile effettiva per il contenuto in una pagina.
  * Gestisce la distinzione pari/dispari con i margini coerenti fra JS e CSS.
- * VERSIONE PRECISA con correzioni per margini nascosti.
  */
 export const calculateAvailableHeight = (
   pageIndex: number,
@@ -50,33 +49,13 @@ export const calculateAvailableHeight = (
   
   let finalAvailableHeight = availableHeightPx;
   
-  // MARGINI NASCOSTI - Fattori che riducono l'altezza disponibile effettiva
-  const HIDDEN_REDUCTION_FACTORS = {
-    // Margini CSS impliciti del browser
-    browserImplicitMargins: 8 * MM_TO_PX, // 8mm di margini browser non visibili
-    
-    // Problemi di rendering del print media
-    printMediaDiscrepancies: 5 * MM_TO_PX, // 5mm di differenze print/screen
-    
-    // Arrotondamenti e perdite di precisione
-    roundingLosses: 3 * MM_TO_PX, // 3mm per arrotondamenti vari
-    
-    // Padding/margin collapse imprevisti
-    unexpectedCollapse: 4 * MM_TO_PX, // 4mm per margin collapse
-    
-    // Buffer finale di sicurezza estrema
-    extremeSafetyBuffer: 6 * MM_TO_PX // 6mm buffer finale
-  };
-  
-  const totalHiddenReduction = Object.values(HIDDEN_REDUCTION_FACTORS).reduce((sum, factor) => sum + factor, 0);
-  
   if (isOddPage) {
     // Solo nelle pagine dispari, sottrai l'altezza del servizio
     const serviceLineHeightMm = calculateServiceLineHeight(customLayout);
     const serviceLineHeightPx = serviceLineHeightMm * MM_TO_PX;
-    finalAvailableHeight = availableHeightPx - serviceLineHeightPx - totalHiddenReduction;
+    finalAvailableHeight = availableHeightPx - serviceLineHeightPx;
     
-    console.log('📐 Calcolo altezza PRECISO pagina DISPARI ' + pageNumber + ':', {
+    console.log('📐 Calcolo altezza disponibile pagina DISPARI ' + pageNumber + ':', {
       A4_HEIGHT_MM,
       topMargin,
       bottomMargin,
@@ -84,39 +63,17 @@ export const calculateAvailableHeight = (
       serviceLineHeightMm: serviceLineHeightMm.toFixed(2),
       availableHeightMm: availableHeightMm.toFixed(2),
       availableHeightPx: availableHeightPx.toFixed(2),
-      hiddenReductions: {
-        browserImplicitMargins: (HIDDEN_REDUCTION_FACTORS.browserImplicitMargins / MM_TO_PX).toFixed(1) + 'mm',
-        printMediaDiscrepancies: (HIDDEN_REDUCTION_FACTORS.printMediaDiscrepancies / MM_TO_PX).toFixed(1) + 'mm',
-        roundingLosses: (HIDDEN_REDUCTION_FACTORS.roundingLosses / MM_TO_PX).toFixed(1) + 'mm',
-        unexpectedCollapse: (HIDDEN_REDUCTION_FACTORS.unexpectedCollapse / MM_TO_PX).toFixed(1) + 'mm',
-        extremeSafetyBuffer: (HIDDEN_REDUCTION_FACTORS.extremeSafetyBuffer / MM_TO_PX).toFixed(1) + 'mm',
-        totalMm: (totalHiddenReduction / MM_TO_PX).toFixed(1) + 'mm',
-        totalPx: totalHiddenReduction.toFixed(2)
-      },
       finalAvailableHeight: finalAvailableHeight.toFixed(2),
-      reductionPercentage: ((totalHiddenReduction / availableHeightPx) * 100).toFixed(1) + '%',
       serviceConfig: customLayout.servicePrice
     });
   } else {
-    finalAvailableHeight = availableHeightPx - totalHiddenReduction;
-    
-    console.log('📐 Calcolo altezza PRECISO pagina PARI ' + pageNumber + ':', {
+    console.log('📐 Calcolo altezza disponibile pagina PARI ' + pageNumber + ':', {
       A4_HEIGHT_MM,
       topMargin,
       bottomMargin,
       availableHeightMm: availableHeightMm.toFixed(2),
       availableHeightPx: availableHeightPx.toFixed(2),
-      hiddenReductions: {
-        browserImplicitMargins: (HIDDEN_REDUCTION_FACTORS.browserImplicitMargins / MM_TO_PX).toFixed(1) + 'mm',
-        printMediaDiscrepancies: (HIDDEN_REDUCTION_FACTORS.printMediaDiscrepancies / MM_TO_PX).toFixed(1) + 'mm',
-        roundingLosses: (HIDDEN_REDUCTION_FACTORS.roundingLosses / MM_TO_PX).toFixed(1) + 'mm',
-        unexpectedCollapse: (HIDDEN_REDUCTION_FACTORS.unexpectedCollapse / MM_TO_PX).toFixed(1) + 'mm',
-        extremeSafetyBuffer: (HIDDEN_REDUCTION_FACTORS.extremeSafetyBuffer / MM_TO_PX).toFixed(1) + 'mm',
-        totalMm: (totalHiddenReduction / MM_TO_PX).toFixed(1) + 'mm',
-        totalPx: totalHiddenReduction.toFixed(2)
-      },
       finalAvailableHeight: finalAvailableHeight.toFixed(2),
-      reductionPercentage: ((totalHiddenReduction / availableHeightPx) * 100).toFixed(1) + '%',
       note: 'Nessun servizio sottratto (pagina pari)'
     });
   }
