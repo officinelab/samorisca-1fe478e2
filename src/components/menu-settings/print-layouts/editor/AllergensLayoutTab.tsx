@@ -1,23 +1,23 @@
 
 import React from 'react';
-import { AllergensConfig } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface AllergensLayoutTabProps {
-  allergens: AllergensConfig;
-  onTitleChange: (field: string, value: any) => void;
-  onTitleMarginChange: (side: string, value: number) => void;
-  onDescriptionChange: (field: string, value: any) => void;
-  onDescriptionMarginChange: (side: string, value: number) => void;
-  onItemNumberChange: (field: string, value: any) => void;
-  onItemNumberMarginChange: (side: string, value: number) => void;
-  onItemTitleChange: (field: string, value: any) => void;
-  onItemTitleMarginChange: (side: string, value: number) => void;
-  onItemDescriptionChange: (field: string, value: any) => void;
-  onItemDescriptionMarginChange: (side: string, value: number) => void;
-  onItemChange: (field: string, value: any) => void;
+  layout: PrintLayout;
+  onAllergensTitleChange: (field: string, value: any) => void;
+  onAllergensTitleMarginChange: (marginKey: string, value: number) => void;
+  onAllergensDescriptionChange: (field: string, value: any) => void;
+  onAllergensDescriptionMarginChange: (marginKey: string, value: number) => void;
+  onAllergensItemNumberChange: (field: string, value: any) => void;
+  onAllergensItemNumberMarginChange: (marginKey: string, value: number) => void;
+  onAllergensItemTitleChange: (field: string, value: any) => void;
+  onAllergensItemTitleMarginChange: (marginKey: string, value: number) => void;
+  onAllergensItemDescriptionChange: (field: string, value: any) => void;
+  onAllergensItemDescriptionMarginChange: (marginKey: string, value: number) => void;
+  onAllergensItemChange: (field: string, value: any) => void;
 }
 
-const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({ allergens }) => {
+const AllergensLayoutTab: React.FC<AllergensLayoutTabProps> = ({ layout }) => {
   return (
     <div className="space-y-4">
       <h3>Layout Allergeni</h3>

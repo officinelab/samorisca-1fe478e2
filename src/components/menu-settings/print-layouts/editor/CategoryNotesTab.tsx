@@ -1,17 +1,17 @@
 
 import React from 'react';
-import { CategoryNotesConfig } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface CategoryNotesTabProps {
-  categoryNotes: CategoryNotesConfig;
-  onIconChange: (field: string, value: any) => void;
-  onTitleChange: (field: string, value: any) => void;
-  onTitleMarginChange: (side: string, value: number) => void;
-  onTextChange: (field: string, value: any) => void;
-  onTextMarginChange: (side: string, value: number) => void;
+  layout: PrintLayout;
+  onCategoryNotesIconChange: (field: string, value: number) => void;
+  onCategoryNotesTitleChange: (field: string, value: any) => void;
+  onCategoryNotesTitleMarginChange: (marginKey: string, value: number) => void;
+  onCategoryNotesTextChange: (field: string, value: any) => void;
+  onCategoryNotesTextMarginChange: (marginKey: string, value: number) => void;
 }
 
-const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({ categoryNotes }) => {
+const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({ layout }) => {
   return (
     <div className="space-y-4">
       <h3>Note Categorie</h3>

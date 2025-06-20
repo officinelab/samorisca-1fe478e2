@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { MenuSpacing } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface SpacingTabProps {
-  spacing: MenuSpacing;
+  layout: PrintLayout;
   onSpacingChange: (field: string, value: number) => void;
 }
 
-const SpacingTab: React.FC<SpacingTabProps> = ({ spacing }) => {
+const SpacingTab: React.FC<SpacingTabProps> = ({ layout }) => {
   return (
     <div className="space-y-4">
       <h3>Spaziatura</h3>

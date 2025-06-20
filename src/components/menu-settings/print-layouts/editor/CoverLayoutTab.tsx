@@ -1,17 +1,17 @@
 
 import React from 'react';
-import { PrintLayoutCover } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface CoverLayoutTabProps {
-  cover: PrintLayoutCover;
-  onLogoChange: (field: string, value: any) => void;
-  onTitleChange: (field: string, value: any) => void;
-  onTitleMarginChange: (side: string, value: number) => void;
-  onSubtitleChange: (field: string, value: any) => void;
-  onSubtitleMarginChange: (side: string, value: number) => void;
+  layout: PrintLayout;
+  onCoverLogoChange: (field: string, value: any) => void;
+  onCoverTitleChange: (field: string, value: any) => void;
+  onCoverTitleMarginChange: (marginKey: string, value: number) => void;
+  onCoverSubtitleChange: (field: string, value: any) => void;
+  onCoverSubtitleMarginChange: (marginKey: string, value: number) => void;
 }
 
-const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({ cover }) => {
+const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({ layout }) => {
   return (
     <div className="space-y-4">
       <h3>Layout Copertina</h3>

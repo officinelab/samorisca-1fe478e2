@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { PrintLayoutElementConfig } from '@/types/printLayout';
+import { PrintLayout } from '@/types/printLayout';
 
 interface ServicePriceTabProps {
-  servicePrice: PrintLayoutElementConfig;
+  layout: PrintLayout;
   onServicePriceChange: (field: string, value: any) => void;
-  onServicePriceMarginChange: (side: string, value: number) => void;
+  onServicePriceMarginChange: (marginKey: string, value: number) => void;
 }
 
-const ServicePriceTab: React.FC<ServicePriceTabProps> = ({ servicePrice }) => {
+const ServicePriceTab: React.FC<ServicePriceTabProps> = ({ layout }) => {
   return (
     <div className="space-y-4">
       <h3>Prezzo Servizio</h3>
