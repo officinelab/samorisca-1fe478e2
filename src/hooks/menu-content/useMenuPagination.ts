@@ -1,9 +1,9 @@
-
 // hooks/menu-content/useMenuPagination.ts
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
 import { usePreRenderMeasurement } from '../print/usePreRenderMeasurement';
+import { calculateAvailableHeight } from '@/components/menu-print/pagination/utils/pageHeightCalculator';
 
 interface PageContent {
   pageNumber: number;
@@ -40,33 +40,24 @@ export const useMenuPagination = (
   const getAvailableHeight = (pageNumber: number): number => {
     if (!layout) return 250;
 
-    const margins = layout.page;
-    let topMargin = margins.marginTop;
-    let bottomMargin = margins.marginBottom;
-
-    if (margins.useDistinctMarginsForPages && pageNumber > 1) {
-      if (pageNumber % 2 === 1) {
-        topMargin = margins.oddPages.marginTop;
-        bottomMargin = margins.oddPages.marginBottom;
-      } else {
-        topMargin = margins.evenPages.marginTop;
-        bottomMargin = margins.evenPages.marginBottom;
-      }
-    }
-
-    const serviceLineHeight = measurements?.serviceLineHeight || 20;
-    const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
+    // Usa la funzione di calcolo ottimizzata che considera la linea del servizio
+    const pageIndex = pageNumber - 1; // Convert to 0-based index
+    const availableHeightPx = calculateAvailableHeight(pageIndex, A4_HEIGHT_MM, layout);
     
-    console.log('📐 Pagina ' + pageNumber + ' - Calcolo altezza disponibile:', {
-      A4_HEIGHT_MM,
-      topMargin,
-      bottomMargin,
-      serviceLineHeight,
+    // Converti da pixel a mm per compatibilità con il resto del codice
+    const availableHeightMm = availableHeightPx / 3.7795275591; // MM_TO_PX conversion
+    
+    // Sottrai il margine di sicurezza
+    const finalHeight = availableHeightMm - SAFETY_MARGIN_MM;
+    
+    console.log('📐 Pagina ' + pageNumber + ' - Altezza disponibile finale:', {
+      availableHeightPx,
+      availableHeightMm,
       SAFETY_MARGIN_MM,
-      totalHeight
+      finalHeight
     });
     
-    return totalHeight;
+    return finalHeight;
   };
 
   const createPages = (): PageContent[] => {
