@@ -86,6 +86,7 @@ export const generateMenuContentPage = async (
   // Add new page if this is not the first page being added
   if (page.pageNumber > 1) {
     pdf.addPage();
+    console.log(`🔥 PDF: Aggiunta nuova pagina ${page.pageNumber} (interruzione di pagina applicata)`);
   }
   
   const margins = getPageMargins(layout, 'content', page.pageNumber);
@@ -175,6 +176,7 @@ export const generateAllMenuContentPages = async (
   layout: PrintLayout
 ): Promise<void> => {
   console.log(`📄 Starting generation of ${pages.length} menu content pages`);
+  console.log(`🔥 Page breaks configured for categories:`, layout.pageBreaks?.categoryIds || []);
   
   for (const page of pages) {
     console.log(`📄 Generating page ${page.pageNumber} (${pages.indexOf(page) + 1}/${pages.length})`);

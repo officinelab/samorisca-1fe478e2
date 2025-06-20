@@ -25,7 +25,7 @@ export const useMenuPagination = (
   layout: PrintLayout | null
 ) => {
   const A4_HEIGHT_MM = 297;
-  const SAFETY_MARGIN_MM = 8; // Ridotto da 15 a 8mm per maggiore precisione
+  const SAFETY_MARGIN_MM = 8;
 
   // Usa il sistema di pre-render per ottenere le misurazioni reali
   const { measurements, isLoading } = usePreRenderMeasurement(
@@ -38,27 +38,23 @@ export const useMenuPagination = (
   );
 
   const getAvailableHeight = (pageNumber: number): number => {
-    if (!layout) return 250; // Default available height
+    if (!layout) return 250;
 
     const margins = layout.page;
     let topMargin = margins.marginTop;
     let bottomMargin = margins.marginBottom;
 
-    // Check if using distinct margins for odd/even pages
     if (margins.useDistinctMarginsForPages && pageNumber > 1) {
-      if (pageNumber % 2 === 1) { // Odd page
+      if (pageNumber % 2 === 1) {
         topMargin = margins.oddPages.marginTop;
         bottomMargin = margins.oddPages.marginBottom;
-      } else { // Even page
+      } else {
         topMargin = margins.evenPages.marginTop;
         bottomMargin = margins.evenPages.marginBottom;
       }
     }
 
-    // IMPORTANTE: La serviceLineHeight già include i margini del servizio
-    const serviceLineHeight = measurements?.serviceLineHeight || 20; // Ridotto da 25 a 20mm
-    
-    // Calcola altezza disponibile
+    const serviceLineHeight = measurements?.serviceLineHeight || 20;
     const totalHeight = A4_HEIGHT_MM - topMargin - bottomMargin - serviceLineHeight - SAFETY_MARGIN_MM;
     
     console.log('📐 Pagina ' + pageNumber + ' - Calcolo altezza disponibile:', {
@@ -67,15 +63,13 @@ export const useMenuPagination = (
       bottomMargin,
       serviceLineHeight,
       SAFETY_MARGIN_MM,
-      totalHeight,
-      calculation: A4_HEIGHT_MM + ' - ' + topMargin + ' - ' + bottomMargin + ' - ' + serviceLineHeight + ' - ' + SAFETY_MARGIN_MM + ' = ' + totalHeight
+      totalHeight
     });
     
     return totalHeight;
   };
 
   const createPages = (): PageContent[] => {
-    // Se le misurazioni non sono pronte, restituisci array vuoto
     if (!measurements || isLoading) {
       return [];
     }
@@ -84,6 +78,10 @@ export const useMenuPagination = (
     let currentPageNumber = 3; // Starting after cover pages
     let currentPageHeight = 0;
     let currentPageContent: PageContent['categories'] = [];
+
+    // Ottieni le interruzioni di pagina configurate
+    const pageBreakCategoryIds = layout?.pageBreaks?.categoryIds || [];
+    console.log('🔥 Interruzioni di pagina configurate per categorie:', pageBreakCategoryIds);
 
     const addNewPage = () => {
       if (currentPageContent.length > 0) {
@@ -99,14 +97,17 @@ export const useMenuPagination = (
       }
     };
 
+    const forcePageBreak = (categoryTitle: string) => {
+      console.log('🔥 INTERRUZIONE FORZATA dopo categoria: ' + categoryTitle);
+      addNewPage();
+    };
+
     categories.forEach((category, categoryIndex) => {
-      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40; // Ridotto da 50 a 40mm
+      const categoryTitleHeight = measurements.categoryHeights.get(category.id) || 40;
       const relatedNoteIds = categoryNotesRelations[category.id] || [];
       const relatedNotes = categoryNotes.filter(note => relatedNoteIds.includes(note.id));
       
-      // L'altezza categoria include già le note nel nuovo sistema
       const totalCategoryHeaderHeight = categoryTitleHeight;
-
       const products = productsByCategory[category.id] || [];
       let remainingProducts = [...products];
       let categoryHeaderAddedOnCurrentPage = false;
@@ -124,7 +125,7 @@ export const useMenuPagination = (
           
           // Aggiungi spacing tra categorie se c'è già contenuto nella pagina
           if (currentPageContent.length > 0) {
-            categoryHeaderHeight += layout?.spacing.betweenCategories || 12; // Ridotto da 15 a 12mm
+            categoryHeaderHeight += layout?.spacing.betweenCategories || 12;
           }
 
           // Controlla se l'header della categoria può entrare in questa pagina
@@ -135,7 +136,6 @@ export const useMenuPagination = (
             tempHeight = 0;
           }
 
-          // Aggiungi l'altezza dell'header
           tempHeight += categoryHeaderHeight;
           categoryHeaderAddedOnCurrentPage = true;
         }
@@ -143,20 +143,16 @@ export const useMenuPagination = (
         // Prova ad aggiungere quanti più prodotti possibile in questa pagina
         for (let i = 0; i < remainingProducts.length; i++) {
           const product = remainingProducts[i];
-          const productHeight = measurements.productHeights.get(product.id) || 45; // Ridotto da 60 a 45mm
+          const productHeight = measurements.productHeights.get(product.id) || 45;
           let requiredHeight = productHeight;
 
-          // Aggiungi spacing tra prodotti (tranne per il primo prodotto nella categoria su questa pagina)
           if (currentCategoryProducts.length > 0) {
-            requiredHeight += layout?.spacing.betweenProducts || 4; // Ridotto da 5 a 4mm
+            requiredHeight += layout?.spacing.betweenProducts || 4;
           }
 
           const availableHeight = getAvailableHeight(currentPageNumber);
-          
-          // Controlla con un margine di sicurezza ridotto (5% invece del 10%)
           const safeRequiredHeight = requiredHeight * 1.05;
           
-          // Log dettagliato per prodotti critici o quando si avvicina al limite
           const shouldLog = i < 2 || tempHeight + safeRequiredHeight > availableHeight * 0.9;
           if (shouldLog) {
             const productTitle = product.title.length > 25 ? product.title.substring(0, 25) + '...' : product.title;
@@ -168,13 +164,11 @@ export const useMenuPagination = (
               currentPageHeight: tempHeight.toFixed(2),
               wouldBe: (tempHeight + safeRequiredHeight).toFixed(2),
               availableHeight: availableHeight.toFixed(2),
-              fits: tempHeight + safeRequiredHeight <= availableHeight,
-              utilizzo: ((tempHeight + safeRequiredHeight) / availableHeight * 100).toFixed(1) + '%'
+              fits: tempHeight + safeRequiredHeight <= availableHeight
             });
           }
           
           if (tempHeight + safeRequiredHeight <= availableHeight) {
-            // Il prodotto entra nella pagina
             currentCategoryProducts.push(product);
             tempHeight += requiredHeight;
           } else {
@@ -197,15 +191,12 @@ export const useMenuPagination = (
           
           currentPageContent.push({
             category,
-            notes: !isRepeatedTitle ? relatedNotes : [], // Note solo la prima volta
+            notes: !isRepeatedTitle ? relatedNotes : [],
             products: [...currentCategoryProducts],
             isRepeatedTitle
           });
 
-          // Aggiorna l'altezza della pagina corrente
           currentPageHeight = tempHeight;
-
-          // Rimuovi i prodotti processati dalla lista dei rimanenti
           remainingProducts = remainingProducts.slice(currentCategoryProducts.length);
           
           console.log('✅ Aggiunti ' + currentCategoryProducts.length + ' prodotti, rimanenti: ' + remainingProducts.length + ', altezza pagina: ' + currentPageHeight.toFixed(2) + 'mm');
@@ -215,8 +206,17 @@ export const useMenuPagination = (
         if (remainingProducts.length > 0) {
           console.log('📄 Prodotti rimanenti richiedono nuova pagina');
           addNewPage();
-          categoryHeaderAddedOnCurrentPage = false; // Reset per la nuova pagina
+          categoryHeaderAddedOnCurrentPage = false;
         }
+      }
+
+      // 🔥 VERIFICA INTERRUZIONE DI PAGINA DOPO QUESTA CATEGORIA
+      const shouldForcePageBreak = pageBreakCategoryIds.includes(category.id);
+      const isLastCategory = categoryIndex === categories.length - 1;
+      
+      if (shouldForcePageBreak && !isLastCategory) {
+        console.log('🔥 Interruzione di pagina configurata per categoria: ' + category.title);
+        forcePageBreak(category.title);
       }
     });
 

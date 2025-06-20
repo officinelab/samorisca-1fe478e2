@@ -24,6 +24,9 @@ const PageBreaksTab: React.FC<PageBreaksTabProps> = ({
   
   const currentPageBreaks = layout.pageBreaks?.categoryIds || [];
   
+  console.log('🔥 PageBreaksTab - Interruzioni correnti:', currentPageBreaks);
+  console.log('🔥 PageBreaksTab - Categorie disponibili:', categories.map(c => ({ id: c.id, title: c.title })));
+  
   // Filtra le categorie disponibili (esclude quelle già selezionate)
   const availableCategories = categories.filter(cat => 
     !currentPageBreaks.includes(cat.id)
@@ -32,6 +35,8 @@ const PageBreaksTab: React.FC<PageBreaksTabProps> = ({
   const handleAddPageBreak = () => {
     if (selectedCategoryId && !currentPageBreaks.includes(selectedCategoryId)) {
       const newPageBreaks = [...currentPageBreaks, selectedCategoryId];
+      console.log('🔥 PageBreaksTab - Aggiunta interruzione per categoria:', selectedCategoryId);
+      console.log('🔥 PageBreaksTab - Nuove interruzioni:', newPageBreaks);
       onPageBreaksChange(newPageBreaks);
       setSelectedCategoryId("");
     }
@@ -39,6 +44,8 @@ const PageBreaksTab: React.FC<PageBreaksTabProps> = ({
   
   const handleRemovePageBreak = (categoryId: string) => {
     const newPageBreaks = currentPageBreaks.filter(id => id !== categoryId);
+    console.log('🔥 PageBreaksTab - Rimozione interruzione per categoria:', categoryId);
+    console.log('🔥 PageBreaksTab - Nuove interruzioni:', newPageBreaks);
     onPageBreaksChange(newPageBreaks);
   };
   
