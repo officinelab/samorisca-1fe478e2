@@ -2,9 +2,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FileDown, Eye, EyeOff, Settings, Loader2, Printer } from "lucide-react";
+import { Eye, EyeOff, Settings, Printer } from "lucide-react";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
-import { usePdfExport } from "@/hooks/print/usePdfExport";
 import { useAdvancedPrint } from "@/hooks/print/useAdvancedPrint";
 import { PrintLayout } from "@/types/printLayout";
 
@@ -23,20 +22,10 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   setIsSettingsOpen,
   currentLayout
 }) => {
-  const { exportToPdf, isExporting } = usePdfExport();
   const { printMenuContent } = useAdvancedPrint();
 
-  const handleExportPdf = async () => {
-    console.log('🎯 Pulsante Salva PDF cliccato - nuovo sistema');
-    if (currentLayout) {
-      await exportToPdf(currentLayout);
-    } else {
-      console.error('Nessun layout disponibile per l\'esportazione');
-    }
-  };
-
   const handleAdvancedPrint = () => {
-    console.log('🖨️ Pulsante Stampa Avanzata cliccato - sistema finestra popup');
+    console.log('🖨️ Pulsante Stampa Menu cliccato - sistema finestra popup');
     printMenuContent();
   };
 
@@ -46,7 +35,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
         <div>
           <h1 className="text-2xl font-bold">Stampa Menu</h1>
           <p className="text-muted-foreground">
-            Gestisci la stampa e il salvataggio del menu in formato PDF
+            Gestisci la stampa del menu
           </p>
         </div>
         
@@ -76,21 +65,9 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
             {showMargins ? "Nascondi" : "Mostra"} Margini
           </Button>
           
-          <Button variant="outline" onClick={handleAdvancedPrint}>
+          <Button variant="default" onClick={handleAdvancedPrint}>
             <Printer className="w-4 h-4 mr-2" />
             Stampa Menu
-          </Button>
-          
-          <Button 
-            onClick={handleExportPdf}
-            disabled={isExporting || !currentLayout}
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <FileDown className="w-4 h-4 mr-2" />
-            )}
-            {isExporting ? 'Generazione...' : 'Salva PDF'}
           </Button>
         </div>
       </div>
