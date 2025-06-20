@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PrintLayout } from "@/types/printLayout";
 import { Category } from "@/types/database";
-import { X, Plus, FileBreak } from "lucide-react";
+import { X, Plus, Split } from "lucide-react";
 
 interface PageBreaksTabProps {
   layout: PrintLayout;
@@ -51,7 +51,7 @@ const PageBreaksTab: React.FC<PageBreaksTabProps> = ({
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-lg font-medium flex items-center gap-2">
-          <FileBreak className="w-5 h-5" />
+          <Split className="w-5 h-5" />
           Interruzioni di Pagina
         </h3>
         <p className="text-sm text-muted-foreground">
@@ -115,7 +115,7 @@ const PageBreaksTab: React.FC<PageBreaksTabProps> = ({
                   className="flex items-center justify-between p-3 bg-muted rounded-lg"
                 >
                   <div className="flex items-center gap-2">
-                    <FileBreak className="w-4 h-4 text-primary" />
+                    <Split className="w-4 h-4 text-primary" />
                     <span className="font-medium">{getCategoryName(categoryId)}</span>
                     <Badge variant="secondary" className="text-xs">
                       Interruzione dopo l'ultima voce

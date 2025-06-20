@@ -86,7 +86,7 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
           onAllergensMarginChange={props.handleAllergensMarginChange}
           onAllergensOddPageMarginChange={props.handleAllergensOddPageMarginChange}
           onAllergensEvenPageMarginChange={props.handleAllergensEvenPageMarginChange}
-          onToggle DistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
+          onToggleDistinctAllergensMargins={props.handleToggleDistinctAllergensMargins}
         />
       )}
 

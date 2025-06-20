@@ -217,6 +217,7 @@ export const useMenuContentData = () => {
           categoryNotes: layouts.category_notes as any,
           productFeatures: layouts.product_features as any,
           servicePrice: layouts.service_price as any,
+          pageBreaks: layouts.page_breaks as any || { categoryIds: [] },
           spacing: layouts.spacing as any,
           page: layouts.page as any,
           header: undefined

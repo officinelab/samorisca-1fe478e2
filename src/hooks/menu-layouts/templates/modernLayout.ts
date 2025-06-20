@@ -219,6 +219,9 @@ export const modernLayout: PrintLayout = {
     alignment: "center",
     margin: { top: 0, right: 0, bottom: 0, left: 0 }
   },
+  pageBreaks: {
+    categoryIds: []
+  },
   spacing: {
     betweenCategories: 20,
     betweenProducts: 12,
