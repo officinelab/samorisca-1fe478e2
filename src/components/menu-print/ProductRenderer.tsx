@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Product } from '@/types/database';
@@ -108,52 +109,61 @@ const ProductRenderer: React.FC<ProductRendererProps> = ({
           </div>
         )}
 
-        {/* Icone caratteristiche prodotto */}
-        {product.features && product.features.length > 0 && layout.productFeatures?.icon && (
+        {/* NUOVA RIGA COMBINATA: Allergeni + Icone caratteristiche */}
+        {((product.allergens && product.allergens.length > 0) || (product.features && product.features.length > 0)) && (
           <div
-            className="product-features flex items-center gap-1"
+            className="allergens-and-features flex items-center gap-3"
             style={{
-              marginTop: `${dimensions.icons.cssMarginTopPx}px`,
-              marginBottom: `${dimensions.icons.cssMarginBottomPx}px`,
-            }}
-          >
-            {product.features.map((feature, index) => (
-              feature.icon_url && (
-                <img
-                  key={feature.id}
-                  src={feature.icon_url}
-                  alt={feature.title}
-                  className="feature-icon"
-                  style={{
-                    width: `${dimensions.icons.cssSizePx}px`,
-                    height: `${dimensions.icons.cssSizePx}px`,
-                    marginRight: index < product.features.length - 1 ? `${dimensions.icons.cssSpacingPx}px` : '0'
-                  }}
-                />
-              )
-            ))}
-          </div>
-        )}
-
-        {/* Lista allergeni */}
-        {product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false && (
-          <div
-            className="product-allergens"
-            style={{
-              fontSize: `${dimensions.css.allergensFontSize}px`,
-              fontFamily: layout.elements.allergensList.fontFamily,
-              color: layout.elements.allergensList.fontColor,
-              fontWeight: layout.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
-              fontStyle: layout.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
-              textAlign: layout.elements.allergensList.alignment as any,
               marginTop: `${dimensions.cssMargins.allergens.top}px`,
               marginBottom: `${dimensions.cssMargins.allergens.bottom}px`,
               marginLeft: `${dimensions.cssMargins.allergens.left}px`,
               marginRight: `${dimensions.cssMargins.allergens.right}px`,
-              lineHeight: 1.5
+              flexWrap: 'wrap'
             }}
           >
-            Allergeni: {product.allergens.map(a => a.number).join(', ')}
+            {/* Lista allergeni */}
+            {product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false && (
+              <div
+                className="product-allergens"
+                style={{
+                  fontSize: `${dimensions.css.allergensFontSize}px`,
+                  fontFamily: layout.elements.allergensList.fontFamily,
+                  color: layout.elements.allergensList.fontColor,
+                  fontWeight: layout.elements.allergensList.fontStyle === 'bold' ? 'bold' : 'normal',
+                  fontStyle: layout.elements.allergensList.fontStyle === 'italic' ? 'italic' : 'normal',
+                  textAlign: layout.elements.allergensList.alignment as any,
+                  lineHeight: 1.5
+                }}
+              >
+                Allergeni: {product.allergens.map(a => a.number).join(', ')}
+              </div>
+            )}
+
+            {/* Icone caratteristiche prodotto nella stessa riga */}
+            {product.features && product.features.length > 0 && layout.productFeatures?.icon && (
+              <div
+                className="product-features flex items-center gap-1"
+                style={{
+                  marginLeft: product.allergens && product.allergens.length > 0 ? '8px' : '0'
+                }}
+              >
+                {product.features.map((feature, index) => (
+                  feature.icon_url && (
+                    <img
+                      key={feature.id}
+                      src={feature.icon_url}
+                      alt={feature.title}
+                      className="feature-icon"
+                      style={{
+                        width: `${dimensions.icons.cssSizePx}px`,
+                        height: `${dimensions.icons.cssSizePx}px`,
+                        marginRight: index < product.features.length - 1 ? `${dimensions.icons.cssSpacingPx}px` : '0'
+                      }}
+                    />
+                  )
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

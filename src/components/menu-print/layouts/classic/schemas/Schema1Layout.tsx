@@ -50,42 +50,51 @@ const Schema1Layout: React.FC<Schema1LayoutProps> = ({ product, language, custom
           </div>
         )}
         
-        {/* Quarta riga - Elenco allergeni */}
-        {product.allergens && product.allergens.length > 0 && (
-          <div style={getElementStyle(customLayout?.elements.allergensList, {
-            fontSize: '9pt',
-            marginBottom: '1mm'
-          })}>
-            Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
-          </div>
-        )}
-        
-        {/* Quinta riga - Icone caratteristiche del prodotto */}
-        {product.features && product.features.length > 0 && (
+        {/* NUOVA RIGA COMBINATA - Allergeni + Icone caratteristiche */}
+        {((product.allergens && product.allergens.length > 0) || (product.features && product.features.length > 0)) && (
           <div style={{
             display: 'flex',
-            gap: '4px',
             alignItems: 'center',
-            marginBottom: '1mm'
+            gap: '8px',
+            marginBottom: '1mm',
+            flexWrap: 'wrap'
           }}>
-            {product.features.map((feature) => (
-              <div key={feature.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px'
-              }}>
-                {feature.icon_url && (
-                  <img 
-                    src={feature.icon_url} 
-                    alt={feature.displayTitle || feature.title}
-                    style={{
-                      width: `${customLayout?.elements.productFeatures.iconSize || 16}px`,
-                      height: `${customLayout?.elements.productFeatures.iconSize || 16}px`
-                    }}
-                  />
-                )}
+            {/* Elenco allergeni */}
+            {product.allergens && product.allergens.length > 0 && (
+              <div style={getElementStyle(customLayout?.elements.allergensList, {
+                fontSize: '9pt'
+              })}>
+                Allergeni: {product.allergens.map(allergen => allergen.number).join(", ")}
               </div>
-            ))}
+            )}
+            
+            {/* Icone caratteristiche del prodotto nella stessa riga */}
+            {product.features && product.features.length > 0 && (
+              <div style={{
+                display: 'flex',
+                gap: '4px',
+                alignItems: 'center'
+              }}>
+                {product.features.map((feature) => (
+                  <div key={feature.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px'
+                  }}>
+                    {feature.icon_url && (
+                      <img 
+                        src={feature.icon_url} 
+                        alt={feature.displayTitle || feature.title}
+                        style={{
+                          width: `${customLayout?.elements.productFeatures.iconSize || 16}px`,
+                          height: `${customLayout?.elements.productFeatures.iconSize || 16}px`
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -6,7 +6,7 @@ import { addStyledText } from './textRenderer';
 import { addSvgIconToPdf } from './iconRenderer';
 import { getStandardizedDimensions } from '../utils/conversionUtils';
 
-// Aggiungi icone features al PDF - IDENTICO all'anteprima
+// Aggiungi icone features al PDF - IDENTICO all'anteprima AGGIORNATA
 const addProductFeaturesToPdf = async (
   pdf: jsPDF,
   product: Product,
@@ -19,9 +19,8 @@ const addProductFeaturesToPdf = async (
   
   const dimensions = getStandardizedDimensions(layout);
   let currentX = x;
-  const iconsY = y + dimensions.icons.marginTopMm;
   
-  console.log('🎯 PDF Features rendering - IDENTICO anteprima:', {
+  console.log('🎯 PDF Features rendering - IDENTICO anteprima AGGIORNATA:', {
     iconSizeMm: dimensions.icons.sizeMm,
     iconSpacingMm: dimensions.icons.spacingMm,
     marginTopMm: dimensions.icons.marginTopMm,
@@ -31,7 +30,7 @@ const addProductFeaturesToPdf = async (
   for (let i = 0; i < product.features.length; i++) {
     const feature = product.features[i];
     if (feature.icon_url) {
-      await addSvgIconToPdf(pdf, feature.icon_url, currentX, iconsY, dimensions.icons.sizeMm);
+      await addSvgIconToPdf(pdf, feature.icon_url, currentX, y, dimensions.icons.sizeMm);
       
       if (i < product.features.length - 1) {
         currentX += dimensions.icons.sizeMm + dimensions.icons.spacingMm;
@@ -46,7 +45,7 @@ const addProductFeaturesToPdf = async (
   return dimensions.icons.heightMm; // Altezza totale inclusi margini
 };
 
-// Renderer prodotto PDF - IDENTICO logica anteprima Schema 1 (90%/10%)
+// Renderer prodotto PDF - IDENTICO logica anteprima Schema 1 AGGIORNATO
 export const addProductToPdf = async (
   pdf: jsPDF,
   product: Product,
@@ -59,7 +58,7 @@ export const addProductToPdf = async (
   let currentY = y;
   const dimensions = getStandardizedDimensions(layout);
   
-  console.log('🎯 PDF Product rendering - SCHEMA 1 IDENTICO anteprima:', product.title);
+  console.log('🎯 PDF Product rendering - SCHEMA 1 AGGIORNATO (allergeni+icone):', product.title);
   console.log('🎯 ContentWidth totale:', contentWidth.toFixed(1), 'mm');
   
   // ✅ COLONNE IDENTICHE ALL'ANTEPRIMA - Schema 1 (90%/10%)
@@ -68,12 +67,12 @@ export const addProductToPdf = async (
   const rightColumnStart = x + leftColumnWidth + gap;
   const rightColumnWidth = contentWidth - leftColumnWidth - gap;
   
-  console.log('📐 Colonne PDF IDENTICHE anteprima Schema 1:', {
+  console.log('📐 Colonne PDF IDENTICHE anteprima Schema 1 AGGIORNATO:', {
     leftColumnWidth: leftColumnWidth.toFixed(1) + 'mm',
     gap: gap + 'mm', 
     rightColumnStart: rightColumnStart.toFixed(1) + 'mm',
     rightColumnWidth: rightColumnWidth.toFixed(1) + 'mm',
-    schema: 'Schema 1 (90%/10%)'
+    schema: 'Schema 1 (90%/10%) AGGIORNATO'
   });
   
   // ===== COLONNA SINISTRA (90%) - CONTENUTO PRODOTTO =====
@@ -120,26 +119,40 @@ export const addProductToPdf = async (
     currentY += descEngHeight + dimensions.pdfMargins.descriptionEng.bottom;
   }
   
-  // 4. ICONE FEATURES - Dimensioni e margini IDENTICI
-  if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
-    console.log('🎯 Adding features at Y:', currentY.toFixed(1));
-    const featuresHeight = await addProductFeaturesToPdf(pdf, product, x, currentY, layout, leftColumnWidth);
-    currentY += featuresHeight;
-  }
+  // ✅ NUOVA LOGICA: RIGA COMBINATA ALLERGENI + ICONE CARATTERISTICHE
+  const hasAllergens = product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false;
+  const hasFeatures = product.features && product.features.length > 0 && layout.productFeatures?.icon;
   
-  // 5. ALLERGENI - Font size e margini IDENTICI
-  if (product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false) {
-    console.log('🎯 Adding allergens at Y:', currentY.toFixed(1));
-    const allergensText = `Allergeni: ${product.allergens.map(a => a.number).join(', ')}`;
-    const allergensHeight = addStyledText(pdf, allergensText, x, currentY, {
-      fontSize: dimensions.pdf.allergensFontSize, // IDENTICO CSS
-      fontFamily: layout.elements.allergensList.fontFamily,
-      fontStyle: layout.elements.allergensList.fontStyle,
-      fontColor: layout.elements.allergensList.fontColor,
-      alignment: layout.elements.allergensList.alignment,
-      maxWidth: leftColumnWidth
-    });
-    currentY += allergensHeight + dimensions.pdfMargins.allergens.bottom;
+  if (hasAllergens || hasFeatures) {
+    console.log('🎯 Adding combined allergens + features row at Y:', currentY.toFixed(1));
+    let combinedRowHeight = 0;
+    let allergensWidth = 0;
+    
+    // Aggiungi allergeni
+    if (hasAllergens) {
+      const allergensText = `Allergeni: ${product.allergens!.map(a => a.number).join(', ')}`;
+      const allergensHeight = addStyledText(pdf, allergensText, x, currentY, {
+        fontSize: dimensions.pdf.allergensFontSize, // IDENTICO CSS
+        fontFamily: layout.elements.allergensList.fontFamily,
+        fontStyle: layout.elements.allergensList.fontStyle,
+        fontColor: layout.elements.allergensList.fontColor,
+        alignment: layout.elements.allergensList.alignment,
+        maxWidth: leftColumnWidth * 0.7 // Lascia spazio per le icone
+      });
+      combinedRowHeight = Math.max(combinedRowHeight, allergensHeight);
+      
+      // Calcola larghezza approssimativa del testo allergeni
+      allergensWidth = (allergensText.length * dimensions.pdf.allergensFontSize * 0.6);
+    }
+    
+    // Aggiungi icone features nella stessa riga
+    if (hasFeatures) {
+      const iconsStartX = x + allergensWidth + 8; // 8mm gap dal testo allergeni
+      const featuresHeight = await addProductFeaturesToPdf(pdf, product, iconsStartX, currentY, layout, leftColumnWidth - allergensWidth - 8);
+      combinedRowHeight = Math.max(combinedRowHeight, featuresHeight);
+    }
+    
+    currentY += combinedRowHeight + dimensions.pdfMargins.allergens.bottom;
   }
   
   // ===== COLONNA DESTRA (10%) - PREZZI ALLINEATI =====
@@ -218,7 +231,7 @@ export const addProductToPdf = async (
     currentY += dimensions.spacing.betweenProducts;
   }
   
-  console.log(`🎯 Product "${product.title}" completed IDENTICO anteprima`);
+  console.log(`🎯 Product "${product.title}" completed IDENTICO anteprima AGGIORNATA`);
   console.log(`🎯 Left column ended at Y: ${currentY.toFixed(1)}mm`);
   console.log(`🎯 Right column ended at Y: ${priceY.toFixed(1)}mm`);
   

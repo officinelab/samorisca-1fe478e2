@@ -1,3 +1,4 @@
+
 import { Product } from '@/types/database';
 import { PrintLayout } from '@/types/printLayout';
 import { calculateTextHeight } from '../utils/textMeasurement';
@@ -19,7 +20,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   let totalHeightMm = 0;
   const pageConfig = layout.page;
   
-  console.log('🔧 ProductCalculator con Schema 1 (90%/10%) - CORRETTO:', product.title);
+  console.log('🔧 ProductCalculator con Schema 1 (90%/10%) - AGGIORNATO:', product.title);
   console.log('🔧 ProductCalculator - Dimensioni standardizzate:', {
     titleFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.title.fontSize,
     descriptionFontSizeMm: CONVERSIONS.PT_TO_MM * layout.elements.description.fontSize,
@@ -27,7 +28,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     spacing: dimensions.spacing.betweenProducts
   });
   
-  // ✅ CORREZIONE FINALE: Usa 90% come nell'anteprima corretta e Schema 1
+  // ✅ CORREZIONE: Usa 90% come nell'anteprima corretta e Schema 1
   const pageWidthMm = 210; // A4 width
   const leftMargin = pageConfig.marginLeft || 25;
   const rightMargin = pageConfig.marginRight || 25;
@@ -38,7 +39,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   console.log('🔧 ProductCalculator Schema 1 dimensioni CORRETTE:', {
     contentWidthMm: contentWidthMm.toFixed(1),
     productDetailsWidthMm: productDetailsWidthMm.toFixed(1),
-    schema: 'Schema 1 (90%/10%) - CORRETTO'
+    schema: 'Schema 1 (90%/10%) - AGGIORNATO'
   });
 
   // Calcola altezza del titolo con conversioni standardizzate
@@ -104,32 +105,44 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
     });
   }
   
-  // Calcola altezza degli allergeni
-  if (product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false) {
-    const allergensText = `Allergeni: ${product.allergens.map(a => a.number).join(', ')}`;
-    const allergensFontSizePx = dimensions.css.allergensFontSize;
-    const allergensHeightPx = calculateTextHeight(
-      allergensText,
-      allergensFontSizePx,
-      layout.elements.allergensList.fontFamily,
-      productDetailsWidthPx,
-      1.5
-    );
-    const allergensHeightMm = allergensHeightPx * CONVERSIONS.PX_TO_MM;
-    const allergensMarginMm = layout.elements.allergensList.margin.top + layout.elements.allergensList.margin.bottom;
-    totalHeightMm += allergensHeightMm + allergensMarginMm;
+  // ✅ NUOVA LOGICA: Riga combinata allergeni + icone caratteristiche
+  const hasAllergens = product.allergens && product.allergens.length > 0 && layout.elements.allergensList?.visible !== false;
+  const hasFeatures = product.features && product.features.length > 0 && layout.productFeatures?.icon;
+  
+  if (hasAllergens || hasFeatures) {
+    let combinedRowHeightMm = 0;
     
-    console.log('🔧 Allergens height:', {
-      allergensHeightPx: allergensHeightPx.toFixed(1),
-      allergensHeightMm: allergensHeightMm.toFixed(1),
-      allergensMarginMm
+    // Calcola altezza degli allergeni (se presenti)
+    if (hasAllergens) {
+      const allergensText = `Allergeni: ${product.allergens!.map(a => a.number).join(', ')}`;
+      const allergensFontSizePx = dimensions.css.allergensFontSize;
+      const allergensHeightPx = calculateTextHeight(
+        allergensText,
+        allergensFontSizePx,
+        layout.elements.allergensList.fontFamily,
+        productDetailsWidthPx * 0.7, // Ridotto perché condivide la riga con le icone
+        1.5
+      );
+      const allergensHeightMm = allergensHeightPx * CONVERSIONS.PX_TO_MM;
+      combinedRowHeightMm = Math.max(combinedRowHeightMm, allergensHeightMm);
+    }
+    
+    // Calcola altezza delle icone caratteristiche (se presenti)
+    if (hasFeatures) {
+      const iconHeightMm = dimensions.icons.heightMm;
+      combinedRowHeightMm = Math.max(combinedRowHeightMm, iconHeightMm);
+    }
+    
+    // Aggiungi margini della riga combinata (usa i margini degli allergeni)
+    const combinedRowMarginMm = layout.elements.allergensList.margin.top + layout.elements.allergensList.margin.bottom;
+    totalHeightMm += combinedRowHeightMm + combinedRowMarginMm;
+    
+    console.log('🔧 Combined allergens + features row height:', {
+      combinedRowHeightMm: combinedRowHeightMm.toFixed(1),
+      combinedRowMarginMm,
+      hasAllergens,
+      hasFeatures
     });
-  }
-
-  // Calcola altezza delle caratteristiche prodotto (icone) - STANDARDIZZATO
-  if (product.features && product.features.length > 0 && layout.productFeatures?.icon) {
-    console.log('🔧 ProductCalculator - Adding features height:', dimensions.icons.heightMm, 'mm');
-    totalHeightMm += dimensions.icons.heightMm;
   }
 
   // Calcola l'altezza della colonna prezzo (10% nel Schema 1) per confronto
@@ -174,7 +187,7 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   const safetyBufferMm = 3;
   totalHeightMm += safetyBufferMm;
 
-  console.log('🔧 ProductCalculator - Altezza finale con Schema 1 (90%/10%) CORRETTO:', {
+  console.log('🔧 ProductCalculator - Altezza finale con Schema 1 AGGIORNATO (allergeni+icone):', {
     totalHeightMm: totalHeightMm.toFixed(1),
     priceColumnHeightMm: priceColumnHeightMm.toFixed(1),
     spacingMm,

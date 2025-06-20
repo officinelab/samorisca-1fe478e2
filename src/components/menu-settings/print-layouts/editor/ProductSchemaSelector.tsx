@@ -38,11 +38,12 @@ const ProductSchemaSelector: React.FC<ProductSchemaSelectorProps> = ({ value, on
                     <div className="font-medium">Nome Piatto</div>
                     <div className="text-muted-foreground italic">Descrizione del piatto in italiano</div>
                     <div className="text-muted-foreground italic">English description (se presente)</div>
-                    <div className="text-muted-foreground">Allergeni: 1, 2, 3</div>
-                    <div className="flex gap-1">
-                      <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
-                      <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
-                      <span className="text-xs">Icone caratteristiche</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-muted-foreground">Allergeni: 1, 2, 3</span>
+                      <div className="flex gap-1">
+                        <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
+                        <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -63,7 +64,14 @@ const ProductSchemaSelector: React.FC<ProductSchemaSelectorProps> = ({ value, on
             </Card>
 
             <div className="text-xs text-muted-foreground mt-2">
-              <strong>Struttura colonna prezzo:</strong>
+              <strong>Struttura colonna contenuto aggiornata:</strong>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Prima riga: Nome del piatto</li>
+                <li>Seconda riga: Descrizione in italiano</li>
+                <li>Terza riga: Descrizione in inglese (se presente)</li>
+                <li><strong>Quarta riga: Allergeni + Icone caratteristiche nella stessa riga</strong></li>
+              </ul>
+              <strong className="block mt-2">Struttura colonna prezzo:</strong>
               <ul className="list-disc list-inside mt-1 space-y-1">
                 <li>Prima riga: Prezzo principale</li>
                 <li>Seconda riga: Suffisso prezzo (se presente)</li>
