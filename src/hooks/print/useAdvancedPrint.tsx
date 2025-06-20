@@ -31,18 +31,28 @@ export const useAdvancedPrint = () => {
         return;
       }
 
-      // Collect all page elements
+      // Collect all page elements with more specific selectors
       const coverPages = previewContainer.querySelectorAll('[data-page-preview^="cover"]');
       const contentPages = previewContainer.querySelectorAll('[data-page-preview^="content"]');
-      const allergensPages = previewContainer.querySelectorAll('[data-page-preview^="allergens"]');
+      
+      // Look for allergens pages with multiple possible selectors
+      let allergensPageElements = previewContainer.querySelectorAll('[data-page-preview^="allergens"]');
+      if (allergensPageElements.length === 0) {
+        // Try alternative selector for allergens pages
+        const allergensContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
+        if (allergensContainer) {
+          allergensPageElements = allergensContainer.querySelectorAll('[data-page-preview^="allergens"]');
+        }
+      }
 
       console.log('📄 Pagine trovate:', {
         cover: coverPages.length,
         content: contentPages.length,
-        allergens: allergensPages.length
+        allergens: allergensPageElements.length,
+        totalAllergensPages: allergensPages.length
       });
 
-      if (coverPages.length === 0 && contentPages.length === 0 && allergensPages.length === 0) {
+      if (coverPages.length === 0 && contentPages.length === 0 && allergensPageElements.length === 0) {
         console.warn('⚠️ Nessuna pagina trovata per la stampa');
         return;
       }
@@ -58,13 +68,24 @@ export const useAdvancedPrint = () => {
       const allPages: Element[] = [];
       
       // Add cover pages
-      coverPages.forEach(page => allPages.push(page));
+      coverPages.forEach(page => {
+        console.log('📄 Adding cover page:', page.getAttribute('data-page-preview'));
+        allPages.push(page);
+      });
       
       // Add content pages  
-      contentPages.forEach(page => allPages.push(page));
+      contentPages.forEach(page => {
+        console.log('📄 Adding content page:', page.getAttribute('data-page-preview'));
+        allPages.push(page);
+      });
       
       // Add allergens pages
-      allergensPages.forEach(page => allPages.push(page));
+      allergensPageElements.forEach(page => {
+        console.log('📄 Adding allergens page:', page.getAttribute('data-page-preview'));
+        allPages.push(page);
+      });
+
+      console.log('📄 Total pages to print:', allPages.length);
 
       // Clean and prepare pages for print
       const cleanedPages = allPages.map(page => cleanElementForPrint(page as HTMLElement));
@@ -143,7 +164,7 @@ export const useAdvancedPrint = () => {
 
       // Wait for content to load, then trigger print
       setTimeout(() => {
-        console.log('🖨️ Apertura finestra di stampa completata');
+        console.log('🖨️ Apertura finestra di stampa completata con', allPages.length, 'pagine');
         printWindow.focus();
         printWindow.print();
       }, 1000);
