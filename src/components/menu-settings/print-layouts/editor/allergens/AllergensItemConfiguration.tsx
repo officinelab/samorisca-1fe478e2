@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import ElementEditor from "../../ElementEditor";
+import ColorPickerInput from "../../ColorPickerInput";
 
 interface AllergensItemConfigurationProps {
   allergensItem: {
@@ -99,20 +100,12 @@ const AllergensItemConfiguration: React.FC<AllergensItemConfigurationProps> = ({
           </div>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-2 col-span-2">
           <Label>Colore Sfondo</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="text"
-              value={allergensItem.backgroundColor}
-              onChange={(e) => onAllergensItemChange("backgroundColor", e.target.value)}
-              placeholder="#f9f9f9"
-            />
-            <div 
-              className="h-8 w-8 border border-gray-300 rounded"
-              style={{ backgroundColor: allergensItem.backgroundColor }}
-            />
-          </div>
+          <ColorPickerInput
+            value={allergensItem.backgroundColor}
+            onChange={(color) => onAllergensItemChange("backgroundColor", color)}
+          />
         </div>
       </div>
       
