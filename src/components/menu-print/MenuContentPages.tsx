@@ -107,16 +107,26 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
     );
   }
 
-  // Spinner centralizzato durante il caricamento delle misurazioni
+  // Loading measurements spinner - ora dentro la card invece che in overlay
   if (isLoadingMeasurements) {
     return (
-      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
-          <div className="text-lg font-semibold mb-2">Calcolo altezze reali degli elementi...</div>
-          <div className="text-sm text-muted-foreground">Preparazione del layout di stampa in corso</div>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            Pagine Contenuto del Menu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center p-16 space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <div className="text-center">
+              <div className="text-lg font-semibold mb-2">Calcolo altezze reali degli elementi...</div>
+              <div className="text-sm text-muted-foreground">Preparazione del layout di stampa in corso</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
