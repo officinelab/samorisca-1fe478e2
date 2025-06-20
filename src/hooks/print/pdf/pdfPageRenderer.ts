@@ -119,9 +119,9 @@ export const generateMenuContentPage = async (
       );
       currentY += categoryHeight;
       
-      // Category notes
+      // Category notes - await the async function properly
       if (categorySection.notes.length > 0) {
-        const notesHeight = addCategoryNotesToPdf(
+        const notesHeight = await addCategoryNotesToPdf(
           pdf,
           categorySection.notes,
           margins.marginLeft,
