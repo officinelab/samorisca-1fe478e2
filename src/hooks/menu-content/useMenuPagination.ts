@@ -4,6 +4,7 @@ import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
 import { usePreRenderMeasurement } from '../print/usePreRenderMeasurement';
 import { calculateAvailableHeight } from '@/components/menu-print/pagination/utils/pageHeightCalculator';
+import { MM_TO_PX } from '@/components/menu-print/pagination/utils/constants';
 
 interface PageContent {
   pageNumber: number;
