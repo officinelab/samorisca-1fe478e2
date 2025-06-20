@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { PrintLayout } from '@/types/printLayout';
 import { Category, Product } from '@/types/database';
@@ -152,7 +153,7 @@ export const generateMenuContentPage = async (
     }
   }
   
-  // Add service charge at bottom of page with proper positioning
+  // Add service charge at bottom of page with proper positioning - include pageNumber argument
   const serviceY = maxY;
   addServiceChargeToPdf(
     pdf,
@@ -160,7 +161,8 @@ export const generateMenuContentPage = async (
     margins.marginLeft,
     serviceY,
     layout,
-    contentWidth
+    contentWidth,
+    page.pageNumber
   );
   
   console.log(`✅ Page ${page.pageNumber} completed, final Y: ${currentY.toFixed(1)}mm, service at: ${serviceY.toFixed(1)}mm`);
