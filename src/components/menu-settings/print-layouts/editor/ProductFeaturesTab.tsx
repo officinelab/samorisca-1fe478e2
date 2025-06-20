@@ -21,7 +21,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
   onProductFeaturesTitleChange,
   onProductFeaturesTitleMarginChange,
 }) => {
-  const [activeSubTab, setActiveSubTab] = React.useState("icon");
+  const [activeSubTab, setActiveSubTab] = React.useState("title");
 
   const fontFamilies = [
     "Arial", "Helvetica", "Times New Roman", "Georgia", 
@@ -38,37 +38,30 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
 
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="icon">Icona</TabsTrigger>
           <TabsTrigger value="title">Titolo</TabsTrigger>
+          <TabsTrigger value="icon">Icona</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="icon" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Configurazione Icona Caratteristiche</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="features-icon-size">Dimensione icona (px)</Label>
-                <Input
-                  id="features-icon-size"
-                  type="number"
-                  min="8"
-                  max="48"
-                  value={layout.productFeatures?.icon?.iconSize || 16}
-                  onChange={(e) => onProductFeaturesIconChange("iconSize", parseInt(e.target.value))}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="title" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Configurazione Titolo Caratteristiche</CardTitle>
+              <CardTitle className="text-base">Titolo Caratteristiche Prodotto</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="features-title-text">Testo del Titolo</Label>
+                <Input
+                  id="features-title-text"
+                  type="text"
+                  placeholder="es. Caratteristiche dei Prodotti"
+                  value={layout.productFeatures?.title?.text || ""}
+                  onChange={(e) => onProductFeaturesTitleChange("text", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Questo sarà il titolo mostrato nella pagina delle caratteristiche del menu stampabile
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="features-title-font-family">Font Family</Label>
@@ -94,7 +87,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                     type="number"
                     min="8"
                     max="72"
-                    value={layout.productFeatures?.title?.fontSize || 12}
+                    value={layout.productFeatures?.title?.fontSize || 18}
                     onChange={(e) => onProductFeaturesTitleChange("fontSize", parseInt(e.target.value))}
                   />
                 </div>
@@ -112,7 +105,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                 <div>
                   <Label htmlFor="features-title-font-style">Stile Font</Label>
                   <Select
-                    value={layout.productFeatures?.title?.fontStyle || "normal"}
+                    value={layout.productFeatures?.title?.fontStyle || "bold"}
                     onValueChange={(value) => onProductFeaturesTitleChange("fontStyle", value)}
                   >
                     <SelectTrigger>
@@ -145,7 +138,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
               </div>
 
               <div>
-                <Label className="text-sm font-medium">Margini (px)</Label>
+                <Label className="text-sm font-medium">Margini (mm)</Label>
                 <div className="grid grid-cols-4 gap-2 mt-2">
                   <div>
                     <Label htmlFor="features-title-margin-top" className="text-xs">Sopra</Label>
@@ -153,7 +146,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                       id="features-title-margin-top"
                       type="number"
                       min="0"
-                      value={layout.productFeatures?.title?.margin?.top || 0}
+                      value={layout.productFeatures?.title?.margin?.top || 5}
                       onChange={(e) => onProductFeaturesTitleMarginChange("top", parseInt(e.target.value))}
                     />
                   </div>
@@ -173,7 +166,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                       id="features-title-margin-bottom"
                       type="number"
                       min="0"
-                      value={layout.productFeatures?.title?.margin?.bottom || 0}
+                      value={layout.productFeatures?.title?.margin?.bottom || 10}
                       onChange={(e) => onProductFeaturesTitleMarginChange("bottom", parseInt(e.target.value))}
                     />
                   </div>
@@ -188,6 +181,27 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="icon" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Configurazione Icona Caratteristiche</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="features-icon-size">Dimensione icona (px)</Label>
+                <Input
+                  id="features-icon-size"
+                  type="number"
+                  min="8"
+                  max="48"
+                  value={layout.productFeatures?.icon?.iconSize || 16}
+                  onChange={(e) => onProductFeaturesIconChange("iconSize", parseInt(e.target.value))}
+                />
               </div>
             </CardContent>
           </Card>

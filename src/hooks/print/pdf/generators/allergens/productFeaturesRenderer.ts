@@ -21,6 +21,33 @@ export const renderProductFeatures = async (
   
   let currentY = startY;
   
+  // Render custom title if provided
+  const customTitle = layout.productFeatures?.title?.text;
+  if (customTitle) {
+    console.log('📝 Adding custom product features title:', customTitle);
+    
+    // Add top margin for title
+    currentY += layout.productFeatures.title.margin?.top || 5;
+    
+    const titleHeight = addStyledText(
+      pdf,
+      customTitle,
+      marginLeft + (layout.productFeatures.title.margin?.left || 0),
+      currentY,
+      {
+        fontSize: layout.productFeatures.title.fontSize || 18,
+        fontFamily: layout.productFeatures.title.fontFamily || 'helvetica',
+        fontStyle: layout.productFeatures.title.fontStyle || 'bold',
+        fontColor: layout.productFeatures.title.fontColor || '#000000',
+        alignment: layout.productFeatures.title.alignment || 'left',
+        maxWidth: contentWidth - (layout.productFeatures.title.margin?.left || 0) - (layout.productFeatures.title.margin?.right || 0)
+      }
+    );
+    
+    currentY += titleHeight + (layout.productFeatures.title.margin?.bottom || 10);
+  }
+  
+  // Render product features
   for (let i = 0; i < productFeatures.length; i++) {
     const feature = productFeatures[i];
     console.log('🔧 Adding product feature:', feature.title);
@@ -41,18 +68,18 @@ export const renderProductFeatures = async (
       featureHeight = Math.max(featureHeight, iconSizeMm);
     }
     
-    // Titolo caratteristica
+    // Titolo caratteristica (feature title, not section title)
     const titleHeight = addStyledText(
       pdf,
       feature.title,
       featureX,
       currentY,
       {
-        fontSize: layout.productFeatures.title.fontSize || 12,
-        fontFamily: layout.productFeatures.title.fontFamily || 'helvetica',
-        fontStyle: layout.productFeatures.title.fontStyle || 'normal',
-        fontColor: layout.productFeatures.title.fontColor || '#000000',
-        alignment: layout.productFeatures.title.alignment || 'left',
+        fontSize: 12, // Use a smaller font for individual feature titles
+        fontFamily: 'helvetica',
+        fontStyle: 'normal',
+        fontColor: '#000000',
+        alignment: 'left',
         maxWidth: contentWidth - (featureX - marginLeft)
       }
     );
