@@ -15,7 +15,7 @@ export function useProductFeaturesTab(setEditedLayout: React.Dispatch<React.SetS
     }));
   };
 
-  const handleProductFeaturesTitleChange = (field: keyof PrintLayoutElementConfig | 'text', value: any) => {
+  const handleProductFeaturesTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
     setEditedLayout(prev => ({
       ...prev,
       productFeatures: {
