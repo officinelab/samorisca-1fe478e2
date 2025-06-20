@@ -1,4 +1,3 @@
-
 export interface Database {
   public: {
     Tables: {
@@ -346,14 +345,26 @@ export type Enums<
     ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
 
-export type Category = Tables<'categories'>;
-export type Allergen = Tables<'allergens'>;
-export type ProductFeature = Tables<'product_features'>;
+// Base types with displayTitle support
+export interface Category extends Tables<'categories'> {
+  displayTitle?: string;
+  displayDescription?: string;
+}
+
+export interface Allergen extends Tables<'allergens'> {
+  displayTitle?: string;
+  displayDescription?: string;
+}
+
+export interface ProductFeature extends Tables<'product_features'> {
+  displayTitle?: string;
+}
 
 // Interfaccia per il label del prodotto
 export interface ProductLabel {
   id: string;
   title: string;
+  displayTitle?: string;
   color?: string;
   text_color?: string;
   display_order: number;
@@ -363,6 +374,8 @@ export interface ProductLabel {
 
 // Tipo Product esteso con tutte le proprietà necessarie
 export interface Product extends Tables<'products'> {
+  displayTitle?: string;
+  displayDescription?: string;
   allergens?: Allergen[];
   features?: ProductFeature[];
   label?: ProductLabel;
