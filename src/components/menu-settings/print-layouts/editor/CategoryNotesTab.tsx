@@ -27,6 +27,13 @@ const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({
 }) => {
   const [activeSubTab, setActiveSubTab] = useState("icon");
 
+  const fontFamilies = [
+    "Arial", "Helvetica", "Times New Roman", "Georgia", 
+    "Verdana", "Courier New", "Impact", "Comic Sans MS",
+    "Trebuchet MS", "Arial Black", "Palatino", "Garamond",
+    "Belleza"
+  ];
+
   return (
     <div className="space-y-6">
       <div className="text-lg font-semibold text-foreground mb-4">
@@ -78,11 +85,9 @@ const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({
                       <SelectValue placeholder="Seleziona font" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Arial">Arial</SelectItem>
-                      <SelectItem value="Helvetica">Helvetica</SelectItem>
-                      <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Verdana">Verdana</SelectItem>
+                      {fontFamilies.map(font => (
+                        <SelectItem key={font} value={font}>{font}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -210,11 +215,9 @@ const CategoryNotesTab: React.FC<CategoryNotesTabProps> = ({
                       <SelectValue placeholder="Seleziona font" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Arial">Arial</SelectItem>
-                      <SelectItem value="Helvetica">Helvetica</SelectItem>
-                      <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Verdana">Verdana</SelectItem>
+                      {fontFamilies.map(font => (
+                        <SelectItem key={font} value={font}>{font}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
