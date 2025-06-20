@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
-import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
+import { useMenuPagination } from '@/hooks/menu-content/pagination/useMenuPagination';
 import MenuContentPagePreview from './MenuContentPagePreview';
 import { Loader2 } from 'lucide-react';
 

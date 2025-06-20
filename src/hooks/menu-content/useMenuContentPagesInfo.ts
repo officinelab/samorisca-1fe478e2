@@ -1,6 +1,5 @@
-
 import { useMenuContentData } from './useMenuContentData';
-import { useMenuPagination } from './useMenuPagination';
+import { useMenuPagination } from './pagination/useMenuPagination';
 
 // Hook per ottenere informazioni sulle pagine del menu
 export const useMenuContentPagesInfo = () => {

@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 import { toast } from '@/components/ui/sonner';
 import { PrintLayout } from '@/types/printLayout';
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
-import { useMenuPagination } from '@/hooks/menu-content/useMenuPagination';
+import { useMenuPagination } from '@/hooks/menu-content/pagination/useMenuPagination';
 import { useAllergensData } from '@/hooks/menu-content/useAllergensData';
 import { useAllergensPagination } from '@/hooks/menu-content/useAllergensPagination';
 import { generateCoverPage1, generateCoverPage2 } from './pdf/generators/coverPageGenerator';
