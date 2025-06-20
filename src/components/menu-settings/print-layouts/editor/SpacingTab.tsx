@@ -4,6 +4,7 @@ import { PrintLayout } from '@/types/printLayout';
 
 interface SpacingTabProps {
   layout: PrintLayout;
+  spacing: any;
   onSpacingChange: (field: string, value: number) => void;
 }
 

@@ -4,9 +4,11 @@ import { PrintLayout } from '@/types/printLayout';
 
 interface ProductFeaturesTabProps {
   layout: PrintLayout;
-  onProductFeaturesIconChange: (field: string, value: number) => void;
-  onProductFeaturesTitleChange: (field: string, value: any) => void;
-  onProductFeaturesTitleMarginChange: (marginKey: string, value: number) => void;
+  productFeatures: any;
+  onProductFeaturesChange: (field: string, value: any) => void;
+  onIconChange: (field: string, value: any) => void;
+  onTitleChange: (field: string, value: any) => void;
+  onTitleMarginChange: (side: string, value: number) => void;
 }
 
 const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({ layout }) => {

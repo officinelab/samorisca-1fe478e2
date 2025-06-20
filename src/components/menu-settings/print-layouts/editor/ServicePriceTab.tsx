@@ -4,8 +4,9 @@ import { PrintLayout } from '@/types/printLayout';
 
 interface ServicePriceTabProps {
   layout: PrintLayout;
+  servicePrice: any;
   onServicePriceChange: (field: string, value: any) => void;
-  onServicePriceMarginChange: (marginKey: string, value: number) => void;
+  onServicePriceMarginChange: (side: string, value: number) => void;
 }
 
 const ServicePriceTab: React.FC<ServicePriceTabProps> = ({ layout }) => {

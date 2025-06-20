@@ -4,11 +4,12 @@ import { PrintLayout } from '@/types/printLayout';
 
 interface CoverLayoutTabProps {
   layout: PrintLayout;
-  onCoverLogoChange: (field: string, value: any) => void;
-  onCoverTitleChange: (field: string, value: any) => void;
-  onCoverTitleMarginChange: (marginKey: string, value: number) => void;
-  onCoverSubtitleChange: (field: string, value: any) => void;
-  onCoverSubtitleMarginChange: (marginKey: string, value: number) => void;
+  cover: any;
+  onLogoChange: (field: string, value: any) => void;
+  onTitleChange: (field: string, value: any) => void;
+  onTitleMarginChange: (side: string, value: number) => void;
+  onSubtitleChange: (field: string, value: any) => void;
+  onSubtitleMarginChange: (side: string, value: number) => void;
 }
 
 const CoverLayoutTab: React.FC<CoverLayoutTabProps> = ({ layout }) => {
