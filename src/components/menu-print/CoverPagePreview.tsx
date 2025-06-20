@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
+import { useDynamicGoogleFont } from '@/hooks/useDynamicGoogleFont';
 
 interface CoverPagePreviewProps {
   currentLayout?: PrintLayout;
@@ -13,6 +13,10 @@ const CoverPagePreview: React.FC<CoverPagePreviewProps> = ({
   showMargins,
   pageNumber
 }) => {
+  // Carica dinamicamente i font utilizzati nella copertina
+  useDynamicGoogleFont(currentLayout?.cover?.title?.fontFamily);
+  useDynamicGoogleFont(currentLayout?.cover?.subtitle?.fontFamily);
+
   // A4 dimensions in mm
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;

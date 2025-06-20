@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Product, Category } from '@/types/database';
 import { CategoryNote } from '@/types/categoryNotes';
+import { useDynamicGoogleFont } from '@/hooks/useDynamicGoogleFont';
 import ProductRenderer from './ProductRenderer';
 import CategoryRenderer from './CategoryRenderer';
 
@@ -28,6 +28,19 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
   layout,
   showMargins
 }) => {
+  // Carica dinamicamente tutti i font utilizzati nel layout del contenuto del menu
+  useDynamicGoogleFont(layout.elements.category.fontFamily);
+  useDynamicGoogleFont(layout.elements.title.fontFamily);
+  useDynamicGoogleFont(layout.elements.description.fontFamily);
+  useDynamicGoogleFont(layout.elements.descriptionEng.fontFamily);
+  useDynamicGoogleFont(layout.elements.allergensList.fontFamily);
+  useDynamicGoogleFont(layout.elements.price.fontFamily);
+  useDynamicGoogleFont(layout.elements.suffix.fontFamily);
+  useDynamicGoogleFont(layout.elements.priceVariants.fontFamily);
+  useDynamicGoogleFont(layout.servicePrice.fontFamily);
+  useDynamicGoogleFont(layout.categoryNotes.title.fontFamily);
+  useDynamicGoogleFont(layout.categoryNotes.text.fontFamily);
+
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
 

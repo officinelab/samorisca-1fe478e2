@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen, ProductFeature } from '@/types/database';
+import { useDynamicGoogleFont } from '@/hooks/useDynamicGoogleFont';
 import AllergensHeader from './AllergensHeader';
 import AllergensList from './AllergensList';
 import ProductFeaturesList from './ProductFeaturesList';
@@ -26,6 +26,14 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
   isFirstPage = false,
   showTitleAndDescription = false
 }) => {
+  // Carica dinamicamente tutti i font utilizzati nel layout allergeni
+  useDynamicGoogleFont(layout.allergens.title.fontFamily);
+  useDynamicGoogleFont(layout.allergens.description.fontFamily);
+  useDynamicGoogleFont(layout.allergens.item.number.fontFamily);
+  useDynamicGoogleFont(layout.allergens.item.title.fontFamily);
+  useDynamicGoogleFont(layout.allergens.item.description.fontFamily);
+  useDynamicGoogleFont(layout.productFeatures.title.fontFamily);
+
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
 
