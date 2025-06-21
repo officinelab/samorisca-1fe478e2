@@ -23,7 +23,7 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
       style={{
         display: 'flex',
         alignItems: 'flex-start',
-        marginBottom: `${itemConfig.spacing || 5}mm`,
+        marginBottom: `${itemConfig.spacing}mm`,
         width: '100%',
         boxSizing: 'border-box',
         wordWrap: 'break-word',

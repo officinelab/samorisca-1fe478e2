@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/pagination/useMenuPagination';
@@ -175,7 +176,7 @@ export const useAdvancedPrint = () => {
               flex-shrink: 0;
             }
             
-            /* Mantieni gli stili degli allergeni */
+            /* Mantieni gli stili degli allergeni - SENZA spacing tra elementi */
             .allergens-section {
               margin-top: 10mm;
             }
@@ -183,13 +184,14 @@ export const useAdvancedPrint = () => {
             .allergens-list {
               display: flex;
               flex-direction: column;
-              gap: 2mm;
+              gap: 0mm;
             }
             
             .allergen-item {
               display: flex;
               align-items: flex-start;
               gap: 3mm;
+              margin-bottom: 0mm;
               padding: 2mm;
             }
             

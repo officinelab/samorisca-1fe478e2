@@ -1,4 +1,3 @@
-
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -157,7 +156,7 @@ export const allergensLayout: PrintLayout = {
         alignment: "left",
         margin: { top: 0, right: 0, bottom: 0, left: 0 }
       },
-      spacing: 10,
+      spacing: 0,
       backgroundColor: "#f9f9f9",
       borderRadius: 4,
       padding: 8,
@@ -435,7 +434,7 @@ export const getAllergensLayout = (): PrintLayout => ({
         margin: { top: 0, right: 0, bottom: 0, left: 0 },
         visible: true
       },
-      spacing: 15,
+      spacing: 0,
       backgroundColor: "#e74c3c",
       borderRadius: 50,
       padding: 8,
