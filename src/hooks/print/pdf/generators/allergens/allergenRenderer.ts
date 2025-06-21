@@ -13,7 +13,7 @@ export const renderAllergen = async (
   marginLeft: number,
   contentWidth: number
 ): Promise<number> => {
-  console.log('🏷️ PDF Allergen rendering - EXACT preview values:', allergen.title);
+  console.log('🏷️ Adding allergen:', allergen.title);
   
   let currentY = startY;
   let maxItemHeight = 0;
@@ -23,14 +23,14 @@ export const renderAllergen = async (
   
   // Icona allergene
   if (allergen.icon_url) {
-    const iconSizeMm = (layout.allergens.item.iconSize || 16) / 3.78; // px to mm - IDENTICO anteprima
+    const iconSizeMm = (layout.allergens.item.iconSize || 16) / 3.78; // px to mm
     await addSvgIconToPdf(pdf, allergen.icon_url, itemX, currentY, iconSizeMm);
-    itemX += iconSizeMm + 3; // 3mm gap - IDENTICO anteprima
+    itemX += iconSizeMm + 3; // 3mm gap
     maxItemHeight = Math.max(maxItemHeight, iconSizeMm);
   }
   
   // Numero allergene
-  const numberWidth = 10; // mm - IDENTICO anteprima
+  const numberWidth = 10; // mm
   const numberHeight = addStyledText(
     pdf,
     allergen.number.toString(),
@@ -68,7 +68,7 @@ export const renderAllergen = async (
   
   // Descrizione allergene (se presente) sulla seconda riga
   if (allergen.description) {
-    currentY += 2; // 2mm spacing - IDENTICO anteprima
+    currentY += 2; // Piccolo spazio tra titolo e descrizione
     
     const descHeight = addStyledText(
       pdf,
@@ -88,10 +88,8 @@ export const renderAllergen = async (
     currentY += descHeight;
   }
   
-  // Spazio tra allergeni - USA ESATTAMENTE il valore dal layout - IDENTICO anteprima
-  const spacingMm = layout.allergens.item.spacing; // Valore esatto dal database
-  console.log('🏷️ Allergen spacing from layout:', spacingMm, 'mm');
-  currentY += spacingMm;
+  // Spazio tra allergeni
+  currentY += layout.allergens.item.spacing || 5;
   
   return currentY;
 };
