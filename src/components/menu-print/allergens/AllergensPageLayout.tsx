@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen, ProductFeature } from '@/types/database';
-import { useDynamicGoogleFont } from '@/hooks/useDynamicGoogleFont';
 import AllergensHeader from './AllergensHeader';
 import AllergensList from './AllergensList';
 import ProductFeaturesList from './ProductFeaturesList';
@@ -26,71 +26,64 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
   isFirstPage = false,
   showTitleAndDescription = false
 }) => {
-  // Carica dinamicamente tutti i font utilizzati nel layout allergeni
-  useDynamicGoogleFont(layout.allergens.title.fontFamily);
-  useDynamicGoogleFont(layout.allergens.description.fontFamily);
-  useDynamicGoogleFont(layout.allergens.item.number.fontFamily);
-  useDynamicGoogleFont(layout.allergens.item.title.fontFamily);
-  useDynamicGoogleFont(layout.allergens.item.description.fontFamily);
-  useDynamicGoogleFont(layout.productFeatures?.sectionTitle?.fontFamily);
-
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
 
-  // Get page margins based on allergens page settings
+  // Get margins for allergens page
   const getPageMargins = () => {
-    if (layout.page.useDistinctMarginsForAllergensPages && pageNumber) {
-      const isOddPage = pageNumber % 2 === 1;
-      if (isOddPage && layout.page.allergensOddPages) {
-        return layout.page.allergensOddPages;
-      } else if (!isOddPage && layout.page.allergensEvenPages) {
-        return layout.page.allergensEvenPages;
-      }
-    }
+    const allergensPageMargins = layout.allergens?.pageMargins;
     return {
-      marginTop: layout.page.allergensMarginTop,
-      marginRight: layout.page.allergensMarginRight,
-      marginBottom: layout.page.allergensMarginBottom,
-      marginLeft: layout.page.allergensMarginLeft
+      top: allergensPageMargins?.marginTop || 20,
+      right: allergensPageMargins?.marginRight || 15, 
+      bottom: allergensPageMargins?.marginBottom || 20,
+      left: allergensPageMargins?.marginLeft || 15
     };
   };
 
   const margins = getPageMargins();
 
-  return (
-    <div className="allergens-page relative bg-white" style={{
-      width: `${A4_WIDTH_MM}mm`,
-      height: `${A4_HEIGHT_MM}mm`,
-      padding: `${margins.marginTop}mm ${margins.marginRight}mm ${margins.marginBottom}mm ${margins.marginLeft}mm`,
-      boxSizing: 'border-box',
-      margin: '0 auto 20px auto',
-      border: showMargins ? '1px solid #cbd5e1' : '1px solid #e2e8f0',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-      overflow: 'hidden'
-    }}>
-      <PageMarginIndicators showMargins={showMargins} margins={margins} />
+  const pageStyle = {
+    width: `${A4_WIDTH_MM}mm`,
+    height: `${A4_HEIGHT_MM}mm`,
+    padding: `${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm`,
+    boxSizing: 'border-box' as const,
+    margin: '0 auto 30px auto',
+    border: showMargins ? '2px solid #e2e8f0' : '1px solid #e2e8f0',
+    boxShadow: showMargins ? '0 4px 12px rgba(0, 0, 0, 0.15)' : '0 2px 8px rgba(0,0,0,0.03)',
+    position: 'relative' as const,
+    backgroundColor: 'white',
+    overflow: 'hidden'
+  };
 
-      <div className="allergens-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {showTitleAndDescription && (
+  return (
+    <div className="allergens-page" style={pageStyle}>
+      <PageMarginIndicators
+        showMargins={showMargins}
+        margins={margins}
+      />
+
+      <div className="allergens-content h-full flex flex-col">
+        {/* Header con titolo e descrizione solo sulla prima pagina */}
+        {isFirstPage && showTitleAndDescription && (
           <AllergensHeader layout={layout} />
         )}
 
-        {/* Sezione Allergeni - PRIMA delle caratteristiche prodotto */}
-        {allergens && allergens.length > 0 && (
-          <div className="allergens-section">
+        {/* Lista degli allergeni con spazio zero tra gli elementi */}
+        {allergens.length > 0 && (
+          <div className="allergens-section flex-1">
             <AllergensList 
-              allergens={allergens}
+              allergens={allergens} 
               layout={layout}
-              showTitleAndDescription={false}
+              spacing={0} // Zero spacing tra gli elementi
             />
           </div>
         )}
 
-        {/* Sezione Caratteristiche Prodotto - DOPO gli allergeni - SENZA margine superiore */}
-        {productFeatures && productFeatures.length > 0 && (
-          <div className="product-features-section">
-            <ProductFeaturesList
-              productFeatures={productFeatures}
+        {/* Lista delle caratteristiche prodotto */}
+        {productFeatures.length > 0 && (
+          <div className="product-features-section mt-4">
+            <ProductFeaturesList 
+              productFeatures={productFeatures} 
               layout={layout}
             />
           </div>
