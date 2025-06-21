@@ -45,17 +45,7 @@ export const generateAllergensPage = async (
   // Render allergens header (title and description)
   currentY = renderAllergensHeader(pdf, layout, currentY, marginLeft, contentWidth);
   
-  // Render product features first (if any)
-  if (productFeatures.length > 0) {
-    currentY = await renderProductFeatures(pdf, productFeatures, layout, currentY, marginLeft, contentWidth);
-    
-    // Add some space between product features and allergens
-    if (allergens.length > 0) {
-      currentY += 10;
-    }
-  }
-  
-  // Render allergens
+  // Render allergens first
   for (const allergen of allergens) {
     // Check if we need a new page
     const estimatedHeight = 25; // Rough estimate for allergen height
@@ -67,6 +57,11 @@ export const generateAllergensPage = async (
     }
     
     currentY = await renderAllergen(pdf, allergen, layout, currentY, marginLeft, contentWidth);
+  }
+  
+  // Render product features directly after allergens - NO EXTRA SPACING
+  if (productFeatures.length > 0) {
+    currentY = await renderProductFeatures(pdf, productFeatures, layout, currentY, marginLeft, contentWidth);
   }
   
   console.log('✅ Allergens page generation completed');

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen, ProductFeature } from '@/types/database';
@@ -87,9 +86,9 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
           </div>
         )}
 
-        {/* Sezione Caratteristiche Prodotto - DOPO gli allergeni */}
+        {/* Sezione Caratteristiche Prodotto - DOPO gli allergeni - SENZA margine superiore */}
         {productFeatures && productFeatures.length > 0 && (
-          <div className="product-features-section" style={{ marginTop: '10mm' }}>
+          <div className="product-features-section">
             <ProductFeaturesList
               productFeatures={productFeatures}
               layout={layout}
