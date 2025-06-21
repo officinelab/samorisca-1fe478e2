@@ -74,12 +74,11 @@ export const createMixedPages = (
     const featuresForThisPage: ProductFeature[] = [];
     let currentPageHeight = 0;
     let hasAddedFeatures = false;
-    let needsProductFeatureTitle = false;
     
     // First, add as many allergens as possible
     while (currentAllergenIndex < allergens.length) {
       const allergen = allergens[currentAllergenIndex];
-      const allergenHeight = measurements.allergenHeights.get(allergen.id) || 18;
+      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 18;
       
       if (currentPageHeight + allergenHeight > availableForContent && allergensForThisPage.length > 0) {
         break;
@@ -93,7 +92,7 @@ export const createMixedPages = (
     // Then, try to add product features if there's space
     if (currentFeatureIndex < productFeatures.length) {
       // Calculate section title height (only needed once per features section or on new pages)
-      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight || 25;
+      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
       const remainingHeight = availableForContent - currentPageHeight;
       
       // Check if we can fit at least the section title + one feature
@@ -103,12 +102,11 @@ export const createMixedPages = (
       if (remainingHeight >= requiredSpace) {
         currentPageHeight += sectionTitleHeight;
         hasAddedFeatures = true;
-        needsProductFeatureTitle = true;
         
         // Add features until page is full
         while (currentFeatureIndex < productFeatures.length) {
           const feature = productFeatures[currentFeatureIndex];
-          const featureHeight = measurements.productFeatureHeights.get(feature.id) || 12;
+          const featureHeight = measurements.productFeatureHeights.get(feature.id) ?? 12;
           
           if (currentPageHeight + featureHeight > availableForContent && featuresForThisPage.length > 0) {
             break;
@@ -134,14 +132,14 @@ export const createMixedPages = (
     
     // Se ci sono ancora caratteristiche da aggiungere, continuiamo nelle pagine successive
     while (currentFeatureIndex < productFeatures.length) {
-      const featuresPageHeight = sectionTitleHeight; // Inizia con il titolo della sezione
+      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
       const featuresForContinuationPage: ProductFeature[] = [];
-      let continuationPageHeight = featuresPageHeight;
+      let continuationPageHeight = sectionTitleHeight; // Inizia con il titolo della sezione
       
       // Aggiungi le caratteristiche rimanenti
       while (currentFeatureIndex < productFeatures.length) {
         const feature = productFeatures[currentFeatureIndex];
-        const featureHeight = measurements.productFeatureHeights.get(feature.id) || 12;
+        const featureHeight = measurements.productFeatureHeights.get(feature.id) ?? 12;
         
         if (continuationPageHeight + featureHeight > availableHeight * SAFETY_FACTOR && featuresForContinuationPage.length > 0) {
           break;
