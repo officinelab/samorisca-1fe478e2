@@ -33,7 +33,7 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
   useDynamicGoogleFont(layout.allergens.item.number.fontFamily);
   useDynamicGoogleFont(layout.allergens.item.title.fontFamily);
   useDynamicGoogleFont(layout.allergens.item.description.fontFamily);
-  useDynamicGoogleFont(layout.productFeatures.title.fontFamily);
+  useDynamicGoogleFont(layout.productFeatures?.title?.fontFamily);
 
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
@@ -71,21 +71,29 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
     }}>
       <PageMarginIndicators showMargins={showMargins} margins={margins} />
 
-      <div className="allergens-content">
+      <div className="allergens-content" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {showTitleAndDescription && (
           <AllergensHeader layout={layout} />
         )}
 
-        <AllergensList 
-          allergens={allergens}
-          layout={layout}
-          showTitleAndDescription={showTitleAndDescription}
-        />
+        {/* Sezione Caratteristiche Prodotto - PRIMA degli allergeni */}
+        {productFeatures && productFeatures.length > 0 && (
+          <ProductFeaturesList
+            productFeatures={productFeatures}
+            layout={layout}
+          />
+        )}
 
-        <ProductFeaturesList
-          productFeatures={productFeatures}
-          layout={layout}
-        />
+        {/* Sezione Allergeni - DOPO le caratteristiche prodotto */}
+        {allergens && allergens.length > 0 && (
+          <div className="allergens-section" style={{ marginTop: '10mm' }}>
+            <AllergensList 
+              allergens={allergens}
+              layout={layout}
+              showTitleAndDescription={false}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

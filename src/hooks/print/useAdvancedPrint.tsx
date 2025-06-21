@@ -31,18 +31,22 @@ export const useAdvancedPrint = () => {
         return;
       }
 
-      // Collect all page elements with more specific selectors
+      // Raccogli le pagine in ordine specifico
       const coverPages = previewContainer.querySelectorAll('[data-page-preview^="cover"]');
       const contentPages = previewContainer.querySelectorAll('[data-page-preview^="content"]');
       
-      // Look for allergens pages with multiple possible selectors
-      let allergensPageElements = previewContainer.querySelectorAll('[data-page-preview^="allergens"]');
-      if (allergensPageElements.length === 0) {
-        // Try alternative selector for allergens pages
-        const allergensContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
-        if (allergensContainer) {
-          allergensPageElements = allergensContainer.querySelectorAll('[data-page-preview^="allergens"]');
-        }
+      // Cerca le pagine allergeni con selettori più specifici
+      const allergensContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
+      let allergensPageElements: NodeList = new NodeList();
+      
+      if (allergensContainer) {
+        // Cerca all'interno del container allergeni
+        allergensPageElements = allergensContainer.querySelectorAll('[data-page-preview^="allergens-"]');
+        console.log('📄 Trovate pagine allergeni nel container:', allergensPageElements.length);
+      } else {
+        // Fallback: cerca direttamente nel preview container
+        allergensPageElements = previewContainer.querySelectorAll('[data-page-preview^="allergens-"]');
+        console.log('📄 Trovate pagine allergeni (fallback):', allergensPageElements.length);
       }
 
       console.log('📄 Pagine trovate:', {
@@ -57,40 +61,40 @@ export const useAdvancedPrint = () => {
         return;
       }
 
-      // Create print window
+      // Crea finestra di stampa
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
         console.error('❌ Impossibile aprire finestra di stampa');
         return;
       }
 
-      // Collect all pages in order
+      // Raccogli tutte le pagine in ordine
       const allPages: Element[] = [];
       
-      // Add cover pages
+      // Aggiungi pagine cover
       coverPages.forEach(page => {
-        console.log('📄 Adding cover page:', page.getAttribute('data-page-preview'));
+        console.log('📄 Aggiunta pagina cover:', page.getAttribute('data-page-preview'));
         allPages.push(page);
       });
       
-      // Add content pages  
+      // Aggiungi pagine contenuto  
       contentPages.forEach(page => {
-        console.log('📄 Adding content page:', page.getAttribute('data-page-preview'));
+        console.log('📄 Aggiunta pagina contenuto:', page.getAttribute('data-page-preview'));
         allPages.push(page);
       });
       
-      // Add allergens pages
+      // Aggiungi pagine allergeni
       allergensPageElements.forEach(page => {
-        console.log('📄 Adding allergens page:', page.getAttribute('data-page-preview'));
+        console.log('📄 Aggiunta pagina allergeni:', page.getAttribute('data-page-preview'));
         allPages.push(page);
       });
 
-      console.log('📄 Total pages to print:', allPages.length);
+      console.log('📄 Totale pagine da stampare:', allPages.length);
 
-      // Clean and prepare pages for print
+      // Pulisci e prepara le pagine per la stampa
       const cleanedPages = allPages.map(page => cleanElementForPrint(page as HTMLElement));
 
-      // Build print HTML
+      // Costruisci HTML di stampa
       const printContent = cleanedPages
         .map(page => `<div class="print-page">${page.innerHTML}</div>`)
         .join('\n');
@@ -114,16 +118,65 @@ export const useAdvancedPrint = () => {
               width: 210mm;
               height: 297mm;
               overflow: hidden;
+              position: relative;
             }
             
             .print-page:last-child {
               page-break-after: avoid;
             }
             
-            /* Hide any remaining UI elements */
+            /* Mantieni gli stili delle caratteristiche prodotto */
+            .product-features-section {
+              margin-bottom: 15mm;
+            }
+            
+            .product-features-title {
+              display: block !important;
+              margin-bottom: 5mm;
+            }
+            
+            .product-features-list {
+              display: flex;
+              flex-direction: column;
+              gap: 3mm;
+            }
+            
+            .product-feature-item {
+              display: flex;
+              align-items: center;
+              gap: 3mm;
+            }
+            
+            .product-feature-icon {
+              width: 4mm;
+              height: 4mm;
+              flex-shrink: 0;
+            }
+            
+            /* Mantieni gli stili degli allergeni */
+            .allergens-section {
+              margin-top: 10mm;
+            }
+            
+            .allergens-list {
+              display: flex;
+              flex-direction: column;
+              gap: 2mm;
+            }
+            
+            .allergen-item {
+              display: flex;
+              align-items: flex-start;
+              gap: 3mm;
+              padding: 2mm;
+            }
+            
+            /* Nascondi elementi UI */
             .print\\:hidden,
             button,
-            .border-dashed {
+            .border-dashed,
+            .absolute.top-3.left-3,
+            h3.text-lg.font-semibold {
               display: none !important;
             }
           }
@@ -143,7 +196,7 @@ export const useAdvancedPrint = () => {
         </style>
       `;
 
-      // Write to print window
+      // Scrivi nella finestra di stampa
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -162,7 +215,7 @@ export const useAdvancedPrint = () => {
 
       printWindow.document.close();
 
-      // Wait for content to load, then trigger print
+      // Attendi il caricamento, poi avvia la stampa
       setTimeout(() => {
         console.log('🖨️ Apertura finestra di stampa completata con', allPages.length, 'pagine');
         printWindow.focus();

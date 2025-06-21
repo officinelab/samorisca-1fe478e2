@@ -22,7 +22,7 @@ const ProductFeaturesList: React.FC<ProductFeaturesListProps> = ({
   const customTitle = layout.productFeatures?.title?.text;
 
   return (
-    <div className="product-features-section">
+    <div className="product-features-section" style={{ marginBottom: '15mm' }}>
       {customTitle && (
         <div 
           className="product-features-title"
@@ -37,13 +37,20 @@ const ProductFeaturesList: React.FC<ProductFeaturesListProps> = ({
             marginRight: `${layout.productFeatures.title.margin?.right || 0}mm`,
             marginBottom: `${layout.productFeatures.title.margin?.bottom || 10}mm`,
             marginLeft: `${layout.productFeatures.title.margin?.left || 0}mm`,
+            display: 'block',
+            width: '100%'
           }}
         >
           {customTitle}
         </div>
       )}
       
-      <div className="product-features-list">
+      <div className="product-features-list" style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '3mm',
+        marginBottom: '10mm'
+      }}>
         {productFeatures.map((feature, index) => (
           <ProductFeatureItem
             key={feature.id}

@@ -16,13 +16,30 @@ export const cleanElementForPrint = (element: HTMLElement): HTMLElement => {
     '.border-dashed',
     '.absolute.top-3.left-3',
     'h3.text-lg.font-semibold',
-    '.text-xs.text-muted-foreground'
+    '.text-xs.text-muted-foreground',
+    '.sticky',
+    '[class*="print:hidden"]'
   ];
   
   selectorsToRemove.forEach(selector => {
     const elements = clone.querySelectorAll(selector);
     elements.forEach(el => el.remove());
   });
+  
+  // Assicurati che le sezioni mantengano la loro struttura
+  const productFeaturesSection = clone.querySelector('.product-features-section');
+  if (productFeaturesSection) {
+    productFeaturesSection.setAttribute('style', 
+      productFeaturesSection.getAttribute('style') + '; margin-bottom: 15mm; display: block;'
+    );
+  }
+  
+  const allergensSection = clone.querySelector('.allergens-section');
+  if (allergensSection) {
+    allergensSection.setAttribute('style', 
+      allergensSection.getAttribute('style') + '; margin-top: 10mm; display: block;'
+    );
+  }
   
   return clone;
 };
