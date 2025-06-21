@@ -15,28 +15,57 @@ export function useProductFeaturesTab(setEditedLayout: React.Dispatch<React.SetS
     }));
   };
 
-  const handleProductFeaturesTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
+  const handleProductFeaturesSectionTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
     setEditedLayout(prev => ({
       ...prev,
       productFeatures: {
         ...prev.productFeatures,
-        title: {
-          ...prev.productFeatures?.title,
+        sectionTitle: {
+          ...prev.productFeatures?.sectionTitle,
           [field]: value
         }
       }
     }));
   };
 
-  const handleProductFeaturesTitleMarginChange = (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
+  const handleProductFeaturesSectionTitleMarginChange = (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
     setEditedLayout(prev => ({
       ...prev,
       productFeatures: {
         ...prev.productFeatures,
-        title: {
-          ...prev.productFeatures?.title,
+        sectionTitle: {
+          ...prev.productFeatures?.sectionTitle,
           margin: {
-            ...prev.productFeatures?.title?.margin,
+            ...prev.productFeatures?.sectionTitle?.margin,
+            [marginKey]: value
+          }
+        }
+      }
+    }));
+  };
+
+  const handleProductFeaturesItemTitleChange = (field: keyof PrintLayoutElementConfig, value: any) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        itemTitle: {
+          ...prev.productFeatures?.itemTitle,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleProductFeaturesItemTitleMarginChange = (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => {
+    setEditedLayout(prev => ({
+      ...prev,
+      productFeatures: {
+        ...prev.productFeatures,
+        itemTitle: {
+          ...prev.productFeatures?.itemTitle,
+          margin: {
+            ...prev.productFeatures?.itemTitle?.margin,
             [marginKey]: value
           }
         }
@@ -46,7 +75,9 @@ export function useProductFeaturesTab(setEditedLayout: React.Dispatch<React.SetS
 
   return {
     handleProductFeaturesIconChange,
-    handleProductFeaturesTitleChange,
-    handleProductFeaturesTitleMarginChange
+    handleProductFeaturesSectionTitleChange,
+    handleProductFeaturesSectionTitleMarginChange,
+    handleProductFeaturesItemTitleChange,
+    handleProductFeaturesItemTitleMarginChange
   };
 }

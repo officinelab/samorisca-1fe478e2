@@ -19,7 +19,7 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
       className="product-feature-item"
       style={{
         display: 'flex',
-        alignItems: 'center', // Ripristinato 'center' per allineare icona e testo sulla stessa riga
+        alignItems: 'center',
         gap: `${layout.productFeatures.icon.iconSpacing}mm`,
         marginBottom: `${layout.productFeatures.icon.marginBottom}mm`,
         marginTop: isFirst ? `${layout.productFeatures.icon.marginTop}mm` : '0'
@@ -48,25 +48,23 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
       )}
 
       {/* Titolo caratteristica */}
-      {layout.productFeatures.title.visible !== false && (
-        <div
-          className="feature-title"
-          style={{
-            fontSize: `${layout.productFeatures.title.fontSize}px`,
-            fontFamily: layout.productFeatures.title.fontFamily,
-            color: layout.productFeatures.title.fontColor,
-            fontWeight: layout.productFeatures.title.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: layout.productFeatures.title.fontStyle === 'italic' ? 'italic' : 'normal',
-            textAlign: layout.productFeatures.title.alignment as any,
-            marginTop: `${layout.productFeatures.title.margin.top}mm`,
-            marginBottom: `${layout.productFeatures.title.margin.bottom}mm`,
-            marginLeft: `${layout.productFeatures.title.margin.left}mm`,
-            marginRight: `${layout.productFeatures.title.margin.right}mm`
-          }}
-        >
-          {feature.title}
-        </div>
-      )}
+      <div
+        className="feature-title"
+        style={{
+          fontSize: `${layout.productFeatures.itemTitle?.fontSize || 14}px`,
+          fontFamily: layout.productFeatures.itemTitle?.fontFamily || 'Arial',
+          color: layout.productFeatures.itemTitle?.fontColor || '#000000',
+          fontWeight: layout.productFeatures.itemTitle?.fontStyle === 'bold' ? 'bold' : 'normal',
+          fontStyle: layout.productFeatures.itemTitle?.fontStyle === 'italic' ? 'italic' : 'normal',
+          textAlign: layout.productFeatures.itemTitle?.alignment as any || 'left',
+          marginTop: `${layout.productFeatures.itemTitle?.margin?.top || 0}mm`,
+          marginBottom: `${layout.productFeatures.itemTitle?.margin?.bottom || 0}mm`,
+          marginLeft: `${layout.productFeatures.itemTitle?.margin?.left || 0}mm`,
+          marginRight: `${layout.productFeatures.itemTitle?.margin?.right || 0}mm`
+        }}
+      >
+        {feature.title}
+      </div>
     </div>
   );
 };

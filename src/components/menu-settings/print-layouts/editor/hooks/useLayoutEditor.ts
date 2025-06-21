@@ -86,8 +86,10 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
   // Product Features (new layout section)
   const {
     handleProductFeaturesIconChange,
-    handleProductFeaturesTitleChange,
-    handleProductFeaturesTitleMarginChange
+    handleProductFeaturesSectionTitleChange,
+    handleProductFeaturesSectionTitleMarginChange,
+    handleProductFeaturesItemTitleChange,
+    handleProductFeaturesItemTitleMarginChange
   } = useProductFeaturesTab(setEditedLayout);
 
   // Page Breaks (new section)
@@ -163,8 +165,10 @@ export const useLayoutEditor = (layout: PrintLayout, onSave: (layout: PrintLayou
     handleCategoryNotesTextMarginChange,
     handleProductFeaturesChange,
     handleProductFeaturesIconChange,
-    handleProductFeaturesTitleChange,
-    handleProductFeaturesTitleMarginChange,
+    handleProductFeaturesSectionTitleChange,
+    handleProductFeaturesSectionTitleMarginChange,
+    handleProductFeaturesItemTitleChange,
+    handleProductFeaturesItemTitleMarginChange,
     handlePageBreaksChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,

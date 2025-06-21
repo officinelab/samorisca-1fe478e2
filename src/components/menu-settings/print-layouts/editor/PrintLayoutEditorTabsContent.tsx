@@ -49,8 +49,10 @@ interface PrintLayoutEditorTabsContentProps {
   handleCategoryNotesTextMarginChange: (marginKey: keyof PrintLayout["categoryNotes"]["text"]["margin"], value: number) => void;
   handleProductFeaturesChange: (field: string, value: number) => void;
   handleProductFeaturesIconChange: (field: string, value: number) => void;
-  handleProductFeaturesTitleChange: (field: string, value: any) => void;
-  handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayout["productFeatures"]["title"]["margin"], value: number) => void;
+  handleProductFeaturesSectionTitleChange: (field: string, value: any) => void;
+  handleProductFeaturesSectionTitleMarginChange: (marginKey: keyof PrintLayout["productFeatures"]["sectionTitle"]["margin"], value: number) => void;
+  handleProductFeaturesItemTitleChange: (field: string, value: any) => void;
+  handleProductFeaturesItemTitleMarginChange: (marginKey: keyof PrintLayout["productFeatures"]["itemTitle"]["margin"], value: number) => void;
   handlePageBreaksChange: (categoryIds: string[]) => void;
   handleServicePriceChange: (field: string, value: any) => void;
   handleServicePriceMarginChange: (marginKey: keyof PrintLayout["servicePrice"]["margin"], value: number) => void;

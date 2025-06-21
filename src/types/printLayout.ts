@@ -1,4 +1,3 @@
-
 // Struttura aggiornata e commentata secondo la nuova specifica
 
 export type FontStyle = 'normal' | 'italic' | 'bold';
@@ -30,13 +29,14 @@ export type PrintLayoutElementConfig = {
  * Configurazione specifica per le caratteristiche prodotto nel layout di stampa
  */
 export type ProductFeaturesConfig = {
+  sectionTitle: PrintLayoutElementConfig;    // Titolo della sezione caratteristiche prodotto
   icon: {
     iconSize: number;      // dimensione delle icone in px
     iconSpacing: number;   // spaziatura tra le icone in px
     marginTop: number;     // margine superiore in mm
     marginBottom: number;  // margine inferiore in mm
   };
-  title: PrintLayoutElementConfig;    // Titolo delle caratteristiche prodotto
+  itemTitle: PrintLayoutElementConfig;    // Proprietà stilistiche dei titoli individuali delle caratteristiche
 };
 
 /**
