@@ -24,7 +24,7 @@ export const createAllergensOnlyPages = (
     // Add allergens until page is full
     while (currentIndex < allergens.length) {
       const allergen = allergens[currentIndex];
-      const allergenHeight = measurements.allergenHeights.get(allergen.id) || 18;
+      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 18;
       
       if (currentPageHeight + allergenHeight > availableForAllergens && allergensForThisPage.length > 0) {
         // No more space, start new page
@@ -96,7 +96,7 @@ export const createMixedPages = (
       const remainingHeight = availableForContent - currentPageHeight;
       
       // Check if we can fit at least the section title + one feature
-      const minFeatureHeight = Math.min(...Array.from(measurements.productFeatureHeights.values())) || 15;
+      const minFeatureHeight = Math.min(...Array.from(measurements.productFeatureHeights.values()).map(v => Number(v))) || 15;
       const requiredSpace = sectionTitleHeight + minFeatureHeight;
       
       if (remainingHeight >= requiredSpace) {
