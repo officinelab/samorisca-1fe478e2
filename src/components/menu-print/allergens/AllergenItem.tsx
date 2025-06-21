@@ -17,10 +17,6 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
 
   const itemConfig = layout.allergens.item;
 
-  // Calcola il margine sinistro totale per la descrizione basato solo sui margini del numero
-  const numberWidth = itemConfig.number.margin.left + itemConfig.number.margin.right + 10; // 10mm per il contenuto del numero
-  const iconWidth = allergen.icon_url ? (itemConfig.iconSize || 16) / 3.78 : 0; // px to mm, senza gap hardcoded
-
   return (
     <div
       className="allergen-item"
@@ -62,7 +58,7 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
         <div style={{
           display: 'flex',
           alignItems: 'flex-start',
-          marginBottom: allergen.description ? '2mm' : '0',
+          marginBottom: allergen.description ? `${itemConfig.description.margin.top}mm` : '0',
           width: '100%'
         }}>
           {/* Numero allergene */}
@@ -78,7 +74,6 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
               marginBottom: `${itemConfig.number.margin.bottom}mm`,
               marginLeft: `${itemConfig.number.margin.left}mm`,
               marginRight: `${itemConfig.number.margin.right}mm`,
-              minWidth: '10mm',
               flexShrink: 0
             }}
           >

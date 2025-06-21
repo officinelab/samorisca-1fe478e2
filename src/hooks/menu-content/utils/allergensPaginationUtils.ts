@@ -12,7 +12,7 @@ export const createAllergensOnlyPages = (
   let pageNumber = 1;
   
   // Fattore di sicurezza per evitare overflow
-  const SAFETY_FACTOR = 0.95;
+  const SAFETY_FACTOR = 0.90;
   
   while (currentIndex < allergens.length) {
     const isFirstPage = pageNumber === 1;
@@ -24,7 +24,7 @@ export const createAllergensOnlyPages = (
     // Add allergens until page is full
     while (currentIndex < allergens.length) {
       const allergen = allergens[currentIndex];
-      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 18;
+      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 20;
       
       if (currentPageHeight + allergenHeight > availableForAllergens && allergensForThisPage.length > 0) {
         // No more space, start new page
@@ -63,8 +63,8 @@ export const createMixedPages = (
   let currentFeatureIndex = 0;
   let pageNumber = 1;
   
-  // Fattore di sicurezza per evitare overflow
-  const SAFETY_FACTOR = 0.93;
+  // Fattore di sicurezza ridotto per gestire meglio la paginazione
+  const SAFETY_FACTOR = 0.88;
   
   while (currentAllergenIndex < allergens.length || currentFeatureIndex < productFeatures.length) {
     const isFirstPage = pageNumber === 1;
@@ -75,27 +75,29 @@ export const createMixedPages = (
     let currentPageHeight = 0;
     let hasAddedFeatures = false;
     
-    // First, add as many allergens as possible
+    // Prima, aggiungi tutti gli allergeni che entrano
     while (currentAllergenIndex < allergens.length) {
       const allergen = allergens[currentAllergenIndex];
-      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 18;
+      const allergenHeight = measurements.allergenHeights.get(allergen.id) ?? 20;
       
       if (currentPageHeight + allergenHeight > availableForContent && allergensForThisPage.length > 0) {
+        console.log(`🏷️ Pagina ${pageNumber}: Allergene "${allergen.title}" non entra - andrà nella prossima pagina`);
         break;
       }
       
       allergensForThisPage.push(allergen);
       currentPageHeight += allergenHeight;
       currentAllergenIndex++;
+      
+      console.log(`🏷️ Pagina ${pageNumber}: Aggiunto allergene "${allergen.title}" - altezza: ${allergenHeight.toFixed(1)}mm, totale: ${currentPageHeight.toFixed(1)}mm`);
     }
     
-    // Then, try to add product features if there's space
+    // Poi, prova ad aggiungere le caratteristiche prodotto se c'è spazio
     if (currentFeatureIndex < productFeatures.length) {
-      // Calculate section title height (only needed once per features section or on new pages)
       const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
       const remainingHeight = availableForContent - currentPageHeight;
       
-      // Check if we can fit at least the section title + one feature
+      // Verifica se c'è spazio per almeno il titolo sezione + una caratteristica
       const minFeatureHeight = Math.min(...Array.from(measurements.productFeatureHeights.values()).map(v => Number(v))) || 15;
       const requiredSpace = sectionTitleHeight + minFeatureHeight;
       
@@ -103,19 +105,26 @@ export const createMixedPages = (
         currentPageHeight += sectionTitleHeight;
         hasAddedFeatures = true;
         
-        // Add features until page is full
+        console.log(`🏷️ Pagina ${pageNumber}: Aggiunto titolo sezione caratteristiche - altezza: ${sectionTitleHeight.toFixed(1)}mm`);
+        
+        // Aggiungi le caratteristiche fino a riempire la pagina
         while (currentFeatureIndex < productFeatures.length) {
           const feature = productFeatures[currentFeatureIndex];
           const featureHeight = measurements.productFeatureHeights.get(feature.id) ?? 12;
           
           if (currentPageHeight + featureHeight > availableForContent && featuresForThisPage.length > 0) {
+            console.log(`🏷️ Pagina ${pageNumber}: Caratteristica "${feature.title}" non entra - andrà nella prossima pagina`);
             break;
           }
           
           featuresForThisPage.push(feature);
           currentPageHeight += featureHeight;
           currentFeatureIndex++;
+          
+          console.log(`🏷️ Pagina ${pageNumber}: Aggiunta caratteristica "${feature.title}" - altezza: ${featureHeight.toFixed(1)}mm, totale: ${currentPageHeight.toFixed(1)}mm`);
         }
+      } else {
+        console.log(`🏷️ Pagina ${pageNumber}: Non c'è spazio per le caratteristiche (serve ${requiredSpace.toFixed(1)}mm, disponibili ${remainingHeight.toFixed(1)}mm)`);
       }
     }
     
@@ -134,7 +143,9 @@ export const createMixedPages = (
     while (currentFeatureIndex < productFeatures.length) {
       const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
       const featuresForContinuationPage: ProductFeature[] = [];
-      let continuationPageHeight = sectionTitleHeight; // Inizia con il titolo della sezione
+      let continuationPageHeight = sectionTitleHeight;
+      
+      console.log(`🏷️ Pagina ${pageNumber} (continuazione caratteristiche): Inizio con titolo sezione - altezza: ${sectionTitleHeight.toFixed(1)}mm`);
       
       // Aggiungi le caratteristiche rimanenti
       while (currentFeatureIndex < productFeatures.length) {
@@ -142,12 +153,15 @@ export const createMixedPages = (
         const featureHeight = measurements.productFeatureHeights.get(feature.id) ?? 12;
         
         if (continuationPageHeight + featureHeight > availableHeight * SAFETY_FACTOR && featuresForContinuationPage.length > 0) {
+          console.log(`🏷️ Pagina ${pageNumber}: Caratteristica "${feature.title}" non entra - andrà nella prossima pagina`);
           break;
         }
         
         featuresForContinuationPage.push(feature);
         continuationPageHeight += featureHeight;
         currentFeatureIndex++;
+        
+        console.log(`🏷️ Pagina ${pageNumber}: Aggiunta caratteristica "${feature.title}" - altezza: ${featureHeight.toFixed(1)}mm, totale: ${continuationPageHeight.toFixed(1)}mm`);
       }
       
       if (featuresForContinuationPage.length > 0) {
