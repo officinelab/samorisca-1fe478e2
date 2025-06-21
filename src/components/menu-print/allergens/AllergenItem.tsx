@@ -2,6 +2,7 @@
 import React from 'react';
 import { PrintLayout } from '@/types/printLayout';
 import { Allergen } from '@/types/database';
+import { useDynamicGoogleFont } from '@/hooks/useDynamicGoogleFont';
 
 interface AllergenItemProps {
   allergen: Allergen;
@@ -9,104 +10,127 @@ interface AllergenItemProps {
 }
 
 const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
+  // Carica dinamicamente i font utilizzati
+  useDynamicGoogleFont(layout.allergens.item.number.fontFamily);
+  useDynamicGoogleFont(layout.allergens.item.title.fontFamily);
+  useDynamicGoogleFont(layout.allergens.item.description.fontFamily);
+
+  const itemConfig = layout.allergens.item;
+
   return (
     <div
       className="allergen-item"
       style={{
-        marginBottom: `${layout.allergens.item.spacing}mm`,
-        backgroundColor: layout.allergens.item.backgroundColor,
-        padding: `${layout.allergens.item.padding}mm`,
-        borderRadius: `${layout.allergens.item.borderRadius}px`,
         display: 'flex',
-        flexDirection: 'column',
-        gap: '2mm'
+        alignItems: 'flex-start',
+        marginBottom: `${itemConfig.spacing || 5}mm`,
+        width: '100%',
+        boxSizing: 'border-box',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word'
       }}
     >
-      {/* Prima riga: Icona, Numero, Titolo */}
-      <div className="allergen-header" style={{ display: 'flex', alignItems: 'flex-start', gap: '3mm' }}>
-        {/* Icona allergene */}
-        {allergen.icon_url && (
-          <div style={{
-            width: `${layout.allergens.item.iconSize}px`,
-            height: `${layout.allergens.item.iconSize}px`,
-            flexShrink: 0
-          }}>
-            <img
-              src={allergen.icon_url}
-              alt=""
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain'
-              }}
-            />
-          </div>
-        )}
-
-        {/* Numero allergene */}
-        <div
-          className="allergen-number"
-          style={{
-            fontSize: `${layout.allergens.item.number.fontSize}px`,
-            fontFamily: layout.allergens.item.number.fontFamily,
-            color: layout.allergens.item.number.fontColor,
-            fontWeight: layout.allergens.item.number.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: layout.allergens.item.number.fontStyle === 'italic' ? 'italic' : 'normal',
-            textAlign: layout.allergens.item.number.alignment as any,
-            marginTop: `${layout.allergens.item.number.margin.top}mm`,
-            marginBottom: `${layout.allergens.item.number.margin.bottom}mm`,
-            marginLeft: `${layout.allergens.item.number.margin.left}mm`,
-            marginRight: `${layout.allergens.item.number.margin.right}mm`,
-            minWidth: '20px',
-            display: layout.allergens.item.number.visible !== false ? 'block' : 'none'
-          }}
-        >
-          {allergen.number}
-        </div>
-
-        {/* Titolo allergene */}
-        <div
-          className="allergen-title"
-          style={{
-            fontSize: `${layout.allergens.item.title.fontSize}px`,
-            fontFamily: layout.allergens.item.title.fontFamily,
-            color: layout.allergens.item.title.fontColor,
-            fontWeight: layout.allergens.item.title.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: layout.allergens.item.title.fontStyle === 'italic' ? 'italic' : 'normal',
-            textAlign: layout.allergens.item.title.alignment as any,
-            marginTop: `${layout.allergens.item.title.margin.top}mm`,
-            marginBottom: `${layout.allergens.item.title.margin.bottom}mm`,
-            marginLeft: `${layout.allergens.item.title.margin.left}mm`,
-            marginRight: `${layout.allergens.item.title.margin.right}mm`,
-            flex: 1,
-            display: layout.allergens.item.title.visible !== false ? 'block' : 'none'
-          }}
-        >
-          {allergen.title}
-        </div>
-      </div>
-
-      {/* Seconda riga: Descrizione (se presente e visibile) */}
-      {allergen.description && layout.allergens.item.description.visible !== false && (
-        <div
-          className="allergen-description"
-          style={{
-            fontSize: `${layout.allergens.item.description.fontSize}px`,
-            fontFamily: layout.allergens.item.description.fontFamily,
-            color: layout.allergens.item.description.fontColor,
-            fontWeight: layout.allergens.item.description.fontStyle === 'bold' ? 'bold' : 'normal',
-            fontStyle: layout.allergens.item.description.fontStyle === 'italic' ? 'italic' : 'normal',
-            textAlign: layout.allergens.item.description.alignment as any,
-            marginTop: `${layout.allergens.item.description.margin.top}mm`,
-            marginBottom: `${layout.allergens.item.description.margin.bottom}mm`,
-            marginLeft: `${layout.allergens.item.description.margin.left}mm`,
-            marginRight: `${layout.allergens.item.description.margin.right}mm`,
-            lineHeight: 1.4
-          }}
-        >
-          {allergen.description}
+      {/* Icona allergene */}
+      {allergen.icon_url && (
+        <div style={{
+          width: `${itemConfig.iconSize || 16}px`,
+          height: `${itemConfig.iconSize || 16}px`,
+          flexShrink: 0,
+          marginRight: '3mm',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <img
+            src={allergen.icon_url}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
+          />
         </div>
       )}
+
+      {/* Contenuto testuale */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Prima riga: Numero e Titolo */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          marginBottom: allergen.description ? '2mm' : '0',
+          width: '100%'
+        }}>
+          {/* Numero allergene */}
+          <div
+            style={{
+              fontSize: `${itemConfig.number.fontSize}px`,
+              fontFamily: itemConfig.number.fontFamily,
+              color: itemConfig.number.fontColor,
+              fontWeight: itemConfig.number.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: itemConfig.number.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: itemConfig.number.alignment as any,
+              marginTop: `${itemConfig.number.margin.top}mm`,
+              marginBottom: `${itemConfig.number.margin.bottom}mm`,
+              marginLeft: `${itemConfig.number.margin.left}mm`,
+              marginRight: `${itemConfig.number.margin.right}mm`,
+              minWidth: '10mm',
+              flexShrink: 0
+            }}
+          >
+            {allergen.number}
+          </div>
+
+          {/* Titolo allergene */}
+          <div
+            style={{
+              fontSize: `${itemConfig.title.fontSize}px`,
+              fontFamily: itemConfig.title.fontFamily,
+              color: itemConfig.title.fontColor,
+              fontWeight: itemConfig.title.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: itemConfig.title.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: itemConfig.title.alignment as any,
+              marginTop: `${itemConfig.title.margin.top}mm`,
+              marginBottom: `${itemConfig.title.margin.bottom}mm`,
+              marginLeft: `${itemConfig.title.margin.left}mm`,
+              marginRight: `${itemConfig.title.margin.right}mm`,
+              flex: 1,
+              lineHeight: 1.3,
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto'
+            }}
+          >
+            {allergen.title}
+          </div>
+        </div>
+
+        {/* Seconda riga: Descrizione (se presente) */}
+        {allergen.description && (
+          <div
+            style={{
+              fontSize: `${itemConfig.description.fontSize}px`,
+              fontFamily: itemConfig.description.fontFamily,
+              color: itemConfig.description.fontColor,
+              fontWeight: itemConfig.description.fontStyle === 'bold' ? 'bold' : 'normal',
+              fontStyle: itemConfig.description.fontStyle === 'italic' ? 'italic' : 'normal',
+              textAlign: itemConfig.description.alignment as any,
+              marginTop: `${itemConfig.description.margin.top}mm`,
+              marginBottom: `${itemConfig.description.margin.bottom}mm`,
+              marginLeft: `${itemConfig.description.margin.left}mm`,
+              marginRight: `${itemConfig.description.margin.right}mm`,
+              lineHeight: 1.4,
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              hyphens: 'auto',
+              width: '100%'
+            }}
+          >
+            {allergen.description}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

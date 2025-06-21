@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { PrintLayout } from '@/types/printLayout';
@@ -22,11 +23,29 @@ export const renderAndMeasureElement = async (
     setTimeout(resolve, MEASUREMENT_DELAY);
   });
   
-  const height = wrapper.getBoundingClientRect().height * PX_TO_MM;
-  console.log(`🏷️ ${description} altezza:`, height);
+  // Misura considerando tutte le proprietà di layout
+  const computedStyle = window.getComputedStyle(wrapper.firstElementChild as Element);
+  const rect = wrapper.getBoundingClientRect();
+  
+  // Calcola altezza totale includendo margini
+  const marginTop = parseFloat(computedStyle.marginTop) || 0;
+  const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
+  const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+  const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+  
+  const totalHeight = (rect.height + marginTop + marginBottom) * PX_TO_MM;
+  
+  console.log(`🏷️ ${description} misurazione completa:`, {
+    contentHeight: (rect.height * PX_TO_MM).toFixed(2),
+    marginTop: (marginTop * PX_TO_MM).toFixed(2),
+    marginBottom: (marginBottom * PX_TO_MM).toFixed(2),
+    paddingTop: (paddingTop * PX_TO_MM).toFixed(2),
+    paddingBottom: (paddingBottom * PX_TO_MM).toFixed(2),
+    totalHeight: totalHeight.toFixed(2)
+  });
   
   root.unmount();
-  return height;
+  return totalHeight;
 };
 
 export const createTitleElement = (layout: PrintLayout) => {
@@ -47,7 +66,9 @@ export const createTitleElement = (layout: PrintLayout) => {
       marginBottom: `${layout.allergens.title.margin.bottom}mm`,
       marginLeft: `${layout.allergens.title.margin.left}mm`,
       marginRight: `${layout.allergens.title.margin.right}mm`,
-      lineHeight: 1.3
+      lineHeight: 1.3,
+      width: '100%',
+      boxSizing: 'border-box'
     }
   }, layout.allergens.title.text || 'Allergeni e Intolleranze');
 };
@@ -70,7 +91,9 @@ export const createDescriptionElement = (layout: PrintLayout) => {
       marginBottom: `${layout.allergens.description.margin.bottom}mm`,
       marginLeft: `${layout.allergens.description.margin.left}mm`,
       marginRight: `${layout.allergens.description.margin.right}mm`,
-      lineHeight: 1.4
+      lineHeight: 1.4,
+      width: '100%',
+      boxSizing: 'border-box'
     }
   }, layout.allergens.description.text || 'Lista completa degli allergeni presenti nei nostri prodotti');
 };
@@ -110,7 +133,9 @@ export const createProductFeaturesSectionElement = (layout: PrintLayout) => {
       marginBottom: `${sectionTitleConfig?.margin?.bottom || 10}mm`,
       marginLeft: `${sectionTitleConfig?.margin?.left || 0}mm`,
       marginRight: `${sectionTitleConfig?.margin?.right || 0}mm`,
-      lineHeight: 1.3
+      lineHeight: 1.3,
+      width: '100%',
+      boxSizing: 'border-box'
     }
   }, sectionTitleConfig?.text || 'Caratteristiche Prodotto');
 };

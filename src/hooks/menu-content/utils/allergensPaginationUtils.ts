@@ -11,9 +11,12 @@ export const createAllergensOnlyPages = (
   let currentIndex = 0;
   let pageNumber = 1;
   
+  // Fattore di sicurezza per evitare overflow
+  const SAFETY_FACTOR = 0.95;
+  
   while (currentIndex < allergens.length) {
     const isFirstPage = pageNumber === 1;
-    const availableForAllergens = isFirstPage ? availableHeight - headerHeight : availableHeight;
+    const availableForAllergens = (isFirstPage ? availableHeight - headerHeight : availableHeight) * SAFETY_FACTOR;
     
     let currentPageHeight = 0;
     const allergensForThisPage: Allergen[] = [];
@@ -25,6 +28,7 @@ export const createAllergensOnlyPages = (
       
       if (currentPageHeight + allergenHeight > availableForAllergens && allergensForThisPage.length > 0) {
         // No more space, start new page
+        console.log(`🏷️ Pagina ${pageNumber}: Allergene "${allergen.title}" non entra (${(currentPageHeight + allergenHeight).toFixed(2)}mm > ${availableForAllergens.toFixed(2)}mm)`);
         break;
       }
       
@@ -40,7 +44,7 @@ export const createAllergensOnlyPages = (
       hasProductFeatures: false
     });
     
-    console.log(`🏷️ Page ${pageNumber} (allergens only): ${allergensForThisPage.length} allergens, height: ${currentPageHeight.toFixed(1)}mm`);
+    console.log(`🏷️ Page ${pageNumber} (allergens only): ${allergensForThisPage.length} allergens, height: ${currentPageHeight.toFixed(1)}mm / ${availableForAllergens.toFixed(1)}mm`);
     
     pageNumber++;
   }
@@ -59,14 +63,18 @@ export const createMixedPages = (
   let currentFeatureIndex = 0;
   let pageNumber = 1;
   
+  // Fattore di sicurezza per evitare overflow
+  const SAFETY_FACTOR = 0.93;
+  
   while (currentAllergenIndex < allergens.length || currentFeatureIndex < productFeatures.length) {
     const isFirstPage = pageNumber === 1;
-    let availableForContent = isFirstPage ? availableHeight - headerHeight : availableHeight;
+    let availableForContent = (isFirstPage ? availableHeight - headerHeight : availableHeight) * SAFETY_FACTOR;
     
     const allergensForThisPage: Allergen[] = [];
     const featuresForThisPage: ProductFeature[] = [];
     let currentPageHeight = 0;
     let hasAddedFeatures = false;
+    let needsProductFeatureTitle = false;
     
     // First, add as many allergens as possible
     while (currentAllergenIndex < allergens.length) {
@@ -84,14 +92,18 @@ export const createMixedPages = (
     
     // Then, try to add product features if there's space
     if (currentFeatureIndex < productFeatures.length) {
-      // Calculate section title height (only needed once per features section)
+      // Calculate section title height (only needed once per features section or on new pages)
       const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight || 25;
       const remainingHeight = availableForContent - currentPageHeight;
       
       // Check if we can fit at least the section title + one feature
-      if (remainingHeight >= sectionTitleHeight + 15) { // 15mm minimum for one feature
+      const minFeatureHeight = Math.min(...Array.from(measurements.productFeatureHeights.values())) || 15;
+      const requiredSpace = sectionTitleHeight + minFeatureHeight;
+      
+      if (remainingHeight >= requiredSpace) {
         currentPageHeight += sectionTitleHeight;
         hasAddedFeatures = true;
+        needsProductFeatureTitle = true;
         
         // Add features until page is full
         while (currentFeatureIndex < productFeatures.length) {
@@ -116,54 +128,43 @@ export const createMixedPages = (
       hasProductFeatures: hasAddedFeatures
     });
     
-    console.log(`🏷️ Page ${pageNumber}: ${allergensForThisPage.length} allergens, ${featuresForThisPage.length} features, height: ${currentPageHeight.toFixed(1)}mm`);
+    console.log(`🏷️ Page ${pageNumber}: ${allergensForThisPage.length} allergens, ${featuresForThisPage.length} features, height: ${currentPageHeight.toFixed(1)}mm / ${availableForContent.toFixed(1)}mm`);
     
     pageNumber++;
     
-    // If we still have features to add but couldn't fit them, create a features-only page
-    if (currentFeatureIndex < productFeatures.length && !hasAddedFeatures) {
-      const remainingFeatures: ProductFeature[] = [];
-      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight || 25;
-      let featuresPageHeight = sectionTitleHeight;
+    // Se ci sono ancora caratteristiche da aggiungere, continuiamo nelle pagine successive
+    while (currentFeatureIndex < productFeatures.length) {
+      const featuresPageHeight = sectionTitleHeight; // Inizia con il titolo della sezione
+      const featuresForContinuationPage: ProductFeature[] = [];
+      let continuationPageHeight = featuresPageHeight;
       
+      // Aggiungi le caratteristiche rimanenti
       while (currentFeatureIndex < productFeatures.length) {
         const feature = productFeatures[currentFeatureIndex];
         const featureHeight = measurements.productFeatureHeights.get(feature.id) || 12;
         
-        if (featuresPageHeight + featureHeight > availableHeight && remainingFeatures.length > 0) {
-          // Create current page and continue with remaining features
-          result.push({
-            pageNumber: pageNumber,
-            allergens: [],
-            productFeatures: remainingFeatures,
-            hasProductFeatures: true
-          });
-          
-          console.log(`🏷️ Page ${pageNumber} (features continuation): ${remainingFeatures.length} features`);
-          
-          pageNumber++;
-          remainingFeatures.length = 0;
-          featuresPageHeight = sectionTitleHeight; // Reset for next page
+        if (continuationPageHeight + featureHeight > availableHeight * SAFETY_FACTOR && featuresForContinuationPage.length > 0) {
+          break;
         }
         
-        remainingFeatures.push(feature);
-        featuresPageHeight += featureHeight;
+        featuresForContinuationPage.push(feature);
+        continuationPageHeight += featureHeight;
         currentFeatureIndex++;
       }
       
-      // Add the last features page if there are remaining features
-      if (remainingFeatures.length > 0) {
+      if (featuresForContinuationPage.length > 0) {
         result.push({
           pageNumber: pageNumber,
           allergens: [],
-          productFeatures: remainingFeatures,
+          productFeatures: featuresForContinuationPage,
           hasProductFeatures: true
         });
         
-        console.log(`🏷️ Page ${pageNumber} (final features): ${remainingFeatures.length} features`);
+        console.log(`🏷️ Page ${pageNumber} (features continuation): ${featuresForContinuationPage.length} features, height: ${continuationPageHeight.toFixed(1)}mm`);
+        pageNumber++;
+      } else {
+        break;
       }
-      
-      break;
     }
     
     // Safety check to avoid infinite loops
