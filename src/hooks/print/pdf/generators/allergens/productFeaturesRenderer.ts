@@ -28,8 +28,8 @@ export const renderProductFeatures = async (
   if (sectionTitleConfig?.visible !== false && sectionTitleConfig?.text) {
     console.log('📝 Adding product features section title:', sectionTitleConfig.text);
     
-    // Add top margin for title
-    currentY += sectionTitleConfig.margin?.top || 5;
+    // Add top margin for title - usa valori esatti dal layout
+    currentY += sectionTitleConfig.margin?.top || 0;
     
     const titleHeight = addStyledText(
       pdf,
@@ -46,7 +46,7 @@ export const renderProductFeatures = async (
       }
     );
     
-    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 10);
+    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 0);
   }
   
   // Render product features
@@ -57,7 +57,7 @@ export const renderProductFeatures = async (
     let featureX = marginLeft;
     let featureHeight = 0;
     
-    // Margine top per la prima caratteristica
+    // Margine top per la prima caratteristica - usa valori esatti dal layout
     if (i === 0) {
       currentY += iconConfig?.marginTop || 0;
     }
@@ -66,7 +66,7 @@ export const renderProductFeatures = async (
     if (feature.icon_url) {
       const iconSizeMm = (iconConfig?.iconSize || 16) / 3.78; // px to mm
       await addSvgIconToPdf(pdf, feature.icon_url, featureX, currentY, iconSizeMm);
-      featureX += iconSizeMm + ((iconConfig?.iconSpacing || 4) / 3.78); // px to mm spacing
+      featureX += iconSizeMm + ((iconConfig?.iconSpacing || 4) / 3.78); // px to mm spacing - usa valori esatti
       featureHeight = Math.max(featureHeight, iconSizeMm);
     }
     
@@ -89,6 +89,7 @@ export const renderProductFeatures = async (
       featureHeight = Math.max(featureHeight, titleHeight + (itemTitleConfig?.margin?.top || 0) + (itemTitleConfig?.margin?.bottom || 0));
     }
     
+    // Usa valori esatti dal layout per marginBottom
     currentY += featureHeight + (iconConfig?.marginBottom || 0);
   }
   

@@ -88,8 +88,8 @@ export const renderAllergen = async (
     currentY += descHeight;
   }
   
-  // Spazio tra allergeni
-  currentY += layout.allergens.item.spacing || 5;
+  // Spazio tra allergeni - usa direttamente il valore dal layout senza fallback
+  currentY += layout.allergens.item.spacing;
   
   return currentY;
 };

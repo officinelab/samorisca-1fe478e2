@@ -71,8 +71,8 @@ export const usePdfExport = () => {
       console.log('📝 Generating first cover page...');
       await generateCoverPage1(pdf, currentLayout);
       
-      console.log('📝 Generating second cover page...');
-      generateCoverPage2(pdf);
+      // Non generare la seconda pagina vuota automaticamente - sarà gestita dall'anteprima
+      console.log('📝 Skipping automatic second cover page generation to avoid duplication...');
       
       console.log('📝 Generating menu content pages with exact preview layout...');
       await generateContentPages(pdf, currentLayout, createPages);
