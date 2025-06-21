@@ -17,19 +17,21 @@ export const renderProductFeatures = async (
     return startY;
   }
 
-  console.log('🏷️ Adding product features section...');
+  console.log('🏷️ PDF Product features rendering - EXACT preview values...');
   
   let currentY = startY;
   const sectionTitleConfig = layout.productFeatures?.sectionTitle;
   const iconConfig = layout.productFeatures?.icon;
   const itemTitleConfig = layout.productFeatures?.itemTitle;
   
-  // Render section title if visible and configured
+  // Render section title if visible and configured - IDENTICO anteprima
   if (sectionTitleConfig?.visible !== false && sectionTitleConfig?.text) {
     console.log('📝 Adding product features section title:', sectionTitleConfig.text);
     
-    // Add top margin for title - usa valori esatti dal layout
-    currentY += sectionTitleConfig.margin?.top || 0;
+    // Add top margin for title - USA ESATTAMENTE i valori dal layout
+    const topMargin = sectionTitleConfig.margin?.top || 0;
+    console.log('🏷️ Section title top margin:', topMargin, 'mm');
+    currentY += topMargin;
     
     const titleHeight = addStyledText(
       pdf,
@@ -46,31 +48,36 @@ export const renderProductFeatures = async (
       }
     );
     
-    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 0);
+    const bottomMargin = sectionTitleConfig.margin?.bottom || 0;
+    console.log('🏷️ Section title bottom margin:', bottomMargin, 'mm');
+    currentY += titleHeight + bottomMargin;
   }
   
-  // Render product features
+  // Render product features - IDENTICO anteprima
   for (let i = 0; i < productFeatures.length; i++) {
     const feature = productFeatures[i];
-    console.log('🔧 Adding product feature:', feature.title);
+    console.log('🔧 PDF Product feature rendering:', feature.title);
     
     let featureX = marginLeft;
     let featureHeight = 0;
     
-    // Margine top per la prima caratteristica - usa valori esatti dal layout
+    // Margine top per la prima caratteristica - USA ESATTAMENTE i valori dal layout
     if (i === 0) {
-      currentY += iconConfig?.marginTop || 0;
+      const topMargin = iconConfig?.marginTop || 0;
+      console.log('🏷️ First feature top margin:', topMargin, 'mm');
+      currentY += topMargin;
     }
     
-    // Icona caratteristica
+    // Icona caratteristica - IDENTICO anteprima
     if (feature.icon_url) {
-      const iconSizeMm = (iconConfig?.iconSize || 16) / 3.78; // px to mm
+      const iconSizeMm = (iconConfig?.iconSize || 16) / 3.78; // px to mm - IDENTICO
       await addSvgIconToPdf(pdf, feature.icon_url, featureX, currentY, iconSizeMm);
-      featureX += iconSizeMm + ((iconConfig?.iconSpacing || 4) / 3.78); // px to mm spacing - usa valori esatti
+      const iconSpacing = (iconConfig?.iconSpacing || 4) / 3.78; // px to mm - IDENTICO
+      featureX += iconSizeMm + iconSpacing;
       featureHeight = Math.max(featureHeight, iconSizeMm);
     }
     
-    // Titolo caratteristica (item title, not section title)
+    // Titolo caratteristica - IDENTICO anteprima
     if (itemTitleConfig?.visible !== false) {
       const titleHeight = addStyledText(
         pdf,
@@ -89,8 +96,10 @@ export const renderProductFeatures = async (
       featureHeight = Math.max(featureHeight, titleHeight + (itemTitleConfig?.margin?.top || 0) + (itemTitleConfig?.margin?.bottom || 0));
     }
     
-    // Usa valori esatti dal layout per marginBottom
-    currentY += featureHeight + (iconConfig?.marginBottom || 0);
+    // USA ESATTAMENTE i valori dal layout per marginBottom - IDENTICO anteprima
+    const bottomMargin = iconConfig?.marginBottom || 0;
+    console.log('🏷️ Feature bottom margin:', bottomMargin, 'mm');
+    currentY += featureHeight + bottomMargin;
   }
   
   return currentY;

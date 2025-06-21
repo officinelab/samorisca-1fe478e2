@@ -7,7 +7,7 @@ import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/pagination/useMenuPagination';
 import { useAllergensData } from '@/hooks/menu-content/useAllergensData';
 import { useAllergensPagination } from '@/hooks/menu-content/useAllergensPagination';
-import { generateCoverPage1, generateCoverPage2 } from './pdf/generators/coverPageGenerator';
+import { generateCoverPage1 } from './pdf/generators/coverPageGenerator';
 import { generateContentPages } from './pdf/generators/contentPageGenerator';
 import { generateAllergensPage } from './pdf/generators/allergensPageGenerator';
 
@@ -37,7 +37,7 @@ export const usePdfExport = () => {
   );
 
   const exportToPdf = async (currentLayout?: PrintLayout) => {
-    console.log('🎯 Starting complete PDF export with menu content matching preview...');
+    console.log('🎯 Starting PDF export with exact preview replication...');
     
     if (!currentLayout) {
       toast.error('Nessun layout fornito per l\'esportazione');
@@ -50,7 +50,7 @@ export const usePdfExport = () => {
     }
     
     console.log('📄 Layout utilizzato:', currentLayout.name);
-    console.log('📊 Menu data available:', {
+    console.log('📊 Data available:', {
       categories: menuData.categories.length,
       totalProducts: Object.values(menuData.productsByCategory).flat().length,
       notes: menuData.categoryNotes.length,
@@ -68,31 +68,30 @@ export const usePdfExport = () => {
         format: 'a4'
       });
       
-      console.log('📝 Generating first cover page...');
+      console.log('📝 Generating cover page...');
       await generateCoverPage1(pdf, currentLayout);
       
-      // Non generare la seconda pagina vuota automaticamente - sarà gestita dall'anteprima
-      console.log('📝 Skipping automatic second cover page generation to avoid duplication...');
-      
-      console.log('📝 Generating menu content pages with exact preview layout...');
+      console.log('📝 Generating menu content pages...');
       await generateContentPages(pdf, currentLayout, createPages);
       
-      console.log('📝 Generating allergens and product features pages...');
-      // Generate a page for each allergens page from pagination
-      for (const allergensPage of allergensPages) {
-        await generateAllergensPage(pdf, currentLayout, allergensPage.allergens, 
-          allergensPage.hasProductFeatures ? allergensPage.productFeatures : []);
+      console.log('📝 Generating allergens pages...');
+      // Generate allergens pages ONLY if there are allergens or features
+      if (allergensPages.length > 0) {
+        for (const allergensPage of allergensPages) {
+          await generateAllergensPage(pdf, currentLayout, allergensPage.allergens, 
+            allergensPage.hasProductFeatures ? allergensPage.productFeatures : []);
+        }
       }
       
       const fileName = `menu-completo-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ Complete PDF exported successfully with exact preview layout including allergens pages');
-      toast.success(`PDF completo esportato con successo! Include copertine, contenuto menu, e ${allergensPages.length} pagine di allergeni/caratteristiche.`);
+      console.log('✅ PDF exported successfully');
+      toast.success(`PDF esportato con successo! Include ${allergensPages.length} pagine di allergeni/caratteristiche.`);
       
     } catch (error) {
       console.error('❌ Error during PDF export:', error);
-      toast.error('Errore durante la generazione del PDF completo');
+      toast.error('Errore durante la generazione del PDF');
     } finally {
       setIsExporting(false);
     }
