@@ -256,3 +256,6 @@ export const getDefaultLayout = (): PrintLayout => ({
     allergensEvenPages: { marginTop: 20, marginRight: 15, marginBottom: 20, marginLeft: 15 }
   }
 });
+
+// Export array for backward compatibility
+export const defaultLayouts = [getDefaultLayout()];
