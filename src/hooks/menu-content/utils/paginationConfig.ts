@@ -1,47 +1,51 @@
 
 import { PrintLayout } from '@/types/printLayout';
+import { ProductFeature } from '@/types/database';
 import { PaginationContext } from '../types/paginationTypes';
+import { AllergensMeasurementResult } from '../types/measurementTypes';
 
 export const createPaginationContext = (
   layout: PrintLayout,
-  measurements: any,
+  measurements: AllergensMeasurementResult,
   productFeaturesCount: number
 ): PaginationContext => {
-  // Calculate page dimensions and margins
-  const pageHeight = 297; // A4 height in mm
+  // Calculate available page height
+  const A4_HEIGHT_MM = 297;
   const margins = {
-    top: layout.page.allergensMarginTop || 20,
-    bottom: layout.page.allergensMarginBottom || 20
+    marginTop: layout.page.allergensMarginTop || 20,
+    marginRight: layout.page.allergensMarginRight || 15,
+    marginBottom: layout.page.allergensMarginBottom || 20,
+    marginLeft: layout.page.allergensMarginLeft || 15
   };
   
-  const availableHeight = pageHeight - margins.top - margins.bottom;
+  const availableHeight = A4_HEIGHT_MM - margins.marginTop - margins.marginBottom;
   
   // Calculate header height (title + description)
-  const headerHeight = measurements.titleHeight + measurements.descriptionHeight + 10; // 10mm spacing
-  
-  // Calculate total product features height
-  let totalProductFeaturesHeight = 0;
-  for (let i = 0; i < productFeaturesCount; i++) {
-    // We need to iterate through product features to get their heights
-    // This will be calculated in the main hook
-  }
+  const headerHeight = measurements.titleHeight + measurements.descriptionHeight;
   
   return {
     availableHeight,
     headerHeight,
-    totalProductFeaturesHeight,
-    measurements
+    totalProductFeaturesHeight: 0, // Will be calculated separately
+    measurements: {
+      ...measurements,
+      productFeaturesSectionTitleHeight: measurements.productFeaturesSectionTitleHeight
+    }
   };
 };
 
 export const calculateProductFeaturesHeight = (
-  productFeatures: any[],
-  measurements: any
+  productFeatures: ProductFeature[],
+  measurements: AllergensMeasurementResult
 ): number => {
-  let totalHeight = 0;
-  productFeatures.forEach(feature => {
+  if (productFeatures.length === 0) return 0;
+  
+  let totalHeight = measurements.productFeaturesSectionTitleHeight || 25; // Section title
+  
+  for (const feature of productFeatures) {
     const featureHeight = measurements.productFeatureHeights.get(feature.id) || 12;
     totalHeight += featureHeight;
-  });
+  }
+  
   return totalHeight;
 };

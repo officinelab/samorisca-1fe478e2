@@ -4,4 +4,5 @@ export interface AllergensMeasurementResult {
   productFeatureHeights: Map<string, number>;
   titleHeight: number;
   descriptionHeight: number;
+  productFeaturesSectionTitleHeight: number;
 }

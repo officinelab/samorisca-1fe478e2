@@ -9,7 +9,8 @@ import {
   createTitleElement,
   createDescriptionElement,
   createAllergenElement,
-  createProductFeatureElement
+  createProductFeatureElement,
+  createProductFeaturesSectionElement
 } from './utils/elementRenderer';
 
 export const useAllergensPreRenderMeasurement = (
@@ -49,7 +50,8 @@ export const useAllergensPreRenderMeasurement = (
         allergenHeights: new Map(),
         productFeatureHeights: new Map(),
         titleHeight: 0,
-        descriptionHeight: 0
+        descriptionHeight: 0,
+        productFeaturesSectionTitleHeight: 0
       };
 
       try {
@@ -70,6 +72,16 @@ export const useAllergensPreRenderMeasurement = (
             container, 
             descriptionElement, 
             'Descrizione allergeni'
+          );
+        }
+
+        // Measure product features section title
+        if (productFeatures.length > 0) {
+          const sectionTitleElement = createProductFeaturesSectionElement(layout);
+          results.productFeaturesSectionTitleHeight = await renderAndMeasureElement(
+            container,
+            sectionTitleElement,
+            'Titolo sezione caratteristiche prodotto'
           );
         }
 
@@ -108,6 +120,7 @@ export const useAllergensPreRenderMeasurement = (
         caratteristiche: results.productFeatureHeights.size,
         titleHeight: results.titleHeight,
         descriptionHeight: results.descriptionHeight,
+        sectionTitleHeight: results.productFeaturesSectionTitleHeight,
         layoutId: layout.id
       });
     };
