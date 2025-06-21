@@ -95,14 +95,24 @@ export function ensurePageMargins(layout: PrintLayout): PrintLayout {
       marginTop: layout.productFeatures?.icon?.marginTop ?? 0,
       marginBottom: layout.productFeatures?.icon?.marginBottom ?? 0
     },
-    title: {
-      visible: typeof layout.productFeatures?.title?.visible === "boolean" ? layout.productFeatures.title.visible : true,
-      fontFamily: layout.productFeatures?.title?.fontFamily ?? "Arial",
-      fontSize: layout.productFeatures?.title?.fontSize ?? 12,
-      fontColor: layout.productFeatures?.title?.fontColor ?? "#000000",
-      fontStyle: layout.productFeatures?.title?.fontStyle ?? "normal",
-      alignment: layout.productFeatures?.title?.alignment ?? "left",
-      margin: layout.productFeatures?.title?.margin ?? { top: 0, right: 0, bottom: 0, left: 0 }
+    sectionTitle: {
+      visible: typeof layout.productFeatures?.sectionTitle?.visible === "boolean" ? layout.productFeatures.sectionTitle.visible : true,
+      fontFamily: layout.productFeatures?.sectionTitle?.fontFamily ?? "Arial",
+      fontSize: layout.productFeatures?.sectionTitle?.fontSize ?? 18,
+      fontColor: layout.productFeatures?.sectionTitle?.fontColor ?? "#000000",
+      fontStyle: layout.productFeatures?.sectionTitle?.fontStyle ?? "bold",
+      alignment: layout.productFeatures?.sectionTitle?.alignment ?? "left",
+      margin: layout.productFeatures?.sectionTitle?.margin ?? { top: 5, right: 0, bottom: 10, left: 0 },
+      text: layout.productFeatures?.sectionTitle?.text ?? "Caratteristiche Prodotto"
+    },
+    itemTitle: {
+      visible: typeof layout.productFeatures?.itemTitle?.visible === "boolean" ? layout.productFeatures.itemTitle.visible : true,
+      fontFamily: layout.productFeatures?.itemTitle?.fontFamily ?? "Arial",
+      fontSize: layout.productFeatures?.itemTitle?.fontSize ?? 14,
+      fontColor: layout.productFeatures?.itemTitle?.fontColor ?? "#000000",
+      fontStyle: layout.productFeatures?.itemTitle?.fontStyle ?? "normal",
+      alignment: layout.productFeatures?.itemTitle?.alignment ?? "left",
+      margin: layout.productFeatures?.itemTitle?.margin ?? { top: 0, right: 0, bottom: 0, left: 0 }
     }
   };
 

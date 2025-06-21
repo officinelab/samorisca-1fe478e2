@@ -167,8 +167,10 @@ const PrintLayoutEditorTabsContent: React.FC<PrintLayoutEditorTabsContentProps> 
         <ProductFeaturesTab
           layout={props.editedLayout}
           onProductFeaturesIconChange={props.handleProductFeaturesIconChange}
-          onProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
-          onProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
+          onProductFeaturesSectionTitleChange={props.handleProductFeaturesSectionTitleChange}
+          onProductFeaturesSectionTitleMarginChange={props.handleProductFeaturesSectionTitleMarginChange}
+          onProductFeaturesItemTitleChange={props.handleProductFeaturesItemTitleChange}
+          onProductFeaturesItemTitleMarginChange={props.handleProductFeaturesItemTitleMarginChange}
         />
       )}
 

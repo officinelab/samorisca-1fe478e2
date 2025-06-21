@@ -22,29 +22,29 @@ export const renderProductFeatures = async (
   let currentY = startY;
   
   // Render custom title if provided
-  const customTitle = layout.productFeatures?.title?.text;
+  const customTitle = layout.productFeatures?.sectionTitle?.text;
   if (customTitle) {
     console.log('📝 Adding custom product features title:', customTitle);
     
     // Add top margin for title
-    currentY += layout.productFeatures.title.margin?.top || 5;
+    currentY += layout.productFeatures.sectionTitle.margin?.top || 5;
     
     const titleHeight = addStyledText(
       pdf,
       customTitle,
-      marginLeft + (layout.productFeatures.title.margin?.left || 0),
+      marginLeft + (layout.productFeatures.sectionTitle.margin?.left || 0),
       currentY,
       {
-        fontSize: layout.productFeatures.title.fontSize || 18,
-        fontFamily: layout.productFeatures.title.fontFamily || 'helvetica',
-        fontStyle: layout.productFeatures.title.fontStyle || 'bold',
-        fontColor: layout.productFeatures.title.fontColor || '#000000',
-        alignment: layout.productFeatures.title.alignment || 'left',
-        maxWidth: contentWidth - (layout.productFeatures.title.margin?.left || 0) - (layout.productFeatures.title.margin?.right || 0)
+        fontSize: layout.productFeatures.sectionTitle.fontSize || 18,
+        fontFamily: layout.productFeatures.sectionTitle.fontFamily || 'helvetica',
+        fontStyle: layout.productFeatures.sectionTitle.fontStyle || 'bold',
+        fontColor: layout.productFeatures.sectionTitle.fontColor || '#000000',
+        alignment: layout.productFeatures.sectionTitle.alignment || 'left',
+        maxWidth: contentWidth - (layout.productFeatures.sectionTitle.margin?.left || 0) - (layout.productFeatures.sectionTitle.margin?.right || 0)
       }
     );
     
-    currentY += titleHeight + (layout.productFeatures.title.margin?.bottom || 10);
+    currentY += titleHeight + (layout.productFeatures.sectionTitle.margin?.bottom || 10);
   }
   
   // Render product features
@@ -75,11 +75,11 @@ export const renderProductFeatures = async (
       featureX,
       currentY,
       {
-        fontSize: 12, // Use a smaller font for individual feature titles
-        fontFamily: 'helvetica',
-        fontStyle: 'normal',
-        fontColor: '#000000',
-        alignment: 'left',
+        fontSize: layout.productFeatures.itemTitle?.fontSize || 12,
+        fontFamily: layout.productFeatures.itemTitle?.fontFamily || 'helvetica',
+        fontStyle: layout.productFeatures.itemTitle?.fontStyle || 'normal',
+        fontColor: layout.productFeatures.itemTitle?.fontColor || '#000000',
+        alignment: layout.productFeatures.itemTitle?.alignment || 'left',
         maxWidth: contentWidth - (featureX - marginLeft)
       }
     );

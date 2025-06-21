@@ -33,7 +33,7 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
   useDynamicGoogleFont(layout.allergens.item.number.fontFamily);
   useDynamicGoogleFont(layout.allergens.item.title.fontFamily);
   useDynamicGoogleFont(layout.allergens.item.description.fontFamily);
-  useDynamicGoogleFont(layout.productFeatures?.title?.fontFamily);
+  useDynamicGoogleFont(layout.productFeatures?.sectionTitle?.fontFamily);
 
   const A4_WIDTH_MM = 210;
   const A4_HEIGHT_MM = 297;
