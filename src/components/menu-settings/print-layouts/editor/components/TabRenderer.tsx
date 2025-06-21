@@ -1,4 +1,3 @@
-
 import React from "react";
 import GeneralTab from "../GeneralTab";
 import ElementsTab from "../ElementsTab";
@@ -56,8 +55,10 @@ interface TabRendererProps {
   handleCategoryNotesTextMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleProductFeaturesChange: (field: string, value: number) => void;
   handleProductFeaturesIconChange: (field: keyof ProductFeaturesConfig["icon"], value: number) => void;
-  handleProductFeaturesTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
-  handleProductFeaturesTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleProductFeaturesSectionTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleProductFeaturesSectionTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
+  handleProductFeaturesItemTitleChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
+  handleProductFeaturesItemTitleMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleServicePriceChange: (field: keyof PrintLayoutElementConfig, value: any) => void;
   handleServicePriceMarginChange: (marginKey: keyof PrintLayoutElementConfig["margin"], value: number) => void;
   handleCoverMarginChange: (field: string, value: number) => void;
@@ -161,8 +162,10 @@ const TabRenderer: React.FC<TabRendererProps> = (props) => {
         <ProductFeaturesTab
           layout={editedLayout}
           onProductFeaturesIconChange={props.handleProductFeaturesIconChange}
-          onProductFeaturesTitleChange={props.handleProductFeaturesTitleChange}
-          onProductFeaturesTitleMarginChange={props.handleProductFeaturesTitleMarginChange}
+          onProductFeaturesSectionTitleChange={props.handleProductFeaturesSectionTitleChange}
+          onProductFeaturesSectionTitleMarginChange={props.handleProductFeaturesSectionTitleMarginChange}
+          onProductFeaturesItemTitleChange={props.handleProductFeaturesItemTitleChange}
+          onProductFeaturesItemTitleMarginChange={props.handleProductFeaturesItemTitleMarginChange}
         />
       );
     default:

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PrintLayout } from "@/types/printLayout";
@@ -87,8 +86,10 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
     handleCategoryNotesTextMarginChange,
     handleProductFeaturesChange,
     handleProductFeaturesIconChange,
-    handleProductFeaturesTitleChange,
-    handleProductFeaturesTitleMarginChange,
+    handleProductFeaturesSectionTitleChange,
+    handleProductFeaturesSectionTitleMarginChange,
+    handleProductFeaturesItemTitleChange,
+    handleProductFeaturesItemTitleMarginChange,
     handlePageBreaksChange,
     handleServicePriceChange,
     handleServicePriceMarginChange,
@@ -187,8 +188,10 @@ const PrintLayoutEditor = ({ layout, onSave }: PrintLayoutEditorProps) => {
               handleCategoryNotesTextMarginChange={handleCategoryNotesTextMarginChange}
               handleProductFeaturesChange={handleProductFeaturesChange}
               handleProductFeaturesIconChange={handleProductFeaturesIconChange}
-              handleProductFeaturesTitleChange={handleProductFeaturesTitleChange}
-              handleProductFeaturesTitleMarginChange={handleProductFeaturesTitleMarginChange}
+              handleProductFeaturesSectionTitleChange={handleProductFeaturesSectionTitleChange}
+              handleProductFeaturesSectionTitleMarginChange={handleProductFeaturesSectionTitleMarginChange}
+              handleProductFeaturesItemTitleChange={handleProductFeaturesItemTitleChange}
+              handleProductFeaturesItemTitleMarginChange={handleProductFeaturesItemTitleMarginChange}
               handlePageBreaksChange={handlePageBreaksChange}
               handleServicePriceChange={handleServicePriceChange}
               handleServicePriceMarginChange={handleServicePriceMarginChange}

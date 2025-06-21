@@ -1,8 +1,8 @@
-
+import { v4 as uuidv4 } from 'uuid';
 import { PrintLayout } from "@/types/printLayout";
 
-export const defaultLayout: PrintLayout = {
-  id: "default",
+export const getDefaultLayout = (): PrintLayout => ({
+  id: uuidv4(),
   name: "Layout Predefinito",
   type: "classic",
   isDefault: true,
@@ -10,20 +10,20 @@ export const defaultLayout: PrintLayout = {
   elements: {
     category: {
       fontFamily: "Arial",
-      fontSize: 18,
-      fontColor: "#000000",
-      fontStyle: "bold",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 8, left: 0 },
-      visible: true
-    },
-    title: {
-      fontFamily: "Arial",
       fontSize: 16,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 4, left: 0 },
+      margin: { top: 0, right: 0, bottom: 10, left: 0 },
+      visible: true
+    },
+    title: {
+      fontFamily: "Arial",
+      fontSize: 14,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
       visible: true
     },
     description: {
@@ -32,7 +32,7 @@ export const defaultLayout: PrintLayout = {
       fontColor: "#333333",
       fontStyle: "normal",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 },
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
       visible: true
     },
     descriptionEng: {
@@ -41,7 +41,7 @@ export const defaultLayout: PrintLayout = {
       fontColor: "#666666",
       fontStyle: "italic",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 },
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
       visible: true
     },
     allergensList: {
@@ -50,45 +50,44 @@ export const defaultLayout: PrintLayout = {
       fontColor: "#888888",
       fontStyle: "normal",
       alignment: "left",
-      margin: { top: 0, right: 0, bottom: 2, left: 0 },
+      margin: { top: 0, right: 0, bottom: 5, left: 0 },
       visible: true
     },
     productFeatures: {
       iconSize: 14,
       iconSpacing: 4,
-      marginTop: 2,
-      marginBottom: 2
+      marginTop: 3,
+      marginBottom: 3
     },
     price: {
       fontFamily: "Arial",
-      fontSize: 14,
+      fontSize: 13,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "right",
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      margin: { top: 0, right: 0, bottom: 0, left: 10 },
       visible: true
     },
     suffix: {
       fontFamily: "Arial",
-      fontSize: 14,
-      fontColor: "#000000",
-      fontStyle: "bold",
-      alignment: "right",
-      visible: true
+      fontSize: 11,
+      fontColor: "#666666",
+      fontStyle: "normal",
+      alignment: "right"
     },
     priceVariants: {
       fontFamily: "Arial",
-      fontSize: 12,
-      fontColor: "#666666",
+      fontSize: 11,
+      fontColor: "#444444",
       fontStyle: "normal",
-      alignment: "right",
+      alignment: "left",
       margin: { top: 2, right: 0, bottom: 0, left: 0 },
       visible: true
     }
   },
   cover: {
     logo: {
-      imageUrl: "",
+      imageUrl: null,
       maxWidth: 80,
       maxHeight: 50,
       alignment: "center",
@@ -119,62 +118,60 @@ export const defaultLayout: PrintLayout = {
   },
   allergens: {
     title: {
-      visible: true,
       fontFamily: "Arial",
-      fontSize: 22,
+      fontSize: 18,
       fontColor: "#000000",
       fontStyle: "bold",
       alignment: "center",
-      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+      margin: { top: 0, right: 0, bottom: 15, left: 0 },
+      visible: true
     },
     description: {
-      visible: true,
       fontFamily: "Arial",
-      fontSize: 14,
+      fontSize: 12,
       fontColor: "#333333",
       fontStyle: "normal",
-      alignment: "left",
-      margin: { top: 0, right: 0, bottom: 15, left: 0 }
+      alignment: "center",
+      margin: { top: 0, right: 0, bottom: 20, left: 0 },
+      visible: true
     },
     item: {
       number: {
-        visible: true,
+        fontFamily: "Arial",
+        fontSize: 14,
+        fontColor: "#ffffff",
+        fontStyle: "bold",
+        alignment: "center",
+        margin: { top: 0, right: 8, bottom: 0, left: 0 },
+        visible: true
+      },
+      title: {
         fontFamily: "Arial",
         fontSize: 14,
         fontColor: "#000000",
         fontStyle: "bold",
         alignment: "left",
-        margin: { top: 0, right: 8, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 3, left: 0 },
+        visible: true
       },
-      title: {
-        visible: true,
+      description: {
         fontFamily: "Arial",
-        fontSize: 14,
+        fontSize: 12,
         fontColor: "#333333",
         fontStyle: "normal",
         alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        visible: true
       },
-      description: {
-        visible: true,
-        fontFamily: "Arial",
-        fontSize: 12,
-        fontColor: "#666666",
-        fontStyle: "normal",
-        alignment: "left",
-        margin: { top: 0, right: 0, bottom: 0, left: 0 }
-      },
-      spacing: 10,
-      backgroundColor: "#f9f9f9",
-      borderRadius: 4,
+      spacing: 15,
+      backgroundColor: "#e74c3c",
+      borderRadius: 50,
       padding: 8,
-      iconSize: 16
+      iconSize: 24
     }
   },
   categoryNotes: {
-    icon: {
-      iconSize: 16
-    },
+    icon: { iconSize: 16 },
     title: {
       visible: true,
       fontFamily: "Arial",
@@ -195,16 +192,26 @@ export const defaultLayout: PrintLayout = {
     }
   },
   productFeatures: {
+    sectionTitle: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 18,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 5, right: 0, bottom: 10, left: 0 },
+      text: "Caratteristiche Prodotto"
+    },
     icon: {
       iconSize: 16,
       iconSpacing: 4,
       marginTop: 0,
       marginBottom: 0
     },
-    title: {
+    itemTitle: {
       visible: true,
       fontFamily: "Arial",
-      fontSize: 12,
+      fontSize: 14,
       fontColor: "#000000",
       fontStyle: "normal",
       alignment: "left",
@@ -224,8 +231,8 @@ export const defaultLayout: PrintLayout = {
     categoryIds: []
   },
   spacing: {
-    betweenCategories: 15,
-    betweenProducts: 8,
+    betweenCategories: 20,
+    betweenProducts: 10,
     categoryTitleBottomMargin: 10
   },
   page: {
@@ -234,18 +241,8 @@ export const defaultLayout: PrintLayout = {
     marginBottom: 20,
     marginLeft: 20,
     useDistinctMarginsForPages: false,
-    oddPages: {
-      marginTop: 20,
-      marginRight: 20,
-      marginBottom: 20,
-      marginLeft: 20
-    },
-    evenPages: {
-      marginTop: 20,
-      marginRight: 20,
-      marginBottom: 20,
-      marginLeft: 20
-    },
+    oddPages: { marginTop: 20, marginRight: 20, marginBottom: 20, marginLeft: 20 },
+    evenPages: { marginTop: 20, marginRight: 20, marginBottom: 20, marginLeft: 20 },
     coverMarginTop: 25,
     coverMarginRight: 25,
     coverMarginBottom: 25,
@@ -255,20 +252,7 @@ export const defaultLayout: PrintLayout = {
     allergensMarginBottom: 20,
     allergensMarginLeft: 15,
     useDistinctMarginsForAllergensPages: false,
-    allergensOddPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
-    },
-    allergensEvenPages: {
-      marginTop: 20,
-      marginRight: 15,
-      marginBottom: 20,
-      marginLeft: 15
-    }
+    allergensOddPages: { marginTop: 20, marginRight: 15, marginBottom: 20, marginLeft: 15 },
+    allergensEvenPages: { marginTop: 20, marginRight: 15, marginBottom: 20, marginLeft: 15 }
   }
-};
-
-// Array di layout predefiniti - ora contiene solo il layout di default
-export const defaultLayouts: PrintLayout[] = [defaultLayout];
+});
