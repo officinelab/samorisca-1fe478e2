@@ -28,32 +28,6 @@ export function transformDbToLayout(dbLayout: any): PrintLayout {
     }
   };
 
-  // Assicura che productFeatures abbia la struttura corretta con il campo text
-  const productFeaturesConfig = dbLayout.product_features || {};
-  const productFeaturesWithDefaults = {
-    icon: {
-      iconSize: productFeaturesConfig.icon?.iconSize || 16,
-      marginTop: productFeaturesConfig.icon?.marginTop || 0,
-      iconSpacing: productFeaturesConfig.icon?.iconSpacing || 4,
-      marginBottom: productFeaturesConfig.icon?.marginBottom || 0
-    },
-    title: {
-      text: productFeaturesConfig.title?.text || "",
-      margin: {
-        top: productFeaturesConfig.title?.margin?.top || 5,
-        right: productFeaturesConfig.title?.margin?.right || 0,
-        bottom: productFeaturesConfig.title?.margin?.bottom || 10,
-        left: productFeaturesConfig.title?.margin?.left || 0
-      },
-      visible: productFeaturesConfig.title?.visible !== false,
-      fontSize: productFeaturesConfig.title?.fontSize || 18,
-      alignment: productFeaturesConfig.title?.alignment || "left",
-      fontColor: productFeaturesConfig.title?.fontColor || "#000000",
-      fontStyle: productFeaturesConfig.title?.fontStyle || "bold",
-      fontFamily: productFeaturesConfig.title?.fontFamily || "Arial"
-    }
-  };
-
   return {
     id: dbLayout.id,
     name: dbLayout.name,
@@ -64,7 +38,7 @@ export function transformDbToLayout(dbLayout: any): PrintLayout {
     cover: dbLayout.cover,
     allergens: dbLayout.allergens,
     categoryNotes: dbLayout.category_notes,
-    productFeatures: productFeaturesWithDefaults,
+    productFeatures: dbLayout.product_features,
     servicePrice: dbLayout.service_price || {
       visible: true,
       fontFamily: "Arial",
@@ -110,24 +84,7 @@ export const mapSupabaseToLayout = (data: any): PrintLayout => {
     cover: data.cover,
     allergens: data.allergens,
     categoryNotes: data.category_notes,
-    productFeatures: data.product_features || {
-      icon: {
-        iconSize: 16,
-        marginTop: 0,
-        iconSpacing: 4,
-        marginBottom: 0
-      },
-      title: {
-        text: "",
-        margin: { top: 5, right: 0, bottom: 10, left: 0 },
-        visible: true,
-        fontSize: 18,
-        alignment: "left",
-        fontColor: "#000000",
-        fontStyle: "bold",
-        fontFamily: "Arial"
-      }
-    },
+    productFeatures: data.product_features,
     servicePrice: data.service_price || {
       visible: true,
       fontFamily: "Arial",
