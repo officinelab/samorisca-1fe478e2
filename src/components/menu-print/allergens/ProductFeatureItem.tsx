@@ -19,7 +19,7 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
       className="product-feature-item"
       style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start', // Cambiato da 'center' a 'flex-start' per migliore allineamento
         gap: `${layout.productFeatures.icon.iconSpacing}mm`,
         marginBottom: `${layout.productFeatures.icon.marginBottom}mm`,
         marginTop: isFirst ? `${layout.productFeatures.icon.marginTop}mm` : '0'
@@ -30,7 +30,10 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
         <div style={{
           width: `${layout.productFeatures.icon.iconSize}px`,
           height: `${layout.productFeatures.icon.iconSize}px`,
-          flexShrink: 0
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center', // Centra l'icona nel suo contenitore
+          justifyContent: 'center'
         }}>
           <img
             src={feature.icon_url}
@@ -58,7 +61,10 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
             marginTop: `${layout.productFeatures.title.margin.top}mm`,
             marginBottom: `${layout.productFeatures.title.margin.bottom}mm`,
             marginLeft: `${layout.productFeatures.title.margin.left}mm`,
-            marginRight: `${layout.productFeatures.title.margin.right}mm`
+            marginRight: `${layout.productFeatures.title.margin.right}mm`,
+            lineHeight: `${layout.productFeatures.icon.iconSize}px`, // Allinea l'altezza della linea con l'icona
+            display: 'flex',
+            alignItems: 'center' // Centra verticalmente il testo
           }}
         >
           {feature.title}
