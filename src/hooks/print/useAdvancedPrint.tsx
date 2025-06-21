@@ -151,7 +151,7 @@ export const useAdvancedPrint = () => {
             .allergen-item {
               display: flex !important;
               align-items: flex-start !important;
-              margin-bottom: 5mm !important;
+              margin-bottom: 0mm !important;
               width: 100% !important;
               box-sizing: border-box !important;
               word-wrap: break-word !important;
@@ -203,7 +203,7 @@ export const useAdvancedPrint = () => {
             .allergens-list {
               display: flex !important;
               flex-direction: column !important;
-              gap: 2mm !important;
+              gap: 0mm !important;
             }
             
             /* Mantieni la struttura delle pagine allergeni */
