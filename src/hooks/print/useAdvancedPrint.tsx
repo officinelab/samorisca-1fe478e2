@@ -36,18 +36,27 @@ export const useAdvancedPrint = () => {
       const coverPage2 = previewContainer.querySelector('[data-page-preview="cover-2"]');
       const contentPages = previewContainer.querySelectorAll('[data-page-preview^="content-"]');
       
-      // Selettore più preciso per le pagine allergeni
-      const allergensContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
-      let allergensPageElements: Element[] = [];
+      // Selezione migliorata per le pagine allergeni
+      const allergensPageElements: Element[] = [];
       
+      // Prima cerca il container principale delle pagine allergeni
+      const allergensContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
       if (allergensContainer) {
-        // Cerca solo le pagine individuali all'interno del container
-        const individualPages = allergensContainer.querySelectorAll('[data-page-preview^="allergens-"][data-page-preview$=""]');
-        allergensPageElements = Array.from(individualPages).filter(el => {
-          const attr = el.getAttribute('data-page-preview');
-          return attr && /^allergens-\d+$/.test(attr);
+        // Cerca tutte le pagine individuali all'interno del container
+        const individualPages = allergensContainer.querySelectorAll('[data-page-preview^="allergens-"]');
+        individualPages.forEach(page => {
+          const attr = page.getAttribute('data-page-preview');
+          // Include solo le pagine numeriche (allergens-1, allergens-2, etc.)
+          if (attr && /^allergens-\d+$/.test(attr)) {
+            allergensPageElements.push(page);
+          }
         });
-        console.log('📄 Pagine allergeni trovate:', allergensPageElements.length);
+      }
+      
+      // Se non trova pagine individuali, cerca direttamente nel container principale
+      if (allergensPageElements.length === 0 && allergensContainer) {
+        // Include l'intero container se non ci sono pagine individuali
+        allergensPageElements.push(allergensContainer);
       }
 
       console.log('📄 Pagine trovate per la stampa:', {
@@ -58,7 +67,7 @@ export const useAdvancedPrint = () => {
         totalAllergensPages: allergensPages.length
       });
 
-      // Verifica che non ci siano duplicazioni
+      // Verifica che ci siano pagine da stampare
       if (!coverPage1 && !coverPage2 && contentPages.length === 0 && allergensPageElements.length === 0) {
         console.warn('⚠️ Nessuna pagina trovata per la stampa');
         return;
@@ -195,6 +204,22 @@ export const useAdvancedPrint = () => {
               display: flex !important;
               flex-direction: column !important;
               gap: 2mm !important;
+            }
+            
+            /* Mantieni la struttura delle pagine allergeni */
+            .allergens-page {
+              width: 210mm !important;
+              height: 297mm !important;
+              padding: 20mm 15mm 20mm 15mm !important;
+              box-sizing: border-box !important;
+              overflow: hidden !important;
+              background: white !important;
+            }
+            
+            .allergens-content {
+              height: 100% !important;
+              display: flex !important;
+              flex-direction: column !important;
             }
             
             /* Preserva tutti gli stili inline */
