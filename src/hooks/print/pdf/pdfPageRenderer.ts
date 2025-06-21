@@ -75,7 +75,7 @@ const getPageMargins = (
   }
 };
 
-// Generate a single menu content page in PDF with proper layout matching preview
+// Generate a single menu content page in PDF matching preview exactly
 export const generateMenuContentPage = async (
   pdf: jsPDF,
   page: PageContent,
@@ -83,11 +83,9 @@ export const generateMenuContentPage = async (
 ): Promise<void> => {
   console.log(`📄 Generating PDF page ${page.pageNumber} with ${page.categories.length} category sections`);
   
-  // Add new page if this is not the first page being added
-  if (page.pageNumber > 1) {
-    pdf.addPage();
-    console.log(`🔥 PDF: Aggiunta nuova pagina ${page.pageNumber} (interruzione di pagina applicata)`);
-  }
+  // Add new page for each content page (starting from page 3 after covers)
+  pdf.addPage();
+  console.log(`📄 Added new content page ${page.pageNumber}`);
   
   const margins = getPageMargins(layout, 'content', page.pageNumber);
   const pageWidth = 210; // A4 width in mm
@@ -120,7 +118,7 @@ export const generateMenuContentPage = async (
       );
       currentY += categoryHeight;
       
-      // Category notes - await the async function properly
+      // Category notes
       if (categorySection.notes.length > 0) {
         const notesHeight = await addCategoryNotesToPdf(
           pdf,
@@ -134,7 +132,7 @@ export const generateMenuContentPage = async (
       }
     }
     
-    // Render products with proper two-column layout
+    // Render products
     for (const product of categorySection.products) {
       const isLastProduct = categorySection.products.indexOf(product) === categorySection.products.length - 1;
       
@@ -154,7 +152,7 @@ export const generateMenuContentPage = async (
     }
   }
   
-  // Add service charge at bottom of page with proper positioning - include pageNumber argument
+  // Add service charge at bottom of page
   const serviceY = maxY;
   addServiceChargeToPdf(
     pdf,
@@ -169,14 +167,13 @@ export const generateMenuContentPage = async (
   console.log(`✅ Page ${page.pageNumber} completed, final Y: ${currentY.toFixed(1)}mm, service at: ${serviceY.toFixed(1)}mm`);
 };
 
-// Generate all menu content pages with async support
+// Generate all menu content pages with exact preview matching
 export const generateAllMenuContentPages = async (
   pdf: jsPDF,
   pages: PageContent[],
   layout: PrintLayout
 ): Promise<void> => {
   console.log(`📄 Starting generation of ${pages.length} menu content pages`);
-  console.log(`🔥 Page breaks configured for categories:`, layout.pageBreaks?.categoryIds || []);
   
   for (const page of pages) {
     console.log(`📄 Generating page ${page.pageNumber} (${pages.indexOf(page) + 1}/${pages.length})`);

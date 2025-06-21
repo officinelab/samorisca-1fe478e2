@@ -37,7 +37,7 @@ export const usePdfExport = () => {
   );
 
   const exportToPdf = async (currentLayout?: PrintLayout) => {
-    console.log('🎯 Starting complete PDF export with menu content matching preview...');
+    console.log('🎯 Starting PDF export with exact preview matching...');
     
     if (!currentLayout) {
       toast.error('Nessun layout fornito per l\'esportazione');
@@ -68,17 +68,19 @@ export const usePdfExport = () => {
         format: 'a4'
       });
       
+      // Remove the default first page since we'll create our own
+      pdf.deletePage(1);
+      
       console.log('📝 Generating first cover page...');
       await generateCoverPage1(pdf, currentLayout);
       
-      console.log('📝 Generating second cover page...');
+      console.log('📝 Generating second cover page (empty)...');
       generateCoverPage2(pdf);
       
       console.log('📝 Generating menu content pages with exact preview layout...');
       await generateContentPages(pdf, currentLayout, createPages);
       
-      console.log('📝 Generating allergens and product features pages...');
-      // Generate a page for each allergens page from pagination
+      console.log('📝 Generating allergens pages...');
       for (const allergensPage of allergensPages) {
         await generateAllergensPage(pdf, currentLayout, allergensPage.allergens, 
           allergensPage.hasProductFeatures ? allergensPage.productFeatures : []);
@@ -87,7 +89,7 @@ export const usePdfExport = () => {
       const fileName = `menu-completo-${currentLayout.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
       
-      console.log('✅ Complete PDF exported successfully with exact preview layout including allergens pages');
+      console.log('✅ PDF exported successfully with exact preview layout');
       toast.success(`PDF completo esportato con successo! Include copertine, contenuto menu, e ${allergensPages.length} pagine di allergeni/caratteristiche.`);
       
     } catch (error) {
