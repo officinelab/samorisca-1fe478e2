@@ -1,3 +1,4 @@
+
 import { PrintLayout } from "@/types/printLayout";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -195,13 +196,23 @@ export const classicSchema1: PrintLayout = {
     }
   },
   productFeatures: {
+    sectionTitle: {
+      visible: true,
+      fontFamily: "Arial",
+      fontSize: 18,
+      fontColor: "#000000",
+      fontStyle: "bold",
+      alignment: "left",
+      margin: { top: 5, right: 0, bottom: 10, left: 0 },
+      text: "Caratteristiche Prodotto"
+    },
     icon: {
       iconSize: 16,
       iconSpacing: 4,
       marginTop: 0,
       marginBottom: 0
     },
-    title: {
+    itemTitle: {
       visible: true,
       fontFamily: "Arial",
       fontSize: 12,
