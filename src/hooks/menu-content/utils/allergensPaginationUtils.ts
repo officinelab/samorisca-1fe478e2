@@ -67,65 +67,30 @@ export const createMixedPages = (
     let currentPageHeight = 0;
     let includeProductFeatures = false;
     
-    // Try to include product features on first page
-    if (isFirstPage && !productFeaturesPlaced) {
-      // Calculate how many allergens we can fit with product features
-      const heightWithFeatures = availableForContent - totalProductFeaturesHeight - 15; // 15mm spacing
+    // First, try to fit as many allergens as possible
+    while (currentIndex < allergens.length) {
+      const allergen = allergens[currentIndex];
+      const allergenHeight = measurements.allergenHeights.get(allergen.id) || 18;
       
-      if (heightWithFeatures > 0) {
-        // Try to fit some allergens with product features
-        let tempHeight = 0;
-        let tempIndex = currentIndex;
-        
-        while (tempIndex < allergens.length) {
-          const allergen = allergens[tempIndex];
-          const allergenHeight = measurements.allergenHeights.get(allergen.id) || 18;
-          
-          if (tempHeight + allergenHeight > heightWithFeatures) {
-            break;
-          }
-          
-          allergensForThisPage.push(allergen);
-          tempHeight += allergenHeight;
-          tempIndex++;
-        }
-        
-        currentIndex = tempIndex;
-        currentPageHeight = tempHeight + totalProductFeaturesHeight + 15;
-        includeProductFeatures = true;
-        productFeaturesPlaced = true;
-        
-        console.log(`🏷️ Page ${pageNumber} (mixed): ${allergensForThisPage.length} allergens + features, height: ${currentPageHeight.toFixed(1)}mm`);
-      }
-    }
-    
-    // If we didn't include features, fill with allergens
-    if (!includeProductFeatures && currentIndex < allergens.length) {
-      currentPageHeight = 0;
-      allergensForThisPage.length = 0;
-      
-      while (currentIndex < allergens.length) {
-        const allergen = allergens[currentIndex];
-        const allergenHeight = measurements.allergenHeights.get(allergen.id) || 18;
-        
-        if (currentPageHeight + allergenHeight > availableForContent && allergensForThisPage.length > 0) {
-          break;
-        }
-        
-        allergensForThisPage.push(allergen);
-        currentPageHeight += allergenHeight;
-        currentIndex++;
+      if (currentPageHeight + allergenHeight > availableForContent && allergensForThisPage.length > 0) {
+        break;
       }
       
-      console.log(`🏷️ Page ${pageNumber} (allergens only): ${allergensForThisPage.length} allergens, height: ${currentPageHeight.toFixed(1)}mm`);
+      allergensForThisPage.push(allergen);
+      currentPageHeight += allergenHeight;
+      currentIndex++;
     }
     
-    // Check if we can add features to the last page
-    if (currentIndex >= allergens.length && !productFeaturesPlaced && productFeatures.length > 0) {
-      if (currentPageHeight + totalProductFeaturesHeight + 15 <= availableForContent) {
+    // After placing allergens, check if we can fit product features on this page
+    if (!productFeaturesPlaced && productFeatures.length > 0) {
+      const remainingHeight = availableForContent - currentPageHeight;
+      const featuresWithTitleHeight = totalProductFeaturesHeight + 10; // 10mm for section spacing
+      
+      if (remainingHeight >= featuresWithTitleHeight) {
         includeProductFeatures = true;
         productFeaturesPlaced = true;
-        console.log(`🏷️ Page ${pageNumber} - Adding features to existing page`);
+        currentPageHeight += featuresWithTitleHeight;
+        console.log(`🏷️ Page ${pageNumber} - Adding features after allergens, remaining height: ${remainingHeight.toFixed(1)}mm`);
       }
     }
     
@@ -136,9 +101,11 @@ export const createMixedPages = (
       hasProductFeatures: includeProductFeatures
     });
     
+    console.log(`🏷️ Page ${pageNumber}: ${allergensForThisPage.length} allergens${includeProductFeatures ? ' + features' : ''}, height: ${currentPageHeight.toFixed(1)}mm`);
+    
     pageNumber++;
     
-    // If we finished allergens but features aren't placed
+    // If we finished allergens but features aren't placed, create a dedicated page for features
     if (currentIndex >= allergens.length && !productFeaturesPlaced && productFeatures.length > 0) {
       result.push({
         pageNumber: pageNumber,

@@ -76,21 +76,23 @@ const AllergensPageLayout: React.FC<AllergensPageLayoutProps> = ({
           <AllergensHeader layout={layout} />
         )}
 
-        {/* Sezione Caratteristiche Prodotto - PRIMA degli allergeni */}
-        {productFeatures && productFeatures.length > 0 && (
-          <ProductFeaturesList
-            productFeatures={productFeatures}
-            layout={layout}
-          />
-        )}
-
-        {/* Sezione Allergeni - DOPO le caratteristiche prodotto */}
+        {/* Sezione Allergeni - PRIMA delle caratteristiche prodotto */}
         {allergens && allergens.length > 0 && (
-          <div className="allergens-section" style={{ marginTop: '10mm' }}>
+          <div className="allergens-section">
             <AllergensList 
               allergens={allergens}
               layout={layout}
               showTitleAndDescription={false}
+            />
+          </div>
+        )}
+
+        {/* Sezione Caratteristiche Prodotto - DOPO gli allergeni */}
+        {productFeatures && productFeatures.length > 0 && (
+          <div className="product-features-section" style={{ marginTop: '10mm' }}>
+            <ProductFeaturesList
+              productFeatures={productFeatures}
+              layout={layout}
             />
           </div>
         )}
