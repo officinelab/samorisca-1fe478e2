@@ -11,8 +11,8 @@ export const createAllergensOnlyPages = (
   let currentIndex = 0;
   let pageNumber = 1;
   
-  // Fattore di sicurezza per evitare overflow
-  const SAFETY_FACTOR = 0.90;
+  // Fattore di sicurezza ridotto per evitare overflow
+  const SAFETY_FACTOR = 0.95;
   
   while (currentIndex < allergens.length) {
     const isFirstPage = pageNumber === 1;
@@ -63,8 +63,8 @@ export const createMixedPages = (
   let currentFeatureIndex = 0;
   let pageNumber = 1;
   
-  // Fattore di sicurezza ridotto per gestire meglio la paginazione
-  const SAFETY_FACTOR = 0.88;
+  // Fattore di sicurezza ridotto per utilizzare meglio lo spazio
+  const SAFETY_FACTOR = 0.95;
   
   while (currentAllergenIndex < allergens.length || currentFeatureIndex < productFeatures.length) {
     const isFirstPage = pageNumber === 1;
@@ -94,12 +94,16 @@ export const createMixedPages = (
     
     // Poi, prova ad aggiungere le caratteristiche prodotto se c'è spazio
     if (currentFeatureIndex < productFeatures.length) {
-      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
+      // Usa l'altezza reale misurata del titolo sezione invece di stimarla
+      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 20; // Ridotto da 25 a 20
       const remainingHeight = availableForContent - currentPageHeight;
       
-      // Verifica se c'è spazio per almeno il titolo sezione + una caratteristica
-      const minFeatureHeight = Math.min(...Array.from(measurements.productFeatureHeights.values()).map(v => Number(v))) || 15;
+      // Calcola l'altezza minima necessaria per almeno una caratteristica
+      const minFeatureHeight = productFeatures.length > 0 ? 
+        (measurements.productFeatureHeights.get(productFeatures[currentFeatureIndex].id) ?? 12) : 12;
       const requiredSpace = sectionTitleHeight + minFeatureHeight;
+      
+      console.log(`🏷️ Pagina ${pageNumber}: Spazio rimanente: ${remainingHeight.toFixed(1)}mm, richiesto per features: ${requiredSpace.toFixed(1)}mm`);
       
       if (remainingHeight >= requiredSpace) {
         currentPageHeight += sectionTitleHeight;
@@ -112,8 +116,8 @@ export const createMixedPages = (
           const feature = productFeatures[currentFeatureIndex];
           const featureHeight = measurements.productFeatureHeights.get(feature.id) ?? 12;
           
-          if (currentPageHeight + featureHeight > availableForContent && featuresForThisPage.length > 0) {
-            console.log(`🏷️ Pagina ${pageNumber}: Caratteristica "${feature.title}" non entra - andrà nella prossima pagina`);
+          if (currentPageHeight + featureHeight > availableForContent) {
+            console.log(`🏷️ Pagina ${pageNumber}: Caratteristica "${feature.title}" non entra (${(currentPageHeight + featureHeight).toFixed(1)}mm > ${availableForContent.toFixed(1)}mm) - andrà nella prossima pagina`);
             break;
           }
           
@@ -141,7 +145,8 @@ export const createMixedPages = (
     
     // Se ci sono ancora caratteristiche da aggiungere, continuiamo nelle pagine successive
     while (currentFeatureIndex < productFeatures.length) {
-      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 25;
+      // Usa l'altezza reale misurata del titolo sezione
+      const sectionTitleHeight = measurements.productFeaturesSectionTitleHeight ?? 20;
       const featuresForContinuationPage: ProductFeature[] = [];
       let continuationPageHeight = sectionTitleHeight;
       
