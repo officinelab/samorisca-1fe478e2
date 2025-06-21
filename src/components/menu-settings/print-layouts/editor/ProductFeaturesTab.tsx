@@ -21,7 +21,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
   onProductFeaturesTitleChange,
   onProductFeaturesTitleMarginChange,
 }) => {
-  const [activeSubTab, setActiveSubTab] = React.useState("title");
+  const [activeSubTab, setActiveSubTab] = React.useState("section-title");
 
   const fontFamilies = [
     "Arial", "Helvetica", "Times New Roman", "Georgia", 
@@ -38,33 +38,33 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
 
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="title">Titolo</TabsTrigger>
-          <TabsTrigger value="icon">Icona</TabsTrigger>
+          <TabsTrigger value="section-title">Titolo Sezione</TabsTrigger>
+          <TabsTrigger value="item-settings">Impostazioni Elementi</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="title" className="space-y-4">
+        <TabsContent value="section-title" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Titolo Caratteristiche Prodotto</CardTitle>
+              <CardTitle className="text-base">Titolo della Sezione Caratteristiche</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="features-title-text">Testo del Titolo</Label>
+                <Label htmlFor="features-section-title-text">Testo del Titolo Sezione</Label>
                 <Input
-                  id="features-title-text"
+                  id="features-section-title-text"
                   type="text"
                   placeholder="es. Caratteristiche dei Prodotti"
                   value={layout.productFeatures?.title?.text || ""}
                   onChange={(e) => onProductFeaturesTitleChange("text", e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Questo sarà il titolo mostrato nella pagina delle caratteristiche del menu stampabile
+                  Questo è il titolo generale che appare sopra l'elenco delle caratteristiche nella pagina stampabile
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="features-title-font-family">Font Family</Label>
+                  <Label htmlFor="features-section-title-font-family">Font Family</Label>
                   <Select
                     value={layout.productFeatures?.title?.fontFamily || "Arial"}
                     onValueChange={(value) => onProductFeaturesTitleChange("fontFamily", value)}
@@ -81,9 +81,9 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="features-title-font-size">Dimensione Font</Label>
+                  <Label htmlFor="features-section-title-font-size">Dimensione Font</Label>
                   <Input
-                    id="features-title-font-size"
+                    id="features-section-title-font-size"
                     type="number"
                     min="8"
                     max="72"
@@ -95,7 +95,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="features-title-font-color">Colore Font</Label>
+                  <Label htmlFor="features-section-title-font-color">Colore Font</Label>
                   <ColorPickerInput
                     value={layout.productFeatures?.title?.fontColor || "#000000"}
                     onChange={(value) => onProductFeaturesTitleChange("fontColor", value)}
@@ -103,7 +103,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="features-title-font-style">Stile Font</Label>
+                  <Label htmlFor="features-section-title-font-style">Stile Font</Label>
                   <Select
                     value={layout.productFeatures?.title?.fontStyle || "bold"}
                     onValueChange={(value) => onProductFeaturesTitleChange("fontStyle", value)}
@@ -121,7 +121,7 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="features-title-alignment">Allineamento</Label>
+                <Label htmlFor="features-section-title-alignment">Allineamento</Label>
                 <Select
                   value={layout.productFeatures?.title?.alignment || "left"}
                   onValueChange={(value) => onProductFeaturesTitleChange("alignment", value)}
@@ -138,12 +138,12 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
               </div>
 
               <div>
-                <Label className="text-sm font-medium">Margini (mm)</Label>
+                <Label className="text-sm font-medium">Margini Titolo Sezione (mm)</Label>
                 <div className="grid grid-cols-4 gap-2 mt-2">
                   <div>
-                    <Label htmlFor="features-title-margin-top" className="text-xs">Sopra</Label>
+                    <Label htmlFor="features-section-title-margin-top" className="text-xs">Sopra</Label>
                     <Input
-                      id="features-title-margin-top"
+                      id="features-section-title-margin-top"
                       type="number"
                       min="0"
                       value={layout.productFeatures?.title?.margin?.top || 5}
@@ -151,9 +151,9 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="features-title-margin-right" className="text-xs">Destra</Label>
+                    <Label htmlFor="features-section-title-margin-right" className="text-xs">Destra</Label>
                     <Input
-                      id="features-title-margin-right"
+                      id="features-section-title-margin-right"
                       type="number"
                       min="0"
                       value={layout.productFeatures?.title?.margin?.right || 0}
@@ -161,9 +161,9 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="features-title-margin-bottom" className="text-xs">Sotto</Label>
+                    <Label htmlFor="features-section-title-margin-bottom" className="text-xs">Sotto</Label>
                     <Input
-                      id="features-title-margin-bottom"
+                      id="features-section-title-margin-bottom"
                       type="number"
                       min="0"
                       value={layout.productFeatures?.title?.margin?.bottom || 10}
@@ -171,9 +171,9 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="features-title-margin-left" className="text-xs">Sinistra</Label>
+                    <Label htmlFor="features-section-title-margin-left" className="text-xs">Sinistra</Label>
                     <Input
-                      id="features-title-margin-left"
+                      id="features-section-title-margin-left"
                       type="number"
                       min="0"
                       value={layout.productFeatures?.title?.margin?.left || 0}
@@ -186,14 +186,14 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="icon" className="space-y-4">
+        <TabsContent value="item-settings" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Configurazione Icona Caratteristiche</CardTitle>
+              <CardTitle className="text-base">Impostazioni Elementi Caratteristiche</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="features-icon-size">Dimensione icona (px)</Label>
+                <Label htmlFor="features-icon-size">Dimensione icona elementi (px)</Label>
                 <Input
                   id="features-icon-size"
                   type="number"
@@ -202,6 +202,48 @@ const ProductFeaturesTab: React.FC<ProductFeaturesTabProps> = ({
                   value={layout.productFeatures?.icon?.iconSize || 16}
                   onChange={(e) => onProductFeaturesIconChange("iconSize", parseInt(e.target.value))}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Dimensione delle icone delle singole caratteristiche prodotto
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="features-icon-spacing">Spaziatura icona-testo (mm)</Label>
+                <Input
+                  id="features-icon-spacing"
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={layout.productFeatures?.icon?.iconSpacing || 4}
+                  onChange={(e) => onProductFeaturesIconChange("iconSpacing", parseInt(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Spazio tra l'icona e il testo della caratteristica
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="features-margin-top">Margine superiore primo elemento (mm)</Label>
+                  <Input
+                    id="features-margin-top"
+                    type="number"
+                    min="0"
+                    value={layout.productFeatures?.icon?.marginTop || 0}
+                    onChange={(e) => onProductFeaturesIconChange("marginTop", parseInt(e.target.value))}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="features-margin-bottom">Margine inferiore elementi (mm)</Label>
+                  <Input
+                    id="features-margin-bottom"
+                    type="number"
+                    min="0"
+                    value={layout.productFeatures?.icon?.marginBottom || 0}
+                    onChange={(e) => onProductFeaturesIconChange("marginBottom", parseInt(e.target.value))}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
