@@ -17,10 +17,9 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
 
   const itemConfig = layout.allergens.item;
 
-  // Calcola il margine sinistro totale per la descrizione
-  const iconWidth = allergen.icon_url ? (itemConfig.iconSize || 16) / 3.78 + 3 : 0; // px to mm + gap
-  const numberWidth = 10; // mm come definito nel renderer PDF
-  const totalLeftOffset = iconWidth + numberWidth;
+  // Calcola il margine sinistro totale per la descrizione basato solo sui margini del numero
+  const numberWidth = itemConfig.number.margin.left + itemConfig.number.margin.right + 10; // 10mm per il contenuto del numero
+  const iconWidth = allergen.icon_url ? (itemConfig.iconSize || 16) / 3.78 : 0; // px to mm, senza gap hardcoded
 
   return (
     <div
@@ -41,7 +40,6 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
           width: `${itemConfig.iconSize || 16}px`,
           height: `${itemConfig.iconSize || 16}px`,
           flexShrink: 0,
-          marginRight: '3mm',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -123,14 +121,12 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
               textAlign: itemConfig.description.alignment as any,
               marginTop: `${itemConfig.description.margin.top}mm`,
               marginBottom: `${itemConfig.description.margin.bottom}mm`,
-              marginLeft: `${totalLeftOffset + itemConfig.description.margin.left}mm`, // Combina offset e margine configurato
+              marginLeft: `${itemConfig.description.margin.left}mm`,
               marginRight: `${itemConfig.description.margin.right}mm`,
               lineHeight: 1.4,
               wordWrap: 'break-word',
               overflowWrap: 'break-word',
-              hyphens: 'auto',
-              width: `calc(100% - ${totalLeftOffset + itemConfig.description.margin.left}mm - ${itemConfig.description.margin.right}mm)`, // Larghezza corretta
-              maxWidth: `calc(100% - ${totalLeftOffset + itemConfig.description.margin.left}mm - ${itemConfig.description.margin.right}mm)` // Larghezza massima corretta
+              hyphens: 'auto'
             }}
           >
             {allergen.description}
