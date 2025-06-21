@@ -17,6 +17,11 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
 
   const itemConfig = layout.allergens.item;
 
+  // Calcola il margine sinistro totale per la descrizione
+  const iconWidth = allergen.icon_url ? (itemConfig.iconSize || 16) / 3.78 + 3 : 0; // px to mm + gap
+  const numberWidth = 10; // mm come definito nel renderer PDF
+  const totalLeftOffset = iconWidth + numberWidth;
+
   return (
     <div
       className="allergen-item"
@@ -118,13 +123,14 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
               textAlign: itemConfig.description.alignment as any,
               marginTop: `${itemConfig.description.margin.top}mm`,
               marginBottom: `${itemConfig.description.margin.bottom}mm`,
-              marginLeft: `${itemConfig.description.margin.left}mm`,
+              marginLeft: `${totalLeftOffset}mm`, // Applica il margine sinistro calcolato
               marginRight: `${itemConfig.description.margin.right}mm`,
               lineHeight: 1.4,
               wordWrap: 'break-word',
               overflowWrap: 'break-word',
               hyphens: 'auto',
-              width: '100%'
+              width: `calc(100% - ${totalLeftOffset}mm - ${itemConfig.description.margin.right}mm)`, // Larghezza corretta
+              maxWidth: `calc(100% - ${totalLeftOffset}mm - ${itemConfig.description.margin.right}mm)` // Larghezza massima corretta
             }}
           >
             {allergen.description}
