@@ -28,8 +28,8 @@ export const renderProductFeatures = async (
   if (sectionTitleConfig?.visible !== false && sectionTitleConfig?.text) {
     console.log('📝 Adding product features section title:', sectionTitleConfig.text);
     
-    // Add top margin for title - USA ESATTAMENTE il valore dal database
-    currentY += sectionTitleConfig.margin?.top || 0;
+    // Add top margin for title
+    currentY += sectionTitleConfig.margin?.top || 5;
     
     const titleHeight = addStyledText(
       pdf,
@@ -46,7 +46,7 @@ export const renderProductFeatures = async (
       }
     );
     
-    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 0);
+    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 10);
   }
   
   // Render product features
@@ -57,7 +57,7 @@ export const renderProductFeatures = async (
     let featureX = marginLeft;
     let featureHeight = 0;
     
-    // Margine top per la prima caratteristica - USA ESATTAMENTE il valore dal database
+    // Margine top per la prima caratteristica
     if (i === 0) {
       currentY += iconConfig?.marginTop || 0;
     }
@@ -89,7 +89,6 @@ export const renderProductFeatures = async (
       featureHeight = Math.max(featureHeight, titleHeight + (itemTitleConfig?.margin?.top || 0) + (itemTitleConfig?.margin?.bottom || 0));
     }
     
-    // USA ESATTAMENTE il valore dal database per marginBottom
     currentY += featureHeight + (iconConfig?.marginBottom || 0);
   }
   
