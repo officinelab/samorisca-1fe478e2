@@ -123,14 +123,14 @@ const AllergenItem: React.FC<AllergenItemProps> = ({ allergen, layout }) => {
               textAlign: itemConfig.description.alignment as any,
               marginTop: `${itemConfig.description.margin.top}mm`,
               marginBottom: `${itemConfig.description.margin.bottom}mm`,
-              marginLeft: `${totalLeftOffset}mm`, // Applica il margine sinistro calcolato
+              marginLeft: `${totalLeftOffset + itemConfig.description.margin.left}mm`, // Combina offset e margine configurato
               marginRight: `${itemConfig.description.margin.right}mm`,
               lineHeight: 1.4,
               wordWrap: 'break-word',
               overflowWrap: 'break-word',
               hyphens: 'auto',
-              width: `calc(100% - ${totalLeftOffset}mm - ${itemConfig.description.margin.right}mm)`, // Larghezza corretta
-              maxWidth: `calc(100% - ${totalLeftOffset}mm - ${itemConfig.description.margin.right}mm)` // Larghezza massima corretta
+              width: `calc(100% - ${totalLeftOffset + itemConfig.description.margin.left}mm - ${itemConfig.description.margin.right}mm)`, // Larghezza corretta
+              maxWidth: `calc(100% - ${totalLeftOffset + itemConfig.description.margin.left}mm - ${itemConfig.description.margin.right}mm)` // Larghezza massima corretta
             }}
           >
             {allergen.description}
