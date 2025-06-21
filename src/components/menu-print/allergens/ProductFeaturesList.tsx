@@ -21,35 +21,38 @@ const ProductFeaturesList: React.FC<ProductFeaturesListProps> = ({
 
   // Usa il titolo personalizzato o un titolo di default
   const customTitle = layout.productFeatures?.sectionTitle?.text || 'Caratteristiche Prodotto';
+  const sectionTitleConfig = layout.productFeatures?.sectionTitle;
 
   return (
     <div className="product-features-section">
       {/* Titolo della sezione caratteristiche prodotto - sempre presente */}
-      <div 
-        className="product-features-title"
-        style={{
-          fontFamily: layout.productFeatures?.sectionTitle?.fontFamily || 'Arial',
-          fontSize: `${layout.productFeatures?.sectionTitle?.fontSize || 16}px`,
-          color: layout.productFeatures?.sectionTitle?.fontColor || '#000000',
-          fontWeight: layout.productFeatures?.sectionTitle?.fontStyle === 'bold' ? 'bold' : 'normal',
-          fontStyle: layout.productFeatures?.sectionTitle?.fontStyle === 'italic' ? 'italic' : 'normal',
-          textAlign: layout.productFeatures?.sectionTitle?.alignment || 'left',
-          marginTop: `${layout.productFeatures?.sectionTitle?.margin?.top || 0}mm`,
-          marginRight: `${layout.productFeatures?.sectionTitle?.margin?.right || 0}mm`,
-          marginBottom: `${layout.productFeatures?.sectionTitle?.margin?.bottom || 8}mm`,
-          marginLeft: `${layout.productFeatures?.sectionTitle?.margin?.left || 0}mm`,
-          display: 'block',
-          width: '100%'
-        }}
-      >
-        {customTitle}
-      </div>
+      {sectionTitleConfig?.visible !== false && (
+        <div 
+          className="product-features-title"
+          style={{
+            fontFamily: sectionTitleConfig?.fontFamily || 'Arial',
+            fontSize: `${sectionTitleConfig?.fontSize || 18}px`,
+            color: sectionTitleConfig?.fontColor || '#000000',
+            fontWeight: sectionTitleConfig?.fontStyle === 'bold' ? 'bold' : 'normal',
+            fontStyle: sectionTitleConfig?.fontStyle === 'italic' ? 'italic' : 'normal',
+            textAlign: (sectionTitleConfig?.alignment as any) || 'left',
+            marginTop: `${sectionTitleConfig?.margin?.top || 5}mm`,
+            marginRight: `${sectionTitleConfig?.margin?.right || 0}mm`,
+            marginBottom: `${sectionTitleConfig?.margin?.bottom || 10}mm`,
+            marginLeft: `${sectionTitleConfig?.margin?.left || 0}mm`,
+            display: 'block',
+            width: '100%'
+          }}
+        >
+          {customTitle}
+        </div>
+      )}
       
       {/* Lista delle caratteristiche prodotto */}
       <div className="product-features-list" style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: '3mm'
+        gap: `${layout.productFeatures?.icon?.iconSpacing || 4}px`
       }}>
         {productFeatures.map((feature, index) => (
           <ProductFeatureItem

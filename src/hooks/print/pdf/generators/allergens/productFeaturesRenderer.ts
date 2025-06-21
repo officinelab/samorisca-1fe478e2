@@ -20,31 +20,33 @@ export const renderProductFeatures = async (
   console.log('🏷️ Adding product features section...');
   
   let currentY = startY;
+  const sectionTitleConfig = layout.productFeatures?.sectionTitle;
+  const iconConfig = layout.productFeatures?.icon;
+  const itemTitleConfig = layout.productFeatures?.itemTitle;
   
-  // Render custom title if provided
-  const customTitle = layout.productFeatures?.sectionTitle?.text;
-  if (customTitle) {
-    console.log('📝 Adding custom product features title:', customTitle);
+  // Render section title if visible and configured
+  if (sectionTitleConfig?.visible !== false && sectionTitleConfig?.text) {
+    console.log('📝 Adding product features section title:', sectionTitleConfig.text);
     
     // Add top margin for title
-    currentY += layout.productFeatures.sectionTitle.margin?.top || 5;
+    currentY += sectionTitleConfig.margin?.top || 5;
     
     const titleHeight = addStyledText(
       pdf,
-      customTitle,
-      marginLeft + (layout.productFeatures.sectionTitle.margin?.left || 0),
+      sectionTitleConfig.text,
+      marginLeft + (sectionTitleConfig.margin?.left || 0),
       currentY,
       {
-        fontSize: layout.productFeatures.sectionTitle.fontSize || 18,
-        fontFamily: layout.productFeatures.sectionTitle.fontFamily || 'helvetica',
-        fontStyle: layout.productFeatures.sectionTitle.fontStyle || 'bold',
-        fontColor: layout.productFeatures.sectionTitle.fontColor || '#000000',
-        alignment: layout.productFeatures.sectionTitle.alignment || 'left',
-        maxWidth: contentWidth - (layout.productFeatures.sectionTitle.margin?.left || 0) - (layout.productFeatures.sectionTitle.margin?.right || 0)
+        fontSize: sectionTitleConfig.fontSize || 18,
+        fontFamily: sectionTitleConfig.fontFamily || 'helvetica',
+        fontStyle: sectionTitleConfig.fontStyle || 'bold',
+        fontColor: sectionTitleConfig.fontColor || '#000000',
+        alignment: sectionTitleConfig.alignment || 'left',
+        maxWidth: contentWidth - (sectionTitleConfig.margin?.left || 0) - (sectionTitleConfig.margin?.right || 0)
       }
     );
     
-    currentY += titleHeight + (layout.productFeatures.sectionTitle.margin?.bottom || 10);
+    currentY += titleHeight + (sectionTitleConfig.margin?.bottom || 10);
   }
   
   // Render product features
@@ -55,37 +57,39 @@ export const renderProductFeatures = async (
     let featureX = marginLeft;
     let featureHeight = 0;
     
-    // Margine top per la prima caratteristica (solo se non c'è il titolo)
-    if (i === 0 && !customTitle) {
-      currentY += layout.productFeatures.icon.marginTop || 0;
+    // Margine top per la prima caratteristica
+    if (i === 0) {
+      currentY += iconConfig?.marginTop || 0;
     }
     
     // Icona caratteristica
     if (feature.icon_url) {
-      const iconSizeMm = (layout.productFeatures.icon.iconSize || 16) / 3.78; // px to mm
+      const iconSizeMm = (iconConfig?.iconSize || 16) / 3.78; // px to mm
       await addSvgIconToPdf(pdf, feature.icon_url, featureX, currentY, iconSizeMm);
-      featureX += iconSizeMm + 3; // 3mm gap
+      featureX += iconSizeMm + ((iconConfig?.iconSpacing || 4) / 3.78); // px to mm spacing
       featureHeight = Math.max(featureHeight, iconSizeMm);
     }
     
-    // Titolo caratteristica (feature title, not section title)
-    const titleHeight = addStyledText(
-      pdf,
-      feature.title,
-      featureX,
-      currentY,
-      {
-        fontSize: layout.productFeatures.itemTitle?.fontSize || 12,
-        fontFamily: layout.productFeatures.itemTitle?.fontFamily || 'helvetica',
-        fontStyle: layout.productFeatures.itemTitle?.fontStyle || 'normal',
-        fontColor: layout.productFeatures.itemTitle?.fontColor || '#000000',
-        alignment: layout.productFeatures.itemTitle?.alignment || 'left',
-        maxWidth: contentWidth - (featureX - marginLeft)
-      }
-    );
-    featureHeight = Math.max(featureHeight, titleHeight);
+    // Titolo caratteristica (item title, not section title)
+    if (itemTitleConfig?.visible !== false) {
+      const titleHeight = addStyledText(
+        pdf,
+        feature.title,
+        featureX + (itemTitleConfig?.margin?.left || 0),
+        currentY + (itemTitleConfig?.margin?.top || 0),
+        {
+          fontSize: itemTitleConfig?.fontSize || 14,
+          fontFamily: itemTitleConfig?.fontFamily || 'helvetica',
+          fontStyle: itemTitleConfig?.fontStyle || 'normal',
+          fontColor: itemTitleConfig?.fontColor || '#000000',
+          alignment: itemTitleConfig?.alignment || 'left',
+          maxWidth: contentWidth - (featureX - marginLeft) - (itemTitleConfig?.margin?.left || 0) - (itemTitleConfig?.margin?.right || 0)
+        }
+      );
+      featureHeight = Math.max(featureHeight, titleHeight + (itemTitleConfig?.margin?.top || 0) + (itemTitleConfig?.margin?.bottom || 0));
+    }
     
-    currentY += featureHeight + (layout.productFeatures.icon.marginBottom || 5);
+    currentY += featureHeight + (iconConfig?.marginBottom || 0);
   }
   
   return currentY;

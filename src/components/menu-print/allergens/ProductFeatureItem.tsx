@@ -14,22 +14,25 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
   layout, 
   isFirst 
 }) => {
+  const iconConfig = layout.productFeatures?.icon;
+  const itemTitleConfig = layout.productFeatures?.itemTitle;
+
   return (
     <div
       className="product-feature-item"
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: `${layout.productFeatures.icon.iconSpacing}mm`,
-        marginBottom: `${layout.productFeatures.icon.marginBottom}mm`,
-        marginTop: isFirst ? `${layout.productFeatures.icon.marginTop}mm` : '0'
+        gap: `${iconConfig?.iconSpacing || 4}px`,
+        marginBottom: `${iconConfig?.marginBottom || 0}mm`,
+        marginTop: isFirst ? `${iconConfig?.marginTop || 0}mm` : '0'
       }}
     >
       {/* Icona caratteristica */}
       {feature.icon_url && (
         <div style={{
-          width: `${layout.productFeatures.icon.iconSize}px`,
-          height: `${layout.productFeatures.icon.iconSize}px`,
+          width: `${iconConfig?.iconSize || 16}px`,
+          height: `${iconConfig?.iconSize || 16}px`,
           flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
@@ -48,23 +51,25 @@ const ProductFeatureItem: React.FC<ProductFeatureItemProps> = ({
       )}
 
       {/* Titolo caratteristica */}
-      <div
-        className="feature-title"
-        style={{
-          fontSize: `${layout.productFeatures.itemTitle?.fontSize || 14}px`,
-          fontFamily: layout.productFeatures.itemTitle?.fontFamily || 'Arial',
-          color: layout.productFeatures.itemTitle?.fontColor || '#000000',
-          fontWeight: layout.productFeatures.itemTitle?.fontStyle === 'bold' ? 'bold' : 'normal',
-          fontStyle: layout.productFeatures.itemTitle?.fontStyle === 'italic' ? 'italic' : 'normal',
-          textAlign: layout.productFeatures.itemTitle?.alignment as any || 'left',
-          marginTop: `${layout.productFeatures.itemTitle?.margin?.top || 0}mm`,
-          marginBottom: `${layout.productFeatures.itemTitle?.margin?.bottom || 0}mm`,
-          marginLeft: `${layout.productFeatures.itemTitle?.margin?.left || 0}mm`,
-          marginRight: `${layout.productFeatures.itemTitle?.margin?.right || 0}mm`
-        }}
-      >
-        {feature.title}
-      </div>
+      {itemTitleConfig?.visible !== false && (
+        <div
+          className="feature-title"
+          style={{
+            fontSize: `${itemTitleConfig?.fontSize || 14}px`,
+            fontFamily: itemTitleConfig?.fontFamily || 'Arial',
+            color: itemTitleConfig?.fontColor || '#000000',
+            fontWeight: itemTitleConfig?.fontStyle === 'bold' ? 'bold' : 'normal',
+            fontStyle: itemTitleConfig?.fontStyle === 'italic' ? 'italic' : 'normal',
+            textAlign: (itemTitleConfig?.alignment as any) || 'left',
+            marginTop: `${itemTitleConfig?.margin?.top || 0}mm`,
+            marginBottom: `${itemTitleConfig?.margin?.bottom || 0}mm`,
+            marginLeft: `${itemTitleConfig?.margin?.left || 0}mm`,
+            marginRight: `${itemTitleConfig?.margin?.right || 0}mm`
+          }}
+        >
+          {feature.title}
+        </div>
+      )}
     </div>
   );
 };

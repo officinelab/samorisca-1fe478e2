@@ -90,3 +90,28 @@ export const createProductFeatureElement = (feature: ProductFeature, layout: Pri
     isFirst: isFirst
   });
 };
+
+// Nuovo elemento per creare il titolo della sezione caratteristiche prodotto
+export const createProductFeaturesSectionElement = (layout: PrintLayout) => {
+  const sectionTitleConfig = layout.productFeatures?.sectionTitle;
+  
+  if (sectionTitleConfig?.visible === false) {
+    return React.createElement('div', { style: { display: 'none' } });
+  }
+
+  return React.createElement('div', {
+    style: {
+      fontSize: `${sectionTitleConfig?.fontSize || 18}px`,
+      fontFamily: sectionTitleConfig?.fontFamily || 'Arial',
+      color: sectionTitleConfig?.fontColor || '#000000',
+      fontWeight: sectionTitleConfig?.fontStyle === 'bold' ? 'bold' : 'normal',
+      fontStyle: sectionTitleConfig?.fontStyle === 'italic' ? 'italic' : 'normal',
+      textAlign: sectionTitleConfig?.alignment as any || 'left',
+      marginTop: `${sectionTitleConfig?.margin?.top || 5}mm`,
+      marginBottom: `${sectionTitleConfig?.margin?.bottom || 10}mm`,
+      marginLeft: `${sectionTitleConfig?.margin?.left || 0}mm`,
+      marginRight: `${sectionTitleConfig?.margin?.right || 0}mm`,
+      lineHeight: 1.3
+    }
+  }, sectionTitleConfig?.text || 'Caratteristiche Prodotto');
+};
