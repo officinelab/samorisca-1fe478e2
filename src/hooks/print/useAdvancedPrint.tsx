@@ -33,6 +33,7 @@ export const useAdvancedPrint = () => {
         return;
       }
 
+      console.log('📄 Container preview trovato, raccogliendo pagine...');
       const allPages = collectPages(previewContainer);
 
       if (allPages.length === 0) {
@@ -40,8 +41,20 @@ export const useAdvancedPrint = () => {
         return;
       }
 
+      console.log(`📋 Pagine raccolte: ${allPages.length}`);
+      
+      // Log dettagliato delle pagine trovate
+      allPages.forEach((page, index) => {
+        const pageType = page.getAttribute('data-page-preview') || 'unknown';
+        const contentPreview = page.textContent?.substring(0, 50) || 'no content';
+        console.log(`📄 Page ${index + 1}: ${pageType} - "${contentPreview}..."`);
+      });
+
       const printWindow = createPrintWindow(allPages);
-      if (!printWindow) return;
+      if (!printWindow) {
+        console.error('❌ Impossibile creare finestra di stampa');
+        return;
+      }
 
       triggerPrint(printWindow, allPages.length);
 

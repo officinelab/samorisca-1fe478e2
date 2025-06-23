@@ -54,7 +54,7 @@ export const generatePrintStyles = () => {
           flex-shrink: 0;
         }
         
-        /* Mantieni gli stili degli allergeni - SENZA spacing tra elementi */
+        /* Sezione allergeni generale - SENZA regole specifiche per .allergen-item */
         .allergens-section {
           margin-top: 10mm;
         }
@@ -62,16 +62,9 @@ export const generatePrintStyles = () => {
         .allergens-list {
           display: flex;
           flex-direction: column;
-          gap: 0mm;
         }
         
-        .allergen-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 3mm;
-          margin-bottom: 0mm;
-          padding: 2mm;
-        }
+        /* RIMOSSO: tutte le regole .allergen-item per evitare conflitti con stili inline */
         
         /* Nascondi elementi UI */
         .print\\:hidden,
