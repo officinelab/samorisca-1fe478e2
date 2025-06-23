@@ -3,77 +3,69 @@ import { useCallback } from 'react';
 
 export const usePageCollection = () => {
   const collectPages = useCallback((previewContainer: Element) => {
-    // Raccogli le pagine in ordine specifico
-    const coverPages = previewContainer.querySelectorAll('[data-page-preview^="cover"]');
-    const contentPages = previewContainer.querySelectorAll('[data-page-preview^="content"]');
+    console.log('🔍 Starting page collection with improved logic...');
     
-    // Correggi i selettori per le pagine allergeni
-    // Prima prova a trovare il container principale delle pagine allergeni
-    const allergensMainContainer = previewContainer.querySelector('[data-page-preview="allergens-pages"]');
-    let allergensPageElements: Element[] = [];
+    // Collect ONLY individual page elements, not containers
+    const individualPages: Element[] = [];
     
-    if (allergensMainContainer) {
-      // Cerca tutte le singole pagine allergeni all'interno del container
-      const allergensPages = allergensMainContainer.querySelectorAll('[data-page-preview^="allergens-"]');
-      allergensPageElements = Array.from(allergensPages);
-      console.log('📄 Trovate pagine allergeni nel container principale:', allergensPageElements.length);
-    } else {
-      // Fallback: cerca direttamente nel preview container con selettori alternativi
-      const directAllergensPages = previewContainer.querySelectorAll('[data-page-preview^="allergens-"]');
-      allergensPageElements = Array.from(directAllergensPages);
-      console.log('📄 Trovate pagine allergeni (ricerca diretta):', allergensPageElements.length);
-    }
-
-    // Se ancora non troviamo le pagine allergeni, proviamo un approccio più ampio
-    if (allergensPageElements.length === 0) {
-      // Cerca elementi che contengono "allergens" nell'attributo data-page-preview
-      const allElementsWithData = previewContainer.querySelectorAll('[data-page-preview*="allergens"]');
-      console.log('📄 Elementi trovati con "allergens" nel data-page-preview:', allElementsWithData.length);
-      
-      // Filtra per trovare solo le pagine individuali
-      allergensPageElements = Array.from(allElementsWithData).filter(el => {
-        const attr = el.getAttribute('data-page-preview');
-        return attr && attr.match(/allergens-\d+/);
-      });
-      
-      console.log('📄 Pagine allergeni filtrate:', allergensPageElements.length);
-    }
-
-    console.log('📄 Pagine trovate per la stampa:', {
-      cover: coverPages.length,
-      content: contentPages.length,
-      allergens: allergensPageElements.length
-    });
-
-    // Debug: stampa i selettori trovati
-    console.log('📄 Selettori cover trovati:', Array.from(coverPages).map(p => p.getAttribute('data-page-preview')));
-    console.log('📄 Selettori content trovati:', Array.from(contentPages).map(p => p.getAttribute('data-page-preview')));
-    console.log('📄 Selettori allergens trovati:', allergensPageElements.map(p => p.getAttribute('data-page-preview')));
-
-    // Raccogli tutte le pagine in ordine
-    const allPages: Element[] = [];
-    
-    // Aggiungi pagine cover
-    coverPages.forEach(page => {
-      console.log('📄 Aggiunta pagina cover:', page.getAttribute('data-page-preview'));
-      allPages.push(page);
+    // Collect cover pages - use specific selectors for individual pages
+    const coverPagesSelectors = ['[data-page-preview="cover-1"]', '[data-page-preview="cover-2"]'];
+    coverPagesSelectors.forEach(selector => {
+      const page = previewContainer.querySelector(selector);
+      if (page) {
+        console.log(`📄 Found cover page: ${page.getAttribute('data-page-preview')}`);
+        individualPages.push(page);
+      }
     });
     
-    // Aggiungi pagine contenuto  
+    // Collect content pages - look for all content-X pages
+    const contentPages = previewContainer.querySelectorAll('[data-page-preview^="content-"]:not([data-page-preview="content-pages"])');
     contentPages.forEach(page => {
-      console.log('📄 Aggiunta pagina contenuto:', page.getAttribute('data-page-preview'));
-      allPages.push(page);
+      const pageId = page.getAttribute('data-page-preview');
+      console.log(`📄 Found content page: ${pageId}`);
+      individualPages.push(page);
     });
     
-    // Aggiungi pagine allergeni
-    allergensPageElements.forEach(page => {
-      console.log('📄 Aggiunta pagina allergeni:', page.getAttribute('data-page-preview'));
-      allPages.push(page);
+    // Collect allergens pages - look for all allergens-X pages (numbered)
+    const allergensPages = previewContainer.querySelectorAll('[data-page-preview^="allergens-"]:not([data-page-preview="allergens-pages"])');
+    const numberedAllergensPages = Array.from(allergensPages).filter(page => {
+      const attr = page.getAttribute('data-page-preview');
+      return attr && attr.match(/^allergens-\d+$/); // Only pages like allergens-1, allergens-2, etc.
+    });
+    
+    numberedAllergensPages.forEach(page => {
+      const pageId = page.getAttribute('data-page-preview');
+      console.log(`📄 Found allergens page: ${pageId}`);
+      individualPages.push(page);
     });
 
-    console.log('📄 Totale pagine da stampare:', allPages.length);
+    console.log('📊 Page collection summary:', {
+      totalCollected: individualPages.length,
+      coverPages: coverPagesSelectors.length,
+      contentPages: contentPages.length,
+      allergensPages: numberedAllergensPages.length
+    });
 
-    return allPages;
+    // Debug: Log all collected page IDs
+    console.log('📋 All collected page IDs:', 
+      individualPages.map(p => p.getAttribute('data-page-preview'))
+    );
+
+    // Verify no containers were collected
+    const containerCheck = individualPages.filter(page => {
+      const attr = page.getAttribute('data-page-preview');
+      return attr && (attr === 'cover' || attr === 'content-pages' || attr === 'allergens-pages');
+    });
+    
+    if (containerCheck.length > 0) {
+      console.warn('⚠️ Container elements detected (should not happen):', 
+        containerCheck.map(p => p.getAttribute('data-page-preview'))
+      );
+    } else {
+      console.log('✅ No container elements collected - only individual pages');
+    }
+
+    return individualPages;
   }, []);
 
   return { collectPages };

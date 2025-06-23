@@ -24,7 +24,7 @@ export const useAdvancedPrint = () => {
   const { collectPages } = usePageCollection();
 
   const printMenuContent = useCallback(() => {
-    console.log('🖨️ Avvio stampa completa del menu...');
+    console.log('🖨️ === STARTING ADVANCED PRINT PROCESS ===');
     
     try {
       const previewContainer = document.querySelector('.menu-print-preview-container');
@@ -33,7 +33,18 @@ export const useAdvancedPrint = () => {
         return;
       }
 
-      console.log('📄 Container preview trovato, raccogliendo pagine...');
+      console.log('📄 Preview container found, starting page collection...');
+      
+      // Log container structure for debugging
+      const allElementsWithData = previewContainer.querySelectorAll('[data-page-preview]');
+      console.log('🔍 All elements with data-page-preview in container:');
+      allElementsWithData.forEach((el, index) => {
+        const attr = el.getAttribute('data-page-preview');
+        const tagName = el.tagName.toLowerCase();
+        const classes = el.className;
+        console.log(`  ${index + 1}. ${attr} (${tagName}) - classes: ${classes}`);
+      });
+
       const allPages = collectPages(previewContainer);
 
       if (allPages.length === 0) {
@@ -41,22 +52,27 @@ export const useAdvancedPrint = () => {
         return;
       }
 
-      console.log(`📋 Pagine raccolte: ${allPages.length}`);
+      console.log(`📋 === PAGE COLLECTION COMPLETED ===`);
+      console.log(`📊 Total pages collected: ${allPages.length}`);
       
-      // Log dettagliato delle pagine trovate
+      // Final verification of collected pages
       allPages.forEach((page, index) => {
-        const pageType = page.getAttribute('data-page-preview') || 'unknown';
-        const contentPreview = page.textContent?.substring(0, 50) || 'no content';
-        console.log(`📄 Page ${index + 1}: ${pageType} - "${contentPreview}..."`);
+        const pageId = page.getAttribute('data-page-preview');
+        const isIndividualPage = pageId && !['cover', 'content-pages', 'allergens-pages'].includes(pageId);
+        console.log(`📄 Final page ${index + 1}: ${pageId} - ${isIndividualPage ? 'VALID' : 'INVALID'}`);
       });
 
+      console.log('🖨️ Creating print window...');
       const printWindow = createPrintWindow(allPages);
       if (!printWindow) {
         console.error('❌ Impossibile creare finestra di stampa');
         return;
       }
 
+      console.log('⏰ Triggering print dialog...');
       triggerPrint(printWindow, allPages.length);
+      
+      console.log('✅ === PRINT PROCESS COMPLETED ===');
 
     } catch (error) {
       console.error('❌ Errore durante la stampa:', error);

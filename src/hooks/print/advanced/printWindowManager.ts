@@ -11,42 +11,74 @@ export const createPrintWindow = (pages: Element[]) => {
     return null;
   }
 
-  // Pulisci e prepara le pagine per la stampa mantenendo gli stili inline
-  const cleanedPages = pages.map((page, index) => {
-    console.log(`🧹 Cleaning page ${index + 1}...`);
-    return cleanElementForPrint(page as HTMLElement);
+  // Log detailed information about collected pages
+  console.log('📋 Detailed page analysis:');
+  pages.forEach((page, index) => {
+    const pageId = page.getAttribute('data-page-preview');
+    const classList = page.className;
+    const hasDataAttribute = page.hasAttribute('data-page-preview');
+    const contentPreview = page.textContent?.substring(0, 100).replace(/\s+/g, ' ') || 'no content';
+    
+    console.log(`📄 Page ${index + 1}:`, {
+      id: pageId,
+      hasDataAttribute,
+      classList: classList,
+      contentPreview: `"${contentPreview}..."`
+    });
   });
 
-  // Elimina duplicati basati sul contenuto
+  // Improved deduplication using data-page-preview as primary identifier
   const uniquePages = [];
-  const seenContent = new Set();
+  const seenPageIds = new Set();
   
-  for (let i = 0; i < cleanedPages.length; i++) {
-    const page = cleanedPages[i];
-    const contentSignature = page.textContent?.substring(0, 100) + page.children.length;
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const pageId = page.getAttribute('data-page-preview');
     
-    if (!seenContent.has(contentSignature)) {
-      seenContent.add(contentSignature);
+    // Skip if no page ID (shouldn't happen with new collection logic)
+    if (!pageId) {
+      console.warn(`⚠️ Page ${i + 1} has no data-page-preview attribute, skipping`);
+      continue;
+    }
+    
+    // Skip container pages that might have been collected by mistake
+    const isContainer = ['cover', 'content-pages', 'allergens-pages'].includes(pageId);
+    if (isContainer) {
+      console.warn(`⚠️ Container page detected (${pageId}), skipping`);
+      continue;
+    }
+    
+    // Check for duplicates based on page ID
+    if (!seenPageIds.has(pageId)) {
+      seenPageIds.add(pageId);
       uniquePages.push(page);
-      console.log(`✅ Page ${i + 1} added (unique content)`);
+      console.log(`✅ Page ${i + 1} (${pageId}) added as unique`);
     } else {
-      console.log(`⚠️ Page ${i + 1} skipped (duplicate content detected)`);
+      console.log(`⚠️ Page ${i + 1} (${pageId}) skipped as duplicate`);
     }
   }
 
-  console.log(`📄 Final page count: ${uniquePages.length} (removed ${cleanedPages.length - uniquePages.length} duplicates)`);
+  console.log(`📄 Final unique pages: ${uniquePages.length} (removed ${pages.length - uniquePages.length} duplicates/containers)`);
 
-  // Costruisci HTML di stampa con pagine uniche
-  const printContent = uniquePages
+  // Clean and prepare pages for print, preserving inline styles
+  const cleanedPages = uniquePages.map((page, index) => {
+    const pageId = page.getAttribute('data-page-preview');
+    console.log(`🧹 Cleaning page ${index + 1} (${pageId})...`);
+    return cleanElementForPrint(page as HTMLElement);
+  });
+
+  // Build print content with cleaned unique pages
+  const printContent = cleanedPages
     .map((page, index) => {
-      console.log(`📝 Building print content for page ${index + 1}`);
-      return `<div class="print-page">${page.innerHTML}</div>`;
+      const originalPageId = uniquePages[index].getAttribute('data-page-preview');
+      console.log(`📝 Building print content for page ${index + 1} (${originalPageId})`);
+      return `<div class="print-page" data-original-page="${originalPageId}">${page.innerHTML}</div>`;
     })
     .join('\n');
 
   const printStyles = generatePrintStyles();
 
-  // Scrivi nella finestra di stampa
+  // Write to print window
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
@@ -65,6 +97,9 @@ export const createPrintWindow = (pages: Element[]) => {
 
   printWindow.document.close();
   console.log('✅ Print window content written successfully');
+  console.log('📋 Final page order in print window:', 
+    uniquePages.map(p => p.getAttribute('data-page-preview'))
+  );
 
   return printWindow;
 };
