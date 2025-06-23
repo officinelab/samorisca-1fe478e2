@@ -20,18 +20,6 @@ const shouldShowEnglishDescription = (product: Product): boolean => {
 };
 
 /**
- * Determina se un prodotto è complesso e necessita di buffer aggiuntivo
- */
-const isComplexProduct = (product: Product): boolean => {
-  const hasLongDescription = (product.description?.length || 0) > 150;
-  const hasLongEnglishDescription = (product.description_en?.length || 0) > 150;
-  const hasManyAllergens = (product.allergens?.length || 0) > 5;
-  const hasFeatures = (product.features?.length || 0) > 0;
-  
-  return hasLongDescription || hasLongEnglishDescription || hasManyAllergens || hasFeatures;
-};
-
-/**
  * Calcola l'altezza reale di un prodotto con conversioni standardizzate.
  */
 export const getProductHeight = (
@@ -140,29 +128,10 @@ export const getProductHeight = (
   const spacing = dimensions.spacing.betweenProducts * CONVERSIONS.MM_TO_PX;
   totalHeight += spacing;
 
-  // Determina se il prodotto è complesso
-  const isComplex = isComplexProduct(product);
-  
-  // Applica buffer di sicurezza unificato: 8% + buffer fisso
-  let safetyCoefficient = 1.08; // 8% buffer standard
-  let fixedBufferPx = 5 * CONVERSIONS.MM_TO_PX; // 5mm convertiti in px
-  
-  // Per prodotti complessi, usa un buffer leggermente maggiore
-  if (isComplex) {
-    fixedBufferPx = 7 * CONVERSIONS.MM_TO_PX; // 7mm per prodotti complessi
-    console.log('🔧 ProductHeightCalculator - Complex product detected, using enhanced buffer');
-  }
-  
-  const finalHeight = (totalHeight * safetyCoefficient) + fixedBufferPx;
+  // Aggiungi un piccolo buffer per sicurezza (2mm)
+  totalHeight += 2 * CONVERSIONS.MM_TO_PX;
 
-  console.log('🔧 ProductHeightCalculator - Final total height with unified buffer:', {
-    originalHeight: totalHeight.toFixed(1) + 'px',
-    isComplex,
-    safetyCoefficient,
-    fixedBufferMm: (fixedBufferPx / CONVERSIONS.MM_TO_PX).toFixed(1) + 'mm',
-    finalHeight: finalHeight.toFixed(1) + 'px',
-    bufferAdded: (finalHeight - totalHeight).toFixed(1) + 'px'
-  });
+  console.log('🔧 ProductHeightCalculator - Final total height (standardized):', totalHeight, 'px');
 
-  return finalHeight;
+  return totalHeight;
 };

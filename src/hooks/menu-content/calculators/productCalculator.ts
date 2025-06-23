@@ -13,18 +13,6 @@ const shouldShowEnglishDescription = (product: Product): boolean => {
   return true;
 };
 
-/**
- * Determina se un prodotto è complesso e necessita di buffer aggiuntivo
- */
-const isComplexProduct = (product: Product): boolean => {
-  const hasLongDescription = (product.description?.length || 0) > 150;
-  const hasLongEnglishDescription = (product.description_en?.length || 0) > 150;
-  const hasManyAllergens = (product.allergens?.length || 0) > 5;
-  const hasFeatures = (product.features?.length || 0) > 0;
-  
-  return hasLongDescription || hasLongEnglishDescription || hasManyAllergens || hasFeatures;
-};
-
 export const calculateProductHeight = (product: Product, layout: PrintLayout | null): number => {
   if (!layout) return 80; // Default height in mm
 
@@ -195,31 +183,16 @@ export const calculateProductHeight = (product: Product, layout: PrintLayout | n
   const spacingMm = layout.spacing?.betweenProducts || 15;
   totalHeightMm += spacingMm;
 
-  // Determina se il prodotto è complesso
-  const isComplex = isComplexProduct(product);
-  
-  // Applica buffer di sicurezza unificato: 8% + buffer fisso
-  let safetyCoefficient = 1.08; // 8% buffer standard
-  let fixedBufferMm = 5; // 5mm buffer fisso standard
-  
-  // Per prodotti complessi, usa un buffer leggermente maggiore
-  if (isComplex) {
-    fixedBufferMm = 7; // 7mm per prodotti complessi
-    console.log('🔧 Complex product detected in calculator, using enhanced buffer');
-  }
-  
-  const finalHeightMm = (totalHeightMm * safetyCoefficient) + fixedBufferMm;
+  // Aggiungi un buffer di sicurezza
+  const safetyBufferMm = 3;
+  totalHeightMm += safetyBufferMm;
 
-  console.log('🔧 ProductCalculator - Altezza finale con buffer unificato:', {
-    originalHeightMm: totalHeightMm.toFixed(1),
+  console.log('🔧 ProductCalculator - Altezza finale con Schema 1 AGGIORNATO (allergeni+icone):', {
+    totalHeightMm: totalHeightMm.toFixed(1),
     priceColumnHeightMm: priceColumnHeightMm.toFixed(1),
     spacingMm,
-    isComplex,
-    safetyCoefficient,
-    fixedBufferMm: fixedBufferMm + 'mm',
-    finalHeightMm: finalHeightMm.toFixed(1),
-    bufferAdded: (finalHeightMm - totalHeightMm).toFixed(1) + 'mm'
+    safetyBufferMm
   });
 
-  return finalHeightMm;
+  return totalHeightMm;
 };
