@@ -111,7 +111,7 @@ const Login = () => {
               )}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Powered by: Emani Srl | Venti Creative Studio - 2025
+              Powered by: Emani Srl | Venti Creative Studio - 2024
             </p>
           </CardFooter>
         </form>
