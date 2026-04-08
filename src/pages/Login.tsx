@@ -95,7 +95,7 @@ const Login = () => {
             </div>
           </CardContent>
           
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-3">
             <Button
               type="submit"
               className="w-full"
@@ -110,12 +110,10 @@ const Login = () => {
                 "Accedi"
               )}
             </Button>
+            <p className="text-xs text-muted-foreground text-center">
+              Powered by: Emani Srl | Venti Creative Studio - 2025
+            </p>
           </CardFooter>
-        </form>
-      </Card>
-      <p className="mt-6 text-xs text-muted-foreground text-center">
-        Powered by: Emani Srl | Venti Creative Studio - 2025
-      </p>
     </div>
   );
 };
