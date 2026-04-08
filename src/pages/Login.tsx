@@ -113,6 +113,9 @@ const Login = () => {
           </CardFooter>
         </form>
       </Card>
+      <p className="mt-6 text-xs text-muted-foreground text-center">
+        Powered by: Emani Srl | Venti Creative Studio - 2025
+      </p>
     </div>
   );
 };
