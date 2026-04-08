@@ -114,6 +114,8 @@ const Login = () => {
               Powered by: Emani Srl | Venti Creative Studio - 2025
             </p>
           </CardFooter>
+        </form>
+      </Card>
     </div>
   );
 };
