@@ -10,13 +10,13 @@ const MenuPreview = () => {
   const [language, setLanguage] = useState("it");
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Anteprima Menu Online</h1>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="language-select">Lingua:</Label>
+    <div className="space-y-4 md:space-y-6 p-3 md:p-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h1 className="text-xl md:text-2xl font-bold">Anteprima Menu Online</h1>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="language-select" className="shrink-0">Lingua:</Label>
           <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger id="language-select" className="w-[180px]">
+            <SelectTrigger id="language-select" className="w-full sm:w-[180px]">
               <SelectValue placeholder="Seleziona lingua" />
             </SelectTrigger>
             <SelectContent>
