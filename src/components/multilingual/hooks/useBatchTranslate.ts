@@ -30,13 +30,13 @@ async function checkIfNeedsTranslation(
   try {
     const { data: entity } = await supabase
       .from(entityType as any)
-      .select("updated_at")
+      .select(`updated_at, ${fieldName}`)
       .eq("id", entityId)
       .single();
 
     const { data: translation } = await supabase
       .from("translations")
-      .select("last_updated")
+      .select("last_updated, original_text")
       .eq("entity_id", entityId)
       .eq("entity_type", entityType)
       .eq("field", fieldName)
@@ -44,6 +44,12 @@ async function checkIfNeedsTranslation(
       .maybeSingle();
 
     if (!translation) return true;
+    // Preferred: compare source text vs stored original_text
+    const currentText = (entity as any)?.[fieldName];
+    if (translation.original_text != null && typeof currentText === "string") {
+      return currentText.trim() !== String(translation.original_text).trim();
+    }
+    // Fallback (legacy rows without original_text): timestamp comparison
     const eUp = (entity as any)?.updated_at
       ? new Date((entity as any).updated_at).getTime()
       : 0;

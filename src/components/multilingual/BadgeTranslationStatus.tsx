@@ -7,7 +7,7 @@ import { SupportedLanguage } from "@/types/translation";
 type Status = "missing" | "outdated" | "updated" | "loading" | "error";
 
 // Refined type: all entities for this badge must have id and updated_at
-type EntityWithUpdatedAt = { updated_at: string };
+type EntityWithUpdatedAt = { updated_at: string; [k: string]: any };
 
 interface BadgeTranslationStatusProps {
   entityId: string;
@@ -36,6 +36,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
   const fetchStatus = async () => {
     setStatus("loading");
     let updatedAt: string | null = null;
+    let currentFieldValue: string | null = null;
 
     let sourceTable = null;
     if (
@@ -56,7 +57,7 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
     // Add query select type explicitly
     const { data: entity, error } = await supabase
       .from(sourceTable)
-      .select("updated_at")
+      .select(`updated_at, ${fieldName}`)
       .eq("id", entityId)
       .maybeSingle<EntityWithUpdatedAt>();
 
@@ -65,11 +66,13 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       return;
     }
     updatedAt = entity.updated_at;
+    const fv = (entity as any)?.[fieldName];
+    currentFieldValue = typeof fv === "string" ? fv : null;
 
     // Fetch traduzione dalla tabella centralized translations
     const { data: translation, error: translationError } = await supabase
       .from("translations")
-      .select("last_updated")
+      .select("last_updated, original_text")
       .eq("entity_id", entityId)
       .eq("entity_type", entityType)
       .eq("field", fieldName)
@@ -81,6 +84,17 @@ export const BadgeTranslationStatus: React.FC<BadgeTranslationStatusProps> = ({
       return;
     }
 
+    // Preferred check: compare source text vs stored original_text
+    if (translation.original_text != null && currentFieldValue != null) {
+      if (currentFieldValue.trim() === String(translation.original_text).trim()) {
+        setStatus("updated");
+      } else {
+        setStatus("outdated");
+      }
+      return;
+    }
+
+    // Fallback (legacy rows without original_text): timestamp comparison
     const entityUpdated = updatedAt ? new Date(updatedAt).getTime() : 0;
     const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
 

@@ -78,16 +78,19 @@ export const useMissingTranslations = (language: SupportedLanguage) => {
 
         const { data: translationRows } = await supabase
           .from("translations")
-          .select("entity_id,field,last_updated")
+          .select("entity_id,field,last_updated,original_text")
           .eq("entity_type", entityType)
           .eq("language", language)
           .in("entity_id", idsArray);
 
-        const translationsMap: Record<string, Record<string, { last_updated: string }>> = {};
+        const translationsMap: Record<string, Record<string, { last_updated: string; original_text: string | null }>> = {};
         if (translationRows) {
           for (const t of translationRows) {
             if (!translationsMap[t.entity_id]) translationsMap[t.entity_id] = {};
-            translationsMap[t.entity_id][t.field] = { last_updated: t.last_updated };
+            translationsMap[t.entity_id][t.field] = {
+              last_updated: t.last_updated,
+              original_text: (t as any).original_text ?? null,
+            };
           }
         }
 
@@ -102,12 +105,19 @@ export const useMissingTranslations = (language: SupportedLanguage) => {
             }
             let status: "missing" | "outdated" | null = null;
 
-            const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
             const trans = translationsMap[entity.id]?.[field];
 
             if (!trans) {
               status = "missing";
+            } else if (trans.original_text != null) {
+              // Preferred: compare source text vs stored original_text
+              const current = typeof entity[field] === "string" ? entity[field] : "";
+              if (current.trim() !== String(trans.original_text).trim()) {
+                status = "outdated";
+              }
             } else {
+              // Fallback (legacy rows without original_text): timestamp comparison
+              const entityUpdatedAt = entity.updated_at ? new Date(entity.updated_at).getTime() : 0;
               const translationDate = trans.last_updated ? new Date(trans.last_updated).getTime() : 0;
               if (translationDate < entityUpdatedAt) status = "outdated";
             }
