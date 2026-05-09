@@ -133,6 +133,11 @@ export const usePublicMenuData = (isPreview = false, previewLanguage = 'it') => 
       }
 
       debugError('❌ Errore nel caricamento dei dati:', error);
+      // Resetta lo stato per evitare alberi React parziali con dati incoerenti
+      setCategories([]);
+      setProducts({});
+      setAllergens([]);
+      setCategoryNotes([]);
       setError("Errore nel caricamento del menu. Riprova più tardi.");
       toast.error("Errore nel caricamento del menu. Riprova più tardi.");
     } finally {

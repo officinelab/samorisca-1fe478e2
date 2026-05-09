@@ -5,6 +5,7 @@ import { usePublicMenu } from "@/hooks/public-menu/usePublicMenu";
 import { PublicMenuLayout } from "@/components/public-menu/PublicMenuLayout";
 import { PublicMenuLoadingState } from "@/components/public-menu/PublicMenuLoadingState";
 import { PublicMenuErrorState } from "@/components/public-menu/PublicMenuErrorState";
+import { MenuErrorBoundary } from "@/components/public-menu/MenuErrorBoundary";
 
 interface PublicMenuProps {
   isPreview?: boolean;
@@ -12,7 +13,7 @@ interface PublicMenuProps {
   deviceView?: 'mobile' | 'desktop';
 }
 
-const PublicMenu: React.FC<PublicMenuProps> = ({
+const PublicMenuInner: React.FC<PublicMenuProps> = ({
   isPreview = false,
   previewLanguage = 'it',
   deviceView = 'mobile'
@@ -116,5 +117,11 @@ const PublicMenu: React.FC<PublicMenuProps> = ({
     />
   );
 };
+
+const PublicMenu: React.FC<PublicMenuProps> = (props) => (
+  <MenuErrorBoundary>
+    <PublicMenuInner {...props} />
+  </MenuErrorBoundary>
+);
 
 export default PublicMenu;
