@@ -7,6 +7,7 @@ import { useMissingTranslations } from "./hooks/useMissingTranslations";
 import { MissingTranslationGroup } from "./MissingTranslationGroup";
 import { SupportedLanguage } from "@/types/translation";
 import { useBatchTranslate, BatchJob, BatchEntityType } from "./hooks/useBatchTranslate";
+import { BatchTranslateDialog } from "./BatchTranslateDialog";
 
 interface MissingTranslationsTabProps {
   language: SupportedLanguage;
@@ -14,7 +15,7 @@ interface MissingTranslationsTabProps {
 
 export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps) => {
   const { fieldsToTranslate, isLoading, entitiesMap } = useMissingTranslations(language);
-  const { isTranslating, translateFields } = useBatchTranslate();
+  const batch = useBatchTranslate();
 
   // Raggruppamento come prima
   type GroupedEntries = { [entityKey:string]: { entityType: string, id: string, fields: { field: string; badge: "missing" | "outdated" }[] } };
@@ -39,7 +40,7 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
         });
       }
     }
-    await translateFields(jobs, language, {
+    await batch.prepare(jobs, language, {
       skipFreshnessCheck: true,
       label: "voci",
     });
@@ -56,10 +57,10 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
             variant="outline"
             size="sm"
             onClick={handleTranslateAll}
-            disabled={isTranslating || isLoading || fieldsToTranslate.length === 0}
+            disabled={batch.isTranslating || isLoading || fieldsToTranslate.length === 0}
             className="whitespace-nowrap"
           >
-            {isTranslating ? (
+            {batch.isTranslating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Traduzione...
@@ -93,6 +94,18 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
           )}
         </div>
       </CardContent>
+      <BatchTranslateDialog
+        open={batch.open}
+        onOpenChange={batch.setOpen}
+        phase={batch.phase}
+        totalJobs={batch.totalJobs}
+        tokensRemaining={batch.tokensRemaining}
+        progress={batch.progress}
+        label={batch.label}
+        onConfirm={batch.confirm}
+        onAbort={batch.abort}
+        onClose={batch.close}
+      />
     </Card>
   );
 };
