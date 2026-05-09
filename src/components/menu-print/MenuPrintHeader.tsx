@@ -6,7 +6,7 @@ import { Eye, EyeOff, Settings, Printer, FileText, Scissors } from "lucide-react
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { useAdvancedPrint } from "@/hooks/print/useAdvancedPrint";
 import { PrintLayout } from "@/types/printLayout";
-import { useMenuContentPagesInfo } from "@/hooks/menu-content/useMenuContentPagesInfo";
+import { useMenuPrintPages } from "@/contexts/MenuPrintPagesContext";
 
 interface MenuPrintHeaderProps {
   showMargins: boolean;
@@ -28,7 +28,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   currentLayout
 }) => {
   const { printMenuContent } = useAdvancedPrint();
-  const { totalPages, contentPagesCount, isLoading } = useMenuContentPagesInfo();
+  const { totalPages, contentPagesCount, isLoading } = useMenuPrintPages();
 
   const handleAdvancedPrint = () => {
     console.log('🖨️ Pulsante Stampa Menu cliccato - sistema finestra popup');
