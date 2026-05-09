@@ -8,10 +8,11 @@ import { Loader2 } from 'lucide-react';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
+  showPageBreaks?: boolean;
   layoutRefreshKey?: number;
 }
 
-const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layoutRefreshKey = 0 }) => {
+const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, showPageBreaks = false, layoutRefreshKey = 0 }) => {
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
   
   const totalRefreshKey = layoutRefreshKey + localRefreshKey;
@@ -172,6 +173,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, layout
               page={page}
               layout={activeLayout}
               showMargins={showMargins}
+              showPageBreaks={showPageBreaks}
             />
           </div>
         ))}

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, EyeOff, Settings, Printer, FileText } from "lucide-react";
+import { Eye, EyeOff, Settings, Printer, FileText, Scissors } from "lucide-react";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { useAdvancedPrint } from "@/hooks/print/useAdvancedPrint";
 import { PrintLayout } from "@/types/printLayout";
@@ -11,6 +11,8 @@ import { useMenuContentPagesInfo } from "@/hooks/menu-content/useMenuContentPage
 interface MenuPrintHeaderProps {
   showMargins: boolean;
   setShowMargins: (show: boolean) => void;
+  showPageBreaks: boolean;
+  setShowPageBreaks: (show: boolean) => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
   currentLayout?: PrintLayout;
@@ -19,6 +21,8 @@ interface MenuPrintHeaderProps {
 const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
   showMargins,
   setShowMargins,
+  showPageBreaks,
+  setShowPageBreaks,
   isSettingsOpen,
   setIsSettingsOpen,
   currentLayout
@@ -87,7 +91,15 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
             {showMargins ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
             {showMargins ? "Nascondi" : "Mostra"} Margini
           </Button>
-          
+
+          <Button
+            variant={showPageBreaks ? "default" : "outline"}
+            onClick={() => setShowPageBreaks(!showPageBreaks)}
+          >
+            <Scissors className="w-4 h-4 mr-2" />
+            {showPageBreaks ? "Nascondi" : "Mostra"} Interruzioni
+          </Button>
+
           <Button variant="default" onClick={handleAdvancedPrint}>
             <Printer className="w-4 h-4 mr-2" />
             Stampa Menu
