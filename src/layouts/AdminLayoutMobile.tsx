@@ -15,7 +15,6 @@ import {
   Menu as MenuIcon,
   LogOut,
   Settings,
-  Languages,
   Printer,
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -30,14 +29,13 @@ type NavItem = {
 const primaryNav: NavItem[] = [
   { to: "/admin/dashboard", icon: <LayoutDashboard className="h-5 w-5" />, label: "Menu" },
   { to: "/admin/settings", icon: <Settings className="h-5 w-5" />, label: "Impostaz." },
-  { to: "/admin/multilingual", icon: <Languages className="h-5 w-5" />, label: "Lingue" },
+  { to: "/admin/print", icon: <Printer className="h-5 w-5" />, label: "Stampa" },
   { to: "/admin/preview", icon: <Eye className="h-5 w-5" />, label: "Anteprima" },
 ];
 
 const allNav: NavItem[] = [
   { to: "/admin/dashboard", icon: <LayoutDashboard className="mr-3 h-5 w-5" />, label: "Gestione Menu" },
   { to: "/admin/settings", icon: <Settings className="mr-3 h-5 w-5" />, label: "Impostazioni Menu" },
-  { to: "/admin/multilingual", icon: <Languages className="mr-3 h-5 w-5" />, label: "Multilingua" },
   { to: "/admin/print", icon: <Printer className="mr-3 h-5 w-5" />, label: "Stampa Menu" },
   { to: "/admin/preview", icon: <Eye className="mr-3 h-5 w-5" />, label: "Anteprima Menu" },
 ];
@@ -45,7 +43,6 @@ const allNav: NavItem[] = [
 const pageTitles: Record<string, string> = {
   "/admin/dashboard": "Gestione Menu",
   "/admin/settings": "Impostazioni",
-  "/admin/multilingual": "Multilingua",
   "/admin/print": "Stampa Menu",
   "/admin/preview": "Anteprima Menu",
 };
