@@ -9,12 +9,14 @@ import AllergensContentPages from './AllergensContentPages';
 interface MenuPrintPreviewProps {
   currentLayout?: PrintLayout;
   showMargins: boolean;
+  showPageBreaks?: boolean;
   refreshKey?: number;
 }
 
 const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
   currentLayout,
   showMargins,
+  showPageBreaks = false,
   refreshKey = 0
 }) => {
   const A4_WIDTH_MM = 210;
@@ -79,6 +81,7 @@ const MenuPrintPreview: React.FC<MenuPrintPreviewProps> = ({
       {/* Menu Content Pages */}
       <MenuContentPages 
         showMargins={showMargins} 
+        showPageBreaks={showPageBreaks}
         layoutRefreshKey={refreshKey}
       />
 
