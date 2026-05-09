@@ -1,49 +1,50 @@
-## Problema
-
-Il magic link arriva con redirect a `http://localhost:3000/...` (irraggiungibile) e l'app non ha una pagina dedicata al reset password: anche correggendo il dominio, senza una pagina `/reset-password` il token verrebbe consumato senza poter impostare una nuova password.
-
 ## Piano
 
-### 1. Configurazione su Supabase (azione manuale)
+### 1. Listener PASSWORD_RECOVERY in `AuthContext`
 
-Dashboard Supabase → **Authentication → URL Configuration**:
+In `src/contexts/AuthContext.tsx`, dentro `onAuthStateChange`, aggiungere:
 
-- **Site URL**: `https://menu.samorisca.it`
-- **Redirect URLs** (whitelist):
-  - `https://menu.samorisca.it/**`
-  - `https://samorisca.lovable.app/**`
-  - `https://id-preview--da22ec85-69c8-476c-bf47-07c1cdef44a2.lovable.app/**`
+```ts
+if (event === "PASSWORD_RECOVERY") {
+  if (window.location.pathname !== "/reset-password") {
+    window.location.replace("/reset-password" + window.location.hash);
+  }
+}
+```
 
-Da quel momento i nuovi link generati (sia "Send magic link" sia "Send password recovery") punteranno al dominio corretto invece di `localhost:3000`.
+Uso `window.location.replace` (non `useNavigate`) perché `AuthProvider` avvolge `BrowserRouter`. Mantengo `window.location.hash` così la pagina target riceve nuovamente l'evento e abilita il form.
 
-### 2. Creare la pagina pubblica `/reset-password`
+### 2. Template email personalizzato (azione manuale tua su Supabase)
 
-- **`src/pages/ResetPassword.tsx`** (nuovo)
-  - Pagina pubblica.
-  - Il client Supabase intercetta automaticamente il token nell'hash URL (`detectSessionInUrl: true`, default) e crea una sessione temporanea.
-  - All'apertura verifica `supabase.auth.getSession()`: se nessuna sessione/token valido → messaggio "Link scaduto o non valido" con istruzioni.
-  - Form: "Nuova password" + "Conferma password" (validazione min 6 caratteri, match).
-  - Submit → `supabase.auth.updateUser({ password })`.
-  - Successo → toast di conferma + redirect a `/login` (o `/menu` se già loggato).
-  - Gestione errori con messaggi chiari.
+Dashboard Supabase → **Authentication → Email Templates → Reset Password**:
 
-- **`src/App.tsx`**: registrare la route pubblica `/reset-password` PRIMA di qualsiasi `ProtectedRoute`.
+**Subject:** `Reimposta la tua password – Sa Morisca`
 
-### 3. Procedura per cambiare la password
+**Body (HTML):**
+```html
+<h2>Ciao,</h2>
+<p>Hai richiesto di reimpostare la password del tuo account Sa Morisca.</p>
+<p>Clicca sul pulsante qui sotto per scegliere una nuova password:</p>
+<p>
+  <a href="{{ .ConfirmationURL }}"
+     style="display:inline-block;padding:12px 24px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-family:Arial,sans-serif;">
+    Reimposta password
+  </a>
+</p>
+<p style="color:#666;font-size:13px;">
+  Se il pulsante non funziona, copia questo link nel browser:<br>
+  <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+</p>
+<p style="color:#666;font-size:13px;">
+  Se non hai richiesto tu il reset, ignora questa email — la tua password non verrà modificata.
+</p>
+<p style="color:#999;font-size:12px;margin-top:32px;">— Il team Sa Morisca</p>
+```
 
-Dal dashboard Supabase → Authentication → Users → seleziona utente → **"Send password recovery"** (NON "Send magic link", che serve al login).
-L'email apre `https://menu.samorisca.it/reset-password` → imposti la nuova password.
+### 3. Verifica
 
-### 4. Verifica
-
-1. Aggiornare Site URL/Redirect URLs su Supabase.
-2. Dal dashboard inviare un "password recovery" all'utente di test.
-3. Cliccare il link nell'email → deve aprirsi la pagina `/reset-password` su `menu.samorisca.it`.
-4. Impostare nuova password → confermare → effettuare login con la nuova password.
+1. Aspettare ~30s (rate limit), poi dal dashboard → "Send password recovery".
+2. Clic sul link → atterra su `/menu` → redirect automatico a `/reset-password` → form attivo → imposti nuova password → toast → login.
 
 ## File toccati
-
-- `src/pages/ResetPassword.tsx` (nuovo)
-- `src/App.tsx` (registrazione route pubblica)
-
-Nessuna modifica a edge functions, schema DB o pagina di Login.
+- `src/contexts/AuthContext.tsx` (1 hunk)

@@ -37,6 +37,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
+
+      if (event === "PASSWORD_RECOVERY") {
+        if (window.location.pathname !== "/reset-password") {
+          window.location.replace("/reset-password" + window.location.hash);
+        }
+      }
     });
 
     return () => {
