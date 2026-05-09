@@ -1,35 +1,36 @@
-## Diagnosi
+# Toggle "Interruzioni di pagina" nella pagina Stampa Menu
 
-Il problema principale è nel formato del link di recovery che Supabase sta generando/verificando:
+## Obiettivo
+Aggiungere, accanto al pulsante "Mostra/Nascondi Margini", un nuovo pulsante "Mostra/Nascondi Interruzioni" che evidenzi nell'anteprima i punti dove sono state configurate interruzioni di pagina forzate (configurate da Impostazioni → tab "Interruzioni di pagina"). L'indicatore è solo a video, non viene mai stampato.
 
-- Il link ricevuto passa da Supabase e poi redirige a `https://menu.samorisca.it` senza indicare una pagina specifica dell’app.
-- Nell’app, `/` viene subito reindirizzato a `/menu`, quindi l’utente vede il menu pubblico.
-- L’attuale listener `PASSWORD_RECOVERY` in `AuthContext` non è sufficiente perché, con questo tipo di redirect Supabase, l’evento può essere già stato consumato prima che l’app riesca a portare l’utente su `/reset-password`.
-- Inoltre `ResetPassword.tsx` aspetta una sessione già pronta, ma non forza il recupero della sessione dai parametri/hash URL quando il link arriva sulla pagina sbagliata.
+## Comportamento
+- Pulsante con stesso stile del toggle margini (variant + icona).
+- Quando attivo: in fondo alla pagina di anteprima la cui ultima categoria è inclusa in `layout.pageBreaks.categoryIds` (e che quindi ha forzato la rottura), compare un piccolo banner tratteggiato con la scritta:
+  
+  `── Interruzione di pagina dopo: [Nome categoria] ──`
+- Quando disattivo (default): nessun banner.
+- Il banner usa `print:hidden` (Tailwind) così non finisce nella stampa né nel popup di stampa.
+- Stile: bordo tratteggiato, colore `text-primary`/`border-primary`, full width, piccolo padding, font-size piccolo, centrato.
 
-## Piano di correzione
+## File da modificare
 
-1. **Rendere il link di reset diretto alla pagina corretta**
-   - Nel punto in cui viene richiesto il reset password, usare `redirectTo: ${window.location.origin}/reset-password`.
-   - Se manca ancora un pulsante “password dimenticata” nel login, aggiungerlo così il reset parte sempre dall’app con il redirect corretto.
+1. **`src/pages/admin/MenuPrint.tsx`**
+   - Nuovo state `showPageBreaks` (default `false`).
+   - Passato a `MenuPrintHeader` e `MenuPrintPreview`.
 
-2. **Gestire il token anche se Supabase redirige alla root**
-   - Migliorare `AuthContext.tsx` per intercettare link di recovery presenti in `window.location.hash` o `window.location.search`, non solo l’evento `PASSWORD_RECOVERY`.
-   - Se il link contiene token di recovery ma l’utente è su `/` o `/menu`, spostarlo automaticamente su `/reset-password` preservando i parametri.
+2. **`src/components/menu-print/MenuPrintHeader.tsx`**
+   - Nuove prop `showPageBreaks`, `setShowPageBreaks`.
+   - Aggiungere `Button` accanto al toggle margini con icona (es. `Scissors` di lucide-react), stesso pattern variant `default`/`outline`.
 
-3. **Rendere `ResetPassword.tsx` più robusta**
-   - All’apertura della pagina, forzare la lettura della sessione dai token URL con Supabase.
-   - Supportare sia il formato moderno con `access_token`/`refresh_token` nell’hash sia il formato con `code` nella query string.
-   - Mostrare un messaggio chiaro se il link è scaduto/non valido, invece di lasciare il form disabilitato senza spiegazione utile.
+3. **`src/components/menu-print/MenuPrintPreview.tsx`**
+   - Aggiungere prop `showPageBreaks` e passarla a `MenuContentPagePreview`.
 
-4. **Metodo urgente alternativo da Supabase**
-   - È possibile cambiare la password manualmente dal Dashboard Supabase: **Authentication → Users → seleziona l’utente → modifica password**.
-   - Questo è il metodo più rapido se la password è esposta e serve intervenire subito, mentre correggiamo il flusso dell’app.
+4. **`src/components/menu-print/page-preview/MenuContentPagePreview.tsx`** (+ `types.ts`)
+   - Nuova prop `showPageBreaks`.
+   - Calcolare se l'ultima categoria della pagina (`page.categories[page.categories.length - 1].category.id`) è inclusa in `layout.pageBreaks?.categoryIds`. In tal caso, se `showPageBreaks` è attivo, renderizzare il banner subito sotto `PageContentSection` (sopra `ServiceChargeSection`) con il nome della categoria.
+   - Markup: `<div className="print:hidden border-2 border-dashed border-primary text-primary text-xs text-center py-1 my-2 rounded">── Interruzione di pagina dopo: {nomeCategoria} ──</div>`.
 
-## Verifica prevista
-
-- Richiedere un nuovo reset password.
-- Cliccare il link ricevuto.
-- Confermare che l’app finisca su `/reset-password`, non su `/menu`.
-- Inserire nuova password e conferma.
-- Dopo il successo, logout automatico e ritorno a `/login`.
+## Note tecniche
+- L'informazione su quali categorie generano un'interruzione è già nel layout (`layout.pageBreaks.categoryIds`); non serve modificare la pagination logic.
+- Il banner è inserito a livello di anteprima React: il sistema di stampa in `useAdvancedPrint` clona il DOM ma con `print:hidden` non viene visualizzato nella stampa.
+- Nessuna modifica a hook di pagination, DB o tipi del layout.
