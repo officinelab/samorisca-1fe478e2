@@ -4,24 +4,34 @@ interface LanguageCacheEntry {
   timestamp: number;
 }
 
+// Versione di build: cambia ad ogni nuovo deploy (definita in vite.config.ts).
+// Invalidata automaticamente la cache lato client al primo accesso post-deploy.
+declare const __BUILD_VERSION__: string;
+const BUILD_VERSION: string =
+  typeof __BUILD_VERSION__ !== 'undefined' ? __BUILD_VERSION__ : 'dev';
+
 class LanguageCache {
   private cache = new Map<string, LanguageCacheEntry>();
   private readonly TTL = 5 * 60 * 1000; // 5 minutes
 
+  private versionedKey(key: string): string {
+    return `${BUILD_VERSION}::${key}`;
+  }
+
   set(key: string, data: any): void {
-    this.cache.set(key, {
+    this.cache.set(this.versionedKey(key), {
       data,
       timestamp: Date.now()
     });
   }
 
   get(key: string): any | null {
-    const entry = this.cache.get(key);
+    const entry = this.cache.get(this.versionedKey(key));
     if (!entry) return null;
 
     const isExpired = Date.now() - entry.timestamp > this.TTL;
     if (isExpired) {
-      this.cache.delete(key);
+      this.cache.delete(this.versionedKey(key));
       return null;
     }
 
@@ -33,12 +43,12 @@ class LanguageCache {
   }
 
   has(key: string): boolean {
-    const entry = this.cache.get(key);
+    const entry = this.cache.get(this.versionedKey(key));
     if (!entry) return false;
 
     const isExpired = Date.now() - entry.timestamp > this.TTL;
     if (isExpired) {
-      this.cache.delete(key);
+      this.cache.delete(this.versionedKey(key));
       return false;
     }
 
