@@ -1,80 +1,57 @@
-## Obiettivo
+## Problema
 
-Far sì che le traduzioni del menu **non traducano mai** il nome del ristorante "Sa Morisca" e i termini tipici della **cucina/lingua sarda**, mantenendoli identici (capitalizzazione compresa) in tutte le lingue di destinazione.
+Nel log OpenAI: input `"FRITTO SA MORISCA"` → output `"FRITTO SA MORISCA"` (nessuna traduzione). Il modello ha lasciato intatto anche `FRITTO`, che invece è una parola comune italiana e va tradotta in francese (`FRITURE` / `FRIT`).
 
-## Analisi del prompt attuale (OpenAI)
+## Causa
 
-File: `supabase/functions/translate-openai/prompts.ts`
+Il prompt attuale (`supabase/functions/translate-openai/prompts.ts`) ha due regole che, combinate, confondono il modello su frasi corte e tutte maiuscole:
 
-Il prompt copre:
-- piatti italiani internazionalmente noti (Tiramisù, Risotto, ecc.) → non tradotti
-- nomi categoria generici (Antipasti, Primi…) → tradotti
-- preservare capitalizzazione e formattazione
-- restituire solo il testo tradotto
+1. "Maintain the exact capitalization pattern of the original text, even if the entire phrase is written in uppercase."
+2. La sezione `getProtectedTermsPromptSection()` dice di preservare `Sa Morisca` e — come fallback — "if you are not sure whether a word is a proper noun or a Sardinian term, PRESERVE it as-is".
 
-**Manca completamente**:
-1. Una regola sui **nomi propri** (ristorante, brand, persone, luoghi).
-2. Una regola sulla **lingua sarda** e sui piatti tipici sardi.
+Su `FRITTO SA MORISCA` (3 parole, tutte maiuscole, con un termine protetto dentro) il modello applica il fallback "nel dubbio preserva" all'intera frase invece di tradurre solo le parole non protette. Manca anche un esempio esplicito che mostri il comportamento corretto.
 
-Questo è il motivo per cui possono uscire traduzioni come "The Morisca", "La Morisca", o termini sardi italianizzati/inventati.
+## Cosa cambiare
 
-## Modifiche da fare
+Solo il prompt — nessuna logica nuova, nessun nuovo file, nessuna migrazione DB.
 
-### 1. Estendere il prompt OpenAI (`prompts.ts`)
+### 1. `supabase/functions/_shared/protectedTerms.ts`
 
-Aggiungere due nuove regole esplicite con esempi:
+Riscrivere `getProtectedTermsPromptSection()` per essere più chiaro e direttivo:
 
-- **Nomi propri / brand / ristorante**: non tradurre mai. In particolare lasciare inalterato "Sa Morisca" (e mantenerne capitalizzazione e spaziatura). Stessa regola per nomi di persona, vie, località.
-- **Lingua sarda e piatti tipici sardi**: lasciare invariati termini come *malloreddus, culurgiones, seadas (sebadas), pane carasau, fregola/fregula, porceddu, bottarga, pardulas, pirichittus, su filindeu, mirto, vernaccia, cannonau, vermentino, pecorino sardo, fiore sardo, casu martzu, zuppa gallurese, panada, civraxiu, coccoi, mazzamurru, burrida, fainè*. Il modello deve riconoscere termini in sardo anche oltre questa lista e mantenerli come sono.
-- Chiarire che **se un termine sardo è seguito da una descrizione** (es. "Malloreddus alla campidanese con salsiccia"), va tradotta solo la parte descrittiva, non il nome del piatto.
-- Aggiungere una regola di safety: in caso di dubbio se una parola sia un nome proprio o un termine sardo, **preservarla** invece di tradurre.
+- Affermazione positiva e prima di tutto: "Translate ALL other words in the sentence normally. Only the protected terms stay unchanged; everything around them MUST be translated."
+- Mantenere la regola su nomi propri / termini sardi / "Sa Morisca".
+- Restringere la regola di fallback "nel dubbio preserva": applicarla SOLO alla singola parola sospetta, non all'intera frase. Riformularla come: "If a single word looks like it might be a proper noun or Sardinian, preserve only that word and still translate the rest of the sentence."
+- Aggiungere 3 esempi few-shot espliciti, includendo il caso fallito:
+  - `FRITTO SA MORISCA` → FR: `FRITURE SA MORISCA` (mantiene maiuscole, traduce `FRITTO`, preserva `SA MORISCA`)
+  - `Malloreddus alla campidanese` → EN: `Malloreddus campidanese-style` (preserva `Malloreddus`, traduce il resto)
+  - `Risotto del Golfo di Cagliari` → EN: `Risotto from the Gulf of Cagliari` (`Cagliari` resta, `del Golfo di` tradotto)
 
-Il prompt resta in inglese (è la convenzione attuale) ma con esempi espliciti.
+### 2. `supabase/functions/translate-openai/prompts.ts`
 
-### 2. Rendere la lista dei termini "non tradurre" configurabile
+Rimuovere/ammorbidire la riga "Do not treat uppercase text as a reason to preserve the original" → portarla DENTRO la sezione termini protetti come regola esplicita: "Uppercase formatting is NEVER a reason to skip translation. Translate uppercase words exactly like lowercase ones, preserving the uppercase output."
 
-Per non vincolarsi al codice, esportare la lista come costante in cima a `prompts.ts` (es. `DO_NOT_TRANSLATE_TERMS`) e iniettarla nel prompt. Così se in futuro vuoi aggiungere altri nomi (es. nomi di sale del ristorante, di cantine, di pescatori), si modifica solo l'array.
+Riordinare il prompt così che la regola "traduci tutto tranne i termini protetti elencati" sia ribadita anche dopo gli esempi.
 
-Opzionale (più avanti, se vuoi): spostare la lista su una tabella DB `do_not_translate_terms` modificabile dall'admin. **Per ora non lo includo nel piano** perché aumenta lo scope; lo possiamo fare in un secondo intervento.
+### 3. Stesse modifiche propagate
 
-### 3. Allineare gli altri servizi di traduzione
+Siccome `getProtectedTermsPromptSection()` è condivisa, il fix arriva automaticamente anche a `translate/index.ts` (Perplexity). DeepL non usa prompt → nessuna modifica lì.
 
-- **Perplexity** (`supabase/functions/translate/index.ts` o `translate-perplexity`): se usa un prompt analogo, applicare le stesse regole. Da ispezionare.
-- **DeepL** (`supabase/functions/translate-deepl/index.ts`): DeepL non accetta un "system prompt", ma supporta:
-  - tag `<x>...</x>` con `tag_handling=xml` e `ignore_tags` per marcare porzioni "non tradurre".
-  - oppure un **glossario** DeepL (Glossary API) in cui mappi `Sa Morisca → Sa Morisca`, `malloreddus → malloreddus`, ecc. per ogni coppia di lingue.
-  - Approccio consigliato: pre-processare il testo wrappando i termini protetti in `<keep>...</keep>` e passare `tag_handling=xml&ignore_tags=keep` a DeepL. Stesso pre-processing si può applicare anche a OpenAI come "secondo livello di sicurezza" (non strettamente necessario se il prompt è chiaro).
+## Verifica
 
-### 4. Verifica post-modifica
+Dopo il deploy delle edge functions, testare con `supabase--curl_edge_functions` su `/translate-openai`:
 
-- Tradurre "Sa Morisca" in EN/FR/DE/ES → deve restare "Sa Morisca".
-- Tradurre "Malloreddus alla campidanese" in EN → atteso "Malloreddus Campidanese-style" (o simile), **non** "Little bulls".
-- Tradurre "Seadas con miele di corbezzolo" → "seadas" resta, "miele di corbezzolo" si traduce.
-- Tradurre "Risotto alla pescatora del Golfo di Cagliari" → "Risotto" resta (eccezione esistente), "Golfo di Cagliari" resta (toponimo).
-- Tradurre una descrizione che contiene "presso il ristorante Sa Morisca" → "Sa Morisca" intatto.
+| Input | Lingua | Atteso |
+|---|---|---|
+| `FRITTO SA MORISCA` | fr | `FRITURE SA MORISCA` (o `FRIT SA MORISCA`) — `FRITTO` tradotto, `SA MORISCA` invariato, maiuscole mantenute |
+| `Fritto Sa Morisca` | en | `Fried Sa Morisca` |
+| `Malloreddus alla campidanese con salsiccia` | en | `Malloreddus` invariato, resto tradotto |
+| `Sa Morisca` | de | `Sa Morisca` invariato |
 
-Test fatti via tool `supabase--curl_edge_functions` chiamando `translate-openai` con `checkApiKeyOnly=false` e i testi sopra, su ogni lingua target. Confronto degli output prima/dopo.
+Se uno dei test fallisce, iterare solo sul wording del prompt.
 
-### 5. Traduzioni già salvate
+## Cosa NON fa questo piano
 
-Le traduzioni esistenti restano nel DB così come sono. Per ripulire quelle sbagliate ci sono due strade:
-- (a) cancellare manualmente dalla tabella `translations` i record con `translated_text` che contiene "Morisca" tradotta o termini sardi alterati, e farle rigenerare dall'admin;
-- (b) script una-tantum che ri-traduce tutti i record dove `original_text` contiene una delle parole protette.
-
-Ti propongo (a) per ora, perché (b) consuma token a tappeto. Posso però preparare uno script (b) opzionale.
-
-## Sezione tecnica (riepilogo file toccati)
-
-- `supabase/functions/translate-openai/prompts.ts` — nuovo prompt + costante `DO_NOT_TRANSLATE_TERMS`.
-- `supabase/functions/translate-openai/index.ts` — nessuna modifica necessaria (usa già `getSystemPrompt`).
-- `supabase/functions/translate/index.ts` (Perplexity) — da leggere e allineare.
-- `supabase/functions/translate-deepl/index.ts` — pre-processing con tag `<keep>` e `ignore_tags`.
-- Eventuale utility `supabase/functions/_shared/protectTerms.ts` per condividere la lista e la logica di wrapping fra i tre servizi.
-
-Nessuna modifica frontend, nessuna migrazione DB in questa fase.
-
-## Domande per te prima di procedere
-
-1. **Lista termini sardi**: quella che ho proposto sopra ti va bene come punto di partenza, o vuoi aggiungerne/rimuoverne alcuni (es. nomi di vini specifici della tua carta, nomi di sale, dei vostri piatti firma)?
-2. **Servizi da aggiornare**: applico le regole solo a OpenAI (servizio attualmente predefinito secondo i log) o anche a Perplexity e DeepL?
-3. **Traduzioni già salvate**: lasciamo le vecchie traduzioni così come sono e tu le rigeneri quando serve dall'admin, oppure preparo lo script di re-traduzione mirata sui termini protetti?
+- Non tocca le traduzioni già salvate in DB per "FRITTO SA MORISCA" — vanno ri-generate manualmente dalla pagina Multilingue dopo il fix.
+- Non aggiunge nuovi termini protetti.
+- Non cambia la logica DeepL `<keep>` (già funzionante).
