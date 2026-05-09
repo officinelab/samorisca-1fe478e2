@@ -3,6 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { wrapProtectedTerms, unwrapProtectedTerms } from "../_shared/protectedTerms.ts";
 
 interface TranslateRequest {
   text: string;
@@ -51,6 +52,9 @@ serve(async (req) => {
     };
     const targetLang = languageMap[targetLanguage] || languageMap['en'];
     
+    // Proteggi i termini che non devono essere tradotti (nome ristorante, sardo, ecc.)
+    const protectedText = wrapProtectedTerms(text);
+
     const response = await fetch('https://api-free.deepl.com/v2/translate', {
       method: 'POST',
       headers: {
@@ -58,9 +62,11 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        text: [text],
+        text: [protectedText],
         target_lang: targetLang,
-        formality: 'default'
+        formality: 'default',
+        tag_handling: 'xml',
+        ignore_tags: ['keep']
       })
     });
     
@@ -85,7 +91,7 @@ serve(async (req) => {
     const data = await response.json();
     
     if (data.translations && data.translations.length > 0) {
-      const translatedText = data.translations[0].text;
+      const translatedText = unwrapProtectedTerms(data.translations[0].text);
       console.log(`[DEEPL] <== Risultato: "${translatedText}"`);
       console.log("[DEEPL] Traduzione completata con successo");
 

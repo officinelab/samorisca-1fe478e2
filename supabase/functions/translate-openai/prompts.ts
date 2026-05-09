@@ -1,4 +1,6 @@
 
+import { getProtectedTermsPromptSection } from "../_shared/protectedTerms.ts";
+
 /**
  * System prompt per traduzioni menu culinari.
  */
@@ -11,5 +13,6 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
 - Maintain the exact capitalization pattern of the original text, even if the entire phrase is written in uppercase.
 - Do not treat uppercase text as a reason to preserve the original — it should still be translated unless it falls under the exception above.
 - Preserve formatting (punctuation, line breaks, spacing).
-- Return only the translated text. Do not include explanations, comments, or metadata.`;
+- Return only the translated text. Do not include explanations, comments, or metadata.
+${getProtectedTermsPromptSection()}`;
 }
