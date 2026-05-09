@@ -1,57 +1,61 @@
-## Problema
+## Obiettivo
 
-Nel log OpenAI: input `"FRITTO SA MORISCA"` → output `"FRITTO SA MORISCA"` (nessuna traduzione). Il modello ha lasciato intatto anche `FRITTO`, che invece è una parola comune italiana e va tradotta in francese (`FRITURE` / `FRIT`).
+Aggiungere un pulsante **"Traduci tutto"** (stesso stile/comportamento di quello già esistente in *Voci di menu* → `CategorySelector`) in due punti della pagina **Multilingua**:
 
-## Causa
+1. Tab **Generale** (`GeneralTranslationsTab`) — traduce tutti i campi traducibili di tutti gli elementi del tipo selezionato (Categorie / Allergeni / Caratteristiche / Etichette / Note categorie) nella lingua corrente.
+2. Tab **Voci da tradurre** (`MissingTranslationsTab`) — traduce tutti i campi mostrati come *mancanti* o *obsoleti*.
 
-Il prompt attuale (`supabase/functions/translate-openai/prompts.ts`) ha due regole che, combinate, confondono il modello su frasi corte e tutte maiuscole:
+Comportamento identico al bottone esistente: traduce solo i campi che lo richiedono (mancanti + obsoleti), mostra toast di progresso, al termine fa `dispatchEvent("refresh-translation-status")` per aggiornare i badge.
 
-1. "Maintain the exact capitalization pattern of the original text, even if the entire phrase is written in uppercase."
-2. La sezione `getProtectedTermsPromptSection()` dice di preservare `Sa Morisca` e — come fallback — "if you are not sure whether a word is a proper noun or a Sardinian term, PRESERVE it as-is".
+## File toccati
 
-Su `FRITTO SA MORISCA` (3 parole, tutte maiuscole, con un termine protetto dentro) il modello applica il fallback "nel dubbio preserva" all'intera frase invece di tradurre solo le parole non protette. Manca anche un esempio esplicito che mostri il comportamento corretto.
+### 1. Nuovo hook condiviso: `src/components/multilingual/hooks/useBatchTranslate.ts`
 
-## Cosa cambiare
+Estrae la logica di "traduci una lista di campi (entityType, entityId, fieldName, originalText) saltando quelli già aggiornati". Espone:
 
-Solo il prompt — nessuna logica nuova, nessun nuovo file, nessuna migrazione DB.
+- `translateFields(jobs, language, label)` — riceve array `{ entityType, entityId, fieldName, originalText }`, esegue `checkIfNeedsTranslation` per ciascuno (riusando il pattern già presente in `useProductTranslations`), chiama `translateText` solo dove serve, mostra toast di progresso ogni N campi, alla fine dispatcha `refresh-translation-status` e mostra toast finale "Tradotti X campi, Y saltati".
+- `isTranslating: boolean`
 
-### 1. `supabase/functions/_shared/protectedTerms.ts`
+Riusa `useTranslationService` per `translateText` e `getServiceName`.
 
-Riscrivere `getProtectedTermsPromptSection()` per essere più chiaro e direttivo:
+### 2. `GeneralTranslationsTab.tsx`
 
-- Affermazione positiva e prima di tutto: "Translate ALL other words in the sentence normally. Only the protected terms stay unchanged; everything around them MUST be translated."
-- Mantenere la regola su nomi propri / termini sardi / "Sa Morisca".
-- Restringere la regola di fallback "nel dubbio preserva": applicarla SOLO alla singola parola sospetta, non all'intera frase. Riformularla come: "If a single word looks like it might be a proper noun or Sardinian, preserve only that word and still translate the rest of the sentence."
-- Aggiungere 3 esempi few-shot espliciti, includendo il caso fallito:
-  - `FRITTO SA MORISCA` → FR: `FRITURE SA MORISCA` (mantiene maiuscole, traduce `FRITTO`, preserva `SA MORISCA`)
-  - `Malloreddus alla campidanese` → EN: `Malloreddus campidanese-style` (preserva `Malloreddus`, traduce il resto)
-  - `Risotto del Golfo di Cagliari` → EN: `Risotto from the Gulf of Cagliari` (`Cagliari` resta, `del Golfo di` tradotto)
+- Aggiunge un bottone "Traduci tutto" accanto al titolo "Traduzioni" (o sopra la tabella).
+- All'on-click costruisce `jobs[]` da `items` (campi `title` sempre, più `description` per categorie/allergeni, `text` per category_notes), filtrando solo stringhe non vuote.
+- Disabilitato se `items.length === 0`, durante caricamento o durante traduzione.
+- Stato loading con spinner identico a `CategorySelector`.
 
-### 2. `supabase/functions/translate-openai/prompts.ts`
+### 3. `MissingTranslationsTab.tsx`
 
-Rimuovere/ammorbidire la riga "Do not treat uppercase text as a reason to preserve the original" → portarla DENTRO la sezione termini protetti come regola esplicita: "Uppercase formatting is NEVER a reason to skip translation. Translate uppercase words exactly like lowercase ones, preserving the uppercase output."
+- Aggiunge un bottone "Traduci tutto" accanto al titolo "Voci da tradurre/aggiornare".
+- All'on-click costruisce `jobs[]` da `fieldsToTranslate`, leggendo `originalText` dalle entità in `entitiesMap[`${entityType}:${id}`][field]`.
+- Disabilitato se `fieldsToTranslate.length === 0` o durante traduzione.
+- Qui possiamo saltare il `checkIfNeedsTranslation` perché la lista è già filtrata: tradurre direttamente.
 
-Riordinare il prompt così che la regola "traduci tutto tranne i termini protetti elencati" sia ribadita anche dopo gli esempi.
+### 4. (Refactor opzionale, sicuro) `useProductTranslations.ts`
 
-### 3. Stesse modifiche propagate
+Lasciare invariato: continua a funzionare. Il nuovo hook è additivo.
 
-Siccome `getProtectedTermsPromptSection()` è condivisa, il fix arriva automaticamente anche a `translate/index.ts` (Perplexity). DeepL non usa prompt → nessuna modifica lì.
+## Tecnico
 
-## Verifica
+- Tipo `Job`:
+  ```ts
+  type Job = {
+    entityType: 'categories'|'allergens'|'product_features'|'product_labels'|'category_notes'|'products';
+    entityId: string;
+    fieldName: string;
+    originalText: string;
+    skipFreshnessCheck?: boolean; // true per MissingTranslationsTab
+  };
+  ```
+- `checkIfNeedsTranslation` viene generalizzato dentro il nuovo hook (versione che accetta `entityType` invece di hardcodare `products`).
+- Toast: usare `useToast` come in `useProductTranslations`. Update ogni 3 elementi.
+- Al termine: `window.dispatchEvent(new CustomEvent("refresh-translation-status"))` per far rigenerare badge e tabelle.
+- Nessuna modifica a edge function, DB, RLS o tipi. Nessuna nuova dipendenza.
 
-Dopo il deploy delle edge functions, testare con `supabase--curl_edge_functions` su `/translate-openai`:
+## Verifica manuale
 
-| Input | Lingua | Atteso |
-|---|---|---|
-| `FRITTO SA MORISCA` | fr | `FRITURE SA MORISCA` (o `FRIT SA MORISCA`) — `FRITTO` tradotto, `SA MORISCA` invariato, maiuscole mantenute |
-| `Fritto Sa Morisca` | en | `Fried Sa Morisca` |
-| `Malloreddus alla campidanese con salsiccia` | en | `Malloreddus` invariato, resto tradotto |
-| `Sa Morisca` | de | `Sa Morisca` invariato |
-
-Se uno dei test fallisce, iterare solo sul wording del prompt.
-
-## Cosa NON fa questo piano
-
-- Non tocca le traduzioni già salvate in DB per "FRITTO SA MORISCA" — vanno ri-generate manualmente dalla pagina Multilingue dopo il fix.
-- Non aggiunge nuovi termini protetti.
-- Non cambia la logica DeepL `<keep>` (già funzionante).
+1. Andare su Multilingua → tab **Generale** → selezionare "Allergeni" + lingua FR → cliccare "Traduci tutto" → verificare che tutti i `title` (e `description` se presenti) vengano tradotti e mostrati. Ripetere per Categorie e Caratteristiche.
+2. Tab **Voci da tradurre** con FR → cliccare "Traduci tutto" → tutti i badge spariscono, tabella si svuota mostrando il messaggio "Complimenti!".
+3. Verificare che i token mensili vengano consumati in modo coerente (toast finale riporta numero campi tradotti).
+4. Verificare che "Sa Morisca" e termini sardi restino intatti (regola già implementata nel prompt).
