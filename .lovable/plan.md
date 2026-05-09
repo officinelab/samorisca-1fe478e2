@@ -1,40 +1,49 @@
 ## Problema
 
-La progress bar nella pagina Multilingua segnala campi "non tradotti / da aggiornare" anche quando la tab **Voci da tradurre** mostra che tutto è tradotto e aggiornato.
-
-## Causa
-
-Nell'ultima modifica abbiamo aggiornato la logica di "obsolescenza" delle traduzioni in:
-- `BadgeTranslationStatus.tsx`
-- `useMissingTranslations.ts`
-- `useBatchTranslate.ts`
-
-Tutti questi ora confrontano il testo sorgente corrente con `translations.original_text` (quindi una modifica a un campo non correlato non rende obsoleta una traduzione).
-
-Ma **`src/hooks/useTranslationStats.ts`** (che alimenta la barra di avanzamento) è rimasto sulla vecchia logica basata sui timestamp:
-
-```ts
-if (translationUpdated < originalUpdated) outdatedCount++;
-```
-
-Quindi conta come "obsolete" tutte le traduzioni dove `translations.last_updated < entity.updated_at`, anche se il testo sorgente non è cambiato. Risultato: la barra mostra meno tradotte/percentuale più bassa rispetto alla tab Voci da tradurre.
+Il magic link arriva con redirect a `http://localhost:3000/...` (irraggiungibile) e l'app non ha una pagina dedicata al reset password: anche correggendo il dominio, senza una pagina `/reset-password` il token verrebbe consumato senza poter impostare una nuova password.
 
 ## Piano
 
-1. **`src/hooks/useTranslationStats.ts`**
-   - Aggiungere `original_text` alla SELECT delle translations.
-   - Sostituire il check basato sui timestamp con la stessa logica usata altrove:
-     - se esiste `original_text`: confrontare `entity[field].trim() === translation.original_text.trim()` → se uguale = aggiornata, altrimenti obsoleta;
-     - fallback (legacy senza `original_text`): confronto timestamp (comportamento attuale).
-   - Mantenere invariate le tre categorie (translated / outdated / missing) e il calcolo della percentuale.
+### 1. Configurazione su Supabase (azione manuale)
 
-2. Verifica
-   - Aprire la pagina Multilingua: la percentuale e il conteggio della progress bar devono coincidere con la tab "Voci da tradurre" (totale - missing - outdated = translated).
-   - Modificare un campo non tradotto-correlato (es. `display_order` o `is_active` di una categoria): la percentuale non deve più scendere.
-   - Modificare il `title` di un prodotto: il conteggio "da aggiornare" deve aumentare di 1.
+Dashboard Supabase → **Authentication → URL Configuration**:
+
+- **Site URL**: `https://menu.samorisca.it`
+- **Redirect URLs** (whitelist):
+  - `https://menu.samorisca.it/**`
+  - `https://samorisca.lovable.app/**`
+  - `https://id-preview--da22ec85-69c8-476c-bf47-07c1cdef44a2.lovable.app/**`
+
+Da quel momento i nuovi link generati (sia "Send magic link" sia "Send password recovery") punteranno al dominio corretto invece di `localhost:3000`.
+
+### 2. Creare la pagina pubblica `/reset-password`
+
+- **`src/pages/ResetPassword.tsx`** (nuovo)
+  - Pagina pubblica.
+  - Il client Supabase intercetta automaticamente il token nell'hash URL (`detectSessionInUrl: true`, default) e crea una sessione temporanea.
+  - All'apertura verifica `supabase.auth.getSession()`: se nessuna sessione/token valido → messaggio "Link scaduto o non valido" con istruzioni.
+  - Form: "Nuova password" + "Conferma password" (validazione min 6 caratteri, match).
+  - Submit → `supabase.auth.updateUser({ password })`.
+  - Successo → toast di conferma + redirect a `/login` (o `/menu` se già loggato).
+  - Gestione errori con messaggi chiari.
+
+- **`src/App.tsx`**: registrare la route pubblica `/reset-password` PRIMA di qualsiasi `ProtectedRoute`.
+
+### 3. Procedura per cambiare la password
+
+Dal dashboard Supabase → Authentication → Users → seleziona utente → **"Send password recovery"** (NON "Send magic link", che serve al login).
+L'email apre `https://menu.samorisca.it/reset-password` → imposti la nuova password.
+
+### 4. Verifica
+
+1. Aggiornare Site URL/Redirect URLs su Supabase.
+2. Dal dashboard inviare un "password recovery" all'utente di test.
+3. Cliccare il link nell'email → deve aprirsi la pagina `/reset-password` su `menu.samorisca.it`.
+4. Impostare nuova password → confermare → effettuare login con la nuova password.
 
 ## File toccati
 
-- `src/hooks/useTranslationStats.ts` (unico file)
+- `src/pages/ResetPassword.tsx` (nuovo)
+- `src/App.tsx` (registrazione route pubblica)
 
-Nessuna modifica a edge functions, schema DB o altri componenti.
+Nessuna modifica a edge functions, schema DB o pagina di Login.
