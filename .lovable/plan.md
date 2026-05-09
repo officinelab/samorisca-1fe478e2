@@ -1,68 +1,73 @@
-# Piano
+## Diagnosi
 
-## 1. Analisi del problema "da aggiornare" (badge arancione)
+L'output errato `"Spaghetti Vongole und Bottarga von Muggine."` deriva da **tre debolezze nei prompt** in `supabase/functions/translate-openai/prompts.ts` e `supabase/functions/_shared/protectedTerms.ts`:
 
-### Come funziona oggi
-Il badge confronta due timestamp:
-- `entity.updated_at` (colonna su `products`, `categories`, `allergens`, ecc.)
-- `translations.last_updated` (un record per ogni *campo* tradotto)
+### 1. Regola "piatti italiani famosi" troppo permissiva
+Il system prompt dice:
+> "Always translate the text **unless the phrase is a traditional Italian dish that is internationally recognized**…"
 
-Se `last_updated < updated_at` → traduzione marcata come "da aggiornare".
+GPT-4o-mini interpreta liberamente: classifica "Spaghetti Vongole" o "Frittura di Calamari" come "piatti famosi" e li lascia in italiano. Confligge con la regola "translate every word" della sezione protected terms; nel dubbio il modello sceglie di NON tradurre.
 
-### Perché traduzioni corrette risultano "da aggiornare"
-Il problema è strutturale: **`updated_at` è uno solo per l'intera entità, mentre i campi tradotti sono molti.**
+### 2. Termini protetti senza regole di composizione
+`bottarga` è protetto, ma il prompt non spiega come gestire le forme **"X di Y"**:
+- "Bottarga **di Muggine**" → il modello blocca tutto il sintagma invece di tradurre solo "di Muggine"
+- "Salsiccia (non protetta) **sarda di Villacidro**" → idem
+- Manca un esempio mostrato di "termine protetto + modificatore tradotto".
 
-Esempi reali che producono falsi positivi:
-1. **Modifica di un solo campo** (es. cambio il titolo del prodotto) → l'intero record viene riscritto e `updated_at = now()`. Tutte le traduzioni dei *altri* campi (descrizione, suffisso prezzo, varianti…) diventano improvvisamente "obsolete" anche se il testo originale di quei campi non è cambiato.
-2. **Salvataggi senza modifica reale**: il form prodotto invia tutti i campi anche quando l'utente ha solo aperto/chiuso o modificato qualcosa di non traducibile (es. ordine, stato attivo, immagine, allergeni, label). `updated_at` viene comunque aggiornato → tutte le traduzioni vanno "in arancione".
-3. **Categorie**: c'è una funzione `update_categories_updated_at()` che limita l'update a determinati campi, ma non è collegata a un trigger e comunque considera anche `image_url`/`display_order`/`is_active` (non traducibili) come trigger di "obsolescenza".
-4. **Relazioni** (allergeni del prodotto, features): aggiungere/rimuovere un allergene da un prodotto può causare un re-save del prodotto e bumpare `updated_at`.
+### 3. Lista protetta incompleta e zero gestione di ingredienti comuni IT non protetti
+Parole come `vongole`, `calamari`, `gamberi`, `polpo`, `muggine`, `astice`, `cozze` non sono protette ma vengono trattate come se lo fossero per "vicinanza semantica" a un piatto. Inoltre il modello è incoerente fra lingue: la stessa frase in EN viene tradotta correttamente, in DE no.
 
-In pratica: **qualunque modifica all'entità marca come "da aggiornare" tutti i campi tradotti**, anche quelli il cui testo originale non è cambiato. Esattamente quello che l'utente sta osservando su Pizza rossa Samorisca.
+### Casi attualmente rotti nel DB (campione)
+~10+ traduzioni in DE/FR/ES con ingredienti italiani non tradotti: Vongole, Calamari, Frittura, Salsiccia sarda di Villacidro, Bottarga di muggine, Risotto/Spaghetti come testa di frase, Prosciutto Crudo, ecc.
 
-### Soluzione proposta: confronto sul testo, non sul timestamp
-La tabella `translations` ha già la colonna `original_text`. La salviamo al momento della traduzione ma non la usiamo per la freschezza. Cambiamo la logica così:
+---
 
-> Una traduzione è **"da aggiornare"** se e solo se `entity[field] !== translation.original_text` (testo sorgente diverso da quello tradotto in precedenza). Il timestamp resta solo come fallback se `original_text` è NULL (record vecchi).
+## Piano di intervento
 
-Vantaggi:
-- Zero falsi positivi: se il testo sorgente non è cambiato, la traduzione resta "verde".
-- Funziona automaticamente per tutti i campi e tutte le entità.
-- Nessuna migrazione dati richiesta: i record nuovi popolano `original_text`, quelli vecchi continuano a usare il fallback timestamp finché non vengono ritradotti.
+### Step 1 — Riscrivere il system prompt (`supabase/functions/translate-openai/prompts.ts`)
 
-Punti modificati per applicare la nuova regola:
-- `src/components/multilingual/BadgeTranslationStatus.tsx` (calcolo status)
-- `src/components/multilingual/hooks/useMissingTranslations.ts` (lista voci da tradurre)
-- `src/components/multilingual/hooks/useBatchTranslate.ts` → `checkIfNeedsTranslation`
-- `src/hooks/useProductTranslations.ts` → `checkIfNeedsTranslation`
+Sostituire la regola permissiva con una **whitelist chiusa** di piatti che restano invariati, e aggiungere regole esplicite di composizione:
 
-Le suddette funzioni dovranno selezionare anche `original_text` insieme a `last_updated` e confrontare il testo. Se `original_text` è null, fallback all'attuale confronto timestamp.
+- Eliminare la frase generica "unless the phrase is a traditional Italian dish that is internationally recognized".
+- Introdurre una **lista chiusa** di nomi-piatto da non tradurre (es. "Tiramisù", "Bruschetta", "Carbonara", "Cacio e Pepe", "Pizza Margherita", "Risotto" come testa di piatto, "Spaghetti" come testa di piatto). Tutto il resto va tradotto.
+- Regola di composizione: **"protected term di X"** → mantenere il termine protetto, ma tradurre `di X` nella forma idiomatica della lingua target (es. DE: composto con trattino "Meeräschen-Bottarga"; EN: "X bottarga"; FR: "bottarga de X").
+- Aggiungere **esempi negativi** (output sbagliato + corretto) per i casi reali rotti: "Spaghetti Vongole e Bottarga di Muggine", "Frittura di Calamari", "Salsiccia sarda di Villacidro".
+- Vincolare a non lasciare in output preposizioni italiane isolate ("di", "alla", "con") quando il resto è tradotto.
 
-Verifico inoltre che la edge function `translate-openai` salvi sempre `original_text` (passaggio rapido in `translationStorage.ts`); se non lo fa, va aggiunto.
+### Step 2 — Estendere `PROTECTED_TERMS` (`supabase/functions/_shared/protectedTerms.ts`)
 
-## 2. Uniformare "Traduci tutto" nella tab Voci di menu
+Solo per veri nomi propri / DOP / sardi non traducibili. NON aggiungere ingredienti comuni come "vongole" o "calamari": vanno tradotti.
 
-Stato attuale:
-- **Generale** e **Voci da tradurre**: usano `useBatchTranslate` + `BatchTranslateDialog` (popup conferma con conteggio + token + barra di avanzamento). Il bottone è in alto a destra.
-- **Voci di menu** (`ProductTranslationsTab` / `CategorySelector`): usa il vecchio `useProductTranslations.translateAllProducts` che mostra solo toast. Il bottone è in linea col selettore di categoria.
+Aggiungere: `Mozzarella di Bufala Campana DOP`, `Pecorino Sardo DOP`, `Villacidro`, `Cagliari`, `Sardegna`, `Carasau`, `Guanciale` (se sardo specifico — valutare), `Panadine`, `Scabecciu`, `Mustia`, `Carnaroli`, `DOP`, `IGP`.
 
-Modifiche:
+### Step 3 — Allineare anche Perplexity e DeepL
+- `translate-deepl/index.ts`: i protected terms sono già usati via `wrapProtectedTerms`. La nuova whitelist non serve perché DeepL traduce già letteralmente.
+- `translate/index.ts` (Perplexity, se attiva): replicare lo stesso system prompt aggiornato.
 
-1. **Spostare il bottone in alto a destra della tab**, accanto al titolo, identico per stile e posizione a quello presente in Generale/Voci da tradurre. Rimuoverlo da `CategorySelector.tsx`.
-2. **Sostituire `translateAllProducts` con `useBatchTranslate`**: in `ProductTranslationsTab.tsx` costruire l'array `BatchJob[]` a partire dai prodotti caricati per la categoria selezionata (campi: `title`, `description`, `price_suffix` se attivo, `price_variant_1_name` e `price_variant_2_name` se prezzi multipli) e chiamare `batch.prepare(jobs, language)`.
-3. **Renderizzare `<BatchTranslateDialog />`** collegato allo stato dell'hook, esattamente come negli altri due tab.
-4. **Pulizia**: rimuovere da `useProductTranslations.ts` la logica ora duplicata (`translateAllProducts`, `checkIfNeedsTranslation`, `translatingAll`) e relative props in `CategorySelector`.
+### Step 4 — Pulizia delle traduzioni rotte già salvate
+Aggiungere uno strumento "Ricontrolla traduzioni" che identifica le righe in `translations` dove il testo tradotto contiene parole italiane sospette (lista finita: `vongole`, `calamari`, `gamberi`, `polpo`, `seppia`, `astice`, `muggine`, `frittura`, `salsiccia`, `prosciutto crudo`, ecc. **escluse** quelle nei `PROTECTED_TERMS`) e le marca come "da rivedere" così da poter essere ritradotte con il prompt nuovo tramite il pulsante "Traduci tutto" già esistente.
 
-Risultato: comportamento identico nelle tre tab — popup di conferma con numero campi, token stimati/disponibili, barra di avanzamento, riepilogo finale, possibilità di interrompere.
+Due opzioni di esecuzione (da scegliere insieme):
+- **A. Manuale**: solo segnalazione visiva (badge arancione "qualità sospetta") nella tab Voci da tradurre, l'utente clicca "Traduci tutto".
+- **B. Automatico**: cancellazione mirata delle righe sospette → al successivo refresh ricompaiono come "mancanti" e possono essere ritradotte.
+
+### Step 5 — Test
+
+- Deploy `translate-openai` (e Perplexity se attivo).
+- Eseguire 5–6 traduzioni di prova via `supabase--curl_edge_functions` sui casi noti: "Spaghetti Vongole e Bottarga di Muggine", "Frittura di Calamari, Gamberi, Tentacoli di Polpo", "Salsiccia sarda di Villacidro", "RISOTTO ZAFFERANO E GAMBERI" — verificare DE/EN/FR/ES.
+- Confrontare con le traduzioni attese.
+
+---
 
 ## File toccati
 
-- `src/components/multilingual/ProductTranslationsTab.tsx` — bottone in alto, integrazione `useBatchTranslate` + `BatchTranslateDialog`
-- `src/components/multilingual/product-translations/CategorySelector.tsx` — rimozione bottone e props correlate
-- `src/hooks/useProductTranslations.ts` — pulizia
-- `src/components/multilingual/BadgeTranslationStatus.tsx` — nuova logica freschezza
-- `src/components/multilingual/hooks/useMissingTranslations.ts` — nuova logica freschezza
-- `src/components/multilingual/hooks/useBatchTranslate.ts` — `checkIfNeedsTranslation` aggiornato
-- (eventuale) `src/hooks/translation/translationStorage.ts` — assicurare salvataggio di `original_text`
+- `supabase/functions/translate-openai/prompts.ts` (riscrittura system prompt)
+- `supabase/functions/_shared/protectedTerms.ts` (estensione lista DOP/sardi)
+- `supabase/functions/translate/index.ts` (allineamento Perplexity, se in uso)
+- (Step 4) `src/components/multilingual/hooks/useMissingTranslations.ts` + `BadgeTranslationStatus.tsx` per badge "qualità sospetta", oppure migrazione SQL per rimuovere le righe sospette.
 
-Nessuna migrazione DB necessaria.
+## Domande prima di implementare
+
+1. Per le ~10 traduzioni già errate nel DB, preferisci la pulizia **A. manuale** (badge "da rivedere") o **B. automatica** (cancello e fai ritradurre)?
+2. Confermi che `Risotto` e `Spaghetti` come **testa** di piatto possono restare in italiano (sono universalmente accettati), o vuoi che siano sempre tradotti (es. "Reisgericht…", "Nudeln…")?
+3. Vuoi che estenda il fix anche al servizio Perplexity (`translate/index.ts`) oltre a OpenAI?
