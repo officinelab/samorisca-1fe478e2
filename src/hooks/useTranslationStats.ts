@@ -62,7 +62,7 @@ export const useTranslationStats = (language: SupportedLanguage) => {
         // Recupera tutte le traduzioni per questa lingua (entity_type+entity_id+field)
         const { data: allTranslations, error: translationsError } = await supabase
           .from('translations')
-          .select('entity_type, entity_id, field, last_updated')
+          .select('entity_type, entity_id, field, last_updated, original_text')
           .eq('language', language);
 
         if (translationsError) {
@@ -80,12 +80,13 @@ export const useTranslationStats = (language: SupportedLanguage) => {
         // Mappa per lookup veloce delle traduzioni
         const translationsMap: Record<
           string, // lookupKey: entityType:entity_id:field
-          { last_updated: string }
+          { last_updated: string; original_text: string | null }
         > = {};
         (allTranslations || []).forEach(t => {
           const lookupKey = `${t.entity_type}:${t.entity_id}:${t.field}`;
           translationsMap[lookupKey] = {
             last_updated: t.last_updated,
+            original_text: (t as any).original_text ?? null,
           };
         });
 
@@ -104,16 +105,24 @@ export const useTranslationStats = (language: SupportedLanguage) => {
             debugUntranslated.push({ ...f, status: "missing" });
             continue;
           }
-          // Check outdated: se la traduzione esiste ma è più vecchia dell'originale
-          const originalUpdated = f.updated_at ? new Date(f.updated_at).getTime() : 0;
-          const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
-          if (translationUpdated < originalUpdated) {
-            // Traduzione obsoleta (badge arancione)
-            outdatedCount++;
-            debugUntranslated.push({ ...f, status: "outdated" });
+          // Preferred: confronta il testo sorgente con original_text salvato
+          if (translation.original_text != null) {
+            if (f.value.trim() === String(translation.original_text).trim()) {
+              translatedCount++;
+            } else {
+              outdatedCount++;
+              debugUntranslated.push({ ...f, status: "outdated" });
+            }
           } else {
-            // Traduzione aggiornata (badge verde)
-            translatedCount++;
+            // Fallback (legacy rows senza original_text): confronto timestamp
+            const originalUpdated = f.updated_at ? new Date(f.updated_at).getTime() : 0;
+            const translationUpdated = translation.last_updated ? new Date(translation.last_updated).getTime() : 0;
+            if (translationUpdated < originalUpdated) {
+              outdatedCount++;
+              debugUntranslated.push({ ...f, status: "outdated" });
+            } else {
+              translatedCount++;
+            }
           }
         }
 
