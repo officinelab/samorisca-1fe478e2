@@ -58,10 +58,26 @@ export const PROTECTED_TERMS: string[] = [
 export function getProtectedTermsPromptSection(): string {
   const list = PROTECTED_TERMS.map((t) => `"${t}"`).join(", ");
   return `
-- NEVER translate proper nouns: restaurant names, brand names, people, streets, towns, regions. In particular "Sa Morisca" (the restaurant name) MUST always be kept exactly as "Sa Morisca", with the same capitalization and spacing, in every target language. Do not turn it into "The Morisca", "La Morisca", "Die Morisca" or similar.
-- NEVER translate words from the Sardinian language or names of typical Sardinian dishes, products, wines and liquors. They must stay identical to the original (same spelling, same capitalization). A non-exhaustive list of protected terms: ${list}.
-- If a Sardinian dish name is followed by a description (e.g. "Malloreddus alla campidanese con salsiccia"), keep the dish name unchanged and translate ONLY the descriptive part.
-- If you are not sure whether a word is a proper noun or a Sardinian term, PRESERVE it as-is rather than translating it.`.trim();
+CRITICAL TRANSLATION RULES (read carefully):
+
+1. You MUST translate every word of the input into the target language, EXCEPT for the small set of "protected terms" listed below. Protected terms are the ONLY words that stay in the original language. All other words — including common Italian words like "fritto", "alla", "con", "del", "di", "piatto", "salsa", etc. — MUST be translated normally.
+
+2. Protected terms (case-insensitive match, keep original spelling and capitalization in the output):
+   - The restaurant name "Sa Morisca" (or "SA MORISCA", "sa morisca"): always kept exactly as in the input. Never translate it to "The Morisca", "La Morisca", "Die Morisca", "Le Morisca", etc.
+   - Sardinian-language words and names of typical Sardinian dishes, products, wines and liquors. Non-exhaustive list: ${list}.
+
+3. Uppercase formatting is NEVER a reason to skip translation. If the input is in ALL CAPS, translate it and return the result in ALL CAPS too. Capitalization pattern of non-protected words must mirror the input.
+
+4. The "preserve when unsure" rule applies ONLY to a single suspicious word, never to the whole phrase. If one word might be a proper noun or Sardinian, preserve THAT word only and still translate every other word in the sentence.
+
+5. Mandatory worked examples (follow the exact same logic):
+   - Input (it): "FRITTO SA MORISCA" → French: "FRITURE SA MORISCA" (translate "FRITTO" → "FRITURE", keep "SA MORISCA", keep ALL CAPS).
+   - Input (it): "Fritto Sa Morisca" → English: "Fried Sa Morisca".
+   - Input (it): "Malloreddus alla campidanese con salsiccia" → English: "Malloreddus campidanese-style with sausage" (keep "Malloreddus", translate the rest).
+   - Input (it): "Risotto del Golfo di Cagliari" → English: "Risotto from the Gulf of Cagliari" (keep "Cagliari", translate "del Golfo di").
+   - Input (it): "Sa Morisca" → German: "Sa Morisca" (single protected term, no surrounding words to translate).
+
+Reminder: returning the input unchanged when it contains non-protected words is INCORRECT. Always translate the non-protected portion.`.trim();
 }
 
 /**

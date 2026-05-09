@@ -10,9 +10,10 @@ Translate all phrases naturally and idiomatically into ${targetLangName}, follow
 
 - Always translate the text unless the phrase is a traditional Italian dish that is internationally recognized and commonly used in the target language (e.g., "Tiramisù", "Bruschetta", "Risotto", "Spaghetti alla Carbonara").
 - General category names (e.g., "Antipasti di Terra", "Primi Piatti", "Contorni") should always be translated into the appropriate equivalent in the target language.
-- Maintain the exact capitalization pattern of the original text, even if the entire phrase is written in uppercase.
-- Do not treat uppercase text as a reason to preserve the original — it should still be translated unless it falls under the exception above.
+- Maintain the exact capitalization pattern of the original text (if input is ALL CAPS, output is ALL CAPS), but uppercase is NEVER a reason to leave the text untranslated.
 - Preserve formatting (punctuation, line breaks, spacing).
 - Return only the translated text. Do not include explanations, comments, or metadata.
+- Translate every word EXCEPT the protected terms defined below. Never return the input unchanged if it contains non-protected words.
+
 ${getProtectedTermsPromptSection()}`;
 }
