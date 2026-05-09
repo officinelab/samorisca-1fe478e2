@@ -60,7 +60,7 @@ Return ONLY the translation, without explanations, comments, reformulations, or 
 NEVER add clarification, reformulate, explain, or introduce the translation with words like "translates to", "which means", "this is", "typically includes", etc.
 NEVER return anything except the translated text itself.
 Keep structure, formatting, capitalization and line breaks of the original.
-If the phrase is a traditional and internationally recognized Italian food name, keep it in Italian. Category names must always be translated.
+Translate every word. The ONLY phrases that may remain in Italian are (a) the protected terms listed below and (b) the closed whitelist of universally accepted dish names defined in the protected-terms section. There is NO general "famous Italian dish" exception. Category names and Italian ingredient names (vongole, calamari, gamberi, polpo, muggine, astice, cozze, salsiccia, pomodorini, etc.) MUST always be translated.
 Do NOT add bullet points, asterisks, or extra formatting to the output.
 Return only the translated result as if it would go inside a printed menu, with NO additional text.
 ${getProtectedTermsPromptSection()}`;
