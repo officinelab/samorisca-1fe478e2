@@ -11,7 +11,8 @@ import ServiceChargeSection from './components/ServiceChargeSection';
 const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
   page,
   layout,
-  showMargins
+  showMargins,
+  showPageBreaks = false
 }) => {
   usePageFonts(layout);
   
@@ -34,6 +35,11 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
 
   // Controlla se la pagina è dispari per mostrare il servizio e coperto
   const isOddPage = page.pageNumber % 2 === 1;
+
+  // Determina se l'ultima categoria della pagina ha un'interruzione configurata
+  const lastCategory = page.categories[page.categories.length - 1]?.category;
+  const pageBreakCategoryIds = layout.pageBreaks?.categoryIds || [];
+  const hasPageBreakAfter = !!lastCategory && pageBreakCategoryIds.includes(lastCategory.id);
 
   return (
     <div className="mb-6">
@@ -64,6 +70,12 @@ const MenuContentPagePreview: React.FC<MenuContentPagePreviewProps> = ({
             categories={page.categories}
             layout={layout}
           />
+
+          {showPageBreaks && hasPageBreakAfter && (
+            <div className="print:hidden border-2 border-dashed border-primary text-primary text-xs text-center py-1 my-2 rounded">
+              ── Interruzione di pagina dopo: {lastCategory?.title} ──
+            </div>
+          )}
 
           <ServiceChargeSection
             isOddPage={isOddPage}
