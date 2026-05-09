@@ -31,6 +31,7 @@ export const PROTECTED_TERMS: string[] = [
   "civraxiu",
   "coccoi",
   "panada",
+  "panadine",
   "mazzamurru",
   "burrida",
   "fainè",
@@ -39,6 +40,25 @@ export const PROTECTED_TERMS: string[] = [
   "casu martzu",
   "pecorino sardo",
   "fiore sardo",
+  "guanciale",
+  "ricotta mustia",
+  "mustia",
+  "scabecciu",
+  "carnaroli",
+
+  // Toponimi sardi / nomi propri geografici
+  "Sardegna",
+  "Sardo",
+  "Sarda",
+  "Cagliari",
+  "Villacidro",
+  "Campidanese",
+  "Gallurese",
+
+  // Marchi di qualità
+  "DOP",
+  "IGP",
+  "Mozzarella di Bufala Campana DOP",
 
   // Vini e liquori sardi
   "mirto",
@@ -58,26 +78,43 @@ export const PROTECTED_TERMS: string[] = [
 export function getProtectedTermsPromptSection(): string {
   const list = PROTECTED_TERMS.map((t) => `"${t}"`).join(", ");
   return `
-CRITICAL TRANSLATION RULES (read carefully):
+CRITICAL TRANSLATION RULES (read carefully — these override every other instruction):
 
-1. You MUST translate every word of the input into the target language, EXCEPT for the small set of "protected terms" listed below. Protected terms are the ONLY words that stay in the original language. All other words — including common Italian words like "fritto", "alla", "con", "del", "di", "piatto", "salsa", etc. — MUST be translated normally.
+1. TRANSLATE EVERYTHING. You MUST translate every single word of the input into the target language, EXCEPT for the small CLOSED set of "protected terms" listed in rule 3. Common Italian words — including ingredients ("vongole", "calamari", "gamberi", "polpo", "muggine", "astice", "cozze", "seppia", "tonno", "branzino", "orata", "salsiccia", "pomodorini", "zucchine", "melanzane", "funghi"), preparations ("fritto", "fritta", "frittura", "grigliato", "arrosto", "alla griglia", "al forno", "crudo", "cotto", "ripieno"), and connectors ("di", "del", "della", "alla", "con", "e", "in", "su") — are NOT protected and MUST always be translated.
 
-2. Protected terms (case-insensitive match, keep original spelling and capitalization in the output):
-   - The restaurant name "Sa Morisca" (or "SA MORISCA", "sa morisca"): always kept exactly as in the input. Never translate it to "The Morisca", "La Morisca", "Die Morisca", "Le Morisca", etc.
-   - Sardinian-language words and names of typical Sardinian dishes, products, wines and liquors. Non-exhaustive list: ${list}.
+2. NO "FAMOUS DISH" LOOPHOLE. The ONLY phrases that may stay in Italian are those literally listed in rule 3 (protected terms) plus this CLOSED whitelist of universally accepted Italian dish names: "Tiramisù", "Bruschetta", "Carbonara", "Cacio e Pepe", "Amatriciana", "Pizza Margherita", "Pesto alla Genovese", "Risotto" (only as the dish-head noun, e.g. "Risotto allo zafferano" → keep the word "Risotto"), "Spaghetti", "Linguine", "Tagliatelle", "Ravioli", "Gnocchi", "Lasagne", "Penne", "Rigatoni", "Pappardelle", "Tortellini", "Pasta", "Mozzarella", "Burrata", "Parmigiano", "Prosciutto" (the bare word only). Anything not in this list and not in rule 3 MUST be translated. NEVER invent additional "famous dishes".
 
-3. Uppercase formatting is NEVER a reason to skip translation. If the input is in ALL CAPS, translate it and return the result in ALL CAPS too. Capitalization pattern of non-protected words must mirror the input.
+3. PROTECTED TERMS (case-insensitive match, keep original spelling and capitalization in the output): the restaurant name "Sa Morisca", Sardinian-language words, names of typical Sardinian dishes/products/wines/liquors, Sardinian toponyms, and DOP/IGP marks. Reference list: ${list}.
 
-4. The "preserve when unsure" rule applies ONLY to a single suspicious word, never to the whole phrase. If one word might be a proper noun or Sardinian, preserve THAT word only and still translate every other word in the sentence.
+4. COMPOSITION RULE — "PROTECTED TERM + di/della/del + X". When a protected term is followed by a modifier (e.g. "Bottarga di Muggine", "Salsiccia di Villacidro", "Pecorino di Sardegna"), keep the protected term but TRANSLATE the modifier into the idiomatic form of the target language:
+   - German: form a compound with hyphen, modifier first, term last. "Bottarga di Muggine" → "Meeräschen-Bottarga". "Salsiccia di Villacidro" → "Wurst aus Villacidro". The Italian preposition "di" MUST disappear.
+   - English: "<modifier> <term>" or "<term> from <Place>". "Bottarga di Muggine" → "Mullet Bottarga". "Salsiccia di Villacidro" → "Villacidro sausage".
+   - French: "<term> de <modifier>". "Bottarga di Muggine" → "Bottarga de muge".
+   - Spanish: "<term> de <modifier>". "Bottarga di Muggine" → "Bottarga de mújol".
+   NEVER leave Italian prepositions ("di", "del", "della", "alla") in the output when surrounding words have been translated. Output text containing "von Muggine", "de Muggine" with the Italian word "Muggine" untranslated is INCORRECT — the fish name itself must also be translated (Muggine = Meeräsche / mullet / muge / mújol).
 
-5. Mandatory worked examples (follow the exact same logic):
-   - Input (it): "FRITTO SA MORISCA" → French: "FRITURE SA MORISCA" (translate "FRITTO" → "FRITURE", keep "SA MORISCA", keep ALL CAPS).
-   - Input (it): "Fritto Sa Morisca" → English: "Fried Sa Morisca".
-   - Input (it): "Malloreddus alla campidanese con salsiccia" → English: "Malloreddus campidanese-style with sausage" (keep "Malloreddus", translate the rest).
-   - Input (it): "Risotto del Golfo di Cagliari" → English: "Risotto from the Gulf of Cagliari" (keep "Cagliari", translate "del Golfo di").
-   - Input (it): "Sa Morisca" → German: "Sa Morisca" (single protected term, no surrounding words to translate).
+5. UPPERCASE is NEVER a reason to skip translation. ALL CAPS input → ALL CAPS translated output. Capitalization pattern of non-protected words must mirror the input.
 
-Reminder: returning the input unchanged when it contains non-protected words is INCORRECT. Always translate the non-protected portion.`.trim();
+6. The "preserve when unsure" rule applies ONLY to a single suspicious word, never to a whole phrase.
+
+7. MANDATORY WORKED EXAMPLES (these are real cases — reproduce the same logic):
+   - Input "Spaghetti Vongole e Bottarga di Muggine."
+     • German CORRECT: "Spaghetti mit Venusmuscheln und Meeräschen-Bottarga."
+     • German WRONG: "Spaghetti Vongole und Bottarga von Muggine." ← "Vongole" and "Muggine" left in Italian, "di" half-translated.
+     • English CORRECT: "Spaghetti with Clams and Mullet Bottarga."
+   - Input "Frittura di Calamari, Gamberi, Tentacoli di Polpo, accompagnati da maionese al lime"
+     • German CORRECT: "Frittierte Calamari, Garnelen, Oktopustentakel, begleitet von Limettenmayonnaise"
+     • German WRONG: "Frittura von Calamari, Garnelen, Tentakeln von Oktopus…" ← "Frittura" must become "Frittierte/Frittiertes".
+   - Input "Salsiccia sarda di Villacidro"
+     • German CORRECT: "Sardische Wurst aus Villacidro" (keep "Villacidro" and the protected adjective "sarda" stays as a translated equivalent; "Salsiccia" → "Wurst").
+     • German WRONG: "Salsiccia sarda di Villacidro" ← unchanged.
+   - Input "RISOTTO ZAFFERANO E GAMBERI"
+     • German CORRECT: "SAFRAN-RISOTTO MIT GARNELEN" (keep "Risotto" — whitelisted dish-head, translate the rest, keep ALL CAPS).
+   - Input "FRITTO SA MORISCA" → French CORRECT: "FRITURE SA MORISCA".
+   - Input "Malloreddus alla campidanese con salsiccia" → English CORRECT: "Malloreddus campidanese-style with sausage".
+   - Input "Sa Morisca" → German CORRECT: "Sa Morisca".
+
+8. FINAL CHECK before responding: scan your output for any Italian word that is NOT in rule 2's whitelist or rule 3's protected list. If you find one, translate it. Returning the input unchanged or with Italian ingredient names still inside is INCORRECT.`.trim();
 }
 
 /**
