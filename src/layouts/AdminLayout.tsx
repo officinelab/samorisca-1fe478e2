@@ -14,12 +14,15 @@ import {
 } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import PWAInstallButton from "@/components/admin/PWAInstallButton";
+import { useIsMobile } from "@/hooks/use-mobile";
+import AdminLayoutMobile from "./AdminLayoutMobile";
 
 const AdminLayout = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { siteSettings, isLoading } = useSiteSettings();
+  const isMobile = useIsMobile();
 
   // Register service worker only for admin routes
   useEffect(() => {
@@ -46,6 +49,10 @@ const AdminLayout = () => {
     { to: "/admin/print", icon: <Printer className="mr-2 h-5 w-5" />, label: "Stampa Menu" },
     { to: "/admin/preview", icon: <Eye className="mr-2 h-5 w-5" />, label: "Anteprima Menu" },
   ];
+
+  if (isMobile) {
+    return <AdminLayoutMobile />;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
