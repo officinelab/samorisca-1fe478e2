@@ -1,61 +1,73 @@
 ## Obiettivo
 
-Aggiungere un pulsante **"Traduci tutto"** (stesso stile/comportamento di quello già esistente in *Voci di menu* → `CategorySelector`) in due punti della pagina **Multilingua**:
+Sostituire la raffica di toast durante "Traduci tutto" con:
+1. Un dialog di **conferma** che mostra quanti campi verranno tradotti e quanti token saranno usati.
+2. Una **barra di avanzamento** che mostra il progresso in tempo reale.
+3. Un singolo toast finale con il riepilogo.
 
-1. Tab **Generale** (`GeneralTranslationsTab`) — traduce tutti i campi traducibili di tutti gli elementi del tipo selezionato (Categorie / Allergeni / Caratteristiche / Etichette / Note categorie) nella lingua corrente.
-2. Tab **Voci da tradurre** (`MissingTranslationsTab`) — traduce tutti i campi mostrati come *mancanti* o *obsoleti*.
+Comportamento applicato sia in **Generale** che in **Voci da tradurre**.
 
-Comportamento identico al bottone esistente: traduce solo i campi che lo richiedono (mancanti + obsoleti), mostra toast di progresso, al termine fa `dispatchEvent("refresh-translation-status")` per aggiornare i badge.
+## Cosa cambia (UI/UX)
 
-## File toccati
+1. Click su **"Traduci tutto"** → si apre un dialog con:
+   - Numero di campi da tradurre (es. "100 campi").
+   - Token stimati (1 token per campo) e token disponibili.
+   - Avviso se i token disponibili non bastano (pulsante "Conferma" disabilitato).
+   - Pulsanti "Annulla" / "Conferma e traduci".
 
-### 1. Nuovo hook condiviso: `src/components/multilingual/hooks/useBatchTranslate.ts`
+2. Alla conferma il dialog cambia stato e mostra:
+   - Barra di avanzamento (`Progress`) con percentuale.
+   - Testo "X di Y tradotti" + contatori "saltati / falliti" in tempo reale.
+   - Pulsante "Interrompi" che ferma il loop al prossimo campo.
+   - Niente toast intermedi.
 
-Estrae la logica di "traduci una lista di campi (entityType, entityId, fieldName, originalText) saltando quelli già aggiornati". Espone:
+3. A fine processo:
+   - Il dialog mostra il riepilogo finale ("Tradotti X, saltati Y, falliti Z") e un pulsante "Chiudi".
+   - Un singolo toast riassuntivo (mantenuto per coerenza con il resto dell'app).
+   - Eventi `refresh-translation-status` e `refresh-tokens` come oggi.
 
-- `translateFields(jobs, language, label)` — riceve array `{ entityType, entityId, fieldName, originalText }`, esegue `checkIfNeedsTranslation` per ciascuno (riusando il pattern già presente in `useProductTranslations`), chiama `translateText` solo dove serve, mostra toast di progresso ogni N campi, alla fine dispatcha `refresh-translation-status` e mostra toast finale "Tradotti X campi, Y saltati".
-- `isTranslating: boolean`
+## Cosa NON cambia
 
-Riusa `useTranslationService` per `translateText` e `getServiceName`.
+- La traduzione singola di un campo continua a mostrare il toast attuale.
+- Logica di traduzione, prompt, edge function, gestione token lato server.
+- Conteggio "saltati" (freschezza) e "skipFreshnessCheck" della tab Voci da tradurre.
 
-### 2. `GeneralTranslationsTab.tsx`
+## Dettagli tecnici
 
-- Aggiunge un bottone "Traduci tutto" accanto al titolo "Traduzioni" (o sopra la tabella).
-- All'on-click costruisce `jobs[]` da `items` (campi `title` sempre, più `description` per categorie/allergeni, `text` per category_notes), filtrando solo stringhe non vuote.
-- Disabilitato se `items.length === 0`, durante caricamento o durante traduzione.
-- Stato loading con spinner identico a `CategorySelector`.
+**File nuovi**
+- `src/components/multilingual/BatchTranslateDialog.tsx`: componente controllato che gestisce le due fasi (conferma / progresso / fine). Props:
+  - `open`, `onOpenChange`
+  - `totalJobs: number`
+  - `tokensRemaining: number | null`
+  - `phase: "confirm" | "running" | "done"`
+  - `progress: { done; ok; skipped; failed }`
+  - `onConfirm()`, `onAbort()`, `onClose()`
 
-### 3. `MissingTranslationsTab.tsx`
+**File modificati**
+- `src/components/multilingual/hooks/useBatchTranslate.ts`:
+  - Stato esteso: `phase`, `progress { done, ok, skipped, failed }`, `total`, `tokensRemaining`, `aborted`.
+  - Nuova API:
+    - `prepare(jobs, language, options)` → filtra job vuoti, salva il batch in stato, recupera `checkRemainingTokens()`, imposta `phase="confirm"`.
+    - `confirm()` → avvia il loop esistente ma **senza toast intermedi**, aggiornando `progress` ad ogni iterazione e rispettando `aborted`.
+    - `abort()` → setta flag che il loop controlla a ogni iterazione.
+    - `reset()` → chiude il dialog.
+  - Mantiene un solo toast finale di riepilogo.
+  - Mantiene `dispatchEvent("refresh-translation-status")` e aggiunge `"refresh-tokens"` (già emesso lato edge function, ma utile per UI immediata).
 
-- Aggiunge un bottone "Traduci tutto" accanto al titolo "Voci da tradurre/aggiornare".
-- All'on-click costruisce `jobs[]` da `fieldsToTranslate`, leggendo `originalText` dalle entità in `entitiesMap[`${entityType}:${id}`][field]`.
-- Disabilitato se `fieldsToTranslate.length === 0` o durante traduzione.
-- Qui possiamo saltare il `checkIfNeedsTranslation` perché la lista è già filtrata: tradurre direttamente.
+- `src/components/multilingual/GeneralTranslationsTab.tsx` e `MissingTranslationsTab.tsx`:
+  - Il bottone "Traduci tutto" ora chiama `prepare(jobs, language, options)` invece di `translateFields`.
+  - Renderizzano `<BatchTranslateDialog />` collegato allo stato del hook.
+  - Nessun'altra modifica funzionale.
 
-### 4. (Refactor opzionale, sicuro) `useProductTranslations.ts`
+**Stima token**: 1 token per campo (coerente con `increment_tokens({token_count: 1})` nelle edge function). Mostrato come "≈ N token".
 
-Lasciare invariato: continua a funzionare. Il nuovo hook è additivo.
+**Token disponibili**: letti via `checkRemainingTokens()` (già usato dal flusso). Se `prepared > tokensRemaining`, conferma disabilitata con messaggio "Token insufficienti".
 
-## Tecnico
-
-- Tipo `Job`:
-  ```ts
-  type Job = {
-    entityType: 'categories'|'allergens'|'product_features'|'product_labels'|'category_notes'|'products';
-    entityId: string;
-    fieldName: string;
-    originalText: string;
-    skipFreshnessCheck?: boolean; // true per MissingTranslationsTab
-  };
-  ```
-- `checkIfNeedsTranslation` viene generalizzato dentro il nuovo hook (versione che accetta `entityType` invece di hardcodare `products`).
-- Toast: usare `useToast` come in `useProductTranslations`. Update ogni 3 elementi.
-- Al termine: `window.dispatchEvent(new CustomEvent("refresh-translation-status"))` per far rigenerare badge e tabelle.
-- Nessuna modifica a edge function, DB, RLS o tipi. Nessuna nuova dipendenza.
+**Interruzione**: il loop di `useBatchTranslate` controlla `abortedRef.current` a ogni iterazione e termina mantenendo i contatori parziali.
 
 ## Verifica manuale
 
-1. Andare su Multilingua → tab **Generale** → selezionare "Allergeni" + lingua FR → cliccare "Traduci tutto" → verificare che tutti i `title` (e `description` se presenti) vengano tradotti e mostrati. Ripetere per Categorie e Caratteristiche.
-2. Tab **Voci da tradurre** con FR → cliccare "Traduci tutto" → tutti i badge spariscono, tabella si svuota mostrando il messaggio "Complimenti!".
-3. Verificare che i token mensili vengano consumati in modo coerente (toast finale riporta numero campi tradotti).
-4. Verificare che "Sa Morisca" e termini sardi restino intatti (regola già implementata nel prompt).
+- Tab Generale: 1) verificare conteggio coerente con righe in tabella. 2) Confermare e osservare la barra. 3) Nessun toast per ogni campo, solo riepilogo finale.
+- Tab Voci da tradurre: stesso flusso, conteggio = `fieldsToTranslate.length`.
+- Caso token insufficienti: bottone Conferma disabilitato.
+- Caso "Interrompi" a metà: il dialog mostra il parziale e si chiude correttamente.

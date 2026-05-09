@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SupportedLanguage } from "@/types/translation";
 import { useTranslationService } from "@/hooks/translation";
 import { toast } from "@/components/ui/use-toast";
+import { checkRemainingTokens } from "@/hooks/translation/api/tokenManager";
+import { BatchPhase, BatchProgress } from "../BatchTranslateDialog";
 
 export type BatchEntityType =
   | "categories"
@@ -55,39 +57,79 @@ async function checkIfNeedsTranslation(
   }
 }
 
+interface PrepareOptions {
+  skipFreshnessCheck?: boolean;
+  label?: string;
+}
+
+const initialProgress: BatchProgress = { done: 0, ok: 0, skipped: 0, failed: 0 };
+
 export const useBatchTranslate = () => {
-  const [isTranslating, setIsTranslating] = useState(false);
   const { translateText, getServiceName } = useTranslationService();
 
-  const translateFields = async (
-    jobs: BatchJob[],
-    language: SupportedLanguage,
-    options?: { skipFreshnessCheck?: boolean; label?: string }
+  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<BatchPhase>("confirm");
+  const [jobs, setJobs] = useState<BatchJob[]>([]);
+  const [language, setLanguage] = useState<SupportedLanguage | null>(null);
+  const [tokensRemaining, setTokensRemaining] = useState<number | null>(null);
+  const [progress, setProgress] = useState<BatchProgress>(initialProgress);
+  const [label, setLabel] = useState<string>("campi");
+  const optionsRef = useRef<PrepareOptions>({});
+  const abortedRef = useRef(false);
+
+  const isTranslating = phase === "running";
+
+  const prepare = async (
+    rawJobs: BatchJob[],
+    lang: SupportedLanguage,
+    options?: PrepareOptions
   ) => {
-    if (jobs.length === 0) return;
-    setIsTranslating(true);
+    const filtered = rawJobs.filter(
+      (j) => j.originalText && j.originalText.trim().length > 0
+    );
+    optionsRef.current = options ?? {};
+    setLabel(options?.label ?? "campi");
+    setJobs(filtered);
+    setLanguage(lang);
+    setProgress(initialProgress);
+    setPhase("confirm");
+    abortedRef.current = false;
+    setOpen(true);
+    const remaining = await checkRemainingTokens();
+    setTokensRemaining(remaining);
+  };
+
+  const close = () => {
+    if (phase === "running") return;
+    setOpen(false);
+    setJobs([]);
+    setProgress(initialProgress);
+    setPhase("confirm");
+  };
+
+  const abort = () => {
+    abortedRef.current = true;
+  };
+
+  const confirm = async () => {
+    if (!language || jobs.length === 0) return;
     const serviceName = getServiceName();
     const total = jobs.length;
+    abortedRef.current = false;
+    setProgress(initialProgress);
+    setPhase("running");
+
     let done = 0;
     let ok = 0;
     let skipped = 0;
     let failed = 0;
 
-    toast({
-      title: "Traduzione in corso",
-      description: `Inizio traduzione di ${total} ${
-        options?.label ?? "campi"
-      } con ${serviceName}...`,
-    });
-
     try {
       for (const job of jobs) {
-        if (!job.originalText || !job.originalText.trim()) {
-          done++;
-          continue;
-        }
+        if (abortedRef.current) break;
+
         const need =
-          options?.skipFreshnessCheck ||
+          optionsRef.current.skipFreshnessCheck ||
           (await checkIfNeedsTranslation(
             job.entityType,
             job.entityId,
@@ -113,21 +155,19 @@ export const useBatchTranslate = () => {
           }
         }
         done++;
-        if (done % 3 === 0 || done === total) {
-          toast({
-            title: "Traduzione in corso",
-            description: `Completati ${done} di ${total} con ${serviceName}...`,
-          });
-        }
+        setProgress({ done, ok, skipped, failed });
       }
 
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("refresh-translation-status"));
+        window.dispatchEvent(new CustomEvent("refresh-tokens"));
       }
 
       toast({
-        title: "Traduzione completata",
-        description: `Tradotti ${ok} campi, ${skipped} saltati${
+        title: abortedRef.current
+          ? "Traduzione interrotta"
+          : "Traduzione completata",
+        description: `Tradotti ${ok} ${label}, ${skipped} saltati${
           failed ? `, ${failed} falliti` : ""
         } (${serviceName}).`,
       });
@@ -139,9 +179,25 @@ export const useBatchTranslate = () => {
         description: "Si è verificato un errore durante la traduzione automatica.",
       });
     } finally {
-      setIsTranslating(false);
+      setPhase("done");
     }
   };
 
-  return { isTranslating, translateFields };
+  return {
+    // dialog state
+    open,
+    setOpen,
+    phase,
+    progress,
+    totalJobs: jobs.length,
+    tokensRemaining,
+    label,
+    // actions
+    prepare,
+    confirm,
+    abort,
+    close,
+    // legacy
+    isTranslating,
+  };
 };
