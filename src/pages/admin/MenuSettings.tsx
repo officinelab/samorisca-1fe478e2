@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useLocation } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ProductLabelsManager from "@/components/menu-settings/ProductLabelsManager";
 import ProductFeaturesManager from "@/components/menu-settings/ProductFeaturesManager";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
@@ -17,6 +19,7 @@ const MenuSettings = () => {
   const [activeTab, setActiveTab] = useState("labels");
   const location = useLocation();
   const { hasRole, isLoading: rolesLoading } = useUserRoles();
+  const isMobile = useIsMobile();
 
   // Gestisce il caso in cui veniamo reindirizzati dalla vecchia pagina allergeni
   useEffect(() => {
@@ -28,15 +31,43 @@ const MenuSettings = () => {
   // Supervisor tab visibility
   const showSupervisorTab = hasRole("admin_supervisor");
 
+  const tabOptions: { value: string; label: string }[] = [
+    { value: "labels", label: "Etichette Prodotto" },
+    { value: "features", label: "Caratteristiche Prodotto" },
+    { value: "allergens", label: "Allergeni" },
+    { value: "categorynotes", label: "Note categorie" },
+    { value: "layouts", label: "Layouts di Stampa" },
+    { value: "settings", label: "Settaggi" },
+    ...(showSupervisorTab ? [{ value: "supervisor", label: "Supervisor" }] : []),
+    { value: "publicmenulayout", label: "Layout menu online" },
+    { value: "userroles", label: "Gestione utenti" },
+  ];
+
   return (
-    <div className="container py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Impostazioni Menu</h1>
+    <div className="container py-4 md:py-6 px-3 md:px-6">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h1 className="text-xl md:text-3xl font-bold tracking-tight">Impostazioni Menu</h1>
       </div>
       
-      <Separator className="mb-6" />
+      <Separator className="mb-4 md:mb-6" />
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {isMobile ? (
+          <div className="mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {tabOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
         <TabsList className="mb-4">
           <TabsTrigger value="labels">Etichette Prodotto</TabsTrigger>
           <TabsTrigger value="features">Caratteristiche Prodotto</TabsTrigger>
@@ -51,6 +82,7 @@ const MenuSettings = () => {
           <TabsTrigger value="publicmenulayout">Layout menu online</TabsTrigger>
           <TabsTrigger value="userroles">Gestione utenti</TabsTrigger>
         </TabsList>
+        )}
         
         <TabsContent value="labels" className="space-y-4">
           <h2 className="text-xl font-semibold">Gestione Etichette Prodotto</h2>
