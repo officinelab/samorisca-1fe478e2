@@ -132,6 +132,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, showPa
   }
 
   const pages = createPages();
+  const pageBreakCategoryIds = activeLayout?.pageBreaks?.categoryIds || [];
 
   if (pages.length === 0 && !isLoading) {
     return (
@@ -167,16 +168,28 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, showPa
         </p>
       </CardHeader>
       <CardContent className="space-y-8">
-        {pages.map((page, index) => (
-          <div key={`${page.pageNumber}-${totalRefreshKey}-${index}`} data-page-preview={`content-${page.pageNumber}`}>
-            <MenuContentPagePreview
-              page={page}
-              layout={activeLayout}
-              showMargins={showMargins}
-              showPageBreaks={showPageBreaks}
-            />
-          </div>
-        ))}
+        {pages.map((page, index) => {
+          const lastCatId = page.categories[page.categories.length - 1]?.category.id;
+          const nextPage = pages[index + 1];
+          const nextStartsWithSameCat = nextPage?.categories[0]?.category.id === lastCatId;
+          const isPageBreakAfter =
+            !!lastCatId &&
+            !!nextPage &&
+            !nextStartsWithSameCat &&
+            pageBreakCategoryIds.includes(lastCatId);
+
+          return (
+            <div key={`${page.pageNumber}-${totalRefreshKey}-${index}`} data-page-preview={`content-${page.pageNumber}`}>
+              <MenuContentPagePreview
+                page={page}
+                layout={activeLayout}
+                showMargins={showMargins}
+                showPageBreaks={showPageBreaks}
+                isPageBreakAfter={isPageBreakAfter}
+              />
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
