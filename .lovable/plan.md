@@ -1,50 +1,35 @@
-## Piano
+## Diagnosi
 
-### 1. Listener PASSWORD_RECOVERY in `AuthContext`
+Il problema principale è nel formato del link di recovery che Supabase sta generando/verificando:
 
-In `src/contexts/AuthContext.tsx`, dentro `onAuthStateChange`, aggiungere:
+- Il link ricevuto passa da Supabase e poi redirige a `https://menu.samorisca.it` senza indicare una pagina specifica dell’app.
+- Nell’app, `/` viene subito reindirizzato a `/menu`, quindi l’utente vede il menu pubblico.
+- L’attuale listener `PASSWORD_RECOVERY` in `AuthContext` non è sufficiente perché, con questo tipo di redirect Supabase, l’evento può essere già stato consumato prima che l’app riesca a portare l’utente su `/reset-password`.
+- Inoltre `ResetPassword.tsx` aspetta una sessione già pronta, ma non forza il recupero della sessione dai parametri/hash URL quando il link arriva sulla pagina sbagliata.
 
-```ts
-if (event === "PASSWORD_RECOVERY") {
-  if (window.location.pathname !== "/reset-password") {
-    window.location.replace("/reset-password" + window.location.hash);
-  }
-}
-```
+## Piano di correzione
 
-Uso `window.location.replace` (non `useNavigate`) perché `AuthProvider` avvolge `BrowserRouter`. Mantengo `window.location.hash` così la pagina target riceve nuovamente l'evento e abilita il form.
+1. **Rendere il link di reset diretto alla pagina corretta**
+   - Nel punto in cui viene richiesto il reset password, usare `redirectTo: ${window.location.origin}/reset-password`.
+   - Se manca ancora un pulsante “password dimenticata” nel login, aggiungerlo così il reset parte sempre dall’app con il redirect corretto.
 
-### 2. Template email personalizzato (azione manuale tua su Supabase)
+2. **Gestire il token anche se Supabase redirige alla root**
+   - Migliorare `AuthContext.tsx` per intercettare link di recovery presenti in `window.location.hash` o `window.location.search`, non solo l’evento `PASSWORD_RECOVERY`.
+   - Se il link contiene token di recovery ma l’utente è su `/` o `/menu`, spostarlo automaticamente su `/reset-password` preservando i parametri.
 
-Dashboard Supabase → **Authentication → Email Templates → Reset Password**:
+3. **Rendere `ResetPassword.tsx` più robusta**
+   - All’apertura della pagina, forzare la lettura della sessione dai token URL con Supabase.
+   - Supportare sia il formato moderno con `access_token`/`refresh_token` nell’hash sia il formato con `code` nella query string.
+   - Mostrare un messaggio chiaro se il link è scaduto/non valido, invece di lasciare il form disabilitato senza spiegazione utile.
 
-**Subject:** `Reimposta la tua password – Sa Morisca`
+4. **Metodo urgente alternativo da Supabase**
+   - È possibile cambiare la password manualmente dal Dashboard Supabase: **Authentication → Users → seleziona l’utente → modifica password**.
+   - Questo è il metodo più rapido se la password è esposta e serve intervenire subito, mentre correggiamo il flusso dell’app.
 
-**Body (HTML):**
-```html
-<h2>Ciao,</h2>
-<p>Hai richiesto di reimpostare la password del tuo account Sa Morisca.</p>
-<p>Clicca sul pulsante qui sotto per scegliere una nuova password:</p>
-<p>
-  <a href="{{ .ConfirmationURL }}"
-     style="display:inline-block;padding:12px 24px;background:#000;color:#fff;text-decoration:none;border-radius:6px;font-family:Arial,sans-serif;">
-    Reimposta password
-  </a>
-</p>
-<p style="color:#666;font-size:13px;">
-  Se il pulsante non funziona, copia questo link nel browser:<br>
-  <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
-</p>
-<p style="color:#666;font-size:13px;">
-  Se non hai richiesto tu il reset, ignora questa email — la tua password non verrà modificata.
-</p>
-<p style="color:#999;font-size:12px;margin-top:32px;">— Il team Sa Morisca</p>
-```
+## Verifica prevista
 
-### 3. Verifica
-
-1. Aspettare ~30s (rate limit), poi dal dashboard → "Send password recovery".
-2. Clic sul link → atterra su `/menu` → redirect automatico a `/reset-password` → form attivo → imposti nuova password → toast → login.
-
-## File toccati
-- `src/contexts/AuthContext.tsx` (1 hunk)
+- Richiedere un nuovo reset password.
+- Cliccare il link ricevuto.
+- Confermare che l’app finisca su `/reset-password`, non su `/menu`.
+- Inserire nuova password e conferma.
+- Dopo il successo, logout automatico e ritorno a `/login`.
