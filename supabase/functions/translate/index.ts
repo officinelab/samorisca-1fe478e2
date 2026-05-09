@@ -3,6 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { getProtectedTermsPromptSection } from "../_shared/protectedTerms.ts";
 
 interface TranslateRequest {
   text: string;
@@ -61,7 +62,8 @@ NEVER return anything except the translated text itself.
 Keep structure, formatting, capitalization and line breaks of the original.
 If the phrase is a traditional and internationally recognized Italian food name, keep it in Italian. Category names must always be translated.
 Do NOT add bullet points, asterisks, or extra formatting to the output.
-Return only the translated result as if it would go inside a printed menu, with NO additional text.`;
+Return only the translated result as if it would go inside a printed menu, with NO additional text.
+${getProtectedTermsPromptSection()}`;
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
