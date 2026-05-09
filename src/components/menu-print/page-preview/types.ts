@@ -19,4 +19,5 @@ export interface MenuContentPagePreviewProps {
   layout: PrintLayout;
   showMargins: boolean;
   showPageBreaks?: boolean;
+  isPageBreakAfter?: boolean;
 }
