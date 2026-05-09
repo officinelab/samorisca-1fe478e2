@@ -6,6 +6,7 @@ import { useMenuPrintLayoutSync } from "@/hooks/menu-print/useMenuPrintLayoutSyn
 
 const MenuPrint = () => {
   const [showMargins, setShowMargins] = useState(false);
+  const [showPageBreaks, setShowPageBreaks] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Chiave per forzare re-render
   const { layouts, forceRefresh, isLoading } = useMenuLayouts();
@@ -47,6 +48,8 @@ const MenuPrint = () => {
       <MenuPrintHeader 
         showMargins={showMargins}
         setShowMargins={setShowMargins}
+        showPageBreaks={showPageBreaks}
+        setShowPageBreaks={setShowPageBreaks}
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
         currentLayout={currentLayout}
@@ -56,6 +59,7 @@ const MenuPrint = () => {
         <MenuPrintPreview 
           currentLayout={currentLayout}
           showMargins={showMargins}
+          showPageBreaks={showPageBreaks}
           refreshKey={refreshKey} // Passa il refreshKey
         />
       </div>
