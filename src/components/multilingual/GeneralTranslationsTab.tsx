@@ -8,6 +8,7 @@ import { EntityTypeSelector, entityOptions, EntityOption } from "./EntityTypeSel
 import { TranslationsTable } from "./TranslationsTable";
 import { useGeneralTranslationsData } from "./hooks/useGeneralTranslationsData";
 import { useBatchTranslate, BatchJob } from "./hooks/useBatchTranslate";
+import { BatchTranslateDialog } from "./BatchTranslateDialog";
 
 interface GeneralTranslationsTabProps {
   language: SupportedLanguage;
@@ -16,7 +17,7 @@ interface GeneralTranslationsTabProps {
 export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps) => {
   const [selectedEntityType, setSelectedEntityType] = useState<EntityOption>(entityOptions[0]);
   const { items, loading } = useGeneralTranslationsData(selectedEntityType, language);
-  const { isTranslating, translateFields } = useBatchTranslate();
+  const batch = useBatchTranslate();
 
   const handleTranslateAll = async () => {
     const jobs: BatchJob[] = [];
@@ -46,7 +47,7 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
         });
       }
     }
-    await translateFields(jobs, language, { label: "campi" });
+    await batch.prepare(jobs, language, { label: "campi" });
   };
 
   return (
@@ -65,10 +66,10 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
                 variant="outline"
                 size="sm"
                 onClick={handleTranslateAll}
-                disabled={isTranslating || loading || items.length === 0}
+                disabled={batch.isTranslating || loading || items.length === 0}
                 className="whitespace-nowrap"
               >
-                {isTranslating ? (
+                {batch.isTranslating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Traduzione...
@@ -89,6 +90,18 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
           </div>
         </div>
       </CardContent>
+      <BatchTranslateDialog
+        open={batch.open}
+        onOpenChange={batch.setOpen}
+        phase={batch.phase}
+        totalJobs={batch.totalJobs}
+        tokensRemaining={batch.tokensRemaining}
+        progress={batch.progress}
+        label={batch.label}
+        onConfirm={batch.confirm}
+        onAbort={batch.abort}
+        onClose={batch.close}
+      />
     </Card>
   );
 };
