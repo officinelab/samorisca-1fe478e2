@@ -1,10 +1,13 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2, Globe } from "lucide-react";
 import { SupportedLanguage } from "@/types/translation";
 import { EntityTypeSelector, entityOptions, EntityOption } from "./EntityTypeSelector";
 import { TranslationsTable } from "./TranslationsTable";
 import { useGeneralTranslationsData } from "./hooks/useGeneralTranslationsData";
+import { useBatchTranslate, BatchJob } from "./hooks/useBatchTranslate";
 
 interface GeneralTranslationsTabProps {
   language: SupportedLanguage;
@@ -13,6 +16,38 @@ interface GeneralTranslationsTabProps {
 export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps) => {
   const [selectedEntityType, setSelectedEntityType] = useState<EntityOption>(entityOptions[0]);
   const { items, loading } = useGeneralTranslationsData(selectedEntityType, language);
+  const { isTranslating, translateFields } = useBatchTranslate();
+
+  const handleTranslateAll = async () => {
+    const jobs: BatchJob[] = [];
+    for (const item of items) {
+      if (item.title && item.title.trim()) {
+        jobs.push({
+          entityType: item.type,
+          entityId: item.id,
+          fieldName: "title",
+          originalText: item.title,
+        });
+      }
+      if (item.description && item.description.trim()) {
+        jobs.push({
+          entityType: item.type,
+          entityId: item.id,
+          fieldName: "description",
+          originalText: item.description,
+        });
+      }
+      if (item.type === "category_notes" && item.text && item.text.trim()) {
+        jobs.push({
+          entityType: item.type,
+          entityId: item.id,
+          fieldName: "text",
+          originalText: item.text,
+        });
+      }
+    }
+    await translateFields(jobs, language, { label: "campi" });
+  };
 
   return (
     <Card>
@@ -24,7 +59,28 @@ export const GeneralTranslationsTab = ({ language }: GeneralTranslationsTabProps
           />
 
           <div className="md:col-span-2">
-            <h3 className="text-lg font-medium mb-4">Traduzioni</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">Traduzioni</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTranslateAll}
+                disabled={isTranslating || loading || items.length === 0}
+                className="whitespace-nowrap"
+              >
+                {isTranslating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Traduzione...
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-4 w-4 mr-2" />
+                    Traduci tutto
+                  </>
+                )}
+              </Button>
+            </div>
             <TranslationsTable
               items={items}
               language={language}

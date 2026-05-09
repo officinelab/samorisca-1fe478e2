@@ -1,9 +1,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Loader2, Globe } from "lucide-react";
 import { useMissingTranslations } from "./hooks/useMissingTranslations";
 import { MissingTranslationGroup } from "./MissingTranslationGroup";
 import { SupportedLanguage } from "@/types/translation";
+import { useBatchTranslate, BatchJob, BatchEntityType } from "./hooks/useBatchTranslate";
 
 interface MissingTranslationsTabProps {
   language: SupportedLanguage;
@@ -11,6 +14,7 @@ interface MissingTranslationsTabProps {
 
 export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps) => {
   const { fieldsToTranslate, isLoading, entitiesMap } = useMissingTranslations(language);
+  const { isTranslating, translateFields } = useBatchTranslate();
 
   // Raggruppamento come prima
   type GroupedEntries = { [entityKey:string]: { entityType: string, id: string, fields: { field: string; badge: "missing" | "outdated" }[] } };
@@ -21,12 +25,53 @@ export const MissingTranslationsTab = ({ language }: MissingTranslationsTabProps
     grouped[k].fields.push({ field: entry.field, badge: entry.badge });
   }
 
+  const handleTranslateAll = async () => {
+    const jobs: BatchJob[] = [];
+    for (const entry of fieldsToTranslate) {
+      const entity = entitiesMap[`${entry.entityType}:${entry.id}`];
+      const original = entity?.[entry.field];
+      if (typeof original === "string" && original.trim()) {
+        jobs.push({
+          entityType: entry.entityType as BatchEntityType,
+          entityId: entry.id,
+          fieldName: entry.field,
+          originalText: original,
+        });
+      }
+    }
+    await translateFields(jobs, language, {
+      skipFreshnessCheck: true,
+      label: "voci",
+    });
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="font-semibold text-xl mb-4">
-          Voci da tradurre/aggiornare ({fieldsToTranslate.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-xl">
+            Voci da tradurre/aggiornare ({fieldsToTranslate.length})
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTranslateAll}
+            disabled={isTranslating || isLoading || fieldsToTranslate.length === 0}
+            className="whitespace-nowrap"
+          >
+            {isTranslating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Traduzione...
+              </>
+            ) : (
+              <>
+                <Globe className="h-4 w-4 mr-2" />
+                Traduci tutto
+              </>
+            )}
+          </Button>
+        </div>
         <div className="space-y-7">
           {isLoading ? (
             <Skeleton className="h-20 w-full" />
