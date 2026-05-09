@@ -3,6 +3,7 @@ import MenuPrintHeader from '@/components/menu-print/MenuPrintHeader';
 import MenuPrintPreview from '@/components/menu-print/MenuPrintPreview';
 import { useMenuLayouts } from "@/hooks/useMenuLayouts";
 import { useMenuPrintLayoutSync } from "@/hooks/menu-print/useMenuPrintLayoutSync";
+import { MenuPrintPagesProvider } from '@/contexts/MenuPrintPagesContext';
 
 const MenuPrint = () => {
   const [showMargins, setShowMargins] = useState(false);
@@ -44,8 +45,9 @@ const MenuPrint = () => {
   }
   
   return (
-    <div className="min-h-screen bg-background">
-      <MenuPrintHeader 
+    <MenuPrintPagesProvider>
+      <div className="min-h-screen bg-background">
+        <MenuPrintHeader 
         showMargins={showMargins}
         setShowMargins={setShowMargins}
         showPageBreaks={showPageBreaks}
@@ -54,16 +56,17 @@ const MenuPrint = () => {
         setIsSettingsOpen={setIsSettingsOpen}
         currentLayout={currentLayout}
       />
-      
-      <div className="pt-6">
-        <MenuPrintPreview 
-          currentLayout={currentLayout}
-          showMargins={showMargins}
-          showPageBreaks={showPageBreaks}
-          refreshKey={refreshKey} // Passa il refreshKey
-        />
+
+        <div className="pt-6">
+          <MenuPrintPreview 
+            currentLayout={currentLayout}
+            showMargins={showMargins}
+            showPageBreaks={showPageBreaks}
+            refreshKey={refreshKey}
+          />
+        </div>
       </div>
-    </div>
+    </MenuPrintPagesProvider>
   );
 };
 

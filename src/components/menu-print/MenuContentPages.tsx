@@ -5,6 +5,7 @@ import { useMenuContentData } from '@/hooks/menu-content/useMenuContentData';
 import { useMenuPagination } from '@/hooks/menu-content/pagination/useMenuPagination';
 import MenuContentPagePreview from './MenuContentPagePreview';
 import { Loader2 } from 'lucide-react';
+import { useMenuPrintPages } from '@/contexts/MenuPrintPagesContext';
 
 interface MenuContentPagesProps {
   showMargins: boolean;
@@ -37,6 +38,19 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, showPa
     serviceCoverCharge,
     activeLayout
   );
+
+  const { setPagesInfo } = useMenuPrintPages();
+  const isLoadingAny = isLoadingData || isLoadingMeasurements;
+  const pagesPreview = !isLoadingAny && activeLayout ? createPages() : [];
+  const contentPagesCount = pagesPreview.length;
+
+  useEffect(() => {
+    setPagesInfo({
+      totalPages: isLoadingAny || !activeLayout ? 0 : 2 + contentPagesCount + 1,
+      contentPagesCount: isLoadingAny || !activeLayout ? 0 : contentPagesCount,
+      isLoading: isLoadingAny,
+    });
+  }, [isLoadingAny, activeLayout, contentPagesCount, setPagesInfo]);
 
   useEffect(() => {
     const handleLayoutUpdate = (event: CustomEvent) => {
@@ -131,7 +145,7 @@ const MenuContentPages: React.FC<MenuContentPagesProps> = ({ showMargins, showPa
     );
   }
 
-  const pages = createPages();
+  const pages = pagesPreview;
   const pageBreakCategoryIds = activeLayout?.pageBreaks?.categoryIds || [];
 
   if (pages.length === 0 && !isLoading) {
