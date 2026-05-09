@@ -19,27 +19,79 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // Il client Supabase intercetta automaticamente il token nell'hash (detectSessionInUrl).
-    // Aspettiamo l'evento PASSWORD_RECOVERY o verifichiamo la sessione corrente.
-    let resolved = false;
+    let cancelled = false;
+
+    const init = async () => {
+      // 1. Errore esplicito nell'hash (link scaduto o già usato)
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      const hashParams = new URLSearchParams(hash);
+      const queryParams = new URLSearchParams(window.location.search);
+
+      if (hashParams.get("error") || queryParams.get("error")) {
+        const desc =
+          hashParams.get("error_description") ||
+          queryParams.get("error_description") ||
+          "Link di reset non valido o scaduto.";
+        if (!cancelled) {
+          setError(decodeURIComponent(desc.replace(/\+/g, " ")));
+          setSessionReady(false);
+        }
+        return;
+      }
+
+      // 2. Formato moderno: ?code=... (PKCE)
+      const code = queryParams.get("code");
+      if (code) {
+        const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+        if (cancelled) return;
+        if (exErr) {
+          setError(exErr.message);
+          setSessionReady(false);
+        } else {
+          setSessionReady(true);
+          window.history.replaceState({}, "", "/reset-password");
+        }
+        return;
+      }
+
+      // 3. Formato implicito: #access_token=...&refresh_token=...
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      if (accessToken && refreshToken) {
+        const { error: setErr } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (cancelled) return;
+        if (setErr) {
+          setError(setErr.message);
+          setSessionReady(false);
+        } else {
+          setSessionReady(true);
+          window.history.replaceState({}, "", "/reset-password");
+        }
+        return;
+      }
+
+      // 4. Fallback: forse il client ha già aperto la sessione (detectSessionInUrl)
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setSessionReady(!!data.session);
+    };
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        resolved = true;
         setSessionReady(true);
       }
     });
 
-    // Fallback: dopo un breve delay controlla se c'è una sessione valida
-    const timer = setTimeout(async () => {
-      if (resolved) return;
-      const { data } = await supabase.auth.getSession();
-      setSessionReady(!!data.session);
-    }, 800);
+    init();
 
     return () => {
+      cancelled = true;
       sub.subscription.unsubscribe();
-      clearTimeout(timer);
     };
   }, []);
 

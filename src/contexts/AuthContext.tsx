@@ -25,6 +25,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Se l'utente arriva con un link di recovery che redirige alla root
+    // (Site URL di Supabase = https://menu.samorisca.it), Supabase mette
+    // i token nell'hash come #access_token=...&type=recovery oppure
+    // nella query come ?code=...&type=recovery. Spostiamo subito su
+    // /reset-password preservando i parametri.
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    const looksLikeRecovery =
+      hash.includes("type=recovery") ||
+      (search.includes("type=recovery") && search.includes("code=")) ||
+      hash.includes("error_code=otp_expired");
+
+    if (looksLikeRecovery && window.location.pathname !== "/reset-password") {
+      window.location.replace("/reset-password" + search + hash);
+      return;
+    }
+
     // Check if there's a stored session
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -40,7 +57,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (event === "PASSWORD_RECOVERY") {
         if (window.location.pathname !== "/reset-password") {
-          window.location.replace("/reset-password" + window.location.hash);
+          window.location.replace(
+            "/reset-password" + window.location.search + window.location.hash
+          );
         }
       }
     });

@@ -8,12 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,6 +48,24 @@ const Login = () => {
     }
     
     setIsSubmitting(false);
+  };
+
+  const handleForgotPassword = async () => {
+    setError(null);
+    if (!email) {
+      setError("Inserisci la tua email per ricevere il link di reset.");
+      return;
+    }
+    setIsResetting(true);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setIsResetting(false);
+    if (resetError) {
+      setError(resetError.message);
+      return;
+    }
+    toast.success("Email di reset password inviata. Controlla la tua casella.");
   };
 
   return (
@@ -109,6 +130,15 @@ const Login = () => {
               ) : (
                 "Accedi"
               )}
+            </Button>
+            <Button
+              type="button"
+              variant="link"
+              className="w-full"
+              onClick={handleForgotPassword}
+              disabled={isResetting}
+            >
+              {isResetting ? "Invio in corso..." : "Password dimenticata?"}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
               Powered by: Emani Srl | Venti Creative Studio - 2024
