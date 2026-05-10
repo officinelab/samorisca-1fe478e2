@@ -6,6 +6,8 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 const paypalClientId = Deno.env.get('PAYPAL_CLIENT_ID');
 const paypalSecretKey = Deno.env.get('PAYPAL_SECRET_KEY');
+// Default to PayPal LIVE API. Override with PAYPAL_API_BASE=https://api-m.sandbox.paypal.com for testing.
+const paypalApiBase = Deno.env.get('PAYPAL_API_BASE') ?? 'https://api-m.paypal.com';
 
 if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables');
@@ -36,20 +38,54 @@ const getMonthlyTokensLimit = async (): Promise<number> => {
   }
 };
 
+// Recupera la configurazione del pacchetto token (prezzo + numero token) lato server.
+// Nessun valore viene mai accettato dal client: l'autorevolezza è solo del DB.
+const getTokenPackageConfig = async (): Promise<{ price: number; amount: number } | null> => {
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('key,value')
+    .in('key', ['tokenPackagePrice', 'tokenPackageAmount']);
+
+  if (error || !data) {
+    console.error('Errore nel recupero della configurazione del pacchetto token:', error);
+    return null;
+  }
+
+  const map = new Map(data.map((r: any) => [r.key, r.value]));
+  const price = parseFloat(String(map.get('tokenPackagePrice') ?? '').replace(',', '.'));
+  const amount = parseInt(String(map.get('tokenPackageAmount') ?? ''), 10);
+
+  if (!Number.isFinite(price) || price <= 0 || !Number.isInteger(amount) || amount <= 0) {
+    console.error('Configurazione pacchetto token non valida:', { price, amount });
+    return null;
+  }
+  return { price, amount };
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { orderId, tokens } = await req.json();
-    
-    console.log(`Processing token purchase - OrderID: ${orderId}, Tokens: ${tokens}`);
+    const body = await req.json().catch(() => ({}));
+    const orderId = typeof body?.orderId === 'string' ? body.orderId.trim() : '';
 
-    if (!orderId || !tokens) {
+    console.log(`Processing token purchase - OrderID: ${orderId}`);
+
+    if (!orderId) {
       return new Response(
-        JSON.stringify({ error: "OrderID e tokens sono richiesti" }),
+        JSON.stringify({ error: "OrderID è richiesto" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Carica la configurazione autoritativa del pacchetto token lato server.
+    const pkg = await getTokenPackageConfig();
+    if (!pkg) {
+      return new Response(
+        JSON.stringify({ error: "Configurazione pacchetto token non disponibile" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -63,6 +99,24 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Confronta l'importo PayPal verificato con il prezzo configurato (tolleranza 1 cent).
+    const paidAmount = parseFloat(String(paymentDetails.amount ?? ''));
+    if (!Number.isFinite(paidAmount) || Math.abs(paidAmount - pkg.price) > 0.01) {
+      console.error('Importo PayPal non corrispondente al pacchetto', {
+        paid: paymentDetails.amount,
+        expected: pkg.price,
+        currency: paymentDetails.currency,
+        orderId,
+      });
+      return new Response(
+        JSON.stringify({ error: "Importo del pagamento non valido" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Quantità di token da accreditare: SOLO dal DB, mai dal client.
+    const tokens = pkg.amount;
 
     // Ottieni il limite mensile corrente
     const monthlyLimit = await getMonthlyTokensLimit();
@@ -139,6 +193,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: `${tokens} token aggiunti con successo!`,
+        tokensCredited: tokens,
         monthlyLimit: monthlyLimit
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -154,7 +209,7 @@ serve(async (req) => {
 });
 
 async function getPayPalAccessToken() {
-  const response = await fetch('https://api-m.sandbox.paypal.com/v1/oauth2/token', {
+  const response = await fetch(`${paypalApiBase}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -168,7 +223,7 @@ async function getPayPalAccessToken() {
 }
 
 async function verifyPayPalPayment(orderId: string, accessToken: string) {
-  const response = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}`, {
+  const response = await fetch(`${paypalApiBase}/v2/checkout/orders/${orderId}`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
