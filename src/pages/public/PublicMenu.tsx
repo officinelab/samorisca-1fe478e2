@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePublicMenu } from "@/hooks/public-menu/usePublicMenu";
 import { PublicMenuLayout } from "@/components/public-menu/PublicMenuLayout";
 import { PublicMenuLoadingState } from "@/components/public-menu/PublicMenuLoadingState";
 import { PublicMenuErrorState } from "@/components/public-menu/PublicMenuErrorState";
 import { MenuErrorBoundary } from "@/components/public-menu/MenuErrorBoundary";
+import { useVersionCheckContext } from "@/contexts/VersionCheckContext";
 
 interface PublicMenuProps {
   isPreview?: boolean;
@@ -59,6 +60,19 @@ const PublicMenuInner: React.FC<PublicMenuProps> = ({
     hideProductDetailImage,
     t
   } = usePublicMenu({ isPreview, previewLanguage });
+
+  // Auto-reload del menu pubblico quando viene rilevata una nuova versione,
+  // ma solo se l'utente non sta interagendo con elementi critici
+  // (carrello aperto, scheda prodotto aperta, info allergeni aperta).
+  // Vedi src/hooks/useVersionCheck.ts per la logica di rilevamento.
+  const { updateAvailable, reload } = useVersionCheckContext();
+  useEffect(() => {
+    if (isPreview) return;
+    if (!updateAvailable) return;
+    if (isCartOpen || selectedProduct || showAllergensInfo) return;
+    const t = window.setTimeout(reload, 5000);
+    return () => window.clearTimeout(t);
+  }, [updateAvailable, isCartOpen, selectedProduct, showAllergensInfo, reload, isPreview]);
 
   // Mostra uno skeleton o loader se le impostazioni sono ancora in caricamento
   if (isLoadingSiteSettings) {
