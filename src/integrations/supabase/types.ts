@@ -559,6 +559,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_revoke_user_sessions: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       get_current_month: { Args: never; Returns: string }
       get_monthly_tokens_limit: { Args: never; Returns: number }
       get_remaining_tokens: { Args: never; Returns: number }
