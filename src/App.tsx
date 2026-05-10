@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { VersionCheckProvider } from "./contexts/VersionCheckContext";
+import { UpdateAvailableBanner } from "./components/UpdateAvailableBanner";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import AdminLayout from "./layouts/AdminLayout";
@@ -73,6 +75,7 @@ const AppRoutes = () => (
           {/* Catch-all Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <UpdateAvailableBanner />
       </BrowserRouter>
     </TooltipProvider>
   </>
@@ -81,7 +84,9 @@ const AppRoutes = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <AppWithGlobalTitle />
+      <VersionCheckProvider>
+        <AppWithGlobalTitle />
+      </VersionCheckProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
