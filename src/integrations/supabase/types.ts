@@ -570,6 +570,7 @@ export type Database = {
         Returns: boolean
       }
       increment_tokens: { Args: { token_count: number }; Returns: boolean }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "admin_supervisor"
