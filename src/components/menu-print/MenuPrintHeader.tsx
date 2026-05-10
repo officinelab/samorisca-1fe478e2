@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, EyeOff, Settings, Printer, FileText, Scissors } from "lucide-react";
+import { Eye, EyeOff, Settings, Printer, FileText, Scissors, SplitSquareVertical } from "lucide-react";
 import PrintLayoutsManager from "@/components/menu-settings/PrintLayoutsManager";
 import { useAdvancedPrint } from "@/hooks/print/useAdvancedPrint";
 import { PrintLayout } from "@/types/printLayout";
 import { useMenuPrintPages } from "@/contexts/MenuPrintPagesContext";
+import PageBreaksQuickDialog from "./PageBreaksQuickDialog";
 
 interface MenuPrintHeaderProps {
   showMargins: boolean;
@@ -29,6 +30,7 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
 }) => {
   const { printMenuContent } = useAdvancedPrint();
   const { totalPages, contentPagesCount, isLoading } = useMenuPrintPages();
+  const [isPageBreaksOpen, setIsPageBreaksOpen] = useState(false);
 
   const handleAdvancedPrint = () => {
     console.log('🖨️ Pulsante Stampa Menu cliccato - sistema finestra popup');
@@ -93,6 +95,15 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
           </Button>
 
           <Button
+            variant="outline"
+            onClick={() => setIsPageBreaksOpen(true)}
+            title="Gestisci le interruzioni di pagina"
+          >
+            <SplitSquareVertical className="w-4 h-4 mr-2" />
+            Gestisci interruzioni
+          </Button>
+
+          <Button
             variant={showPageBreaks ? "default" : "outline"}
             onClick={() => setShowPageBreaks(!showPageBreaks)}
           >
@@ -106,6 +117,12 @@ const MenuPrintHeader: React.FC<MenuPrintHeaderProps> = ({
           </Button>
         </div>
       </div>
+
+      <PageBreaksQuickDialog
+        open={isPageBreaksOpen}
+        onOpenChange={setIsPageBreaksOpen}
+        currentLayout={currentLayout}
+      />
     </div>
   );
 };
